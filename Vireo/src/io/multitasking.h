@@ -41,9 +41,14 @@ typedef struct{
 } __attribute__ ((packed)) tTask; 
 
 
-void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags);
+void Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_unused, uint32_t ebx, uint32_t edx, uint32_t ecx, uint32_t eax,  uint32_t eip, uint32_t cs, uint32_t EFLAGS, uint32_t esp, uint32_t ss);
+void task_timeguard();
+
 void task_push_v86(uint32_t ebp, uint32_t entry_point, uint8_t priority, uint16_t flags);
+void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags);
 
-
+//static void task_pop(uint8_t tasknum);
+//static void task_save();
+//static void task_findnew();
 
 #endif

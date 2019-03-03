@@ -4,7 +4,7 @@
 
 //TODO: Cleanup this file!!!
 
-uint32_t *MEM_start = 6 * 1024*1024+1; //1 MiB //10*1024*1024; //because other solutions don't work yet, this works fine for now
+uint32_t *MEM_start = 3 * 1024*1024+1; //1 MiB //10*1024*1024; //because other solutions don't work yet, this works fine for now
 uint32_t MEM_MAX;
 
 typedef struct{ 

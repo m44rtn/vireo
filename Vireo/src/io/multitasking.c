@@ -38,7 +38,7 @@ void Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_unus
     return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   
 }
 
-static void task_timeguard()
+void task_timeguard()
 {    
     //gets run every PIT tick
     
@@ -69,82 +69,6 @@ static void task_timeguard()
     else jump_user_mode(/*insert eip*/);
 }
 
-static void task_findnew()
-{
-    uint8_t highest_prior = 0;
-    uint8_t task = 0;
-
-    //check if we have nothing in the queue and if we have ran tasks before
-    //if so, our queue is empty while it shouldn't. Re-init it.
-    //if(tasks[0].priority == 0 && ExecTask != 0xFF) InitTasking(/*BlueBird*/);
-
-    for(uint8_t i = 0; i < 15; i++)
-    {
-        //if(tasks[i].priority == 0) InitTasking(); //we've reached the end of the queue which is bad, and we just re-init it
-
-        if(highest_prior < tasks[i].priority)
-        {
-            highest_prior = tasks[i].priority;
-            task = i;
-        } 
-
-    }
-
-    ExecTask = task;
-    
-    //SwitchTask(tasks[ExecTask]);
-    
-}
-
-void task_save()
-{
-    tTask CurrentState;
-
-    //save current flags and priority
-    CurrentState.flags = tasks[ExecTask].flags;
-    CurrentState.priority = tasks[ExecTask].priority;
-
-    //save registers
-    CurrentState.entry_ptr = tasks[ExecTask].entry_ptr;
-    CurrentState.registers = tasks[ExecTask].registers;
-
-    //reset the task's quantum
-    CurrentState.quantum = 8;
-
-    //save it to the queue
-    tasks[CurrentTasks] = CurrentState;
-    CurrentTasks++;
-
-}
-
-void task_pop(uint8_t tasknum)
-{
-    //move everything over by one so we don't have an empty gap
-    for(uint8_t i = tasknum; i < 14; i++)
-    {
-        tasks[i].entry_ptr = tasks[i + 1].entry_ptr;
-        tasks[i].quantum = tasks[i + 1].quantum;
-        tasks[i].priority = tasks[i + 1].priority;
-        tasks[i].flags = tasks[i + 1].flags;
-
-        tasks[i].registers.eax = tasks[i + 1].registers.eax;
-        tasks[i].registers.ecx = tasks[i + 1].registers.ecx;
-        tasks[i].registers.edx = tasks[i + 1].registers.edx;
-        tasks[i].registers.ebx = tasks[i + 1].registers.ebx;
-
-        tasks[i].registers.ebp = tasks[i + 1].registers.ebp;
-        tasks[i].registers.esp = tasks[i + 1].registers.esp;
-
-        tasks[i].registers.esi = tasks[i + 1].registers.esi;
-        tasks[i].registers.edi = tasks[i + 1].registers.edi;        
-    }
-
-    //clear the last entry if it isn't empty yet
-    if(tasks[14].entry_ptr > 0)
-        kmemset(&tasks[14], 0, sizeof(tTask));
-
-    CurrentTasks--;
-}
 
 void task_push_v86(uint32_t ebp, uint32_t entry_point, uint8_t priority, uint16_t flags)
 {
@@ -192,8 +116,85 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
 
 }
 
+static void task_pop(uint8_t tasknum)
+{
+    //move everything over by one so we don't have an empty gap
+    for(uint8_t i = tasknum; i < 14; i++)
+    {
+        tasks[i].entry_ptr = tasks[i + 1].entry_ptr;
+        tasks[i].quantum = tasks[i + 1].quantum;
+        tasks[i].priority = tasks[i + 1].priority;
+        tasks[i].flags = tasks[i + 1].flags;
+
+        tasks[i].registers.eax = tasks[i + 1].registers.eax;
+        tasks[i].registers.ecx = tasks[i + 1].registers.ecx;
+        tasks[i].registers.edx = tasks[i + 1].registers.edx;
+        tasks[i].registers.ebx = tasks[i + 1].registers.ebx;
+
+        tasks[i].registers.ebp = tasks[i + 1].registers.ebp;
+        tasks[i].registers.esp = tasks[i + 1].registers.esp;
+
+        tasks[i].registers.esi = tasks[i + 1].registers.esi;
+        tasks[i].registers.edi = tasks[i + 1].registers.edi;        
+    }
+
+    //clear the last entry if it isn't empty yet
+    if(tasks[14].entry_ptr > 0)
+        kmemset(&tasks[14], 0, sizeof(tTask));
+
+    CurrentTasks--;
+}
+
+static void task_save()
+{
+    tTask CurrentState;
+
+    //save current flags and priority
+    CurrentState.flags = tasks[ExecTask].flags;
+    CurrentState.priority = tasks[ExecTask].priority;
+
+    //save registers
+    CurrentState.entry_ptr = tasks[ExecTask].entry_ptr;
+    CurrentState.registers = tasks[ExecTask].registers;
+
+    //reset the task's quantum
+    CurrentState.quantum = 8;
+
+    //save it to the queue
+    tasks[CurrentTasks] = CurrentState;
+    CurrentTasks++;
+
+}
+
+static void task_findnew()
+{
+    uint8_t highest_prior = 0;
+    uint8_t task = 0;
+
+    //check if we have nothing in the queue and if we have ran tasks before
+    //if so, our queue is empty while it shouldn't. Re-init it.
+    //if(tasks[0].priority == 0 && ExecTask != 0xFF) InitTasking(/*BlueBird*/);
+
+    for(uint8_t i = 0; i < 15; i++)
+    {
+        //if(tasks[i].priority == 0) InitTasking(); //we've reached the end of the queue which is bad, and we just re-init it
+
+        if(highest_prior < tasks[i].priority)
+        {
+            highest_prior = tasks[i].priority;
+            task = i;
+        } 
+
+    }
+
+    ExecTask = task;
+    
+    //SwitchTask(tasks[ExecTask]);
+    
+}
+
 //is this necessary?
-static void task_switch(tTask task)
+/*static void task_switch(tTask task)
 {
     switch((task.flags) & 0x02)
     {
@@ -219,7 +220,7 @@ static void task_switch_internal(tTask task)
 
     //is a v86 task
     if((task.flags & 0x01)) setup_v86();
-}
+}*/
 
 //toolbox, if we even need it (spoiler alert! we don't)
 void setup_SYSenter()
