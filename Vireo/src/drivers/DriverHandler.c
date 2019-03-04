@@ -51,7 +51,7 @@ void run_v86_driver(uint32_t file_start, uint32_t file_size, uint16_t flags)
     //anyway, let's execute it. (this won't be able to return back, so we need int 3)
     //v86_enter(0x0600, );
 
-    task_findnew();
+    //task_findnew();
 }
 
 
