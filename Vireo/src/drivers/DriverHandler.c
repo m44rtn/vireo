@@ -37,7 +37,7 @@ tTask Prepare_Internal_Task(DRVR_HEADER *header, uint32_t file_start, uint32_t f
 void run_v86_driver(uint32_t file_start, uint32_t file_size, uint16_t flags)
 {
     
-    //copy the file to 0x0600, to the first 3KiB
+    //copy the file to 0x0600 (the first 3KiB)
     MemCopy(file_start + sizeof(DRVR_HEADER), 0x0600, file_size);
     
     /*move the driverheader to free up memory (at this moment
