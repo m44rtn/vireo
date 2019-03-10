@@ -18,10 +18,12 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
 
     bool isv86 = (header->type == 3) ? TASK_FLAG_v86 : 0;
     uint32_t file_size = ((uint32_t) file - header->size);
-    tTask task = Prepare_Internal_Task(header, (uint32_t) file, file_size, isv86);
+    //tTask task = Prepare_Internal_Task(header, (uint32_t) file, file_size, isv86);
     //Switch_Internal_Task(task, TASK_HIGH);   
-}
 
+    run_v86_driver(header, file_size, NULL);
+}
+/*
 tTask Prepare_Internal_Task(DRVR_HEADER *header, uint32_t file_start, uint32_t file_size,
                              bool isv86)
 {
@@ -32,7 +34,7 @@ tTask Prepare_Internal_Task(DRVR_HEADER *header, uint32_t file_start, uint32_t f
     task.registers.esp = task.registers.ebp + 0xFFFF;
     task.entry_ptr = (header->offset + file_start);
     return task;
-}
+}*/
 
 void run_v86_driver(uint32_t file_start, uint32_t file_size, uint16_t flags)
 {
@@ -49,10 +51,11 @@ void run_v86_driver(uint32_t file_start, uint32_t file_size, uint16_t flags)
     //now it isn't anymore   
 
     //anyway, let's execute it. (this won't be able to return back, so we need int 3)
-    //v86_enter(0x0600, );
+    v86_enter(0x0600, 0, 0xFFFF, 0x0000);
 
     //task_findnew();
 }
+
 
 
 

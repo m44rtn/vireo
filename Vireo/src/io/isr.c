@@ -93,8 +93,11 @@ void isr12c(){
 	asm("hlt");
 }
 
-void isr13c(){
+void isr13c(uint16_t ip, uint16_t cs){ //general protection fault
+	trace("\n\n#GP -EIP=%i\n", ip);
+	while(1);
 	kernel_panic("GENERAL_PROTECTION_FAULT");
+	outb(PIC1, 0x20);
 }
 void isr14c(){
 	kernel_panic("PAGE_FAULT");

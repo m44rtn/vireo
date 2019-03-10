@@ -36,7 +36,7 @@ void isr7c();
 void isr8c();
 void isr11c();
 void isr12c();
-void isr13();
+void isr13c(uint16_t ip, uint16_t cs);
 void isr15c();
 void isr20c();
 void isr21c();

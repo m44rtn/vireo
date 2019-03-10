@@ -102,8 +102,12 @@ hlt
 ;iret
 
 isr13:
-pushad
-cld
+;pushad
+pop eax
+pop ecx
+
+push ax
+push cx
 call isr13c
 popad
 iretd
@@ -117,12 +121,12 @@ iretd
 hlt
 
 
-extern Save_Task_State
+extern Task_Save_State
 
 isr20:
 ;   PIT
 pushad
-call Save_Task_State
+call Task_Save_State
 
 call isr20c
 popad

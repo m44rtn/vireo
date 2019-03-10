@@ -37,7 +37,7 @@ void Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_unus
     //return the registers in 'reverse order' (so that we can safely return from the interrupt)
     return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   
 }
-
+/*
 void task_timeguard()
 {    
     //gets run every PIT tick
@@ -65,8 +65,8 @@ void task_timeguard()
     outb(PIC1, 0x20);
 
     if((tasks[ExecTask].flags & TASK_FLAG_v86)) v86_switch();
-    else if(tasks[ExecTask].flags & TASK_FLAG_KERNEL) task_kernel_switch(/*insert eip*/);
-    else jump_user_mode(/*insert eip*/);
+    else if(tasks[ExecTask].flags & TASK_FLAG_KERNEL) task_kernel_switch(/*insert eip*//*);
+    else jump_user_mode(/*insert eip*//*);
 }
 
 
@@ -116,7 +116,7 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
 
 }
 
-static void task_pop(uint8_t tasknum)
+/*static*/ /*void task_pop(uint8_t tasknum)
 {
     //move everything over by one so we don't have an empty gap
     for(uint8_t i = tasknum; i < 14; i++)
@@ -145,7 +145,7 @@ static void task_pop(uint8_t tasknum)
     CurrentTasks--;
 }
 
-static void task_save()
+/*static*/ /*void task_save()
 {
     tTask CurrentState;
 
@@ -166,14 +166,14 @@ static void task_save()
 
 }
 
-static void task_findnew()
+/*static*/ /*void task_findnew()
 {
     uint8_t highest_prior = 0;
     uint8_t task = 0;
 
     //check if we have nothing in the queue and if we have ran tasks before
     //if so, our queue is empty while it shouldn't. Re-init it.
-    //if(tasks[0].priority == 0 && ExecTask != 0xFF) InitTasking(/*BlueBird*/);
+    //if(tasks[0].priority == 0 && ExecTask != 0xFF) InitTasking(/*BlueBird*//*);
 
     for(uint8_t i = 0; i < 15; i++)
     {

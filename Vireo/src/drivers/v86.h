@@ -5,7 +5,8 @@
 #include "DriverHandler.h"
 #include "../io/memory.h"
 
-void setup_v86(uint32_t file_start, uint32_t file_size, uint16_t flags);
+
+uint32_t v86_sgoff_to_linear(uint16_t segment, uint16_t offset);
 
 
 #endif

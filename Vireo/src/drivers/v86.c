@@ -17,11 +17,11 @@ uint32_t v86_linear_to_sgoff(uint32_t ptr)
 }
 
 /* not necessarry, so maybe just use this as logic
- * or is it?
+ * or is it?*/
 uint32_t v86_sgoff_to_linear(uint16_t segment, uint16_t offset)
 {
     uint32_t LinearAddress = (segment * 16) + offset;
     return LinearAddress;
 }
-*/
+
 
