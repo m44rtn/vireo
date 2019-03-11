@@ -18,7 +18,10 @@ kernel:
 	nasm $(ASPARAMS) -o bin/isra.o asm/isr.asm
 	nasm $(ASPARAMS) -o bin/idta.o asm/idt.asm
 	nasm $(ASPARAMS) -o bin/asm.o asm/asm.asm
+
 	nasm $(ASPARAMS) -o bin/v86.o asm/v86.asm
+	gcc $(GCCPARAMS) -o bin/v86c.o -c drivers/v86.c
+
 	gcc $(GCCPARAMS) -o bin/cpu.o -c drivers/cpu.c
 	gcc $(GCCPARAMS) -o bin/isr.o -c io/isr.c
 	gcc $(GCCPARAMS) -o bin/hardw.o -c io/hardware.c
@@ -44,7 +47,7 @@ kernel:
 	ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.sys bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o \
 	bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o \
 	bin/memory.o bin/pci.o bin/ahci.o bin/ATA.o bin/mfat.o bin/fat.o bin/hdd.o bin/iso.o bin/DRVhandl.o \
-	bin/v86.o bin/multitasking.o
+	bin/v86.o bin/multitasking.o bin/v86c.o
 	#ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.bin bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/reshut.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o bin/shell.o bin/memory.o bin/paging.o
 	rm grub/boot/kernel.sys
 	cp -i bin/Build/kernel.sys grub/boot/kernel.sys

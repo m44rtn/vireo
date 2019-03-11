@@ -2,12 +2,14 @@
 ;used by Vireo for the drivers
 
 global v86_enter
+extern print
 
 v86_enter:
-    push ebp
-    mov ebp, esp
+    ;push ebp
+    ;mov ebp, esp
 
-
+    push .msg
+    call print
     .continue:
         push dword [ebp + 8] ;ss
         push dword [ebp + 12] ;esp
@@ -19,9 +21,11 @@ v86_enter:
         push dword [ebp + 16] ;eip
         
         
-        mov esp, ebp
-        pop ebp
+        ;mov esp, ebp
+        ;pop ebp
         iret
+
+.msg db "Hello, world!\n", 0x00
 
 v86_disable:
 push ebp

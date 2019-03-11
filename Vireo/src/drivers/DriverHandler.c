@@ -36,22 +36,23 @@ tTask Prepare_Internal_Task(DRVR_HEADER *header, uint32_t file_start, uint32_t f
     return task;
 }*/
 
-void run_v86_driver(uint32_t file_start, uint32_t file_size, uint16_t flags)
+void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags)
 {
     
     //copy the file to 0x0600 (the first 3KiB)
-    MemCopy(file_start + sizeof(DRVR_HEADER), 0x0600, file_size);
+    MemCopy((uint32_t *) (file_start + sizeof(DRVR_HEADER)), 0x0010 , file_size);
+    sleep(1);
     
     /*move the driverheader to free up memory (at this moment
       the entire file is allocated at it's old place too)*/
-    DRVR_HEADER *DriverHeader = malloc(sizeof(DRVR_HEADER));
-    MemCopy(file_start, DriverHeader, sizeof(DRVR_HEADER));
-    demalloc(file_start);
+    //DRVR_HEADER *DriverHeader = malloc(sizeof(DRVR_HEADER));
+    //MemCopy(file_start, DriverHeader, sizeof(DRVR_HEADER));
+    //demalloc(file_start);
    
     //now it isn't anymore   
 
     //anyway, let's execute it. (this won't be able to return back, so we need int 3)
-    v86_enter(0x0600, 0, 0xFFFF, 0x0000);
+    v86_enter(0x0010, 0, 0xFFFF, 0x0000);
 
     //task_findnew();
 }

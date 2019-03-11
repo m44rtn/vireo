@@ -98,10 +98,16 @@ void *kmemset(void *ptr, uint32_t val, size_t size){
 
 }
 
-void MemCopy(uint32_t *src, uint32_t *dest, size_t size)
+void MemCopy(uint32_t *src, uint32_t *dest, uint32_t size)
 {
-	for(uint32_t i = 0; i < size; i++)
-		src[i] = dest[i];
+	uint32_t i = 0;
+	do
+	{
+		dest[i] = src[i];
+		i += 4;
+	} while (src[i]);
+	
+		
 }
 
 char *strcopy(char* dest, char* src)

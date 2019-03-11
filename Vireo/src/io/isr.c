@@ -89,13 +89,13 @@ void isr11c(){
 }
 
 void isr12c(){
-		//kernel_panic("STACK_SEGMENT_FAULT");
+		kernel_panic("STACK_SEGMENT_FAULT");
 	asm("hlt");
 }
 
 void isr13c(uint16_t ip, uint16_t cs){ //general protection fault
 	trace("\n\n#GP -EIP=%i\n", ip);
-	while(1);
+	//while(1);
 	kernel_panic("GENERAL_PROTECTION_FAULT");
 	outb(PIC1, 0x20);
 }

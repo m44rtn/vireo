@@ -24,6 +24,7 @@ extern isr4c
 extern isr7c
 extern isr8c
 extern isr11c
+extern isr12c
 extern isr13c
 extern isr14c
 extern isr20c
@@ -95,19 +96,20 @@ popad
 iretd
 
 isr12:
-hlt
-;popad
-;cld
-;call isr12c
-;iret
+;hlt
+popad
+cld
+call isr12c
+iret
 
 isr13:
-;pushad
-pop eax
-pop ecx
+pushad
+;pop eax
+;pop ecx
 
-push ax
-push cx
+;push ax
+;push cx
+cld
 call isr13c
 popad
 iretd
