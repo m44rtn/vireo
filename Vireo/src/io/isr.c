@@ -93,9 +93,26 @@ void isr12c(){
 	asm("hlt");
 }
 
-void isr13c(uint16_t ip, uint16_t cs){ //general protection fault
-	trace("\n\n#GP -EIP=%i\n", ip);
-	//while(1);
+void isr13c(uint32_t ip, uint32_t cs/*, uint32_t sp, uint32_t ss*/){ //general protection fault
+
+	setcolor(0x0E);
+	print("\n\n#GP");
+	setcolor(0x07);
+	trace(" -IP=%i", ip);
+	trace("\t-CS=%i\n", cs);
+	//trace("\t-SP=%i", sp);
+	//trace("\t-SS=%i\n", ss);
+	
+	uint8_t *ip_addr = v86_sgoff_to_linear(cs, ip);
+
+	switch(ip_addr[0])
+	{
+		case 0xcd:
+			print("INT \n");
+			break; 
+	}
+
+	while(1);
 	kernel_panic("GENERAL_PROTECTION_FAULT");
 	outb(PIC1, 0x20);
 }

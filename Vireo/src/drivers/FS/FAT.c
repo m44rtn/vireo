@@ -70,16 +70,18 @@ File FindFile(char *filename, uint32_t dirLoc, uint8_t drive)
     char *name_holder;
     uint32_t foundFile = 0;
 
-    for(int i = 0; i < len; i++)
+    uint32_t i = 0;
+
+    do
     {
-        //name_holder = strtok(filename, ".");
         name_holder = dir[i].name;
+        i++;
         print(name_holder);
         if(!eqlstr(name_holder, filename)) continue;
-        print("Found file!\n");
-        foundFile = i;
-        trace("foundFile: %i\n" ,foundFile);
-    }
+        
+        foundFile = (i-1);
+        break;
+    } while (i < len);
     
     file.FileLoc = (dir[foundFile].clHi << 16) | dir[foundFile].clLo;
     file.size = dir[foundFile].fSize;
@@ -211,13 +213,14 @@ uint8_t *FAT32_READ_FILE(uint8_t drive, uint32_t cluster, size_t size)
 
     trace("lba: %i\n", lba);
 
-    uint8_t *file = malloc(size);
+    uint32_t *obuf = malloc(size);
+    uint16_t *file = obuf;
     PIO_READ_ATA(0, lba, ((size / 512) + 1), (uint16_t *) file);
       
     //for(int j = 0; j < 128; j++) trace("buf[i]: %i\n",  file[j]);
     //TODO: return buffer
 
-    return file;
+    return obuf;
 }
 
 uint32_t FAT_cluster_LBA(uint32_t cluster)

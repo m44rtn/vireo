@@ -4,6 +4,7 @@
 #include "../include/types.h"
 #include "../include/info.h"
 #include "../drivers/cpu.h"
+#include "../drivers/DriverHandler.h"
 #include "memory.h"
 
 #define TASK_HIGH   0x01

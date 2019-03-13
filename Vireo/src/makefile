@@ -42,6 +42,9 @@ kernel:
 
 	gcc $(GCCPARAMS) -o bin/DRVhandl.o -c drivers/DriverHandler.c
 	gcc $(GCCPARAMS) -o bin/multitasking.o -c io/multitasking.c
+
+	#modules
+	nasm modules/pVESA.asm -f bin -o modules/bin/VESA.SYS
 		
 	#nasm -f bin -o bin/Build/loader.sys loader.asm
 	ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.sys bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o \
@@ -54,7 +57,7 @@ kernel:
 	grub-mkrescue -o birdos.iso grub/
 	virtualbox --startvm "Bird OS" --debug-command-line --start-running
 
-modules:
+module:
 	nasm modules/pVESA.asm -f bin -o modules/bin/VESA.SYS
 
 
@@ -63,7 +66,7 @@ run:
 	virtualbox --startvm "Bird OS" --debug-command-line --start-running
 
 setup:
-	nasm boot/loader.asm -o $(SETUPLOC)loader.sys
+	#nasm boot/loader.asm -o $(SETUPLOC)loader.sys
 	mkisofs -o $(SETUPLOC)test_setup.iso modules/bin/VESA.SYS $(SETUPLOC)main.bat \
 	$(SETUPLOC)install.bat	 
 

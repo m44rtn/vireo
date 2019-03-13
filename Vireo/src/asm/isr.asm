@@ -103,13 +103,32 @@ call isr12c
 iret
 
 isr13:
-pushad
-;pop eax
-;pop ecx
+;pushad
 
-;push ax
-;push cx
-cld
+;mov eax, [esp + 36] ;32 ip
+;mov ecx, [esp + 40] ;cs
+;mov ebx, [esp + 52] ;esp/ss
+;mov edx, [esp + 56] ;ss/esp
+
+pop eax
+pop ecx
+;pop ebx ;eflags
+;pop ebx
+;pop edx
+
+;push ebx
+;push edx
+
+push ecx
+push eax
+
+;push ebx
+;push edx
+
+;push ecx
+;push eax
+
+;cld
 call isr13c
 popad
 iretd

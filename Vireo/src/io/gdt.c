@@ -81,8 +81,8 @@ static void setGDT(gdt_desc* descr, uint32_t base, uint32_t limit, uint8_t acces
 	descr -> base_mid = (base >> 16) & 0xff;    //middle
 	descr -> base_hig = (base >> 24) & 0xff;    //high
 	descr -> lim_low = (limit & 0xffff);		//limit
-	descr -> granularity = ((limit >> 16) & 0x0f) | (granularity & 0xf0); //spaghettification (Space joke: Black holes xD)
-	descr -> access = access;	//Access which one you have, Yoda I am
+	descr -> granularity = ((limit >> 16) & 0x0f) | (granularity & 0xf0); 
+	descr -> access = access;	
 }
 
 

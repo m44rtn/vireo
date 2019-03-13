@@ -103,7 +103,7 @@ void MemCopy(uint32_t *src, uint32_t *dest, uint32_t size)
 	uint32_t i = 0;
 	do
 	{
-		dest[i] = src[i];
+		*(dest + i) = *(src + i);
 		i += 4;
 	} while (src[i]);
 	

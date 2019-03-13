@@ -21,6 +21,8 @@
 #include "drivers/FS/ISO9660.h"
 #include "drivers/HDD.h"
 #include "drivers/DriverHandler.h"
+#include "drivers/v86.h"
+#include "io/multitasking.h"
 #include "include/DEFATA.h"
 #include "include/GRUB/multiboot.h" //mutliboot stuff --> grub
 

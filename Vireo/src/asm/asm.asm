@@ -151,7 +151,7 @@ ret
 global jmp_user_mode
 
 jmp_user_mode:
-    ;jumps to user mode
+    ;jumps to user mode -there's a lot that isn't right in this function
     ;input:
     ;   - a location of a function that should be executed by this thing
     ;output:
