@@ -60,9 +60,9 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 		trace("found free cluster: %i\n", vfs[i].cluster);
 	}
 
-	char *file = malloc(512);
-	char *str = "Hello, this is a file made and stored by BirdOS.";
-	strcopy(file, str);
+	//char *file = malloc(512);
+	//char *str = "Hello, this is a file made and stored by BirdOS.";
+	//strcopy(file, str);
 
 	//FAT32_WRITE_FILE(drive, file, 512, "BIRDOS  ", "HD0/");
 
@@ -75,7 +75,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	clearscr();
 
 	//release, major, minor, build
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.120");
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.134");
 
 	
 	print("\nRed Alert!\n");

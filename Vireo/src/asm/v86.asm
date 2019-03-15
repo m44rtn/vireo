@@ -17,15 +17,15 @@ v86_enter:
     ;mov ebp, esp
     ;pusha
     
-    ;mov esi, [esp + 4]
-    pop esi
+    mov esi, [esp + 4]
+    ;pop esi
     .continue:
         push dword [esi]
         push dword [esi + 4]
 
         pushfd
 
-        and dword [esp], 0x20202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
+        or dword [esp], 0x20202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
 
         
         push dword [esi + 8]

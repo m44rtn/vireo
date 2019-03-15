@@ -73,7 +73,7 @@ typedef struct
 } File;
 
 uint32_t *GetFile(char *filename, uint8_t drive, uint32_t dirLoc);
-File FindFile(char *filename, uint32_t dirLoc, uint8_t drive);
+File *FindFile(char *filename, uint32_t dirLoc, uint8_t drive);
 
 FAT32_BPB *GetBootCodeFAT(uint8_t drive);
 FAT32_BPB *FATinit(uint8_t drive);

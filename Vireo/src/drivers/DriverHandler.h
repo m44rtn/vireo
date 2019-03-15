@@ -9,9 +9,10 @@
 #include "v86.h"
 
 typedef struct{
+    uint8_t jmp, shrt;
     char Signature[11];
     uint8_t type;
-    uint32_t offset;
+    uint32_t *offset;
     uint32_t size;
 } __attribute__ ((packed)) DRVR_HEADER;
 

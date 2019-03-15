@@ -103,35 +103,35 @@ call isr12c
 iret
 
 isr13:
-;pushad
+pushad
 
-;mov eax, [esp + 36] ;32 ip
-;mov ecx, [esp + 40] ;cs
-;mov ebx, [esp + 52] ;esp/ss
-;mov edx, [esp + 56] ;ss/esp
+mov eax, [esp + 36] ;32 ip
+mov ecx, [esp + 40] ;cs
+mov edi, [esp + 44]
+mov ebx, [esp + 48] ;esp/ss
+mov edx, [esp + 52] ;ss/esp
 
-pop eax
-pop ecx
-;pop ebx ;eflags
-;pop ebx
-;pop edx
+push dx
+push ebx ; esp
+push edi ; eflags
+push cx
+push ax
 
-;push ebx
-;push edx
-
-push ecx
-push eax
-
-;push ebx
-;push edx
-
-;push ecx
-;push eax
-
-;cld
+cld
 call isr13c
+
+pop dword [.ctx]
+
 popad
+
+push dword [.ctx]
+push dword [.ctx + 4]
+push dword [.ctx + 8]
+push dword [.ctx + 12]
+push dword [.ctx + 16]
+
 iretd
+.ctx dd 0x00
 
 isr14:
 pushad

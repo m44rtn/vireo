@@ -47,47 +47,49 @@ FAT32_BPB *FATinit(uint8_t drive)
 
 uint32_t *GetFile(char *filename, uint8_t drive, uint32_t dirLoc)
 {
-    File file = FindFile(filename, dirLoc, drive);
+    File *file = FindFile(filename, dirLoc, drive);
 
-    if(file.FileLoc == NULL)
+    if(file->FileLoc == NULL)
     {
         error(404);
         return NULL;
     }
 
-    uint8_t *READ = FAT32_READ_FILE(drive, file.FileLoc, file.size);
+    uint8_t *READ = FAT32_READ_FILE(drive, file->FileLoc, file->size);
 
     return (uint32_t *) READ;
 
 }
 
-File FindFile(char *filename, uint32_t dirLoc, uint8_t drive)
+File *FindFile(char *filename, uint32_t dirLoc, uint8_t drive)
 {
     //Returns the first cluster of the file
     uint32_t len = 0;
     FAT32_DIR *dir = ReadDir(drive, dirLoc, &len);
-    File file;
+    File *file;
     char *name_holder;
     uint32_t foundFile = 0;
 
     uint32_t i = 0;
 
-    do
+    for(uint32_t i = 0; i < len; i++)
     {
+        //name_holder = strtok(filename, ".");
         name_holder = dir[i].name;
-        i++;
         print(name_holder);
         if(!eqlstr(name_holder, filename)) continue;
-        
-        foundFile = (i-1);
+        print("Found file!\n");
+        foundFile = i;
+        trace("foundFile: %i\n" ,foundFile);
         break;
-    } while (i < len);
+        
+    }
     
-    file.FileLoc = (dir[foundFile].clHi << 16) | dir[foundFile].clLo;
-    file.size = dir[foundFile].fSize;
+    file->FileLoc = (dir[foundFile].clHi << 16) | dir[foundFile].clLo;
+    file->size = dir[foundFile].fSize;
 
     if(foundFile == NULL)
-        file.FileLoc = NULL;
+        file->FileLoc = NULL;
     return file;
 }
 

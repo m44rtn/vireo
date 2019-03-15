@@ -28,20 +28,23 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
     uint32_t DIRLOC = FAT_Traverse("HD0/BIRDOS/");
     trace("DIRLOC: %i\n", DIRLOC);
 
-    uint32_t *file = GetFile(filename, 0, DIRLOC);
+    File *file = FindFile(filename, DIRLOC, 0);
 
-    header = (DRVR_HEADER *) file;
+    uint16_t *ReadFileDriver = 0x0600;
+    uint32_t lba = FAT_cluster_LBA(file->FileLoc);
 
-    
-    
+     PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) ReadFileDriver);
+
+    header = (DRVR_HEADER *) ReadFileDriver;
 
     if(hasStr(header->Signature, DRIVER_Signature)) 
     {
         setcolor(0x02); //green on black
         print("[OK] ");
         setcolor(0x07); //default (light grey on black)
-        trace("Found %s driver module", TYPE_STR[header->type]);
-        trace(" --> loaded @ %i\n", (uint32_t) (header + sizeof(DRVR_HEADER)));
+        uint32_t type = header->type;
+        trace("Found %s driver module", TYPE_STR[type]);
+        trace(" --> loaded @ %i\n", (uint32_t) (ReadFileDriver + 20));
 
     }
 
@@ -50,7 +53,7 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
     //tTask task = Prepare_Internal_Task(header, (uint32_t) file, file_size, isv86);
     //Switch_Internal_Task(task, TASK_HIGH);   
 
-    run_v86_driver(header->offset, file_size, NULL);
+    run_v86_driver(ReadFileDriver, file_size, NULL);
 }
 /*
 tTask Prepare_Internal_Task(DRVR_HEADER *header, uint32_t file_start, uint32_t file_size,
@@ -69,8 +72,8 @@ void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags)
 {
     
     //copy the file to 0x0600 (the first 3KiB)
-    MemCopy((uint32_t *) file_start/*(file_start + sizeof(DRVR_HEADER))*/, 0x0600 , (file_size));
-    sleep(1);
+    //MemCopy((uint32_t *) file_start/*(file_start + sizeof(DRVR_HEADER))*/, 0x0600 , (file_size));
+    //sleep(1);
 
     V86_Task task;
 
@@ -88,9 +91,6 @@ void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags)
     //now it isn't anymore   
 
     //anyway, let's execute it. (this won't be able to return back, so we need int 3)
-
-    uint32_t cs_ip = v86_sgoff_to_linear(0x0000, 0x0600); 
-    uint32_t ss_sp = v86_sgoff_to_linear(0, 0xFFFF);
     v86_enter(&task);
 
     //task_findnew();

@@ -37,7 +37,7 @@ void isr7c();
 void isr8c();
 void isr11c();
 void isr12c();
-void isr13c(uint32_t ip, uint32_t cs/*, uint32_t sp, uint32_t ss*/);
+void isr13c(uint16_t ss, uint32_t esp, uint32_t eflags, uint16_t cs, uint16_t ip/*uint16_t ip, uint16_t cs, uint32_t eflags, uint32_t esp, uint16_t ss*/);
 void isr15c();
 void isr20c();
 void isr21c();
