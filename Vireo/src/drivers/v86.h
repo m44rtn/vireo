@@ -5,7 +5,7 @@
 #include "DriverHandler.h"
 #include "../io/memory.h"
 
-
+uint32_t v86_linear_to_sgoff(uint32_t ptr);
 uint32_t v86_sgoff_to_linear(uint16_t segment, uint16_t offset);
 
 

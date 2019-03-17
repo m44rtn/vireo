@@ -25,7 +25,7 @@ void isrinst(){
 	setidt(0x04, (uint32_t)isr4);
 	setidt(0x07, (uint32_t)isr7);
 	setidt(0x08, (uint32_t)isr8);
-
+	setidt(0x10, (uint32_t)isr10);
 	setidt(0x11, (uint32_t)isr11);
 	setidt(0x0D, (uint32_t)isr13);
 	setidt(0x0E, (uint32_t)isr14); //Page Fault

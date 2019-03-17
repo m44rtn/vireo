@@ -12,24 +12,41 @@ global v86_enter
 extern print
 
 v86_enter:
-    ;push ebp
-    ;mov eax, esp
-    ;mov ebp, esp
-    ;pusha
     
     mov esi, [esp + 4]
     ;pop esi
     .continue:
-        push dword [esi]
+
+    mov ax, 0x23
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+;mov eax, [esp + 4]
+
+;push 0x23
+;push eax
+;pushf 
+
+;push 0x1B
+;iret
+        push 0x23 ;push dword [esi]
         push dword [esi + 4]
 
         pushfd
 
         or dword [esp], 0x20202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
 
-        
-        push dword [esi + 8]
+        push 0x1B ;push dword [esi + 8]
         push dword [esi + 12]
+
+    xor eax, eax
+    xor ebx, ebx
+    xor ecx, ecx
+    xor edx, edx
+    xor edi, edi
+    xor esi, esi
         
         iret
 

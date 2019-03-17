@@ -7,6 +7,7 @@ global isr4
 global isr7
 global isr8
 global isr9
+global isr10
 global isr11
 global isr13
 global isr14
@@ -88,6 +89,10 @@ iretd
 isr9:
 hlt
 
+isr10:
+hlt
+jmp $
+
 isr11:
 pushad
 cld 
@@ -103,6 +108,8 @@ call isr12c
 iret
 
 isr13:
+hlt
+jmp $
 pushad
 
 mov eax, [esp + 36] ;32 ip

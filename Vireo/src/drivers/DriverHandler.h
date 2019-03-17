@@ -9,7 +9,7 @@
 #include "v86.h"
 
 typedef struct{
-    uint8_t jmp, shrt;
+    uint8_t jmp, shrt, nop;
     char Signature[11];
     uint8_t type;
     uint32_t *offset;

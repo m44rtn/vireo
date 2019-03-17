@@ -76,9 +76,10 @@ void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags)
     //sleep(1);
 
     V86_Task task;
+    uint16_t offset = (uint16_t) v86_linear_to_sgoff(0x0600);
 
     task.cs = 0;
-    task.eip = 0x0600;
+    task.eip = 0x450;//offset; //0x0600;
     task.esp = 0xFFFF;
     task.ss = 0x0000;
     

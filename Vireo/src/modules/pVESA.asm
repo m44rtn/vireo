@@ -4,18 +4,19 @@ bits 16
 
 ModuleHeader:
     jmp short main
+    nop
     .Sign                       db "_VIREO_SYS"
     .Type                       db 0x03
     .Entry                      dd main
     .Size                       dd size_marker
 
 main:
-    mov ax, 0
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-
+    ;mov ax, 0
+    ;mov ds, ax
+    ;mov es, ax
+    ;mov fs, ax
+    ;mov gs, ax
+    ;jmp main
     call getVESAControllerInfo
     
     ;Notify the kernel we're done here and wait until it responds
