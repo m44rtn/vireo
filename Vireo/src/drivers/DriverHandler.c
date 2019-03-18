@@ -11,14 +11,22 @@ typedef struct
     uint32_t eip;
 } __attribute__ ((packed)) V86_Task;
 
+char* UNKOWN    = "UNKOWN";
+char* EMPTY     = " ";
+char* VESA      = "VESA";
 
-const char* TYPE_STR[4] = 
+uint32_t *driver_type(uint16_t type)
+{
+    switch(type)
     {
-        "UNKOWN",
-        " ",
-        " ",
-        "VESA",
-    };
+        case 3:
+            return VESA;
+            break;
+        default:
+            return UNKOWN;
+            break;
+    }
+}
 
 void *FindDriver(char *filename/*, uint8_t priority*/)
 {
@@ -43,8 +51,9 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
         print("[OK] ");
         setcolor(0x07); //default (light grey on black)
         uint32_t type = header->type;
-        trace("Found %s driver module", TYPE_STR[type]);
-        trace(" --> loaded @ %i\n", (uint32_t) (ReadFileDriver + 20));
+        trace("driver type: %i\n", type);
+        trace("Found %s driver module", driver_type(type));
+        trace(" --> loaded @ %i\n", (uint32_t) (ReadFileDriver));
 
     }
 

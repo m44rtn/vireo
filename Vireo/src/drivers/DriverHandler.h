@@ -19,7 +19,7 @@ typedef struct{
 void *FindDriver(char *filename);
 //tTask Prepare_Internal_Task(DRVR_HEADER *header, uint32_t file_start, uint32_t file_size, bool isv86);
 //void Switch_Internal_Task(tTask *task, uint8_t priority);
-
+uint32_t *driver_type(uint16_t type);
 void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags);
 
 extern void v86_enter(uint32_t *task/*ss, uint32_t esp, uint32_t cs, uint32_t eip*/);

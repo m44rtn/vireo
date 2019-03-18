@@ -16,6 +16,9 @@ v86_enter:
     mov esi, [esp + 4]
     ;pop esi
     .continue:
+    ;could be dangerous too, actually everything in this function is probably
+    ;dangerous.
+  
 
     mov ax, 0x23
     mov ds, ax
@@ -37,7 +40,7 @@ v86_enter:
         pushfd
 
         or dword [esp], 0x20202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
-
+       
         push 0x1B ;push dword [esi + 8]
         push dword [esi + 12]
 
@@ -47,6 +50,7 @@ v86_enter:
     xor edx, edx
     xor edi, edi
     xor esi, esi
+    xor ebp, ebp ;could be dangerous
         
         iret
 

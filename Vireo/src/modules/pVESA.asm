@@ -5,29 +5,29 @@ bits 16
 ModuleHeader:
     jmp short main
     nop
-    .Sign                       db "_VIREO_SYS"
+    .Sign                       db "_VIREO_SYS", 0x00
     .Type                       db 0x03
-    .Entry                      dd main
-    .Size                       dd size_marker
+    .Entry                      times 2 dw 0x00 ;undefined - not used by kernel
+    .Size                       times 2 dw 0x00 ;undefined - not used by kernel
 
 main:
-    ;mov ax, 0
-    ;mov ds, ax
-    ;mov es, ax
-    ;mov fs, ax
-    ;mov gs, ax
+    mov ax, 0
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     ;jmp main
     call getVESAControllerInfo
     
     ;Notify the kernel we're done here and wait until it responds
     mov ax, [finished]
     mov bp, ax
-    jmp $
+    jmp infinite
 
 getVESAControllerInfo:
     mov ax, 0x4f00
     mov di, VESAinfo
-    int 0x10
+    ;int 0x10
 
     cmp ax, 0x004F
     jne .fail
@@ -45,7 +45,7 @@ getVESAControllerInfo:
 
         mov ax, 0x4F01
         mov di, VESAModeInfo
-        int 0x10
+        ;int 0x10
 
         cmp DWORD [VESAModeInfo.PhysBasePtr], 0x00
         je .next
@@ -75,12 +75,18 @@ getVESAControllerInfo:
         mov ax, 0x4F01
         mov cx, gs
         mov di, VESAModeInfo
-        int 0x10
+        ;int 0x10
 
         mov ax, 0x4F02
         mov bx, cx
-        int 0x10
+        ;int 0x10
 ret
+
+infinite:
+    mov ax, 1
+    xor ax, ax
+    mov ax, 5
+    jmp infinite
 
 finished db '_VIREO-DONE'
 
