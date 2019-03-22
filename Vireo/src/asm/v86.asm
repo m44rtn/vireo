@@ -10,6 +10,7 @@ bits 32
 
 global v86_enter
 extern print
+extern Prep_TSS
 
 v86_enter:
     
@@ -39,10 +40,13 @@ v86_enter:
 
         pushfd
 
-        or dword [esp], 0x24202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
+        or dword [esp], 0x25202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
        
         push 0x1B ;push dword [esi + 8]
         push dword [esi + 12]
+
+        call Prep_TSS
+        sti
 
     xor eax, eax
     xor ebx, ebx

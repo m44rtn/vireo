@@ -80,6 +80,7 @@ void isr7c(){
 void isr8c(){
 
 	kernel_panic("DOUBLE_FAULT");
+	while(1);
 	outb(PIC1,0x20);
 	outb(PIC2, 0x20);
 }

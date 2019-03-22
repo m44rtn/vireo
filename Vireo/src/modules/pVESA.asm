@@ -16,18 +16,24 @@ main:
     mov es, ax
     mov fs, ax
     mov gs, ax
+
+    ;mov ax, 0
+    ;jmp infinite
+
     ;jmp main
     call getVESAControllerInfo
     
     ;Notify the kernel we're done here and wait until it responds
     mov ax, [finished]
     mov bp, ax
+
+    mov ax, 0
     jmp infinite
 
 getVESAControllerInfo:
     mov ax, 0x4f00
     mov di, VESAinfo
-    ;int 0x10
+    int 0x10
 
     cmp ax, 0x004F
     jne .fail
@@ -45,7 +51,7 @@ getVESAControllerInfo:
 
         mov ax, 0x4F01
         mov di, VESAModeInfo
-        ;int 0x10
+        int 0x10
 
         cmp DWORD [VESAModeInfo.PhysBasePtr], 0x00
         je .next
@@ -75,17 +81,15 @@ getVESAControllerInfo:
         mov ax, 0x4F01
         mov cx, gs
         mov di, VESAModeInfo
-        ;int 0x10
+        int 0x10
 
         mov ax, 0x4F02
         mov bx, cx
-        ;int 0x10
+        int 0x10
 ret
 
 infinite:
-    mov ax, 1
-    xor ax, ax
-    mov ax, 5
+    inc ax
     jmp infinite
 
 finished db '_VIREO-DONE'
