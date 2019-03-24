@@ -51,7 +51,6 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
         print("[OK] ");
         setcolor(0x07); //default (light grey on black)
         uint32_t type = header->type;
-        trace("driver type: %i\n", type);
         trace("Found %s driver module", driver_type(type));
         trace(" --> loaded @ %i\n", (uint32_t) (ReadFileDriver));
 

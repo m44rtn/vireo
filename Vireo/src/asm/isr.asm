@@ -108,35 +108,53 @@ call isr12c
 iret
 
 isr13:
-hlt
-jmp $
-pushad
+;pushad
 
-mov eax, [esp + 36] ;32 ip
-mov ecx, [esp + 40] ;cs
-mov edi, [esp + 44]
-mov ebx, [esp + 48] ;esp/ss
-mov edx, [esp + 52] ;ss/esp
+mov ax, 0x10 	   ;load data segment registers
+mov	ds, ax
+mov	es, ax
+mov	fs, ax
+mov	gs, ax
+mov	ss, ax
 
+;everything should be 4!
+;mov eax, [esp + 36] ;32 ip
+;mov ecx, [esp + 38] ;cs
+;mov edi, [esp + 40]
+;mov ebx, [esp + 48] ;esp
+;mov edx, [esp + 46] ;esp
+
+;mov eax, [esp ]
+;mov ecx, [esp + 2]
+;mov ebx, [esp + 6]
+;mov edx, [esp + 12]
+pop eax
+pop ecx
+;pop ebx ;pop eflags and ignore
+pop ebx
+pop edx
+
+mov eax, [esp - 12]
+
+
+;push edi ; eflags
 push dx
-push ebx ; esp
-push edi ; eflags
+push bx ;esp
 push cx
 push ax
 
+
 cld
+
 call isr13c
+pop esi
 
-pop dword [.ctx]
-
-popad
-
-push dword [.ctx]
-push dword [.ctx + 4]
-push dword [.ctx + 8]
-push dword [.ctx + 12]
-push dword [.ctx + 16]
-
+push dword [esi + 0]
+push dword [esi + 4]
+;push dword [esi + 4]
+push dword [esi + 8]
+push dword [esi + 12]
+;jmp $
 iretd
 .ctx dd 0x00
 

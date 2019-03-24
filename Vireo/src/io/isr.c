@@ -103,7 +103,8 @@ typedef struct
 	uint32_t eip;
 } __attribute__ ((packed)) CTX;
 
-void isr13c(uint16_t ss, uint32_t esp, uint32_t eflags, uint16_t cs, uint16_t ip/*uint16_t ip, uint16_t cs, uint32_t eflags, uint32_t esp, uint16_t ss*/){ //general protection fault
+void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, 
+	uint16_t cs, uint16_t ip*/){ //general protection fault
 
 	setcolor(0x0E);
 	print("\n\n#GP");
@@ -112,29 +113,37 @@ void isr13c(uint16_t ss, uint32_t esp, uint32_t eflags, uint16_t cs, uint16_t ip
 	trace("\t-CS=%i", cs);
 	trace("\t-SP=%i", esp);
 	trace("\t-SS=%i\n", ss);
-	CTX *ctx;
+	CTX ctx;
 	uint16_t *stack = v86_sgoff_to_linear(ss, esp);
 	uint16_t *ivt = 0;
-	uint8_t *ip_addr = v86_sgoff_to_linear(cs, ip);
-
+	uint8_t *ip_addr = v86_sgoff_to_linear(0x1b, ip/*cs, ip*/);
+	
 	switch(ip_addr[0])
 	{
 		case 0xcd:
+			print("v86 INTERRUPT\n");
 			stack -= 3;
-			ctx->esp = ((esp & 0xffff) - 6) & 0xffff;
+			ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
 
 			stack[0] = ip + 2;
 			stack[1] = cs;
-			stack[2] = eflags;
+			stack[2] = 0x20202;
 
-			ctx->cs = ivt[ip_addr[1] * 2 + 1];
-			ctx->eip = ivt[ip_addr[1] * 2];
-			return ctx;
+			ctx.cs = ivt[ip_addr[1] * 2 + 1];
+			ctx.ss = 0x23;
+			ctx.eip = ivt[ip_addr[1] * 2];
+			
+			return &ctx;
 			break; 
+
+		default:
+			while(1); //just for testing purposes
+			kernel_panic("GENERAL_PROTECTION_FAULT");
+			while(1);
+			break;
+
 	}
 
-	while(1);
-	kernel_panic("GENERAL_PROTECTION_FAULT");
 	outb(PIC1, 0x20);
 }
 void isr14c(){

@@ -171,5 +171,4 @@ pushf
 push 0x1B
 iret
 
-
 StackPointer dd 0
