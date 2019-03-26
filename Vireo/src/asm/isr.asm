@@ -147,13 +147,25 @@ push ax
 cld
 
 call isr13c
-pop esi
+pop eax
 
-push dword [esi + 0]
-push dword [esi + 4]
-;push dword [esi + 4]
-push dword [esi + 8]
-push dword [esi + 12]
+;ss
+push dword 0x23 ;dword [esi + 0]
+
+;esp
+push word 0x00
+push dword ax;word eax
+
+;eflags
+pushf
+or dword [esp], 0x20202
+
+;cs
+push dword 0x1B
+
+;eip
+shr eax, 16
+push dword ax;dword [esi + 16]
 ;jmp $
 iretd
 .ctx dd 0x00

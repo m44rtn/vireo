@@ -125,15 +125,14 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 			stack -= 3;
 			ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
 
-			stack[0] = ip + 2;
-			stack[1] = cs;
+			stack[0] = (ip + 2) - (0x1b * 16);
+			stack[1] = 0x1b;
 			stack[2] = 0x20202;
 
-			ctx.cs = ivt[ip_addr[1] * 2 + 1];
+			ctx.cs = ivt[ *(ip_addr + 1) * 2 + 1];
 			ctx.ss = 0x23;
-			ctx.eip = ivt[ip_addr[1] * 2];
+			ctx.eip = ivt[ *(ip_addr + 1) * 2];
 			
-			return &ctx;
 			break; 
 
 		default:
@@ -143,8 +142,9 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 			break;
 
 	}
-
+	return ctx.eip | ctx.esp;
 	outb(PIC1, 0x20);
+	
 }
 void isr14c(){
 	kernel_panic("PAGE_FAULT");
