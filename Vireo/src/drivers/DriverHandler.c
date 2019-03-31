@@ -15,7 +15,7 @@ char* UNKOWN    = "UNKOWN";
 char* EMPTY     = " ";
 char* VESA      = "VESA";
 
-uint32_t *driver_type(uint16_t type)
+char *driver_type(uint16_t type)
 {
     switch(type)
     {
@@ -38,7 +38,7 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
 
     File *file = FindFile(filename, DIRLOC, 0);
 
-    uint16_t *ReadFileDriver = 0x0600;
+    uint16_t *ReadFileDriver = (uint16_t *) 0x0600;
     uint32_t lba = FAT_cluster_LBA(file->FileLoc);
 
      PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) ReadFileDriver);
@@ -51,7 +51,7 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
         print("[OK] ");
         setcolor(0x07); //default (light grey on black)
         uint32_t type = header->type;
-        trace("Found %s driver module", driver_type(type));
+        trace("Found %s driver module", (uint32_t) driver_type(type));
         trace(" --> loaded @ %i\n", (uint32_t) (ReadFileDriver));
 
     }
@@ -61,7 +61,7 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
     //tTask task = Prepare_Internal_Task(header, (uint32_t) file, file_size, isv86);
     //Switch_Internal_Task(task, TASK_HIGH);   
 
-    run_v86_driver(ReadFileDriver, file_size, NULL);
+    run_v86_driver( (uint32_t *) ReadFileDriver, file_size, NULL);
 }
 /*
 tTask Prepare_Internal_Task(DRVR_HEADER *header, uint32_t file_start, uint32_t file_size,
@@ -100,7 +100,7 @@ void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags)
     //now it isn't anymore   
 
     //anyway, let's execute it. (this won't be able to return back, so we need int 3)
-    v86_enter(&task);
+    v86_enter( (uint32_t *) &task);
 
     //task_findnew();
 }

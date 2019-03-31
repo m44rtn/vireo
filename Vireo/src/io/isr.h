@@ -7,7 +7,7 @@
 #include "../drivers/keyboard.h"
 #include "../include/info.h"
 #include "../drivers/ATA/ATA.h"
-//#include "../drivers/v86.h"
+#include "../drivers/v86.h"
 
 #define PIC1      0x20
 #define PIC2      0xA0
@@ -38,7 +38,9 @@ void isr7c();
 void isr8c();
 void isr11c();
 void isr12c();
-void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp , uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, uint16_t cs, uint16_t ip*/);
+
+uint32_t isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp , uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, uint16_t cs, uint16_t ip*/);
+
 void isr15c();
 void isr20c();
 void isr21c();

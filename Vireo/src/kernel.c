@@ -60,6 +60,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 		trace("found free cluster: %i\n", vfs[i].cluster);
 	}
 
+
 	//char *file = malloc(512);
 	//char *str = "Hello, this is a file made and stored by BirdOS.";
 	//strcopy(file, str);

@@ -6,6 +6,7 @@
 #include "../drivers/cpu.h"
 #include "../drivers/DriverHandler.h"
 #include "memory.h"
+#include "gdt.h"
 
 #define TASK_HIGH   0x01
 #define TASK_MID    0x02
@@ -42,7 +43,7 @@ typedef struct{
 } __attribute__ ((packed)) tTask; 
 
 
-void Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_unused, uint32_t ebx, uint32_t edx, uint32_t ecx, uint32_t eax,  uint32_t eip, uint32_t cs, uint32_t EFLAGS, uint32_t esp, uint32_t ss);
+uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_unused, uint32_t ebx, uint32_t edx, uint32_t ecx, uint32_t eax,  uint32_t eip, uint32_t cs, uint32_t EFLAGS, uint32_t esp, uint32_t ss);
 void task_timeguard();
 
 void task_push_v86(uint32_t ebp, uint32_t entry_point, uint8_t priority, uint16_t flags);

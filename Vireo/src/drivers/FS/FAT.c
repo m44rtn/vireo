@@ -17,11 +17,10 @@ FAT32_BPB *GetBootCodeFAT(uint8_t drive)
 {
 
     //Assumes ATA drive
-    uint32_t LBA = GetFirstSectLBA(drive, SYS_PATA);
-    trace("FAT BPB LBA: %i\n", LBA);
+    //uint32_t LBA = GetFirstSectLBA(drive, SYS_PATA);
+    //trace("FAT BPB LBA: %i\n", LBA);
     FAT32_BPB *buf = malloc(512);
-
-    PIO_READ_ATA(drive, 63, 1, buf);
+    PIO_READ_ATA(drive, 63, 1, (uint16_t *) buf);
     return buf;
 }
 
@@ -107,7 +106,7 @@ uint32_t FAT_Traverse(char *name)
    while(name != NULL)
    {
         name = strtok(NULL , "/");
-        trace("path: %s\n", name);
+        trace("path: %s\n", (uint32_t) name);
        
         cluster = FindNextDir(name, drive, prev_cluster);
         if(cluster != 0) prev_cluster = cluster;
@@ -171,12 +170,12 @@ void FAT32_WRITE_FILE(uint8_t drive, uint32_t *file, size_t size, char *name, ch
     //write new entry (can only handle one sector yet)
     for(int i = 0; i < (DIRlen + 2); i += (16 * BPB->SectClust))
     {
-        FAT32_Write_cluster(drive, dirLoc, dir);
+        FAT32_Write_cluster(drive, dirLoc, (uint32_t *) dir);
         //file += 512 * BPB->SectClust;
     }
 
     //write the dir
-    PIO_WRITE_ATA(0, FAT_cluster_LBA(vfs[0].cluster), size / 512, file);
+    PIO_WRITE_ATA(0, FAT_cluster_LBA(vfs[0].cluster), size / 512, (uint16_t *) file);
 
     //TODO: write entry to FAT
 
@@ -211,18 +210,18 @@ void FAT32_Write_cluster(uint8_t drive, uint32_t cluster, uint32_t *buf)
 uint8_t *FAT32_READ_FILE(uint8_t drive, uint32_t cluster, size_t size)
 {
     uint32_t nClusts = 0;
-    uint32_t *lba = FAT_cluster_LBA(cluster);
+    uint32_t lba = FAT_cluster_LBA(cluster);
 
     trace("lba: %i\n", lba);
 
     uint32_t *obuf = malloc(size);
-    uint16_t *file = obuf;
+    uint16_t *file = (uint16_t *) obuf;
     PIO_READ_ATA(0, lba, ((size / 512) + 1), (uint16_t *) file);
       
     //for(int j = 0; j < 128; j++) trace("buf[i]: %i\n",  file[j]);
     //TODO: return buffer
 
-    return obuf;
+    return (uint8_t *) obuf;
 }
 
 uint32_t FAT_cluster_LBA(uint32_t cluster)
@@ -238,7 +237,7 @@ FAT32_VFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
     uint32_t table_val;
     uint32_t *ftable = malloc(512);
 
-    trace("ftable loc: %i\n", ftable);
+    trace("ftable loc: %i\n", (uint32_t) ftable);
     
     do
     {
@@ -311,7 +310,7 @@ FAT32_DIR *ReadDir(uint8_t drive, uint32_t cluster, uint32_t *len)
 
     //reserve memory for the directory's info
     uint16_t *buf = malloc(nClusts * BPB->SectClust * 512);
-    uint8_t *obuf = buf;
+    uint8_t *obuf = (uint8_t *) buf;
 
     uint32_t DIR_len = *(len);
 

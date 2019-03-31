@@ -14,7 +14,7 @@ static int cursor;
 
 void updCurs();
 
-void trace(char* str, int val);
+void trace(char* str, uint32_t val);
 
 void print(char* str/*, ...*/);
 void printline(char* str, int locX, int locY);

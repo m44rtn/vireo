@@ -103,7 +103,7 @@ typedef struct
 	uint32_t eip;
 } __attribute__ ((packed)) CTX;
 
-void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, 
+uint32_t isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, 
 	uint16_t cs, uint16_t ip*/){ //general protection fault
 
 	setcolor(0x0E);
@@ -114,9 +114,10 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 	trace("\t-SP=%i", esp);
 	trace("\t-SS=%i\n", ss);
 	CTX ctx;
-	uint16_t *stack = v86_sgoff_to_linear(ss, esp);
+	
+	uint16_t *stack = (uint16_t *) v86_sgoff_to_linear(ss, esp);
 	uint16_t *ivt = 0;
-	uint8_t *ip_addr = v86_sgoff_to_linear(0x1b, ip/*cs, ip*/);
+	uint8_t *ip_addr = (uint8_t *) v86_sgoff_to_linear(0x1b, ip/*cs, ip*/);
 	
 	switch(ip_addr[0])
 	{
@@ -125,9 +126,9 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 			stack -= 3;
 			ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
 
-			stack[0] = (ip + 2) - (0x1b * 16);
+			stack[0] =  (ip + 2) - (0x1b * 16);
 			stack[1] = 0x1b;
-			stack[2] = 0x20202;
+			stack[2] = (uint16_t) 0x20202;
 
 			ctx.cs = ivt[ *(ip_addr + 1) * 2 + 1];
 			ctx.ss = 0x23;

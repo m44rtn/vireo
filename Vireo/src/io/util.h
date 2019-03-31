@@ -20,8 +20,10 @@ char* hexstr(long val);
 uint8_t eqlstr(char* str, char* strcom);
 
 void sleep(uint32_t sec);
-inline void timer_start();
-inline uint32_t timer_end();
+
+// never used (optimize)
+void timer_start();
+uint32_t timer_end();
 
 
 char *movestr(char* str, uint32_t from);

@@ -4,13 +4,13 @@
 
 //TODO: Cleanup this file!!!
 
-uint32_t *MEM_start = 3 * 1024*1024+1; //1 MiB //10*1024*1024; //because other solutions don't work yet, this works fine for now
+uint32_t *MEM_start = (uint32_t *)  (3 * 1024 * 1024 + 1); //1 MiB //10*1024*1024; //because other solutions don't work yet, this works fine for now
 uint32_t MEM_MAX;
 
 typedef struct{ 
 	uint32_t *loc;
 	uint32_t size;
-	uint32_t next;
+	uint32_t *next;
 	bool alloct;
 } MEM_TABLE;
 
@@ -48,8 +48,9 @@ void *malloc(size_t size)
 	//check if we have enough memory for the block
 	if(MEM_MAX < size)
 	{
+		//needs better handling, like just kernel panic it
 		error(54); //out of memory
-		return 54;
+		return (void *) 54;
 	}
 
 	//search for an empty piece (does not care about the size of a previously allocated block)
@@ -67,9 +68,10 @@ void *malloc(size_t size)
 	}
 
 	//check for more errors
+	//needs better handling, like just kernel panic it
 	if(entry == MEM_TABLE_SIZE){
 		error(57); //couldn't allocate memory
-		return 57;
+		return (void *) 57;
 	}
 
 	//allocate, return

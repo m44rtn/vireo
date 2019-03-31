@@ -4,9 +4,11 @@
 #include "../ATA/ATA.h"
 #include "../../io/util.h"
 #include "../../io/memory.h"
+#include "../../io/hardware.h"
 #include "../../include/error.h"
 #include "../../include/types.h"
 #include "../../include/DEFATA.h"
+
 
 typedef struct{
     char bootstuff[3];

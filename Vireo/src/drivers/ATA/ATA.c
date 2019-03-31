@@ -285,7 +285,9 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
 
     print("setting drive features and max buffersize...");
     outb(ATA_PRIMARY_DRIVE_FEATURES, 0x00); //no DMA
-    outb(ATA_PRIMARY_DRIVE_LBAMIDP, 2048); //set max size of the thing (lower byte of 512)
+
+
+    outb(ATA_PRIMARY_DRIVE_LBAMIDP,  (2048 & 0x00FF)); //set max size of the thing (lower byte of 512)
     outb(ATA_PRIMARY_DRIVE_LBAHIP, 2048 >> 8);  //same here (upper byte of value 512)
     print("done!\n");
 
@@ -415,9 +417,11 @@ void DMA_ATA_SETUP()
     uint8_t bus = getBYTE(master_bus, 2);
     uint8_t dev = getBYTE(master_bus, 1);
     uint8_t fun = getBYTE(master_bus, 0);
-    BMR = pciConfigRead(bus, dev, fun, 0x08);
+    
+    BMR = (tBUSMASTERREG *) pciConfigRead(bus, dev, fun, 0x08);
     prdt = malloc(sizeof(tDMA_PRDT));
-    BMR[0].PRDT_adress = prdt;
+    
+    BMR[0].PRDT_adress = (uint32_t) prdt;
 
     outb(ATA_PRIMARY_DRIVE_SELECTP, 0xE0 | (0 << 4) | ((0 >> 24) & 0x0F));
     outb(ATA_PRIMARY_DRIVE_FEATURES, 0x01); //right?

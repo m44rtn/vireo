@@ -28,7 +28,7 @@ void setcolor(int clr){
 	color = clr;
 }
 
-void trace(char* str, int val){
+void trace(char* str, uint32_t val){
 	uint16_t i = 0;  
 	uint8_t length = strlen(str);
 
@@ -162,7 +162,7 @@ void clearl(uint8_t from, uint8_t to){
 }
 
 void clearscr(){
-	vidmem = 0xb8000;
+	vidmem = (uint16_t *) 0xb8000;
 	clearl(0, height);
 	cursorX = 0;
 	cursorY = 0;

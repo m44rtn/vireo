@@ -43,12 +43,12 @@ void sleep(uint32_t sec)
 }
 
 static uint32_t TimerTicks;
-inline void timer_start()
+void timer_start()
 {
 	TimerTicks = systeminfo.PITcount;
 }
 
-inline uint32_t timer_end()
+uint32_t timer_end()
 {
 	TimerTicks = systeminfo.PITcount - TimerTicks;
 	return TimerTicks;
@@ -116,7 +116,7 @@ char* TransformUpLowUC(char* str, bool lORu)
 	int strl = strlen(str);
 	for(int i = 0; i < strl; i++)
 	{
-		if(eqlstr((char*) str[i], (char*) ' ')) continue; //if it's an escape character ignore
+		if(str[i] == ' ') continue; //if it's a space character ignore
 		if(str[i] == '\n') continue;
 		if(str[i] == '\t') continue;
 		char charrr = (char) str[i];

@@ -54,7 +54,7 @@ void Prep_TSS()
     tss.FS = 0x10;
     tss.GS = 0x10;
 
-    tss.LDTR = &gdtptr;
+    //tss.LDTR = &gdtptr;
 
     tss.IOPB = sizeof(TSS);
 }
@@ -76,7 +76,7 @@ void GDT(){
 	setGDT(&gdt[3], 0, 0xFFFFFFFF, 0xFA, 0xCF); //ring3 code
 	setGDT(&gdt[4], 0, 0xFFFFFFFF, 0xF2, 0xCF); //ring3 data
 
-	setGDT(&gdt[5], &tss, (&tss + sizeof(TSS)), 0x89, 0x40/*0xCF*/);
+	setGDT(&gdt[5], (uint32_t) &tss, ( ((uint32_t)&tss) + sizeof(TSS)), 0x89, 0x40);
 	
 	gdtptr.base = (uint32_t) &gdt;						//It's actually just the pointer to the GDT
 	gdtptr.limit = sizeof(gdt_desc) * gdtlen - 1;		//And it's size

@@ -52,5 +52,5 @@ void MFAT_format(uint8_t drive)
     mbr->MFATsign = 0x6446;
     mbr->bootsign = 0xAA55;
 
-    PIO_WRITE_ATA(drive, 65, 1, mbr);
+    PIO_WRITE_ATA(drive, 65, 1, (uint16_t *) mbr);
 }
