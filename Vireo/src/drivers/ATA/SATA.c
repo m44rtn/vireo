@@ -33,7 +33,7 @@ void AHCI_init(){
     //Get ABAR and the AHCI controller
 	systeminfo.AHCI_BASE = getBAR5(false);
 	abar = (HBA_MEM *) systeminfo.AHCI_BASE;
-	trace("BAR5: %i\n", (int) hexstr(systeminfo.AHCI_BASE));
+	//trace("BAR5: %i\n", (int) hexstr(systeminfo.AHCI_BASE));
 
     //search for available drives
     search_drives((HBA_MEM *) systeminfo.AHCI_BASE);

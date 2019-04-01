@@ -17,10 +17,6 @@ main:
     mov fs, ax
     mov gs, ax
 
-    ;mov ax, 0
-    ;jmp infinite
-
-    ;jmp main
     call getVESAControllerInfo
     
     ;Notify the kernel we're done here and wait until it responds
@@ -88,9 +84,16 @@ getVESAControllerInfo:
         int 0x10
 ret
 
+
+pVESA_SetDiffMode:
+    pop eax
+    pop ebx
+
+    ;todo and all else stuff todo withhhh this function
+
+
 infinite:
-    inc ax
-    jmp infinite
+    jmp $
 
 finished db '_VIREO-DONE'
 
