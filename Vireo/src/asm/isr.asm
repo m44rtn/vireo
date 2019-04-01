@@ -153,12 +153,12 @@ pop eax
 push dword 0x23 ;dword [esi + 0]
 
 ;esp
-push word 0x00
+;push word 0x00
 push dword ax;word eax
 
 ;eflags
-pushf
-or dword [esp], 0x20202
+;pushf
+;or dword [esp], 0x20202
 
 ;cs
 push dword 0x1B

@@ -76,8 +76,8 @@ uint8_t ATA_init(uint8_t drive) //0 for master and 1 for slave
     unsigned lo =  inb(ATA_PRIMARY_DRIVE_LBAMIDP);
     unsigned hi = inb(ATA_PRIMARY_DRIVE_LBAHIP);
 
-    //trace("type_lo is: %i\n", lo);
-    //trace("type_hi is: %i\n", hi);
+    trace("type_lo is: %i\n", lo);
+    trace("type_hi is: %i\n", hi);
 
     uint16_t type = (hi >> 4) | lo;
     
@@ -180,14 +180,13 @@ void PIO_READ_ATA(uint8_t drive, uint32_t start, uint8_t sctrWRITE, uint16_t *bu
     if(inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x20) ATA_swreset();
 
     //trace("Drive is: %i\n", (int) drive);
-    
     start = start & 0x0FFFFFFF; //make the starting sector val 28 bits
     //trace("Start read sector at: %i\n", (int) start);
-    
     if(drive > 1) error(6);
     outb(ATA_PRIMARY_DRIVE_SELECTP, 0xE0 | (drive << 4) /*| ((start >> 24) & 0x0F)*/);
-    
     //trace("Send drive is: %i\n", (int) 0xE0 | (drive << 4) /*| ((start >> 24) & 0x0F)*/);
+    
+    
 
     outb(ATA_PRIMARY_DRIVE_FEATURES, 0x00); //no DMA
 
@@ -227,16 +226,12 @@ void PIO_READ_ATA(uint8_t drive, uint32_t start, uint8_t sctrWRITE, uint16_t *bu
 void PIO_WRITE_ATA(uint8_t drive, uint32_t start, uint8_t sctrWRITE, uint16_t *buf)
 {
     //CAN ONLY HANDLE ONE SECTOR
-    //trace("Drive is: %i\n", (int) drive);
-    
+    trace("Drive is: %i\n", (int) drive);
     start = start & 0x0FFFFFFF; //make the starting sector val 28 bits
-    
-    //trace("Write sector at: %i\n", (int) start);
-    
+    trace("Write sector at: %i\n", (int) start);
     if(drive > 1) error(6);
     outb(ATA_PRIMARY_DRIVE_SELECTP, 0xE0 | (drive << 4) | ((start >> 24) & 0x0F));
-    
-    //trace("Send drive is: %i\n", (int) 0xE0 | drive << 4 | ((start >> 24) & 0x0F));
+    trace("Send drive is: %i\n", (int) 0xE0 | drive << 4 | ((start >> 24) & 0x0F));
 
     outb(ATA_PRIMARY_DRIVE_FEATURES, 0x00); //no DMA
     outb(ATA_PRIMARY_DRIVE_SCTRCNTP, sctrWRITE); //set # of sectors to read
@@ -275,14 +270,11 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
     uint8_t status;
 
     ATA_swreset();
-    
-    //trace("Drive is: %i\n", (int) drive);
-    //trace("Start read sector at: %i\n", (int) start);
-    
+    trace("Drive is: %i\n", (int) drive);
+    trace("Start read sector at: %i\n", (int) start);
     if(drive > 1) error(6);
     outb(ATA_PRIMARY_DRIVE_SELECTP, 0xE0 | (drive << 4));
-    
-    //trace("Send drive is: %i\n", (int) 0xE0 | 1 << 4);
+    trace("Send drive is: %i\n", (int) 0xE0 | 1 << 4);
     
     inb(ATA_PRIMARY_DRIVE_CONTROLP);
     inb(ATA_PRIMARY_DRIVE_CONTROLP);

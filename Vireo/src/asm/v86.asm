@@ -21,6 +21,8 @@ v86_enter:
         mov fs, ax
         mov gs, ax
 
+        call Prep_TSS
+
         push 0x23 ;push dword [esi]
         push dword [esi + 4]
 
@@ -31,7 +33,6 @@ v86_enter:
         push 0x1B ;push dword [esi + 8]
         push dword [esi + 12]
 
-        call Prep_TSS
         sti
 
         xor eax, eax

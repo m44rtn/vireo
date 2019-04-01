@@ -75,7 +75,7 @@ File *FindFile(char *filename, uint32_t dirLoc, uint8_t drive)
     {
         //name_holder = strtok(filename, ".");
         name_holder = dir[i].name;
-        print(name_holder);
+        //print(name_holder);
         if(!eqlstr(name_holder, filename)) continue;
         foundFile = i;
         break;
@@ -100,13 +100,13 @@ uint32_t FAT_Traverse(char *name)
     
     if(eqlstr(name, "HD0")) drive = 0;
     else drive = 1;
-
+    
    while(name != NULL)
    {
         name = strtok(NULL , "/");
        
         cluster = FindNextDir(name, drive, prev_cluster);
-        if(cluster != 0) prev_cluster = cluster;     
+        if(cluster != 0) prev_cluster = cluster;    
    }
   
    
@@ -114,6 +114,7 @@ uint32_t FAT_Traverse(char *name)
    trace("location of directory: %i\n", dir);
    trace("last file: %s\n", dir[length].name);*/
     if(prev_cluster == 0) prev_cluster = BPB->clustLocRootdir;
+    
     return prev_cluster;
     
 }
@@ -286,6 +287,7 @@ FAT32_VFS *FATFindFreeClusterChain(uint8_t drive, uint32_t size, uint32_t *len)
     }while((*(len) < nClusters) && clust < (total_sectors / BPB->SectClust));
 
     demalloc(ftable);
+
     return vfs;
 }
 
