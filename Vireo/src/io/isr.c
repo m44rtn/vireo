@@ -98,13 +98,16 @@ typedef struct
 {
 	uint32_t ss;
 	uint32_t esp;
-	//uint32_t eflags;
 	uint32_t cs;
 	uint32_t eip;
 } __attribute__ ((packed)) CTX;
+
+
 uint8_t last_interrupt;
-void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, 
-	uint16_t cs, uint16_t ip*/){ //general protection fault
+
+void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
+{ 
+	//general protection fault
 
 	setcolor(0x0E);
 	print("\n\n#GP");
@@ -117,22 +120,26 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 	
 	uint16_t *stack = (uint16_t *) v86_sgoff_to_linear(ss, esp);
 	uint16_t *ivt = 0; //255 IVT entries
-	uint8_t *ip_addr = (uint8_t *) v86_sgoff_to_linear(0x1b, ip/*cs, ip*/);
+	uint8_t *ip_addr = (uint8_t *) v86_sgoff_to_linear(0x1b, ip);
 	
 	switch(ip_addr[0])
 	{
 		case 0xcd:
 				print("v86 INTERRUPT\n");
+
+				//reserve some stack space
 				stack -= 3;
 				ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
 
-				stack[0] =  (ip + 2) - (0x1b * 16);
+				//put our return stuff on the stack
+				stack[0] =  (ip + 2) - (0x1b * 0x10);
 				stack[1] = 0x1b;
 				stack[2] = (uint16_t) 0x20202;
 
-				ctx.cs = 0; //(uint32_t) ivt[ *(ip_addr + 1) * 2 + 1];
-				ctx.ss = (uint32_t) 0x23;
-				ctx.eip = v86_sgoff_to_linear(ivt[ *(ip_addr + 1) * 2 + 1], ivt[ *(ip_addr + 1) * 2]);//(uint32_t) ivt[ *(ip_addr + 1) * 2];
+				//location of interrupt
+				ctx.cs =  0x1b;
+				ctx.ss =  (uint32_t) 0x23;
+				ctx.eip = (uint32_t) (ivt[*(ip_addr + 1) * 2] + ((ivt[ *(ip_addr + 1) * 2 + 1] - 0x1b) * 0x10));
 
 				last_interrupt = *(ip_addr + 1);
 
@@ -146,6 +153,7 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 			break; 
 
 			case 0x9c:
+				print("v86 POPF\n");
 				stack -= 1;
 				ctx.esp = ((esp & 0xffff) - 1) & 0xffff;
 
@@ -160,6 +168,43 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 				v86_enter((uint32_t *) &ctx);
 			break;
 
+			case 0xCF:
+				//ignore
+				print("v86 IRET\n");
+				ctx.eip	= (uint32_t) ip + 1;
+				ctx.cs	= (uint32_t) cs;
+				ctx.esp	= (uint32_t) esp;
+				ctx.ss	= (uint32_t) ss;
+				
+				outb(PIC1, 0x20);
+				v86_enter((uint32_t *) &ctx);
+			break;
+
+			case 0xFA:
+				//ignore
+				print("v86 CLI\n");
+
+				ctx.eip	= (uint32_t) ip + 1;
+				ctx.cs	= (uint32_t) cs;
+				ctx.esp	= (uint32_t) esp;
+				ctx.ss	= (uint32_t) ss;
+
+				outb(PIC1, 0x20);
+				v86_enter((uint32_t *) &ctx);
+			break;
+
+			case 0xFB:
+				//ignore
+				print("v86 STI\n");
+				ctx.eip	= (uint32_t) ip + 1;
+				ctx.cs	= (uint32_t) cs;
+				ctx.esp	= (uint32_t) esp;
+				ctx.ss	= (uint32_t) ss;
+				
+				outb(PIC1, 0x20);
+				v86_enter((uint32_t *) &ctx);
+			break;
+
 		default:
 			while(1); //just for testing purposes
 			kernel_panic("GENERAL_PROTECTION_FAULT");
@@ -168,7 +213,6 @@ void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_
 			break;
 
 	}
-	//return ctx.eip | ctx.esp;
 	outb(PIC1, 0x20);
 	
 }

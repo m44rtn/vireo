@@ -117,17 +117,6 @@ mov	fs, ax
 mov	gs, ax
 mov	ss, ax
 
-;everything should be 4!
-;mov eax, [esp + 36] ;32 ip
-;mov ecx, [esp + 38] ;cs
-;mov edi, [esp + 40]
-;mov ebx, [esp + 48] ;esp
-;mov edx, [esp + 46] ;esp
-
-;mov eax, [esp ]
-;mov ecx, [esp + 2]
-;mov ebx, [esp + 6]
-;mov edx, [esp + 12]
 pop eax
 pop ecx
 ;pop ebx ;pop eflags and ignore
@@ -147,26 +136,7 @@ push ax
 cld
 
 call isr13c
-pop eax
 
-;ss
-push dword 0x23 ;dword [esi + 0]
-
-;esp
-;push word 0x00
-push dword ax;word eax
-
-;eflags
-;pushf
-;or dword [esp], 0x20202
-
-;cs
-push dword 0x1B
-
-;eip
-shr eax, 16
-push dword ax;dword [esi + 16]
-;jmp $
 iretd
 .ctx dd 0x00
 
