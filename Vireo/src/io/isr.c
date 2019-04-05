@@ -98,12 +98,12 @@ typedef struct
 {
 	uint32_t ss;
 	uint32_t esp;
-	uint32_t eflags;
+	//uint32_t eflags;
 	uint32_t cs;
 	uint32_t eip;
 } __attribute__ ((packed)) CTX;
-
-uint32_t isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, 
+uint8_t last_interrupt;
+void isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uint16_t ss/*uint16_t ss, uint32_t esp, uint32_t eflags, 
 	uint16_t cs, uint16_t ip*/){ //general protection fault
 
 	setcolor(0x0E);
@@ -116,34 +116,59 @@ uint32_t isr13c(uint16_t ip, uint16_t cs/*, uint32_t eflags*/, uint16_t esp, uin
 	CTX ctx;
 	
 	uint16_t *stack = (uint16_t *) v86_sgoff_to_linear(ss, esp);
-	uint16_t *ivt = 0;
+	uint16_t *ivt = 0; //255 IVT entries
 	uint8_t *ip_addr = (uint8_t *) v86_sgoff_to_linear(0x1b, ip/*cs, ip*/);
 	
 	switch(ip_addr[0])
 	{
 		case 0xcd:
-			print("v86 INTERRUPT\n");
-			stack -= 3;
-			ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
+				print("v86 INTERRUPT\n");
+				stack -= 3;
+				ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
 
-			stack[0] =  (ip + 2) - (0x1b * 16);
-			stack[1] = 0x1b;
-			stack[2] = (uint16_t) 0x20202;
+				stack[0] =  (ip + 2) - (0x1b * 16);
+				stack[1] = 0x1b;
+				stack[2] = (uint16_t) 0x20202;
 
-			ctx.cs = ivt[ *(ip_addr + 1) * 2 + 1];
-			ctx.ss = 0x23;
-			ctx.eip = ivt[ *(ip_addr + 1) * 2];
-			
+				ctx.cs = 0; //(uint32_t) ivt[ *(ip_addr + 1) * 2 + 1];
+				ctx.ss = (uint32_t) 0x23;
+				ctx.eip = v86_sgoff_to_linear(ivt[ *(ip_addr + 1) * 2 + 1], ivt[ *(ip_addr + 1) * 2]);//(uint32_t) ivt[ *(ip_addr + 1) * 2];
+
+				last_interrupt = *(ip_addr + 1);
+
+				trace("CTX: -IP=%i", ctx.eip);
+				trace("\t-CS=%i", ctx.cs);
+				trace("\t-SP=%i", ctx.esp);
+				trace("\t-SS=%i\n", ctx.ss);
+
+				outb(PIC1, 0x20);
+				v86_enter((uint32_t *) &ctx);
 			break; 
+
+			case 0x9c:
+				stack -= 1;
+				ctx.esp = ((esp & 0xffff) - 1) & 0xffff;
+
+				//maybe this needs to be switched around
+				stack[0] = (uint16_t) cpu_get_eflags();
+				//stack[1] = (uint16_t) (cpu_get_eflags() >> 8);
+
+				ctx.cs = (uint32_t) ivt[last_interrupt * 2 + 1];
+				ctx.ss = 0x23;
+				ctx.eip =(uint32_t) ip + 1;
+				outb(PIC1, 0x20);
+				v86_enter((uint32_t *) &ctx);
+			break;
 
 		default:
 			while(1); //just for testing purposes
 			kernel_panic("GENERAL_PROTECTION_FAULT");
+			
 			while(1);
 			break;
 
 	}
-	return ctx.eip | ctx.esp;
+	//return ctx.eip | ctx.esp;
 	outb(PIC1, 0x20);
 	
 }

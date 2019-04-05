@@ -171,4 +171,8 @@ pushf
 push 0x1B
 iret
 
+global cpu_get_eflags
+cpu_get_eflags:
+pushf
+
 StackPointer dd 0

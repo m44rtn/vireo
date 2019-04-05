@@ -71,7 +71,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	clearscr();
 
 	//release, major, minor, build
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.173");
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.178");
 
 	
 	print("\nRed Alert!\n");

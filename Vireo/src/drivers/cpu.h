@@ -32,4 +32,5 @@ void cpuSetMSR(uint32_t msr, uint32_t lo, uint32_t hi);
 
 void CPUID();
 extern void GetCPUVendor();
+extern uint32_t cpu_get_eflags();
 #endif
