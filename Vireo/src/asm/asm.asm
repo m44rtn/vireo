@@ -173,6 +173,7 @@ iret
 
 global cpu_get_eflags
 cpu_get_eflags:
-pushf
+
+ret
 
 StackPointer dd 0

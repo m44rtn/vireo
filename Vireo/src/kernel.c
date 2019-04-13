@@ -7,7 +7,9 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//announce ourselves
 	clearscr();	
-	print("Vireo kernel x86\n\n");
+
+	//release, major, minor, build
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.189");
 
 	//setup the segments
 	segments.cs = cs;
@@ -69,10 +71,6 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	print("Press enter to continue...\n");
 	hang_for_key(KEYB_ENTER);
 	clearscr();
-
-	//release, major, minor, build
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.183");
-
 	
 	print("\nRed Alert!\n");
 	print("Hold it right there, pardner!\n");

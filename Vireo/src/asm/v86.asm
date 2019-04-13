@@ -7,6 +7,8 @@ bits 32
 %define     reg_esp (esi + 4)
 %define     reg_cs  (esi + 8)
 %define     reg_eip (esi + 12)
+%define     command (esi + 16)
+%define     reg_edi (esi + 20)
 
 global v86_enter
 extern Prep_TSS
@@ -23,14 +25,14 @@ v86_enter:
 
         call Prep_TSS
 
-        push 0x23 ;push dword [esi]
+        push dword [esi] ;0x23
         push dword [esi + 4]
 
         pushfd
 
         or dword [esp], 0x20202; 0x25202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
-       
-        push 0x1B ;push dword [esi + 8]
+
+        push dword [esi + 8] ;0x1B
         push dword [esi + 12]
 
         sti
@@ -42,6 +44,9 @@ v86_enter:
         xor edi, edi
         xor esi, esi
         xor ebp, ebp ;could be dangerous
+
+        mov ax, word [esi + 16]
+        mov edi, dword [esi + 20]
         
         iret
 

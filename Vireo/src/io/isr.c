@@ -98,12 +98,18 @@ typedef struct
 {
 	uint32_t ss;
 	uint32_t esp;
+	//uint32_t eflags;
 	uint32_t cs;
 	uint32_t eip;
+
+	uint32_t ax;
+	uint32_t di;
 } __attribute__ ((packed)) CTX;
 
-
 uint8_t last_interrupt;
+uint32_t *int_stack;
+
+uint16_t before_int_ax, before_int_di;
 
 void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 { 
@@ -116,101 +122,158 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 	trace("\t-CS=%i", cs);
 	trace("\t-SP=%i", esp);
 	trace("\t-SS=%i\n", ss);
+	//trace("\t-EFLAGS=%i\n", eflags);
 	CTX ctx;
 	
 	uint16_t *stack = (uint16_t *) v86_sgoff_to_linear(ss, esp);
 	uint16_t *ivt = 0; //255 IVT entries
-	uint8_t *ip_addr = (uint8_t *) v86_sgoff_to_linear(0x1b, ip);
+	uint8_t *ip_addr = (uint8_t *) v86_sgoff_to_linear(cs, ip);
+	uint16_t ax, di;
 	
 	switch(ip_addr[0])
 	{
 		case 0xcd:
-				print("v86 INTERRUPT\n");
+			print("v86 INTERRUPT\n");
 
-				//reserve some stack space
-				stack -= 3;
-				ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
+			//reserve some stack space
+			stack -= 3;
+			ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
 
-				//put our return stuff on the stack
-				stack[0] =  (ip + 2) - (0x1b * 0x10);
-				stack[1] = 0x1b;
-				stack[2] = (uint16_t) 0x20202;
+			//put our return stuff on the stack
+			stack[0] =  ip + 2;
+			stack[1] = 0x1b;
+			stack[2] = (uint16_t) 0x20202;
 
-				//location of interrupt
-				ctx.cs =  0x1b;
-				ctx.ss =  (uint32_t) 0x23;
-				ctx.eip = (uint32_t) (ivt[*(ip_addr + 1) * 2] + ((ivt[ *(ip_addr + 1) * 2 + 1] - 0x1b) * 0x10));
+			int_stack = (uint32_t *) ctx.esp;
 
-				last_interrupt = *(ip_addr + 1);
+			//location of interrupt
+			ax = (uint16_t) *(ip_addr - 5) | (*(ip_addr - 4) << 8); //last ax value
+			di = (uint16_t) *(ip_addr - 2) | (*(ip_addr - 1) << 8); //last di value
 
-				trace("CTX: -IP=%i", ctx.eip);
-				trace("\t-CS=%i", ctx.cs);
-				trace("\t-SP=%i", ctx.esp);
-				trace("\t-SS=%i\n", ctx.ss);
+			ctx.cs =  ivt[ *(ip_addr + 1) * 2 + 1];
+			ctx.ss =  (uint32_t) 0x23;
+			ctx.eip = (uint32_t) ivt[*(ip_addr + 1) * 2];
+			ctx.ax = before_int_ax = ax;
+			ctx.di = before_int_di = di;
+			
 
-				outb(PIC1, 0x20);
-				v86_enter((uint32_t *) &ctx);
-			break; 
+			trace("CTX: -IP=%i", ctx.eip);
+			trace("\t-CS=%i", ctx.cs);
+			trace("\t-SP=%i", ctx.esp);
+			trace("\t-SS=%i\n", ctx.ss);
+			trace("\t-AX=%i\n", ctx.ax);
+			trace("\t-DI=%i\n", ctx.di);
 
-			case 0x9c:
-				print("v86 POPF\n");
-				stack -= 1;
-				ctx.esp = ((esp & 0xffff) - 1) & 0xffff;
+			last_interrupt = *(ip_addr + 1);
 
-				//maybe this needs to be switched around
-				stack[0] = (uint16_t) cpu_get_eflags();
-				//stack[1] = (uint16_t) (cpu_get_eflags() >> 8);
+			outb(PIC1, 0x20);
+			v86_enter((uint32_t *) &ctx);
+		break; 
 
-				ctx.cs = (uint32_t) ivt[last_interrupt * 2 + 1];
-				ctx.ss = 0x23;
-				ctx.eip =(uint32_t) ip + 1;
-				outb(PIC1, 0x20);
-				v86_enter((uint32_t *) &ctx);
-			break;
+		case 0x9c:
+			print("v86 PUSHF\n");
+			stack -= 1;
+			ctx.esp = ((esp & 0xffff) - 2) & 0xffff;
 
-			case 0xCF:
-				//ignore
-				print("v86 IRET\n");
-				ctx.eip	= (uint32_t) ip + 1;
-				ctx.cs	= (uint32_t) cs;
-				ctx.esp	= (uint32_t) esp;
-				ctx.ss	= (uint32_t) ss;
+			//maybe this needs to be switched around
+			stack[0] = (uint16_t) 0x206; //0x02; //todo
+			//stack[1] = (uint16_t) (cpu_get_eflags() >> 8);
+
+			
+			ctx.cs = (uint32_t) cs;
+			ctx.ss = 0x23;
+			ctx.eip = (uint32_t) ip + 1;
+			ctx.ax = NULL;
+			ctx.di = NULL;
+			
+
+			trace("CTX: -IP=%i", ctx.eip);
+			trace("\t-CS=%i", ctx.cs);
+			trace("\t-SP=%i", ctx.esp);
+			trace("\t-SS=%i\n", ctx.ss);
+			trace("\t-AX=%i\n", ctx.ax);
+			//sleep(5);
+
+			outb(PIC1, 0x20);
+			v86_enter((uint32_t *) &ctx);
+		break;
+
+		case 0x9d:
+			//basically just ignore this one
+			print("v86 POPF\n");
+			ctx.esp = ((esp & 0xffff) + 2) & 0xffff;
+
+			//ctx.eflags = (uint16_t) 0x20202;
+
+			ctx.cs = (uint32_t) cs;
+			ctx.ss = 0x23;
+			ctx.eip = (uint32_t) ip + 1;
+			ctx.ax = NULL;
+			ctx.di = NULL;
+			
+
+			trace("CTX: -IP=%i", ctx.eip);
+			trace("\t-CS=%i", ctx.cs);
+			trace("\t-SP=%i", ctx.esp);
+			trace("\t-SS=%i\n", ctx.ss);
+			trace("\t-AX=%i\n", ctx.ax);
+			outb(PIC1, 0x20);
+			v86_enter((uint32_t *) &ctx);
+		break;
+
+		case 0xcf:
+			print("v86 IRET\n");
+			//stack = esp;
+			
+			ctx.eip	= (uint32_t) stack[0];
+			ctx.cs	=  0x1b;
+			ctx.esp	= (uint32_t) ((esp & 0xffff) + 6) & 0xffff;
+			ctx.ss	=  0x23;
+			ctx.ax = NULL;
+			ctx.di = before_int_di;
+			
+			trace("CTX: -IP=%i", ctx.eip);
+			trace("\t-CS=%i", ctx.cs);
+			trace("\t-SP=%i", ctx.esp);
+			trace("\t-SS=%i\n", ctx.ss);
+			trace("\t-AX=%i\n", ctx.ax);
+			trace("\t-DI=%i", ctx.di);
+										
+			outb(PIC1, 0x20);
+			v86_enter((uint32_t *) &ctx);
+		break;
+
+		case 0xFA:
+			//ignore
+			print("v86 CLI\n");
+
+			ctx.eip	= (uint32_t) ip + 1;
+			ctx.cs	= (uint32_t) cs;
+			ctx.esp	= (uint32_t) esp;
+			ctx.ss	= (uint32_t) ss;
+
+			outb(PIC1, 0x20);
+			v86_enter((uint32_t *) &ctx);
+		break;
+
+		case 0xFB:
+			//ignore
+			print("v86 STI\n");
+			ctx.eip	= (uint32_t) ip + 1;
+			ctx.cs	= (uint32_t) cs;
+			ctx.esp	= (uint32_t) esp;
+			ctx.ss	= (uint32_t) ss;
 				
-				outb(PIC1, 0x20);
-				v86_enter((uint32_t *) &ctx);
-			break;
-
-			case 0xFA:
-				//ignore
-				print("v86 CLI\n");
-
-				ctx.eip	= (uint32_t) ip + 1;
-				ctx.cs	= (uint32_t) cs;
-				ctx.esp	= (uint32_t) esp;
-				ctx.ss	= (uint32_t) ss;
-
-				outb(PIC1, 0x20);
-				v86_enter((uint32_t *) &ctx);
-			break;
-
-			case 0xFB:
-				//ignore
-				print("v86 STI\n");
-				ctx.eip	= (uint32_t) ip + 1;
-				ctx.cs	= (uint32_t) cs;
-				ctx.esp	= (uint32_t) esp;
-				ctx.ss	= (uint32_t) ss;
-				
-				outb(PIC1, 0x20);
-				v86_enter((uint32_t *) &ctx);
-			break;
+			outb(PIC1, 0x20);
+			v86_enter((uint32_t *) &ctx);
+		break;
 
 		default:
 			while(1); //just for testing purposes
 			kernel_panic("GENERAL_PROTECTION_FAULT");
 			
 			while(1);
-			break;
+		break;
 
 	}
 	outb(PIC1, 0x20);

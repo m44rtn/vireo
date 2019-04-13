@@ -31,8 +31,14 @@ getVESAControllerInfo:
     mov di, VESAinfo
     int 0x10
 
-    cmp ax, 0x004F
-    jne .fail
+    mov ax, 0
+    mov ds, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    ;cmp ax, 0x004F
+    ;jne .fail
 
     mov ds, WORD [VESAinfo.VideoModeListSegment]
 
@@ -45,9 +51,21 @@ getVESAControllerInfo:
         cmp cx, 0xFFFF
         je .done
 
+        pusha
+        push gs
+
         mov ax, 0x4F01
         mov di, VESAModeInfo
         int 0x10
+
+        mov ax, 0
+        mov ds, ax
+        mov es, ax
+        mov fs, ax
+        mov gs, ax
+
+        pop gs
+        popa
 
         cmp DWORD [VESAModeInfo.PhysBasePtr], 0x00
         je .next
@@ -70,19 +88,22 @@ getVESAControllerInfo:
         add si, 2
         jmp .GetHighest
 
-    .fail:
-        ret
+    ;.fail:
+    ;   ret
 
     .done:
-        mov ax, 0x4F01
+        jmp $
         mov cx, gs
+        mov ax, 0x4F01
         mov di, VESAModeInfo
         int 0x10
 
         mov ax, 0x4F02
         mov bx, cx
         int 0x10
-ret
+
+        jmp infinite
+;ret
 
 
 pVESA_SetDiffMode:

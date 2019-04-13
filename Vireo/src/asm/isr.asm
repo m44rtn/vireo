@@ -109,8 +109,7 @@ iret
 
 isr13:
 ;pushad
-
-mov ax, 0x10 	   ;load data segment registers
+mov ax, 0x10 	   ;load segment registers
 mov	ds, ax
 mov	es, ax
 mov	fs, ax
@@ -125,12 +124,14 @@ pop edx
 
 mov eax, [esp - 12]
 
+;mov esi, [esp - 4]
 
-;push edi ; eflags
-push dx
+;push dword esi ; eflags
+
+push dx ;ss
 push bx ;esp
-push cx
-push ax
+push cx ;cs
+push ax ;ip
 
 
 cld

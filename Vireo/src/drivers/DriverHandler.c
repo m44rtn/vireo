@@ -7,8 +7,11 @@ typedef struct
 {
     uint32_t ss;
     uint32_t esp;
+    //uint32_t eflags;
     uint32_t cs;
     uint32_t eip;
+    uint32_t command;
+    uint32_t edi;
 } __attribute__ ((packed)) V86_Task;
 
 char* UNKOWN    = "UNKOWN";
@@ -70,11 +73,12 @@ void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags)
     V86_Task task;
     uint16_t offset = (uint16_t) v86_linear_to_sgoff(0x0600);
 
-    task.cs = 0;
+    task.cs = 0x1b;
     task.eip = 0x450;//offset; //0x0600;
     task.esp = 0xFFFF;
-    task.ss = 0x0000;
-   
+    task.ss = 0x23;
+    task.command = NULL;
+    task.edi = NULL;
     //now it isn't anymore   
 
     //anyway, let's execute it. (this won't be able to return back, so we need int 3)
