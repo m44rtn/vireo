@@ -133,7 +133,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 	switch(ip_addr[0])
 	{
 		case 0xcd:
-			print("v86 INTERRUPT\n");
+			//print("v86 INTERRUPT\n");
 
 			//reserve some stack space
 			stack -= 3;
@@ -157,12 +157,12 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.di = before_int_di = di;
 			
 
-			trace("CTX: -IP=%i", ctx.eip);
+			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
 			trace("\t-SP=%i", ctx.esp);
 			trace("\t-SS=%i\n", ctx.ss);
 			trace("\t-AX=%i\n", ctx.ax);
-			trace("\t-DI=%i\n", ctx.di);
+			trace("\t-DI=%i\n", ctx.di);*/
 
 			last_interrupt = *(ip_addr + 1);
 
@@ -171,7 +171,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		break; 
 
 		case 0x9c:
-			print("v86 PUSHF\n");
+			//print("v86 PUSHF\n");
 			stack -= 1;
 			ctx.esp = ((esp & 0xffff) - 2) & 0xffff;
 
@@ -187,11 +187,11 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.di = NULL;
 			
 
-			trace("CTX: -IP=%i", ctx.eip);
+			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
 			trace("\t-SP=%i", ctx.esp);
 			trace("\t-SS=%i\n", ctx.ss);
-			trace("\t-AX=%i\n", ctx.ax);
+			trace("\t-AX=%i\n", ctx.ax);*/
 			//sleep(5);
 
 			outb(PIC1, 0x20);
@@ -200,7 +200,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 
 		case 0x9d:
 			//basically just ignore this one
-			print("v86 POPF\n");
+			//print("v86 POPF\n");
 			ctx.esp = ((esp & 0xffff) + 2) & 0xffff;
 
 			//ctx.eflags = (uint16_t) 0x20202;
@@ -212,17 +212,17 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.di = NULL;
 			
 
-			trace("CTX: -IP=%i", ctx.eip);
+			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
 			trace("\t-SP=%i", ctx.esp);
 			trace("\t-SS=%i\n", ctx.ss);
-			trace("\t-AX=%i\n", ctx.ax);
+			trace("\t-AX=%i\n", ctx.ax);*/
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx);
 		break;
 
 		case 0xcf:
-			print("v86 IRET\n");
+			//print("v86 IRET\n");
 			//stack = esp;
 			
 			ctx.eip	= (uint32_t) stack[0];
@@ -232,12 +232,12 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.ax = NULL;
 			ctx.di = before_int_di;
 			
-			trace("CTX: -IP=%i", ctx.eip);
+			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
 			trace("\t-SP=%i", ctx.esp);
 			trace("\t-SS=%i\n", ctx.ss);
 			trace("\t-AX=%i\n", ctx.ax);
-			trace("\t-DI=%i", ctx.di);
+			trace("\t-DI=%i", ctx.di);*/
 										
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx);

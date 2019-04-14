@@ -1,6 +1,7 @@
 ;inVBE.ASM - initializes VESA
 
 bits 16
+[map all pVESA.map]
 
 ModuleHeader:
     jmp short main
@@ -27,6 +28,7 @@ main:
     jmp infinite
 
 getVESAControllerInfo:
+    pusha
     mov ax, 0x4f00
     mov di, VESAinfo
     int 0x10
@@ -36,6 +38,7 @@ getVESAControllerInfo:
     mov es, ax
     mov fs, ax
     mov gs, ax
+    popa
 
     ;cmp ax, 0x004F
     ;jne .fail
@@ -49,7 +52,7 @@ getVESAControllerInfo:
     .GetHighest:
         mov cx, [si]
         cmp cx, 0xFFFF
-        je .done
+        je setRes
 
         pusha
         push gs
@@ -84,39 +87,36 @@ getVESAControllerInfo:
         mov gs, cx
         mov edx, eax
 
-    .next:
-        add si, 2
-        jmp .GetHighest
+.next:
+    add si, 2
+    jmp .GetHighest
 
     ;.fail:
     ;   ret
 
-    .done:
-        jmp $
-        mov cx, gs
-        mov ax, 0x4F01
-        mov di, VESAModeInfo
-        int 0x10
+setRes:
+    mov cx, gs
+    mov ax, 0x4F01
+    mov di, VESAModeInfo
+    int 0x10
 
-        mov ax, 0x4F02
-        mov bx, cx
-        int 0x10
+    mov ax, 0x4F02
+    mov bx, cx
+    int 0x10
 
-        jmp infinite
+    jmp infinite
 ;ret
 
 
 pVESA_SetDiffMode:
     pop eax
     pop ebx
-
+ret
     ;todo and all else stuff todo withhhh this function
 
 
 infinite:
     jmp $
-
-finished db '_VIREO-DONE'
 
 VESAinfo: ;VESA
 .VBEsignature db "VBE2"
@@ -172,5 +172,7 @@ VESAModeInfo:
 .OffScreenMemOffset dd 0
 .OffScreenMemSize dw 0
 .ReservedB times 206 db 0x00
+
+finished db '_VIREO-DONE'
 
 size_marker:

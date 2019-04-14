@@ -1,0 +1,101 @@
+
+- NASM Map file ---------------------------------------------------------------
+
+Source file:  modules/pVESA.asm
+Output file:  modules/bin/VESA.SYS
+
+-- Program origin -------------------------------------------------------------
+
+00000000
+
+-- Sections (summary) ---------------------------------------------------------
+
+Vstart            Start             Stop              Length    Class     Name
+               0                 0               3CF  000003CF  progbits  .text
+
+-- Sections (detailed) --------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+class:     progbits
+length:                 3CF
+start:                    0
+align:     not defined
+follows:   not defined
+vstart:                   0
+valign:    not defined
+vfollows:  not defined
+
+-- Symbols --------------------------------------------------------------------
+
+---- Section .text ------------------------------------------------------------
+
+Real              Virtual           Name
+               0                 0  ModuleHeader
+               3                 3  ModuleHeader.Sign
+               E                 E  ModuleHeader.Type
+               F                 F  ModuleHeader.Entry
+              13                13  ModuleHeader.Size
+              17                17  main
+              30                30  getVESAControllerInfo
+              59                59  getVESAControllerInfo.GetHighest
+              A5                A5  getVESAControllerInfo.next
+              AA                AA  setRes
+              BD                BD  pVESA_SetDiffMode
+              C2                C2  infinite
+              C4                C4  VESAinfo
+              C4                C4  VESAinfo.VBEsignature
+              C8                C8  VESAinfo.VBEversionMinor
+              C9                C9  VESAinfo.VBEversionMajor
+              CA                CA  VESAinfo.OEMstrOffset
+              CC                CC  VESAinfo.OEMstrSegment
+              CE                CE  VESAinfo.Capabilities
+              D2                D2  VESAinfo.VideoModeListOffset
+              D4                D4  VESAinfo.VideoModeListSegment
+              D6                D6  VESAinfo.TotalMemory
+              D8                D8  VESAinfo.OEMSoftwareRev
+              DA                DA  VESAinfo.OEMVendorNameOffset
+              DC                DC  VESAinfo.OEMVendorNameSegment
+              DE                DE  VESAinfo.OEMProductNameOffset
+              E0                E0  VESAinfo.OEMProductNameSegment
+              E2                E2  VESAinfo.OEMProductRevOffset
+              E4                E4  VESAinfo.OEMProductRevSegment
+              E6                E6  VESAinfo.Reserved
+             1C4               1C4  VESAinfo.OEMDatatimes
+             2C4               2C4  VESAModeInfo
+             2C4               2C4  VESAModeInfo.ModeAttributes
+             2C6               2C6  VESAModeInfo.WinAAttributes
+             2C7               2C7  VESAModeInfo.WinBAttributes
+             2C8               2C8  VESAModeInfo.WinGranularity
+             2CA               2CA  VESAModeInfo.WinSize
+             2CC               2CC  VESAModeInfo.WinASegment
+             2CE               2CE  VESAModeInfo.WinBSegment
+             2D0               2D0  VESAModeInfo.WinFuncPtr
+             2D4               2D4  VESAModeInfo.BytesPerScanline
+             2D6               2D6  VESAModeInfo.XResolution
+             2D8               2D8  VESAModeInfo.YResolution
+             2DA               2DA  VESAModeInfo.XCharSize
+             2DB               2DB  VESAModeInfo.YCharSize
+             2DC               2DC  VESAModeInfo.NumberOfPlanes
+             2DD               2DD  VESAModeInfo.BitsPerPixel
+             2DE               2DE  VESAModeInfo.NumberOfBanks
+             2DF               2DF  VESAModeInfo.MemoryModel
+             2E0               2E0  VESAModeInfo.BankSize
+             2E1               2E1  VESAModeInfo.NumberOfImagePages
+             2E2               2E2  VESAModeInfo.ReservedA
+             2E3               2E3  VESAModeInfo.RedMaskSize
+             2E4               2E4  VESAModeInfo.RedFieldPosition
+             2E5               2E5  VESAModeInfo.GreenMaskSize
+             2E6               2E6  VESAModeInfo.GreenFieldPosition
+             2E7               2E7  VESAModeInfo.BlueMaskSize
+             2E8               2E8  VESAModeInfo.BlueFieldPosition
+             2E9               2E9  VESAModeInfo.RsvdMaskSize
+             2EA               2EA  VESAModeInfo.RsvdFieldPosition
+             2EB               2EB  VESAModeInfo.DirectColorModeInfo
+             2EC               2EC  VESAModeInfo.PhysBasePtr
+             2F0               2F0  VESAModeInfo.OffScreenMemOffset
+             2F4               2F4  VESAModeInfo.OffScreenMemSize
+             2F6               2F6  VESAModeInfo.ReservedB
+             3C4               3C4  finished
+             3CF               3CF  size_marker
+
