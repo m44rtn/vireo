@@ -6,7 +6,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 {
 	//announce ourselves
 	clearscr();	
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.191"); //release, major, minor, build
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.192"); //release, major, minor, build
 
 	//setup the segments
 	segments.cs = cs;

@@ -28,7 +28,7 @@ main:
     jmp infinite
 
 getVESAControllerInfo:
-    pusha
+
     mov ax, 0x4f00
     mov di, VESAinfo
     int 0x10
@@ -38,7 +38,7 @@ getVESAControllerInfo:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    popa
+ 
 
     ;cmp ax, 0x004F
     ;jne .fail
@@ -54,7 +54,7 @@ getVESAControllerInfo:
         cmp cx, 0xFFFF
         je setRes
 
-        pusha
+       
         push gs
 
         mov ax, 0x4F01
@@ -68,7 +68,6 @@ getVESAControllerInfo:
         mov gs, ax
 
         pop gs
-        popa
 
         cmp DWORD [VESAModeInfo.PhysBasePtr], 0x00
         je .next

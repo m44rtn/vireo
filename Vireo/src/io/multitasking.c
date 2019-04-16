@@ -5,10 +5,10 @@
 //so this should be a priority based round robin scheduling system...
 
 //...With only a max of 15 processes at a time! very efficient.
-tTask tasks[15];
+
 
 uint8_t CurrentTasks = 0;       //amount of tasks in the queue
-static uint8_t ExecTask = 0xFF; //current task
+static uint8_t ExecTask = 0x00; //current task
 
 //request a task by using int 3, eax = 0x01 (that's the plan)
 
@@ -33,9 +33,10 @@ uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_
 
     tasks[ExecTask].registers.esi = esi;
     tasks[ExecTask].registers.edi = edi;
+    tasks[ExecTask].registers.EFLAGS = EFLAGS;
 
     //return the registers in 'reverse order' (so that we can safely return from the interrupt)
-    return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   
+    //return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   
 }
 /*
 void task_timeguard()

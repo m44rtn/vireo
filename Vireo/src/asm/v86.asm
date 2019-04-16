@@ -13,8 +13,14 @@ bits 32
 global v86_enter
 extern Prep_TSS
 
+extern trace
 v86_enter:
     mov esi, [esp + 4]
+    ;mov edi, [esp + 8]
+
+    push dword [edi + 4]
+    push .string$
+    call trace
    
     .continue:
         mov ax, 0x23
@@ -25,6 +31,8 @@ v86_enter:
 
         call Prep_TSS
 
+        
+        
         push dword [esi] ;0x23
         push dword [esi + 4]
 
@@ -36,18 +44,37 @@ v86_enter:
         push dword [esi + 12]
 
         sti
+        call do_regs
 
-        xor eax, eax
-        xor ebx, ebx
-        xor ecx, ecx
-        xor edx, edx
-        xor edi, edi
-        xor esi, esi
-        xor ebp, ebp ;could be dangerous
-
-        mov ax, word [esi + 16]
-        mov edi, dword [esi + 20]
-        
         iret
+        .string$ db "ecx=%i", 0x00
+
+do_exor:
+    xor eax, eax
+    xor ecx, ecx
+    xor edx, edx
+    xor ebx, ebx
+    xor esi, esi
+    xor edi, edi
+    xor ebp, ebp
+ret
 
 
+do_regs:
+    ;mov eax, 
+    push dword [edi]
+    ;mov ecx, 
+    push dword [edi + 4]
+    ;mov edx, 
+    push dword [edi + 8]
+    ;mov ebx, 
+    push dword [edi + 12]
+    ;mov esp, dword [edi + 16] ;we could delete this
+    ;mov ebp, dword [edi + 20]
+
+    ;mov esi, 
+    push dword [edi + 24]
+    ;mov edi, 
+    push dword [edi + 28]
+    popad
+ret

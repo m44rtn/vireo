@@ -107,8 +107,14 @@ cld
 call isr12c
 iret
 
+extern Task_Save_State
 isr13:
-;pushad
+pop dword [.instr_ptr]
+pop dword [.code_seg]
+pop dword [.stck_ptr]
+pop dword [.stck_seg]
+pushad
+
 mov ax, 0x10 	   ;load segment registers
 mov	ds, ax
 mov	es, ax
@@ -116,30 +122,26 @@ mov	fs, ax
 mov	gs, ax
 mov	ss, ax
 
-pop eax
-pop ecx
-;pop ebx ;pop eflags and ignore
-pop ebx
-pop edx
+call Task_Save_State
+;popa
 
 mov eax, [esp - 12]
+mov dword [.instr_ptr], eax
 
-;mov esi, [esp - 4]
-
-;push dword esi ; eflags
-
-push dx ;ss
-push bx ;esp
-push cx ;cs
-push ax ;ip
+push dword [.stck_seg];push dx ;ss
+push dword [.stck_ptr];push bx ;esp
+push dword [.code_seg];push cx ;cs
+push dword [.instr_ptr];push ax ;ip
 
 
 cld
-
 call isr13c
 
 iretd
-.ctx dd 0x00
+.instr_ptr  dd 0x00
+.stck_ptr   dd 0x00
+.code_seg   dd 0x00
+.stck_seg   dd 0x00
 
 isr14:
 pushad

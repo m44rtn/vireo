@@ -153,9 +153,11 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.cs =  ivt[ *(ip_addr + 1) * 2 + 1];
 			ctx.ss =  (uint32_t) 0x23;
 			ctx.eip = (uint32_t) ivt[*(ip_addr + 1) * 2];
-			ctx.ax = before_int_ax = ax;
-			ctx.di = before_int_di = di;
+			ctx.ax = before_int_ax = tasks[0].registers.eax;
+			ctx.di = before_int_di = tasks[0].registers.edi;
 			
+			trace("tasks[0].registers.eax = %i\n", ctx.ax);
+			trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);
 
 			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
@@ -167,7 +169,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			last_interrupt = *(ip_addr + 1);
 
 			outb(PIC1, 0x20);
-			v86_enter((uint32_t *) &ctx);
+			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
 		break; 
 
 		case 0x9c:
@@ -176,7 +178,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.esp = ((esp & 0xffff) - 2) & 0xffff;
 
 			//maybe this needs to be switched around
-			stack[0] = (uint16_t) 0x206; //0x02; //todo
+			stack[0] = (uint16_t) tasks[0].registers.EFLAGS;
 			//stack[1] = (uint16_t) (cpu_get_eflags() >> 8);
 
 			
@@ -195,7 +197,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			//sleep(5);
 
 			outb(PIC1, 0x20);
-			v86_enter((uint32_t *) &ctx);
+			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
 		break;
 
 		case 0x9d:
@@ -218,7 +220,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			trace("\t-SS=%i\n", ctx.ss);
 			trace("\t-AX=%i\n", ctx.ax);*/
 			outb(PIC1, 0x20);
-			v86_enter((uint32_t *) &ctx);
+			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
 		break;
 
 		case 0xcf:
@@ -240,7 +242,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			trace("\t-DI=%i", ctx.di);*/
 										
 			outb(PIC1, 0x20);
-			v86_enter((uint32_t *) &ctx);
+			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
 		break;
 
 		case 0xFA:
@@ -253,7 +255,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.ss	= (uint32_t) ss;
 
 			outb(PIC1, 0x20);
-			v86_enter((uint32_t *) &ctx);
+			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
 		break;
 
 		case 0xFB:
@@ -265,7 +267,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.ss	= (uint32_t) ss;
 				
 			outb(PIC1, 0x20);
-			v86_enter((uint32_t *) &ctx);
+			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
 		break;
 
 		default:
