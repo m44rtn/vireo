@@ -146,25 +146,19 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 
 			int_stack = (uint32_t *) ctx.esp;
 
-			//location of interrupt
-			ax = (uint16_t) *(ip_addr - 5) | (*(ip_addr - 4) << 8); //last ax value
-			di = (uint16_t) *(ip_addr - 2) | (*(ip_addr - 1) << 8); //last di value
-
 			ctx.cs =  ivt[ *(ip_addr + 1) * 2 + 1];
 			ctx.ss =  (uint32_t) 0x23;
 			ctx.eip = (uint32_t) ivt[*(ip_addr + 1) * 2];
-			ctx.ax = before_int_ax = tasks[0].registers.eax;
-			ctx.di = before_int_di = tasks[0].registers.edi;
 			
-			trace("tasks[0].registers.eax = %i\n", ctx.ax);
-			trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);
+			
+			trace("tasks[0].registers.eax = %i\n", tasks[0].registers.eax);
+			/*trace("tasks[0].registers.edi = %i\n", tasks[0].registers.edi);
+			trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);*/
 
 			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
 			trace("\t-SP=%i", ctx.esp);
-			trace("\t-SS=%i\n", ctx.ss);
-			trace("\t-AX=%i\n", ctx.ax);
-			trace("\t-DI=%i\n", ctx.di);*/
+			trace("\t-SS=%i\n", ctx.ss);*/
 
 			last_interrupt = *(ip_addr + 1);
 
@@ -178,23 +172,13 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.esp = ((esp & 0xffff) - 2) & 0xffff;
 
 			//maybe this needs to be switched around
-			stack[0] = (uint16_t) tasks[0].registers.EFLAGS;
-			//stack[1] = (uint16_t) (cpu_get_eflags() >> 8);
-
-			
+			stack[0] = (uint16_t) 0x200006;
+						
 			ctx.cs = (uint32_t) cs;
 			ctx.ss = 0x23;
 			ctx.eip = (uint32_t) ip + 1;
-			ctx.ax = NULL;
-			ctx.di = NULL;
-			
 
-			/*trace("CTX: -IP=%i", ctx.eip);
-			trace("\t-CS=%i", ctx.cs);
-			trace("\t-SP=%i", ctx.esp);
-			trace("\t-SS=%i\n", ctx.ss);
-			trace("\t-AX=%i\n", ctx.ax);*/
-			//sleep(5);
+			trace("tasks[0].registers.EFLAGS = %i\n", tasks[0].registers.EFLAGS);
 
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
@@ -210,36 +194,25 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.cs = (uint32_t) cs;
 			ctx.ss = 0x23;
 			ctx.eip = (uint32_t) ip + 1;
-			ctx.ax = NULL;
-			ctx.di = NULL;
-			
 
-			/*trace("CTX: -IP=%i", ctx.eip);
-			trace("\t-CS=%i", ctx.cs);
-			trace("\t-SP=%i", ctx.esp);
-			trace("\t-SS=%i\n", ctx.ss);
-			trace("\t-AX=%i\n", ctx.ax);*/
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
 		break;
 
 		case 0xcf:
-			//print("v86 IRET\n");
+			print("v86 IRET\n");
 			//stack = esp;
 			
 			ctx.eip	= (uint32_t) stack[0];
 			ctx.cs	=  0x1b;
 			ctx.esp	= (uint32_t) ((esp & 0xffff) + 6) & 0xffff;
 			ctx.ss	=  0x23;
-			ctx.ax = NULL;
-			ctx.di = before_int_di;
+
 			
-			/*trace("CTX: -IP=%i", ctx.eip);
+			trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
 			trace("\t-SP=%i", ctx.esp);
 			trace("\t-SS=%i\n", ctx.ss);
-			trace("\t-AX=%i\n", ctx.ax);
-			trace("\t-DI=%i", ctx.di);*/
 										
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
@@ -271,6 +244,9 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		break;
 
 		default:
+			trace("tasks[0].registers.eax = %i\n", tasks[0].registers.eax);
+			trace("tasks[0].registers.edi = %i\n", tasks[0].registers.edi);
+			trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);
 			while(1); //just for testing purposes
 			kernel_panic("GENERAL_PROTECTION_FAULT");
 			

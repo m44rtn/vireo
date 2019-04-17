@@ -17,11 +17,11 @@ static uint8_t ExecTask = 0x00; //current task
 //      - bit 1:    set if kernel task
 //      - bit 3-15: reserved for future use
 
-uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_unused, uint32_t ebx, uint32_t edx, 
-                    uint32_t ecx, uint32_t eax,  uint32_t eip, uint32_t cs, uint32_t EFLAGS, uint32_t esp, uint32_t ss)
+uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp, uint32_t ebx, uint32_t edx, 
+                    uint32_t ecx, uint32_t eax/*,  uint32_t eip, uint32_t cs, /*uint32_t EFLAGS, uint32_t esp, uint32_t ss*/)
 {
     //save all registers
-    tasks[ExecTask].entry_ptr = eip;
+    /*tasks[ExecTask].entry_ptr = eip;*/
    
     tasks[ExecTask].registers.eax = eax;
     tasks[ExecTask].registers.ecx = ecx;
@@ -33,7 +33,7 @@ uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp_
 
     tasks[ExecTask].registers.esi = esi;
     tasks[ExecTask].registers.edi = edi;
-    tasks[ExecTask].registers.EFLAGS = EFLAGS;
+    //tasks[ExecTask].registers.EFLAGS = EFLAGS;
 
     //return the registers in 'reverse order' (so that we can safely return from the interrupt)
     //return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   

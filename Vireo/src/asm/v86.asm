@@ -16,12 +16,12 @@ extern Prep_TSS
 extern trace
 v86_enter:
     mov esi, [esp + 4]
-    ;mov edi, [esp + 8]
+    mov edi, [esp + 8]
 
-    push dword [edi + 4]
-    push .string$
-    call trace
-   
+    ;mov eax, cr4
+    ;or eax, 0x01
+    ;mov cr4, eax
+
     .continue:
         mov ax, 0x23
         mov ds, ax
@@ -31,8 +31,6 @@ v86_enter:
 
         call Prep_TSS
 
-        
-        
         push dword [esi] ;0x23
         push dword [esi + 4]
 
@@ -43,11 +41,15 @@ v86_enter:
         push dword [esi + 8] ;0x1B
         push dword [esi + 12]
 
-        sti
+        ;call do_regs
+        push edi
+        call do_exor
+        pop edi
         call do_regs
+        
 
         iret
-        .string$ db "ecx=%i", 0x00
+
 
 do_exor:
     xor eax, eax
@@ -61,20 +63,15 @@ ret
 
 
 do_regs:
-    ;mov eax, 
-    push dword [edi]
-    ;mov ecx, 
-    push dword [edi + 4]
-    ;mov edx, 
-    push dword [edi + 8]
-    ;mov ebx, 
-    push dword [edi + 12]
+    mov eax, dword [edi]
+    mov ecx, dword [edi + 4]
+    mov edx, dword [edi + 8]
+    mov ebx, dword [edi + 12]
     ;mov esp, dword [edi + 16] ;we could delete this
     ;mov ebp, dword [edi + 20]
 
-    ;mov esi, 
-    push dword [edi + 24]
-    ;mov edi, 
-    push dword [edi + 28]
-    popad
+    mov esi, dword [edi + 24]
+    mov edi,  dword [edi + 28]
+    
 ret
+.string$ db "eax=%i", 0x00

@@ -28,20 +28,12 @@ main:
     jmp infinite
 
 getVESAControllerInfo:
-
     mov ax, 0x4f00
     mov di, VESAinfo
     int 0x10
 
-    mov ax, 0
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
- 
-
-    ;cmp ax, 0x004F
-    ;jne .fail
+    cmp ax, 0x004F
+    jne .fail
 
     mov ds, WORD [VESAinfo.VideoModeListSegment]
 
@@ -90,8 +82,8 @@ getVESAControllerInfo:
     add si, 2
     jmp .GetHighest
 
-    ;.fail:
-    ;   ret
+    .fail:
+       jmp $
 
 setRes:
     mov cx, gs

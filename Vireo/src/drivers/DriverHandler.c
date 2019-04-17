@@ -77,15 +77,8 @@ void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags)
     task.eip = 0x450;//offset; //0x0600;
     task.esp = 0xFFFF;
     task.ss = 0x23;
-    task.command = NULL;
-    task.edi = NULL;
 
-    //now it isn't anymore   
-    
-    trace("location of tasks[0].registers = %i\n", (uint32_t) tasks[0].registers.eax);
-    //anyway, let's execute it. (this won't be able to return back, so we need int 3)
-
-    kmemset( (void *) &tasks[0].registers, 0, sizeof(tasks[0].registers));
+    kmemset(&tasks, 0, sizeof(tTask));
     v86_enter( (uint32_t *) &task, (uint32_t *) &tasks[0].registers);
 
     //task_findnew();
