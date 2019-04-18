@@ -168,11 +168,11 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 
 		case 0x9c:
 			//print("v86 PUSHF\n");
-			stack -= 1;
+			//stack -= 1;
 			ctx.esp = ((esp & 0xffff) - 2) & 0xffff;
 
 			//maybe this needs to be switched around
-			stack[0] = (uint16_t) 0x200006;
+			//stack[0] = (uint16_t) 0; //0x200006;
 						
 			ctx.cs = (uint32_t) cs;
 			ctx.ss = 0x23;
@@ -187,9 +187,10 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		case 0x9d:
 			//basically just ignore this one
 			//print("v86 POPF\n");
-			ctx.esp = ((esp & 0xffff) + 2) & 0xffff;
-
+			ctx.esp = ((esp & 0xffff) + 0) & 0xffff;
 			//ctx.eflags = (uint16_t) 0x20202;
+
+			stack[0] = 0;
 
 			ctx.cs = (uint32_t) cs;
 			ctx.ss = 0x23;
@@ -216,6 +217,10 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 										
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
+		break;
+
+		case 0xF0:
+			print("v86 LOCK\n");
 		break;
 
 		case 0xFA:

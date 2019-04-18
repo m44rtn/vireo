@@ -102,7 +102,7 @@ setRes:
 pVESA_SetDiffMode:
     pop eax
     pop ebx
-ret
+;ret
     ;todo and all else stuff todo withhhh this function
 
 
