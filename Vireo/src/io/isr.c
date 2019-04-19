@@ -152,8 +152,8 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			
 			
 			trace("tasks[0].registers.eax = %i\n", tasks[0].registers.eax);
-			/*trace("tasks[0].registers.edi = %i\n", tasks[0].registers.edi);
-			trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);*/
+			trace("tasks[0].registers.edi = %i\n", tasks[0].registers.edi);
+			/*trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);*/
 
 			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
@@ -177,8 +177,6 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.cs = (uint32_t) cs;
 			ctx.ss = 0x23;
 			ctx.eip = (uint32_t) ip + 1;
-
-			trace("tasks[0].registers.EFLAGS = %i\n", tasks[0].registers.EFLAGS);
 
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
