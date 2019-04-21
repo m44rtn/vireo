@@ -143,11 +143,6 @@ char *PartyChop(char* str, const char* delim){
 }
 
 
-
-
-
-
-
 /* ===================================================================
  *              NEXT PART IS FROM MEINOS LIB (string.c)
  * 				  https://github.com/jgraef/meinOS
