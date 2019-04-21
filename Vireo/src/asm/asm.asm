@@ -149,13 +149,16 @@ ltr ax
 ret
 
 global jmp_user_mode
-
+extern do_regs
 jmp_user_mode:
     ;jumps to user mode -there's a lot that isn't right in this function
     ;input:
     ;   - a location of a function that should be executed by this thing
+    ;   - location of register stuff
     ;output:
     ;   - n/a
+pop eax
+pop edi
 
 mov ax, 0x23
 mov ds, ax
@@ -163,12 +166,14 @@ mov es, ax
 mov fs, ax
 mov gs, ax
 
-mov eax, [esp + 4]
 push 0x23
 push eax
 pushf 
 
 push 0x1B
+
+call do_regs
+
 iret
 
 global cpu_get_eflags

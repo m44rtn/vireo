@@ -11,6 +11,7 @@ bits 32
 %define     reg_edi (esi + 20)
 
 global v86_enter
+global do_regs
 extern Prep_TSS
 
 extern trace

@@ -35,10 +35,13 @@ uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp,
     tasks[ExecTask].registers.edi = edi;
     //tasks[ExecTask].registers.EFLAGS = EFLAGS;
 
+    trace("TASK%i -eax=", ExecTask + 1);
+    printline(hexstr(eax), 13, (ExecTask + 1) * 2);
+
     //return the registers in 'reverse order' (so that we can safely return from the interrupt)
     //return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   
 }
-/*
+
 void task_timeguard()
 {    
     //gets run every PIT tick
@@ -64,10 +67,8 @@ void task_timeguard()
     //tell the PIC we're done with the interrupt to (hopefully) avoid 
     //being in an interrupt forever.
     outb(PIC1, 0x20);
-
-    if((tasks[ExecTask].flags & TASK_FLAG_v86)) v86_switch();
-    else if(tasks[ExecTask].flags & TASK_FLAG_KERNEL) task_kernel_switch(/*insert eip*//*);
-    else jump_user_mode(/*insert eip*//*);
+    jmp_user_mode(tasks[ExecTask].entry_ptr, &tasks[ExecTask].registers);
+    
 }
 
 
@@ -97,6 +98,8 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
 {
     //adds a new task to the queue
 
+    if(ExecTask == 0xFF) ExecTask--;
+
     //if the queue is full, ignore the request -> could end badly
     if(CurrentTasks == 15) return;
 
@@ -117,7 +120,7 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
 
 }
 
-/*static*/ /*void task_pop(uint8_t tasknum)
+void task_pop(uint8_t tasknum)
 {
     //move everything over by one so we don't have an empty gap
     for(uint8_t i = tasknum; i < 14; i++)
@@ -146,7 +149,7 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
     CurrentTasks--;
 }
 
-/*static*/ /*void task_save()
+void task_save()
 {
     tTask CurrentState;
 
@@ -167,7 +170,7 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
 
 }
 
-/*static*/ /*void task_findnew()
+void task_findnew()
 {
     uint8_t highest_prior = 0;
     uint8_t task = 0;
@@ -194,38 +197,3 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
     
 }
 
-//is this necessary?
-/*static void task_switch(tTask task)
-{
-    switch((task.flags) & 0x02)
-    {
-        case 0:
-            //task is an external task
-            //doesn't do anything else yet
-            jmp_user_mode(task.entry_ptr);
-            break;
-
-        case 1:
-            //task is a kernel task
-            Switch_Internal_Task(task);
-            break;
-       
-    }
-}
-
-//is this necessary?
-static void task_switch_internal(tTask task)
-{
-    //is not a v86 task
-    if(!(task.flags & 0x01)) jmp_user_mode(task.entry_ptr);
-
-    //is a v86 task
-    if((task.flags & 0x01)) setup_v86();
-}*/
-
-//toolbox, if we even need it (spoiler alert! we don't)
-void setup_SYSenter()
-{
-    getESP();
-    cpuSetMSR(0x174, segments.cs, 0);
-}

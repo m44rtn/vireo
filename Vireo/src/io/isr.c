@@ -273,6 +273,8 @@ void isr20c(){
 	systeminfo.PITcount++;
 
 	if(systeminfo.PITcount > 0xFFFFFFFF) systeminfo.PITcount == 0;
+
+	task_timeguard();
 	outb(PIC1, 0x20);
 }
 

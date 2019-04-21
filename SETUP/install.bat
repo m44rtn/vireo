@@ -13,4 +13,6 @@ vecho Copying files...
 REM copy boot.zip C:\boot.zip
 mkdir C:\BIRDOS 
 copy D:\VESA.SYS C:\BIRDOS\VESA.SYS
+copy D:\TASK1.SYS C:\BIRDOS\TASK1.SYS
+copy D:\TASK2.SYS C:\BIRDOS\TASK2.SYS
 vdelay 2000

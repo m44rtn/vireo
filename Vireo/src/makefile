@@ -59,6 +59,8 @@ kernel:
 
 module:
 	nasm modules/pVESA.asm -f bin -o modules/bin/VESA.SYS
+	nasm modules/Task1.asm -f bin -o modules/bin/TASK1.SYS
+	nasm modules/Task2.asm -f bin -o modules/bin/TASK2.SYS
 
 
 run:
@@ -68,6 +70,6 @@ run:
 setup:
 	#nasm boot/loader.asm -o $(SETUPLOC)loader.sys
 	mkisofs -o $(SETUPLOC)test_setup.iso modules/bin/VESA.SYS $(SETUPLOC)main.bat \
-	$(SETUPLOC)install.bat	 
+	$(SETUPLOC)install.bat modules/bin/TASK1.SYS modules/bin/TASK2.SYS
 
 

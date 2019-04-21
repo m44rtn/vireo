@@ -23,6 +23,6 @@ char *driver_type(uint16_t type);
 void run_v86_driver(uint32_t *file_start, uint32_t file_size, uint16_t flags);
 
 //extern void v86_enter(uint32_t *task/*ss, uint32_t esp, uint32_t cs, uint32_t eip*/);
-extern void jump_user_mode(uint32_t entry_ptr);
+extern void jmp_user_mode(uint32_t entry_ptr, uint32_t *registers);
 
 #endif
