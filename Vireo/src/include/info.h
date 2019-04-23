@@ -1,6 +1,8 @@
 #ifndef INFO_H
 #define INFO_H
 
+#define INFO_FLAG_MULTITASKING_ENABLED 1
+
 typedef struct{
 	//CPU
 	char* CPUVendor;
@@ -25,6 +27,8 @@ typedef struct{
 	char* version_revision;
 	char* version_architecture;
 
+	uint32_t FLAGS;
+
 	//keyboard stuff
 	uint8_t keybrdbfrloc;
 	char LastKey;
@@ -48,7 +52,6 @@ typedef struct{
 
 SystemInfo systeminfo;
 
-
 typedef struct{
 	uint16_t pci_vendor;
 	uint16_t pci_device_number;
@@ -70,6 +73,5 @@ typedef struct
 	uint16_t ss;
 } SEGMENTS;
 SEGMENTS segments;
-
 
 #endif

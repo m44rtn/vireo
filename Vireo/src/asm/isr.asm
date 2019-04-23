@@ -160,13 +160,29 @@ hlt
 
 
 extern Task_Save_State
-
+extern KERNEL_FLAGS
 isr20:
 ;   PIT
 pushad
+
+mov ax, 0x10 	   ;load segment registers
+mov	ds, ax
+mov	es, ax
+mov	fs, ax
+mov	gs, ax
+mov	ss, ax
+
+mov eax, KERNEL_FLAGS
+and eax, 1
+
+cmp eax, 0
+je isr20_next
+
 call Task_Save_State
 
+isr20_next:
 call isr20c
+
 popad
 iretd
 

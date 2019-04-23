@@ -150,6 +150,8 @@ ret
 
 global jmp_user_mode
 extern do_regs
+extern do_exor
+extern trace
 jmp_user_mode:
     ;jumps to user mode -there's a lot that isn't right in this function
     ;input:
@@ -157,28 +159,54 @@ jmp_user_mode:
     ;   - location of register stuff
     ;output:
     ;   - n/a
-pop eax
 pop edi
+pop eax
 
+push eax
 mov ax, 0x23
 mov ds, ax
 mov es, ax
 mov fs, ax
 mov gs, ax
+pop eax
 
+mov ecx, esp
 push 0x23
-push eax
+push ecx
 pushf 
 
 push 0x1B
+push eax
 
+call do_exor
 call do_regs
 
 iret
+.string db "eip=%i\n", 0x00
 
-global cpu_get_eflags
-cpu_get_eflags:
+global jmp_back_kernel
+extern do_regs
+jmp_back_kernel:
+    ;jumps to kernel mode -there's a lot that isn't right in this function
+    ;input:
+    ;   - a location of a function that should be executed by this thing
+    ;   - location of register stuff
+    ;output:
+    ;   - n/a
+pop edi
+pop eax
 
-ret
+mov ecx, esp
+push ss
+push ecx
+pushf 
+
+push cs
+push eax
+
+call do_exor
+call do_regs
+
+iret
 
 StackPointer dd 0

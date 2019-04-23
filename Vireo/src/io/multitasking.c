@@ -8,7 +8,7 @@
 
 
 uint8_t CurrentTasks = 0;       //amount of tasks in the queue
-static uint8_t ExecTask = 0x00; //current task
+static uint8_t ExecTask = 0xFF; //current task
 
 //request a task by using int 3, eax = 0x01 (that's the plan)
 
@@ -18,10 +18,10 @@ static uint8_t ExecTask = 0x00; //current task
 //      - bit 3-15: reserved for future use
 
 uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp, uint32_t ebx, uint32_t edx, 
-                    uint32_t ecx, uint32_t eax/*,  uint32_t eip, uint32_t cs, /*uint32_t EFLAGS, uint32_t esp, uint32_t ss*/)
+                    uint32_t ecx, uint32_t eax,  uint32_t eip, uint32_t cs /*uint32_t EFLAGS, uint32_t esp, uint32_t ss*/)
 {
     //save all registers
-    /*tasks[ExecTask].entry_ptr = eip;*/
+    tasks[ExecTask].entry_ptr = eip;
    
     tasks[ExecTask].registers.eax = eax;
     tasks[ExecTask].registers.ecx = ecx;
@@ -35,8 +35,9 @@ uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp,
     tasks[ExecTask].registers.edi = edi;
     //tasks[ExecTask].registers.EFLAGS = EFLAGS;
 
-    trace("TASK%i -eax=", ExecTask + 1);
-    printline(hexstr(eax), 13, (ExecTask + 1) * 2);
+    //printline("TASK%i -eax=", 0, 1);
+    //printline(hexstr(eax), 13, (ExecTask + 1) * 2);
+    //print("\n");
 
     //return the registers in 'reverse order' (so that we can safely return from the interrupt)
     //return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   
@@ -47,18 +48,21 @@ void task_timeguard()
     //gets run every PIT tick
     
     //return if we don't have tasks in the queue
-    if(ExecTask == 0xFF) return;
+   
 
     //check if the task has used up it's time slice, otherwise give it more time.
     if(tasks[ExecTask].quantum != 0)
     {
         tasks[ExecTask].quantum--;   
-        return;
+        trace("quantum=%i\n", tasks[ExecTask].quantum);
+
+        outb(PIC1, 0x20);
+        jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);
     } 
     
     //If the task isn't done, save it's state before we delete it.
-    char* ebp = tasks[ExecTask].registers.ebp;
-    if(!eqlstr(ebp, TASK_DONE)) task_save();
+    uint32_t *ebp = (uint32_t *) tasks[ExecTask].registers.ebp;
+    if(!eqlstr( (char *) ebp, TASK_DONE)) task_save();
 
     //clear the task and get a new one
     task_pop(ExecTask);  
@@ -67,7 +71,7 @@ void task_timeguard()
     //tell the PIC we're done with the interrupt to (hopefully) avoid 
     //being in an interrupt forever.
     outb(PIC1, 0x20);
-    jmp_user_mode(tasks[ExecTask].entry_ptr, &tasks[ExecTask].registers);
+    jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);
     
 }
 
@@ -98,7 +102,7 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
 {
     //adds a new task to the queue
 
-    if(ExecTask == 0xFF) ExecTask--;
+    if(ExecTask == 0xFF) ExecTask = 0;
 
     //if the queue is full, ignore the request -> could end badly
     if(CurrentTasks == 15) return;
@@ -111,8 +115,8 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
     task.flags = flags;
 
     //reserve 4 KiB stack size
-    task.registers.ebp = malloc(4096);        
-    task.registers.esp = task.registers.ebp + 4096;
+    //task.registers.ebp = malloc(4096);        
+    //task.registers.esp = task.registers.ebp + 4096;
 
     //add the task to the queue
     tasks[CurrentTasks] = task;
@@ -195,5 +199,11 @@ void task_findnew()
     
     //SwitchTask(tasks[ExecTask]);
     
+}
+
+void task_internal_ret_from_interrupt()
+{
+    outb(PIC1, 0x20);
+    jmp_back_kernel(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);
 }
 

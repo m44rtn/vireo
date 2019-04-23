@@ -274,7 +274,9 @@ void isr20c(){
 
 	if(systeminfo.PITcount > 0xFFFFFFFF) systeminfo.PITcount == 0;
 
-	task_timeguard();
+	if((systeminfo.FLAGS & INFO_FLAG_MULTITASKING_ENABLED))
+		task_timeguard();
+
 	outb(PIC1, 0x20);
 }
 

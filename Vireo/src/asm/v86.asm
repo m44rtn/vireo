@@ -12,6 +12,7 @@ bits 32
 
 global v86_enter
 global do_regs
+global do_exor
 extern Prep_TSS
 
 extern trace
@@ -64,6 +65,10 @@ ret
 
 
 do_regs:
+    ;push dword [edi]
+    ;push .string$
+    ;call trace
+
     mov eax, dword [edi]
     mov ecx, dword [edi + 4]
     mov edx, dword [edi + 8]

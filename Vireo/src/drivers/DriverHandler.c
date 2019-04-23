@@ -43,7 +43,7 @@ void *FindDriver(char *filename/*, uint8_t priority*/)
     uint16_t *ReadFileDriver = (uint16_t *) 0x0600;
     uint32_t lba = FAT_cluster_LBA(file->FileLoc);
 
-     PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) ReadFileDriver);
+    PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) ReadFileDriver);
 
     header = (DRVR_HEADER *) ReadFileDriver;
 

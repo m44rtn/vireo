@@ -1,6 +1,7 @@
 ;this will decrease eax
 
 bits 32
+nop
 jmp setup
 
 setup:
@@ -14,3 +15,4 @@ decrease:
     jle setup
 
     jmp decrease
+
