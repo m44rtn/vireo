@@ -4,7 +4,7 @@
 #define TYPE_DIR TRUE
 #define TYPE_FILE FALSE
 
-FAT32_BPB *BPB;
+
 FAT32_DIR *ROOTDIR;
 
 //TODO: redo the code entirely
@@ -41,6 +41,7 @@ FAT32_BPB *FATinit(uint8_t drive)
     //trace("first_data_sector: %i\n", first_data_sector);
     
     
+    trace("FATinit exit code: %i\n", 0);
     return BPB;
 }
 
@@ -123,7 +124,7 @@ uint32_t FindNextDir(char *DirName, uint8_t drive, uint32_t prevClust)
 {
     uint32_t DIRlen = 0;
     int len = strlen(DirName);
-    int res;
+    uint32_t res = 0xFFFFFFFF;
     char name[8];
     
     strcopy(name, DirName);
@@ -131,7 +132,7 @@ uint32_t FindNextDir(char *DirName, uint8_t drive, uint32_t prevClust)
     //get the directory
     FAT32_DIR *DIR = ReadDir(drive, prevClust, &DIRlen);
     if(eqlstr(DirName, "ROOT")) return BPB->clustLocRootdir;
-    //Take a look at all the entry's in the directory and see if it contains the name of the folder
+    //Take a look at all the entries in the directory and see if it contains the name of the folder
     //and check if the entry corresponds to that of a direcotry.
     //Doesn't care about the length of the name, if a part of the name is correct then it returns.
     for(int i = 0; i < DIRlen; i++) 
@@ -139,7 +140,11 @@ uint32_t FindNextDir(char *DirName, uint8_t drive, uint32_t prevClust)
         {
             res = i;
             i = DIRlen;
-        };        
+        }; 
+
+    if(res == 0xFFFFFFFF)
+        return 0xFFFFFFFF;
+
     return ((DIR[res].clHi << 16) | DIR[res].clLo);
 }
 
@@ -150,7 +155,7 @@ void FAT32_WRITE_FILE(uint8_t drive, uint32_t *file, size_t size, char *name, ch
     uint32_t DIRlen = 0;
 
     uint32_t sizeCL = (size < 4096) ? (size / 4096) * 4096 : 4096;
-    FAT32_VFS *vfs = FATFindFreeClusterChain(drive, sizeCL, &VFSlen);
+    tVFS *vfs = FATFindFreeClusterChain(drive, sizeCL, &VFSlen);
 
     //Find the directory {^<>^}
     uint32_t dirLoc = FAT_Traverse(path);
@@ -223,9 +228,9 @@ uint32_t FAT_cluster_LBA(uint32_t cluster)
     return LBA;
 }
 
-FAT32_VFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
+tVFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
 {
-    FAT32_VFS *list;
+    tVFS *list;
     uint32_t clust = cluster;
     uint32_t table_val;
     uint32_t *ftable = malloc(512);
@@ -250,14 +255,14 @@ FAT32_VFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
 
 }
 
-FAT32_VFS *FATFindFreeClusterChain(uint8_t drive, uint32_t size, uint32_t *len)
+tVFS *FATFindFreeClusterChain(uint8_t drive, uint32_t size, uint32_t *len)
 {
     uint32_t nClusters = (size / 512) / BPB->SectClust;
 
     //reserved 10 extra clusters, it sometimes writes stuff that shouldn't be written.
     uint32_t clust = first_data_sector;// + 10;// / (BPB->SectClust * 512));
 
-    FAT32_VFS *vfs = malloc(nClusters * sizeof(FAT32_VFS));
+    tVFS *vfs = malloc(nClusters * sizeof(tVFS));
     uint32_t *ftable = malloc(512);
 
     uint32_t prev_FATsect = NULL;
@@ -298,7 +303,7 @@ FAT32_DIR *ReadDir(uint8_t drive, uint32_t cluster, uint32_t *len)
 
     //Get all the cluster chain and set the size of the buffer
     uint32_t nClusts = 0;
-    FAT32_VFS *vfs = FAT_read_table(drive, cluster, &nClusts);
+    tVFS *vfs = FAT_read_table(drive, cluster, &nClusts);
 
     //reserve memory for the directory's info
     uint16_t *buf = malloc(nClusts * BPB->SectClust * 512);

@@ -16,7 +16,6 @@
 #include "io/PCI.h"
 #include "drivers/ATA/SATA.h"
 #include "drivers/ATA/ATA.h"
-#include "drivers/FS/MFAT.h"
 #include "drivers/FS/FAT.h"
 #include "drivers/FS/ISO9660.h"
 #include "drivers/HDD.h"

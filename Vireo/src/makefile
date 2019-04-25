@@ -34,7 +34,7 @@ kernel:
 	gcc $(GCCPARAMS) -o bin/ATA.o -c drivers/ATA/ATA.c
 	gcc $(GCCPARAMS) -o bin/hdd.o -c drivers/HDD.c
 	#nasm $(ASPARAMS) -o bin/atasm.o storage/ATA.asm
-	gcc $(GCCPARAMS) -o bin/mfat.o -c drivers/FS/MFAT.c
+	
 	gcc $(GCCPARAMS) -o bin/fat.o -c drivers/FS/FAT.c
 	gcc $(GCCPARAMS) -o bin/iso.o -c drivers/FS/ISO9660.c
 	

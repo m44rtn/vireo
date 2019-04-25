@@ -8,6 +8,7 @@
 #include "../../include/error.h"
 #include "../../include/types.h"
 #include "../../include/DEFATA.h"
+#include "../../include/VFS.h"
 
 
 typedef struct{
@@ -61,18 +62,13 @@ typedef struct{
     uint32_t fSize; //file size
 } __attribute__ ((packed)) FAT32_DIR;
 
-
-//Virtual File System node, that is returned by FAT_read_table()
-typedef struct{
-    char name[11];
-    uint32_t cluster;
-} FAT32_VFS;
-
 typedef struct
 {
     uint32_t FileLoc;
     uint32_t size;
 } File;
+
+FAT32_BPB *BPB;
 
 uint32_t *GetFile(char *filename, uint8_t drive, uint32_t dirLoc);
 File *FindFile(char *filename, uint32_t dirLoc, uint8_t drive);
@@ -90,9 +86,9 @@ void FAT32_Write_cluster(uint8_t drive, uint32_t cluster, uint32_t *buf);
 
 uint8_t *FAT32_READ_FILE(uint8_t drive, uint32_t cluster, size_t size);
 uint32_t FAT_cluster_LBA(uint32_t cluster);
-FAT32_VFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts);
+tVFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts);
 FAT32_DIR *ReadDir(uint8_t drive, uint32_t cluster, uint32_t *len);
 
-FAT32_VFS *FATFindFreeClusterChain(uint8_t drive, uint32_t size, uint32_t *len);
+tVFS *FATFindFreeClusterChain(uint8_t drive, uint32_t size, uint32_t *len);
 
 #endif
