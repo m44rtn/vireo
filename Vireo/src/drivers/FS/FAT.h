@@ -78,6 +78,7 @@ FAT32_BPB *FATinit(uint8_t drive);
 
 uint32_t FAT_Traverse(char *name);
 
+File *fat_find_dir(uint8_t drive, char *DirName, uint32_t PreviousDirClust);
 uint32_t FindNextDir(char *DirName,uint8_t drive, uint32_t prevClust);
 
 void FAT32_WRITE_FILE(uint8_t drive, uint32_t *file, size_t size, char *name, char *path);

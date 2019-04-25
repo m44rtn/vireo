@@ -179,6 +179,7 @@ void PIO_READ_ATA(uint8_t drive, uint32_t start, uint8_t sctrWRITE, uint16_t *bu
     if(inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x01) ATA_swreset(); //nuke with software reset
     if(inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x20) ATA_swreset();
 
+    
     //trace("Drive is: %i\n", (int) drive);
     start = start & 0x0FFFFFFF; //make the starting sector val 28 bits
     //trace("Start read sector at: %i\n", (int) start);
@@ -203,16 +204,17 @@ void PIO_READ_ATA(uint8_t drive, uint32_t start, uint8_t sctrWRITE, uint16_t *bu
 
     //wait for the thing to get ready
     ATAwait();
+    
           
       int i = 0;
     
     while(i < (sctrWRITE << 8))
     {
         buf[i] = inw(ATA_PRIMARY_DRIVE_DATAP);
-
-        while((inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x40) != 0x40);
+        while(!(inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x40));
         i++;
     }
+    
     ATAwait();
     
     if(DRIVE_ERROR_DETECT(buf, 256)) //nuke with software reset

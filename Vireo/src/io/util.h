@@ -33,7 +33,7 @@ uint32_t strlen(char* s);
 char *PartyChop(char* str, const char* delim);
 
 
-bool hasStr(char * str, char* str2);
+bool hasStr(char * str_longest, char* str_shortest);
 
 //MEINOS LIB (string.c) -> https://github.com/jgraef/meinOS
 char *strtok(char *s, const char *delim);

@@ -76,7 +76,7 @@ File *FindFile(char *filename, uint32_t dirLoc, uint8_t drive)
     {
         //name_holder = strtok(filename, ".");
         name_holder = dir[i].name;
-        //print(name_holder);
+        trace("%s\n", (uint32_t) name_holder);
         if(!eqlstr(name_holder, filename)) continue;
         foundFile = i;
         break;
@@ -120,18 +120,47 @@ uint32_t FAT_Traverse(char *name)
     
 }
 
+File *fat_find_dir(uint8_t drive, char *DirName, uint32_t PreviousDirClust)
+{
+    uint32_t DIRlen = 0;
+    int len = strlen(DirName);
+    uint32_t res; /* = 0xFFFFFFFF;*/
+    char name[8];
+    File *file;
+    
+    strcopy(name, DirName);
+    
+    //get the directory
+    FAT32_DIR *DIR = ReadDir(drive, 2, &DIRlen);
+    
+    //Take a look at all the entries in the directory and see if it contains the name of the folder
+    //and check if the entry corresponds to that of a direcotry.
+    //Doesn't care about the length of the name, if a part of the name is correct then it returns.
+    for(int i = 0; i < DIRlen; i++) 
+        if(hasStr(DIR[i].name, name) && (DIR[i].attrib & 0x10))
+        {
+            file->FileLoc = ((DIR[i].clHi << 16) | DIR[i].clLo);
+            file->size = DIR[i].fSize;
+            print("directory found!\n");
+            return file;
+        }; 
+
+    if(res == 0x0FFFFFFF)
+        return (File *) 0x0FFFFFFF;
+}
+
 uint32_t FindNextDir(char *DirName, uint8_t drive, uint32_t prevClust)
 {
     uint32_t DIRlen = 0;
     int len = strlen(DirName);
-    uint32_t res = 0xFFFFFFFF;
+    uint32_t res; /* = 0xFFFFFFFF;*/
     char name[8];
     
     strcopy(name, DirName);
     
     //get the directory
     FAT32_DIR *DIR = ReadDir(drive, prevClust, &DIRlen);
-    if(eqlstr(DirName, "ROOT")) return BPB->clustLocRootdir;
+    if(hasStr(DirName, "ROOT")) return BPB->clustLocRootdir;
     //Take a look at all the entries in the directory and see if it contains the name of the folder
     //and check if the entry corresponds to that of a direcotry.
     //Doesn't care about the length of the name, if a part of the name is correct then it returns.
@@ -142,8 +171,8 @@ uint32_t FindNextDir(char *DirName, uint8_t drive, uint32_t prevClust)
             i = DIRlen;
         }; 
 
-    if(res == 0xFFFFFFFF)
-        return 0xFFFFFFFF;
+    if(res == 0x0FFFFFFF)
+        return 0x0FFFFFFF;
 
     return ((DIR[res].clHi << 16) | DIR[res].clLo);
 }
@@ -232,9 +261,11 @@ tVFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
 {
     tVFS *list;
     uint32_t clust = cluster;
-    uint32_t table_val;
+    uint32_t table_val, iterations;
     uint32_t *ftable = malloc(512);
 
+    /*trace("cluster = %i\n", cluster);
+    trace("BPB->resvSect = %i\n", BPB->resvSect);*/
     
     do
     {
@@ -243,17 +274,70 @@ tVFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
 
         uint32_t entry = (clust * 4) % 512;
         PIO_READ_ATA(drive, FAT_sector, 1, (uint16_t *) ftable);
-
+        
         table_val = *(&ftable[entry]) & 0x0FFFFFFF;
 
-        list[*(nClusts)].cluster = table_val;
+        //trace("table_val = %i\n", table_val);
+
+        list[iterations].cluster = table_val;
+
+        //trace("list[*(nClusts)].cluster = %i\n\n", list[iterations].cluster);
         clust = table_val;
         *(nClusts) += 1;
+        iterations++;
     }while(table_val != 0 && ((table_val & 0x0FFFFFFF) < 0x0FFFFFF8));
 
     return list;
 
 }
+
+FAT32_DIR *ReadDir(uint8_t drive, uint32_t cluster, uint32_t *len)
+{
+    //If the cluster is 0, set it to the location of the Root Directory
+    if(cluster == 0) cluster = BPB->clustLocRootdir;
+
+    uint32_t Debug_Backup_Cluster = cluster;
+
+    //Get all the cluster chain and set the size of the buffer
+    uint32_t nClusts = 0;
+    tVFS *vfs = FAT_read_table(drive, cluster, &nClusts);
+  
+    //reserve memory for the directory's info
+    uint16_t *buf = malloc(nClusts * BPB->SectClust * 512);
+    uint8_t *obuf = (uint8_t *) buf;
+
+    uint32_t DIR_len = *(len);
+
+    if(vfs[0].cluster >= 0x0FFFFFF8) vfs[0].cluster = cluster;
+
+    //Read all of the clusters in the cluster chain of the root directory
+    for(uint32_t i = 0; i < nClusts; i++)
+    { 
+        if(vfs[i].cluster >= 0x0FFFFFF8) break;
+          
+        uint32_t lba = FAT_cluster_LBA(vfs[i].cluster);
+        /*trace("Debug_Backup_Cluster = %i\n", Debug_Backup_Cluster);
+        trace("vfs[i].cluster = %i\n", vfs[i].cluster);
+        trace("lba = %i\n", lba);
+        trace("BPB->SectClust = %i\n", BPB->SectClust);
+        trace("buf = %i\n", buf);*/
+        PIO_READ_ATA(0, lba, BPB->SectClust, (uint16_t *) buf);
+        buf += (512 * BPB->SectClust);      
+        
+    }
+    //Check which entry is 0, this is the last entry in the DIR
+    for(int i = 0; obuf[i] != NULL; i += 32)
+    {
+        //trace("buffer[i]: %i\n", obuf[i]);
+        DIR_len = (i/32);
+    }
+
+    FAT32_DIR *res = (FAT32_DIR *) obuf;
+
+    *(len) = DIR_len + 1;
+    return res;
+}
+
 
 tVFS *FATFindFreeClusterChain(uint8_t drive, uint32_t size, uint32_t *len)
 {
@@ -296,41 +380,4 @@ tVFS *FATFindFreeClusterChain(uint8_t drive, uint32_t size, uint32_t *len)
     return vfs;
 }
 
-FAT32_DIR *ReadDir(uint8_t drive, uint32_t cluster, uint32_t *len)
-{
-    //If the cluster is 0, set it to the location of the Root Directory
-    if(cluster == 0) cluster = BPB->clustLocRootdir;
 
-    //Get all the cluster chain and set the size of the buffer
-    uint32_t nClusts = 0;
-    tVFS *vfs = FAT_read_table(drive, cluster, &nClusts);
-
-    //reserve memory for the directory's info
-    uint16_t *buf = malloc(nClusts * BPB->SectClust * 512);
-    uint8_t *obuf = (uint8_t *) buf;
-
-    uint32_t DIR_len = *(len);
-
-    if(vfs[0].cluster >= 0x0FFFFFF8) vfs[0].cluster = cluster;
-
-    //Read all of the clusters in the cluster chain of the root directory
-    for(int i = 0; i < nClusts; i++)
-    {
-        if(vfs[i].cluster >= 0x0FFFFFF8) break;
-        uint32_t lba = FAT_cluster_LBA(vfs[i].cluster);
-        PIO_READ_ATA(drive, lba, BPB->SectClust, (uint16_t *) buf);
-        buf += (512 * BPB->SectClust);         
-    }
-
-    //Check which entry is 0, this is the last entry in the DIR
-    for(int i = 0; obuf[i] != NULL; i += 32)
-    {
-        //trace("buffer[i]: %i\n", obuf[i]);
-        DIR_len = (i/32);
-    }
-
-    FAT32_DIR *res = (FAT32_DIR *) obuf;
-
-    *(len) = DIR_len + 1;
-    return res;
-}

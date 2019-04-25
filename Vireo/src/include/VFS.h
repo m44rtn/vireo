@@ -16,6 +16,8 @@ typedef struct{
 
 typedef struct{
     uint8_t HD0; //drive ATA number for HD0 (location of BIRDOS folder)
+    uint32_t SYSFOLDER_LBA;
+    uint32_t SYSFOLDER_CLUST;
 } tVFS_INFO;
 
 tVFS_INFO vfs_info;

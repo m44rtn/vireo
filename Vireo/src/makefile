@@ -50,7 +50,7 @@ kernel:
 	ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.sys bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o \
 	bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o \
 	bin/memory.o bin/pci.o bin/ahci.o bin/ATA.o bin/mfat.o bin/fat.o bin/hdd.o bin/iso.o bin/DRVhandl.o \
-	bin/v86.o bin/multitasking.o bin/v86c.o
+	bin/v86.o bin/multitasking.o bin/v86c.o -Map=kernel.map
 	#ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.bin bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/reshut.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o bin/shell.o bin/memory.o bin/paging.o
 	rm grub/boot/kernel.sys
 	cp -i bin/Build/kernel.sys grub/boot/kernel.sys

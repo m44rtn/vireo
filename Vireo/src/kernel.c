@@ -6,7 +6,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 {
 	//announce ourselves
 	clearscr();	
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.202"); //release, major, minor, build
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.212"); //release, major, minor, build
 	//setup the segments
 	segments.cs = cs;
 	segments.ss = ss;
@@ -36,10 +36,10 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//drive testing stuff
 	
-	//get_drive_info();
+	get_drive_info();
 	//trace("drive = HD%i\n", vfs_info.HD0);
-	
-	uint8_t drive = 0; //vfs_info.HD0;
+	FATinit(vfs_info.HD0);
+	uint8_t drive = vfs_info.HD0; //vfs_info.HD0;
 	
 	//apparantly this is necesarry
 	uint32_t len = 0;
@@ -51,15 +51,14 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	/* setting up the test tasks */
 	uint32_t *task1 = malloc(4096);
-	uint32_t LOC = FAT_Traverse("HD0/BIRDOS/");
-    File *file = FindFile("TASK1   SYS ", LOC, drive);
+    File *file = FindFile("TASK1   SYS", vfs_info.SYSFOLDER_CLUST, drive);
     uint32_t lba = FAT_cluster_LBA(file->FileLoc);
 	trace("File 1 lba = %i\n", (uint32_t) lba);
     PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) task1);
 
 
 	uint32_t *task2 = malloc(4096);
-    File *file2 = FindFile("TASK2   SYS ", LOC, drive);
+    File *file2 = FindFile("TASK2   SYS ", vfs_info.SYSFOLDER_CLUST, drive);
     uint32_t lba2 = FAT_cluster_LBA(file2->FileLoc);
 	trace("File 2 lba = %i\n", (uint32_t) lba2);
     PIO_READ_ATA(0, lba2, ((file2->size / 512) + 1), (uint16_t *) task2);
@@ -72,7 +71,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	
 	trace("Pushing task 1, eip = %i\n", (uint32_t) task1);
-	task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
+	task_push(TASK_HIGH, (uint32_t) (task1 - 0x1b0), TASK_FLAG_KERNEL);
 	trace("Pushing task 2, eip = %i\n", (uint32_t) task2);
 	task_push(TASK_HIGH, (uint32_t) task2, TASK_FLAG_KERNEL);
 	//clearscr();

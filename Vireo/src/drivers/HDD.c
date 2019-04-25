@@ -10,28 +10,45 @@ void get_drive_info()
 	if(systeminfo.slave == SYS_PATA)
 	{ 
 		FATinit(1);
-		result = FindNextDir("BIRDOS", 1, 0);
+		
+		vfs_info.HD0 = 1;
+		extern uint32_t mem_table_entry;
 
-		if (result < 0xFFFFFFF8) root_drive = 1;
+		uint32_t LOC = FAT_Traverse("HD0/ROOT/");
+
+    	File *file = (File *) fat_find_dir(1, "BIRDOS", LOC);
+    	uint32_t lba = FAT_cluster_LBA(file->FileLoc);
+		uint16_t *buf = malloc(file->size);
+
+		vfs_info.SYSFOLDER_LBA = lba;
+		vfs_info.SYSFOLDER_CLUST = file->FileLoc;
+		
+    	PIO_READ_ATA(1, lba, ((file->size / 512) + 1), (uint16_t *) buf);
+
+		if (result < 0x0FFFFFF8) root_drive = 1;
 	}
 	
 	if(systeminfo.master == SYS_PATA)
 	{ 
 		FATinit(0);
-		
+	
 		vfs_info.HD0 = 0;
+		extern uint32_t mem_table_entry;
 
 		uint32_t LOC = FAT_Traverse("HD0/ROOT/");
-    	File *file = FindFile("BIRDOS      ", LOC, 0);
-    	uint32_t lba = FAT_cluster_LBA(file->FileLoc);
-		trace("File 1 lba = %i\n", (uint32_t) lba);
-    	PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) 0);
 
-		if (result < 0xFFFFFFF8) root_drive = 0;
+    	File *file = (File *) fat_find_dir(0, "BIRDOS", LOC);
+    	uint32_t lba = FAT_cluster_LBA(file->FileLoc);
+		uint16_t *buf = malloc(file->size);
+
+		vfs_info.SYSFOLDER_LBA = lba;
+		vfs_info.SYSFOLDER_CLUST = file->FileLoc;
+
+    	PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) buf);
+		if (result < 0x0FFFFFF8) root_drive = 0;
 		
 	}
 	
-
 	vfs_info.HD0 = root_drive;
 }
 

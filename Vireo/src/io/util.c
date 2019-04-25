@@ -72,14 +72,14 @@ char* movestr(char* str, uint32_t from)
 	return str;
 }
 
-bool hasStr(char * str, char* str2)
+bool hasStr(char * str_longest, char* str_shortest)
 {
 	bool result = true;
-	uint8_t size = strlen(str2);
+	uint8_t size = strlen(str_shortest);
 	
 	int i = 0;
 	for(i; i < size; i++){
-		if(str[i] != str2[i]) result = false;
+		if(str_longest[i] != str_shortest[i]) result = false;
 		
 	}
 	
