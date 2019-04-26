@@ -287,6 +287,8 @@ tVFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
         iterations++;
     }while(table_val != 0 && ((table_val & 0x0FFFFFFF) < 0x0FFFFFF8));
 
+    demalloc(ftable);
+
     return list;
 
 }
