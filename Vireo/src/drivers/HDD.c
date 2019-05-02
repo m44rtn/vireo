@@ -16,7 +16,7 @@ void get_drive_info()
 
 		uint32_t LOC = FAT_Traverse("HD0/ROOT/");
 
-    	File *file = (File *) fat_find_dir(1, "BIRDOS", LOC);
+    	File *file = (File *) fat_find_dir(1, "BIRDOS", BPB->clustLocRootdir);
     	uint32_t lba = FAT_cluster_LBA(file->FileLoc);
 		uint16_t *buf = malloc(file->size);
 
@@ -37,7 +37,7 @@ void get_drive_info()
 
 		uint32_t LOC = FAT_Traverse("HD0/ROOT/");
 
-    	File *file = (File *) fat_find_dir(0, "BIRDOS", LOC);
+    	File *file = (File *) fat_find_dir(0, "BIRDOS", BPB->clustLocRootdir);
     	uint32_t lba = FAT_cluster_LBA(file->FileLoc);
 		uint16_t *buf = malloc(file->size);
 

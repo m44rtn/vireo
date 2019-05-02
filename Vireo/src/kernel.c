@@ -6,7 +6,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 {
 	//announce ourselves
 	clearscr();	
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.213"); //release, major, minor, build
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.215"); //release, major, minor, build
 	//setup the segments
 	segments.cs = cs;
 	segments.ss = ss;
@@ -48,7 +48,12 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//uint32_t *thing = FindDriver("VESA    SYS "); //lot's of errors
 	
 	//clearscr();
+
+	trace("System folder clust: %i\n", vfs_info.SYSFOLDER_CLUST);
+	trace("System folder lba: %i\n\n", vfs_info.SYSFOLDER_LBA  );
+	trace("System folder clust - fndnxtdr: %i\n\n", FindNextDir("BIRDOS", 0, BPB->clustLocRootdir));
 	
+
 	/* setting up the test tasks */
 	uint32_t *task1 = malloc(4096);
     File *file = FindFile("TASK1   SYS", vfs_info.SYSFOLDER_CLUST, drive);
@@ -58,7 +63,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 
 
 	uint32_t *task2 = malloc(4096);
-    File *file2 = FindFile("TASK2   SYS ", vfs_info.SYSFOLDER_CLUST, drive);
+    File *file2 = FindFile("TASK2   SYS", vfs_info.SYSFOLDER_CLUST, drive);
     uint32_t lba2 = FAT_cluster_LBA(file2->FileLoc);
 	trace("File 2 lba = %i\n", (uint32_t) lba2);
     PIO_READ_ATA(0, lba2, ((file2->size / 512) + 1), (uint16_t *) task2);

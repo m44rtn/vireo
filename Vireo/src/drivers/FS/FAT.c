@@ -74,10 +74,10 @@ File *FindFile(char *filename, uint32_t dirLoc, uint8_t drive)
 
     for(uint32_t i = 0; i < len; i++)
     {
-        //name_holder = strtok(filename, ".");
+        //strcopy(name_holder, dir[i].name);
+        /*name_holder = strtok(filename, ".");*/
         name_holder = dir[i].name;
-        trace("%s\n", (uint32_t) name_holder);
-        if(!eqlstr(name_holder, filename)) continue;
+        if(!hasStr(name_holder, filename)) continue;
         foundFile = i;
         break;
         
@@ -129,24 +129,28 @@ File *fat_find_dir(uint8_t drive, char *DirName, uint32_t PreviousDirClust)
     File *file;
     
     strcopy(name, DirName);
-    
+    /*trace("\n\nname: %s\n", name);*/
     //get the directory
     FAT32_DIR *DIR = ReadDir(drive, 2, &DIRlen);
     
     //Take a look at all the entries in the directory and see if it contains the name of the folder
     //and check if the entry corresponds to that of a direcotry.
     //Doesn't care about the length of the name, if a part of the name is correct then it returns.
-    for(int i = 0; i < DIRlen; i++) 
+    for(int i = 0; i < DIRlen; i++) {
         if(hasStr(DIR[i].name, name) && (DIR[i].attrib & 0x10))
         {
             file->FileLoc = ((DIR[i].clHi << 16) | DIR[i].clLo);
             file->size = DIR[i].fSize;
-            print("directory found!\n");
-            return file;
-        }; 
+            /*print("directory found!\n");*/
+            break;
+            //return file;
+        }
+    }
 
     if(res == 0x0FFFFFFF)
         return (File *) 0x0FFFFFFF;
+
+    return file;
 }
 
 uint32_t FindNextDir(char *DirName, uint8_t drive, uint32_t prevClust)
@@ -158,16 +162,20 @@ uint32_t FindNextDir(char *DirName, uint8_t drive, uint32_t prevClust)
     
     strcopy(name, DirName);
     
+    
+    if(hasStr(DirName, "ROOT")) return BPB->clustLocRootdir;
+
     //get the directory
     FAT32_DIR *DIR = ReadDir(drive, prevClust, &DIRlen);
-    if(hasStr(DirName, "ROOT")) return BPB->clustLocRootdir;
+
     //Take a look at all the entries in the directory and see if it contains the name of the folder
-    //and check if the entry corresponds to that of a direcotry.
+    //and check if the entry corresponds to that of a directory.
     //Doesn't care about the length of the name, if a part of the name is correct then it returns.
-    for(int i = 0; i < DIRlen; i++) 
+    for(uint32_t i = 0; i < DIRlen; i++) 
         if(hasStr(DIR[i].name, name) && (DIR[i].attrib & 0x10))
         {
             res = i;
+            break;
             i = DIRlen;
         }; 
 
@@ -261,7 +269,7 @@ tVFS *FAT_read_table(uint8_t drive, uint32_t cluster, uint32_t *nClusts)
 {
     tVFS *list;
     uint32_t clust = cluster;
-    uint32_t table_val, iterations;
+    uint32_t table_val, iterations = 0;
     uint32_t *ftable = malloc(512);
 
     /*trace("cluster = %i\n", cluster);
