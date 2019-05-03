@@ -6,7 +6,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 {
 	//announce ourselves
 	clearscr();	
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.215"); //release, major, minor, build
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.219"); //release, major, minor, build
 	//setup the segments
 	segments.cs = cs;
 	segments.ss = ss;
@@ -20,7 +20,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//systeminfo.FLAGS = 0;
 
 	//Setup Memory info
-	GRUB_GetMemInfo(mbh);
+	memory_init(mbh);
 	
 	//Setup all drive management stuff
 	print("\nDetecting master type...\n");

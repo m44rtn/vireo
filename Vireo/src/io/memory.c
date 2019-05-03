@@ -18,6 +18,12 @@ typedef struct{
 MEM_TABLE *mem_table[MEM_TABLE_SIZE];
 uint32_t mem_table_entry = 1;
 
+void memory_init(multiboot_info_t* mbh)
+{
+	GRUB_GetMemInfo(mbh);
+	//memory_set_stack( (systeminfo.mem_total * 1024) );
+	
+}
 
 void GRUB_GetMemInfo(multiboot_info_t* mbh){
 	

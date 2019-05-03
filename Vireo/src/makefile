@@ -4,6 +4,11 @@ LDPARAMS = -m elf_i386
 
 SETUPLOC = ../../SETUP/
 
+OBJFILES = bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o \
+	bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o \
+	bin/memory.o bin/pci.o bin/ahci.o bin/ATA.o bin/mfat.o bin/fat.o bin/hdd.o bin/iso.o bin/DRVhandl.o \
+	bin/v86.o bin/multitasking.o bin/v86c.o
+
 #CFLAGS = -m32 -c -ffreestanding
 #ASFLAGS = -f elf32
 
@@ -18,6 +23,7 @@ kernel:
 	nasm $(ASPARAMS) -o bin/isra.o asm/isr.asm
 	nasm $(ASPARAMS) -o bin/idta.o asm/idt.asm
 	nasm $(ASPARAMS) -o bin/asm.o asm/asm.asm
+	nasm $(ASPARAMS) -o bin/stack.o asm/stack.asm
 
 	nasm $(ASPARAMS) -o bin/v86.o asm/v86.asm
 	gcc $(GCCPARAMS) -o bin/v86c.o -c drivers/v86.c
@@ -33,7 +39,6 @@ kernel:
 	gcc $(GCCPARAMS) -o bin/ahci.o -c drivers/ATA/SATA.c
 	gcc $(GCCPARAMS) -o bin/ATA.o -c drivers/ATA/ATA.c
 	gcc $(GCCPARAMS) -o bin/hdd.o -c drivers/HDD.c
-	#nasm $(ASPARAMS) -o bin/atasm.o storage/ATA.asm
 	
 	gcc $(GCCPARAMS) -o bin/fat.o -c drivers/FS/FAT.c
 	gcc $(GCCPARAMS) -o bin/iso.o -c drivers/FS/ISO9660.c
@@ -42,16 +47,11 @@ kernel:
 
 	gcc $(GCCPARAMS) -o bin/DRVhandl.o -c drivers/DriverHandler.c
 	gcc $(GCCPARAMS) -o bin/multitasking.o -c io/multitasking.c
-
-	#modules
-	nasm modules/pVESA.asm -f bin -o modules/bin/VESA.SYS
 		
-	#nasm -f bin -o bin/Build/loader.sys loader.asm
-	ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.sys bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o \
-	bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o \
-	bin/memory.o bin/pci.o bin/ahci.o bin/ATA.o bin/mfat.o bin/fat.o bin/hdd.o bin/iso.o bin/DRVhandl.o \
-	bin/v86.o bin/multitasking.o bin/v86c.o -Map=kernel.map
-	#ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.bin bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/reshut.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o bin/shell.o bin/memory.o bin/paging.o
+	#STACK.O SHOULD ALWAYS BE THE LAST MODULE!
+	ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.sys $(OBJFILES) bin/stack.o -Map=kernel.map 
+	
+
 	rm grub/boot/kernel.sys
 	cp -i bin/Build/kernel.sys grub/boot/kernel.sys
 	grub-mkrescue -o birdos.iso grub/

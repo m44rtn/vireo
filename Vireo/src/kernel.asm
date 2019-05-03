@@ -8,7 +8,8 @@ dd - (0x1BADB002+0x00)
 bits 32
 
 extern main	    
-extern enable_A20	
+extern stack, end_stack
+extern memory_init
 global start
 global paging	
 
@@ -17,14 +18,17 @@ section .text
 start:
 cli
 
-;reserve a stack above the 1MiB mark
-mov ebp, 0x10000000
-mov esp, 0x100FFFFF
+mov ebp, stack
+mov esp, end_stack
 
 ;call paging
 push cs
 push ss
-push ebx ;for the GRUB loader's mem stuff
+push ebx ;for the grub loader's mem stuff
+
+;setup memory info 'n such
+;push ebx ;for the GRUB loader's mem stuff
+;call memory_init
 
 kernel:
 call main		;Go to the C kernel
@@ -104,3 +108,4 @@ Page_table:
 
 Page_Dir:
     times 1024 dd 0x00
+

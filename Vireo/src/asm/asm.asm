@@ -209,4 +209,18 @@ call do_regs
 
 iret
 
+
+global memory_set_stack
+memory_set_stack:
+pop eax
+
+sub eax, 1
+mov esp, eax
+
+;sub eax, 0xfffff
+mov ebp, 0x0000
+
+;mov ebp, 0x000000
+;mov esp, 0x400000
+ret
 StackPointer dd 0
