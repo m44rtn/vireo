@@ -12,6 +12,7 @@ typedef struct{
 	uint32_t size;
 	uint32_t *next;
 	bool alloct;
+	uint32_t entry;
 } MEM_TABLE;
 
 
@@ -38,7 +39,7 @@ void GRUB_GetMemInfo(multiboot_info_t* mbh){
 	mem_table[0]->next = MEM_start;
 	mem_table[0]->alloct = true;
 
-	for(int i = 1; i < MEM_TABLE_SIZE; i++)
+	for(uint32_t i = 1; i < MEM_TABLE_SIZE; i++)
 	{
 		mem_table[i]->alloct = false;
 		mem_table[i]->size = NULL;
@@ -63,12 +64,12 @@ void *malloc(size_t size)
 
 	if(mem_table_entry >= MEM_TABLE_SIZE)
 	{
-		for(int i = 0; i < MEM_TABLE_SIZE; i++)
+		for(uint32_t i = 0; i < MEM_TABLE_SIZE; i++)
 		{
 			if(mem_table[i]->alloct == false && (mem_table[i]->size == 0 || mem_table[i]->size >= size))
 			{
 				entry = i;
-				i = MEM_TABLE_SIZE;
+				break;
 			}
 		}
 	}
@@ -84,6 +85,9 @@ void *malloc(size_t size)
 	mem_table[entry]->alloct = true;
 	mem_table[entry]->loc = mem_table[entry - 1]->next;
 	mem_table[entry]->next = mem_table[entry]->loc + size;
+
+	mem_table[entry]->entry = entry; //this one is apparently necessary for demalloc
+
 	MEM_MAX -= size;
 
 	if(mem_table_entry < MEM_TABLE_SIZE) mem_table_entry++;
@@ -92,10 +96,19 @@ void *malloc(size_t size)
 }
 
 void demalloc(void *ptr)
-{
-	int entry;
-	for(entry = 0; entry < MEM_TABLE_SIZE && mem_table[entry]->loc != ptr; entry++);
-	trace("entry of the de-allocation: %i\n", entry);
+{	
+
+	uint32_t entry;
+	for(uint32_t i = 0; i < MEM_TABLE_SIZE; i++)
+	{
+
+		if(mem_table[i]->loc == ptr) 
+		{
+			entry = mem_table[i]->entry;
+			break;
+		}
+	}
+	
 	mem_table[entry]->alloct = false;
 }
 

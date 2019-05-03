@@ -6,7 +6,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 {
 	//announce ourselves
 	clearscr();	
-	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.219"); //release, major, minor, build
+	trace(" Vireo kernel %s x86\n\n", (int) "v0.5.5.234"); //release, major, minor, build
 	//setup the segments
 	segments.cs = cs;
 	segments.ss = ss;
@@ -43,7 +43,6 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//apparantly this is necesarry
 	uint32_t len = 0;
-	//tVFS *vfs = FATFindFreeClusterChain(0, 10 * 4096, &len);
 
 	//uint32_t *thing = FindDriver("VESA    SYS "); //lot's of errors
 	

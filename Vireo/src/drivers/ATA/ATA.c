@@ -217,11 +217,11 @@ void PIO_READ_ATA(uint8_t drive, uint32_t start, uint8_t sctrWRITE, uint16_t *bu
     
     ATAwait();
     
-    if(DRIVE_ERROR_DETECT(buf, 256)) //nuke with software reset
+    /*if(DRIVE_ERROR_DETECT(buf, 256)) //nuke with software reset
     {
         ATA_swreset();
         PIO_READ_ATA(drive, start, sctrWRITE, buf);
-    }
+    }*/
 }
 
 
