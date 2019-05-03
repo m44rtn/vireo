@@ -8,7 +8,7 @@
 
 
 uint8_t CurrentTasks = 0;       //amount of tasks in the queue
-static uint8_t ExecTask = 0xFF; //current task
+static uint8_t ExecTask = 0; //current task
 
 //request a task by using int 3, eax = 0x01 (that's the plan)
 
@@ -33,11 +33,10 @@ uint32_t Task_Save_State(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp,
 
     tasks[ExecTask].registers.esi = esi;
     tasks[ExecTask].registers.edi = edi;
+
     //tasks[ExecTask].registers.EFLAGS = EFLAGS;
 
-    //printline("TASK%i -eax=", 0, 1);
-    //printline(hexstr(eax), 13, (ExecTask + 1) * 2);
-    //print("\n");
+    
 
     //return the registers in 'reverse order' (so that we can safely return from the interrupt)
     //return ss, esp, EFLAGS, cs, eip, eax, ecx, edx, ebx, esp, ebp, esi, edi;   
@@ -56,8 +55,14 @@ void task_timeguard()
         tasks[ExecTask].quantum--;   
         trace("quantum=%i\n", tasks[ExecTask].quantum);
 
-        outb(PIC1, 0x20);
-        jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);
+        trace("TASK1 -eax=%i\n", tasks[0].registers.eax);
+        //printline(hexstr(), 13, (ExecTask) * 2);
+        //print("\n");
+        uint16_t i = 0;
+        while(i < 0xFFFF) i++;
+        //outb(PIC1, 0x20);
+        //jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);
+        return;
     } 
     
     //If the task isn't done, save it's state before we delete it.
@@ -70,9 +75,9 @@ void task_timeguard()
 
     //tell the PIC we're done with the interrupt to (hopefully) avoid 
     //being in an interrupt forever.
-    outb(PIC1, 0x20);
-    jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);
-    
+    //outb(PIC1, 0x20);
+    //systeminfo.FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
+    //jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);    
 }
 
 

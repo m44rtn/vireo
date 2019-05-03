@@ -40,8 +40,6 @@ FAT32_BPB *FATinit(uint8_t drive)
     //trace("BPB->bSector: %i\n", BPB->bSector);
     //trace("first_data_sector: %i\n", first_data_sector);
     
-    
-    trace("FATinit exit code: %i\n", 0);
     return BPB;
 }
 

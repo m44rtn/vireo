@@ -134,444 +134,448 @@ Linker script and memory map
 
                 0x0000000000200000                . = 0x200000
 
-.text           0x0000000000200000     0x9620
+.text           0x0000000000200000     0x9580
  *(.text)
  .text          0x0000000000200000     0x20ad bin/kasm.o
                 0x000000000020000c                start
                 0x0000000000200021                paging
- .text          0x00000000002020ad      0x35d bin/kc.o
+ .text          0x00000000002020ad      0x2c2 bin/kc.o
                 0x00000000002020ad                main
- .text          0x000000000020240a      0x157 bin/sys.o
-                0x000000000020240a                inb
-                0x0000000000202431                inw
-                0x000000000020245a                outb
-                0x0000000000202485                outw
-                0x00000000002024b0                outl
-                0x00000000002024d2                inl
-                0x00000000002024f8                sysinlong
-                0x000000000020251e                outsw
- .text          0x0000000000202561      0x734 bin/screen.o
-                0x0000000000202561                updCurs
-                0x00000000002025ea                setcolor
-                0x0000000000202603                trace
-                0x0000000000202705                putchar
-                0x0000000000202875                TextModeVideoMemDump
-                0x00000000002028ba                print
-                0x000000000020291c                printline
-                0x000000000020299b                linecheck
-                0x00000000002029d0                clearl
-                0x0000000000202a7c                clearscr
-                0x0000000000202aca                scroll
-                0x0000000000202bce                disablecursor
-                0x0000000000202c0a                paintscr
- .text          0x0000000000202c95      0x24b bin/gdt.o
-                0x0000000000202c95                Prep_TSS
-                0x0000000000202d36                TSS_update_stack
-                0x0000000000202d67                GDT
- .text          0x0000000000202ee0       0x36 bin/gdtasm.o
-                0x0000000000202ee0                gdt_set32
-                0x0000000000202f12                CRzero
- .text          0x0000000000202f16      0x5d6 bin/hardw.o
-                0x0000000000202f16                setints
-                0x0000000000202f5f                IRQclrmsk
-                0x0000000000202fd5                IRQclrallmsks
-                0x000000000020300e                IRQmskall
-                0x0000000000203070                IRQdisableall
-                0x00000000002030ac                IRQsetmsk
-                0x0000000000203120                initpics
-                0x0000000000203204                inthndld
-                0x0000000000203249                PIC_remap
-                0x0000000000203332                PIT_init
-                0x000000000020338b                inita20
-                0x0000000000203429                DetectSpeed
-                0x0000000000203491                keybsndcom
-                0x00000000002034c2                keybwait
- .text          0x00000000002034ec      0x12a bin/cpu.o
-                0x00000000002034ec                idtent
-                0x000000000020351a                setidt
-                0x0000000000203570                CPUID
-                0x000000000020359e                IDT_add
-                0x00000000002035fb                cpuSetMSR
- .text          0x0000000000203616      0x93e bin/isr.o
-                0x0000000000203616                isrinst
-                0x000000000020375f                isr0c
-                0x0000000000203798                isr1c
-                0x00000000002037e1                isr3c
-                0x000000000020380d                isr4c
-                0x000000000020381f                isr7c
-                0x0000000000203866                isr8c
-                0x000000000020388d                isr11c
-                0x00000000002038b8                isr12c
-                0x00000000002038e4                isr13c
-                0x0000000000203dd3                isr14c
-                0x0000000000203dfe                isr15
-                0x0000000000203e2a                isr20c
-                0x0000000000203e7b                isr21c
-                0x0000000000203ed0                isr30c
-                0x0000000000203f09                isr47c
- .text          0x0000000000203f54      0x56c bin/util.o
-                0x0000000000203f54                getBYTE
-                0x0000000000203f89                getWORD
-                0x0000000000203fbf                eqlstr
-                0x0000000000204043                sleep
-                0x0000000000204084                timer_start
-                0x00000000002040a3                timer_end
-                0x00000000002040d1                movestr
-                0x000000000020414a                hasStr
-                0x00000000002041ae                hexstr
-                0x0000000000204215                strlen
-                0x0000000000204246                TransformUpLowUC
-                0x00000000002042f6                PartyChop
-                0x0000000000204345                strtok
-                0x0000000000204396                strsep
-                0x00000000002043ee                strpbrk
- .text          0x00000000002044c0        0xa bin/idta.o
-                0x00000000002044c0                idt_set
- *fill*         0x00000000002044ca        0x6 
- .text          0x00000000002044d0       0xe2 bin/isra.o
-                0x00000000002044d0                isr0
-                0x00000000002044e7                isr1
-                0x00000000002044f0                isr3
-                0x00000000002044fa                isr4
-                0x0000000000204502                isr7
-                0x000000000020450b                isr8
-                0x0000000000204514                isr9
-                0x0000000000204515                isr10
-                0x0000000000204518                isr11
-                0x0000000000204529                isr13
-                0x0000000000204565                isr14
-                0x000000000020456f                isr20
-                0x0000000000204597                isr21
-                0x00000000002045a0                isr30
-                0x00000000002045a9                isr47
- *fill*         0x00000000002045b2        0xe 
- .text          0x00000000002045c0       0xfb bin/asm.o
-                0x00000000002045c0                PIT_initasm
-                0x00000000002045cf                PIT_readcount
-                0x00000000002045e7                enable_A20
-                0x0000000000204633                GetCPUVendor
-                0x000000000020464d                TLBflush
-                0x0000000000204657                getESP
-                0x0000000000204662                TSS_flush
-                0x000000000020466a                jmp_user_mode
-                0x0000000000204697                jmp_back_kernel
-                0x00000000002046ab                memory_set_stack
-                0x00000000002046b7                StackPointer
- .text          0x00000000002046bb      0x316 bin/errorHandl.o
-                0x00000000002046bb                kernel_panic
-                0x00000000002047ba                InitFail
-                0x0000000000204819                console_Warning
-                0x000000000020486b                error
- .text          0x00000000002049d1      0x170 bin/keyboard.o
-                0x00000000002049d1                keybin
-                0x0000000000204a14                putonscr
-                0x0000000000204a2d                IS_pressed
-                0x0000000000204a60                hang_for_key
-                0x0000000000204a8b                InitKbrd
- .text          0x0000000000204b41      0x3c0 bin/memory.o
-                0x0000000000204b41                memory_init
-                0x0000000000204b62                GRUB_GetMemInfo
-                0x0000000000204c49                malloc
-                0x0000000000204dc8                demalloc
-                0x0000000000204e2b                kmemset
-                0x0000000000204e5b                MemCopy
-                0x0000000000204eb0                strcopy
- .text          0x0000000000204f01      0x3e4 bin/pci.o
-                0x0000000000204f01                getPCIval
-                0x0000000000204fa2                GetPCIDevice
-                0x0000000000205151                pciConfigRead
-                0x00000000002051f7                pciConfigWrite
-                0x000000000020529b                pciGetInterruptLine
- .text          0x00000000002052e5      0x853 bin/ahci.o
-                0x00000000002052e5                AHCI_init
-                0x0000000000205362                getBAR5
-                0x00000000002053e8                AHCI_setup_port
-                0x000000000020541a                search_drives
-                0x0000000000205698                port_rebase
-                0x00000000002057fa                start_cmd
-                0x000000000020583c                stop_cmd
-                0x0000000000205892                Read_SATA
-                0x0000000000205ab2                find_cmdslot
- .text          0x0000000000205b38     0x1020 bin/ATA.o
-                0x0000000000205b38                ATA_init
-                0x0000000000205de3                ATAPI_init
-                0x0000000000205dfc                ATAwait
-                0x0000000000205e2f                ATAPI_CHECK
-                0x0000000000205f58                ATA_swreset
-                0x0000000000205ff0                DRIVE_ERROR_DETECT
-                0x000000000020604a                nIEN_rs
-                0x0000000000206092                PIO_READ_ATA
-                0x000000000020622c                PIO_WRITE_ATA
-                0x000000000020641a                PIO_READ_ATAPI
-                0x0000000000206796                DMA_ATA_SETUP
-                0x0000000000206895                DMA_ATA_READ
-                0x00000000002069e7                DMA_ATA_WRITE
-                0x0000000000206aea                ATA_STANDARD
- .text          0x0000000000206b58       0xf6 bin/mfat.o
-                0x0000000000206b58                MFAT_format
- .text          0x0000000000206c4e      0xc0c bin/fat.o
-                0x0000000000206c4e                GetBootCodeFAT
-                0x0000000000206c95                FATinit
-                0x0000000000206d56                GetFile
-                0x0000000000206dcf                FindFile
-                0x0000000000206ebd                FAT_Traverse
-                0x0000000000206f71                fat_find_dir
-                0x000000000020708e                FindNextDir
-                0x00000000002071b2                FAT32_WRITE_FILE
-                0x00000000002072d8                FAT32_DIRPREP
-                0x00000000002073a6                FAT32_Write_cluster
-                0x00000000002073f8                FAT32_READ_FILE
-                0x0000000000207464                FAT_cluster_LBA
-                0x000000000020749c                FAT_read_table
-                0x000000000020758a                ReadDir
-                0x00000000002076f1                FATFindFreeClusterChain
- .text          0x000000000020785a      0x261 bin/hdd.o
-                0x000000000020785a                get_drive_info
-                0x0000000000207a1e                GetFirstSectLBA
- .text          0x0000000000207abb        0x0 bin/iso.o
- .text          0x0000000000207abb      0x1f8 bin/DRVhandl.o
-                0x0000000000207abb                driver_type
-                0x0000000000207aeb                FindDriver
-                0x0000000000207c35                run_v86_driver
- *fill*         0x0000000000207cb3        0xd 
- .text          0x0000000000207cc0       0x61 bin/v86.o
-                0x0000000000207cc0                v86_enter
-                0x0000000000207cf9                do_exor
-                0x0000000000207d08                do_regs
- .text          0x0000000000207d21      0x87e bin/multitasking.o
-                0x0000000000207d21                Task_Save_State
-                0x0000000000207e2f                task_timeguard
-                0x0000000000207fb6                task_push_v86
-                0x0000000000208078                task_push
-                0x000000000020813b                task_pop
-                0x00000000002083ab                task_save
-                0x00000000002084c8                task_findnew
-                0x000000000020853c                task_internal_ret_from_interrupt
- .text          0x000000000020859f       0x72 bin/v86c.o
-                0x000000000020859f                v86_linear_to_sgoff
-                0x00000000002085dc                v86_sgoff_to_linear
- *fill*         0x0000000000208611        0xf 
- .text          0x0000000000208620     0x1000 bin/stack.o
-                0x0000000000208620                stack
-                0x0000000000209620                end_stack
+ .text          0x000000000020236f      0x157 bin/sys.o
+                0x000000000020236f                inb
+                0x0000000000202396                inw
+                0x00000000002023bf                outb
+                0x00000000002023ea                outw
+                0x0000000000202415                outl
+                0x0000000000202437                inl
+                0x000000000020245d                sysinlong
+                0x0000000000202483                outsw
+ .text          0x00000000002024c6      0x734 bin/screen.o
+                0x00000000002024c6                updCurs
+                0x000000000020254f                setcolor
+                0x0000000000202568                trace
+                0x000000000020266a                putchar
+                0x00000000002027da                TextModeVideoMemDump
+                0x000000000020281f                print
+                0x0000000000202881                printline
+                0x0000000000202900                linecheck
+                0x0000000000202935                clearl
+                0x00000000002029e1                clearscr
+                0x0000000000202a2f                scroll
+                0x0000000000202b33                disablecursor
+                0x0000000000202b6f                paintscr
+ .text          0x0000000000202bfa      0x24b bin/gdt.o
+                0x0000000000202bfa                Prep_TSS
+                0x0000000000202c9b                TSS_update_stack
+                0x0000000000202ccc                GDT
+ *fill*         0x0000000000202e45        0xb 
+ .text          0x0000000000202e50       0x36 bin/gdtasm.o
+                0x0000000000202e50                gdt_set32
+                0x0000000000202e82                CRzero
+ .text          0x0000000000202e86      0x5d6 bin/hardw.o
+                0x0000000000202e86                setints
+                0x0000000000202ecf                IRQclrmsk
+                0x0000000000202f45                IRQclrallmsks
+                0x0000000000202f7e                IRQmskall
+                0x0000000000202fe0                IRQdisableall
+                0x000000000020301c                IRQsetmsk
+                0x0000000000203090                initpics
+                0x0000000000203174                inthndld
+                0x00000000002031b9                PIC_remap
+                0x00000000002032a2                PIT_init
+                0x00000000002032fb                inita20
+                0x0000000000203399                DetectSpeed
+                0x0000000000203401                keybsndcom
+                0x0000000000203432                keybwait
+ .text          0x000000000020345c      0x12a bin/cpu.o
+                0x000000000020345c                idtent
+                0x000000000020348a                setidt
+                0x00000000002034e0                CPUID
+                0x000000000020350e                IDT_add
+                0x000000000020356b                cpuSetMSR
+ .text          0x0000000000203586      0x81b bin/isr.o
+                0x0000000000203586                isrinst
+                0x00000000002036cf                isr0c
+                0x0000000000203708                isr1c
+                0x0000000000203751                isr3c
+                0x000000000020377d                isr4c
+                0x000000000020378f                isr7c
+                0x00000000002037d6                isr8c
+                0x00000000002037fd                isr11c
+                0x0000000000203828                isr12c
+                0x0000000000203854                isr13c
+                0x0000000000203c20                isr14c
+                0x0000000000203c4b                isr15
+                0x0000000000203c77                isr20c
+                0x0000000000203cc8                isr21c
+                0x0000000000203d1d                isr30c
+                0x0000000000203d56                isr47c
+ .text          0x0000000000203da1      0x56c bin/util.o
+                0x0000000000203da1                getBYTE
+                0x0000000000203dd6                getWORD
+                0x0000000000203e0c                eqlstr
+                0x0000000000203e90                sleep
+                0x0000000000203ed1                timer_start
+                0x0000000000203ef0                timer_end
+                0x0000000000203f1e                movestr
+                0x0000000000203f97                hasStr
+                0x0000000000203ffb                hexstr
+                0x0000000000204062                strlen
+                0x0000000000204093                TransformUpLowUC
+                0x0000000000204143                PartyChop
+                0x0000000000204192                strtok
+                0x00000000002041e3                strsep
+                0x000000000020423b                strpbrk
+ *fill*         0x000000000020430d        0x3 
+ .text          0x0000000000204310        0xa bin/idta.o
+                0x0000000000204310                idt_set
+ *fill*         0x000000000020431a        0x6 
+ .text          0x0000000000204320       0xf1 bin/isra.o
+                0x0000000000204320                isr0
+                0x000000000020433c                isr1
+                0x000000000020434a                isr3
+                0x0000000000204354                isr4
+                0x000000000020435c                isr7
+                0x0000000000204365                isr8
+                0x0000000000204373                isr9
+                0x0000000000204374                isr10
+                0x0000000000204377                isr11
+                0x0000000000204388                isr13
+                0x00000000002043c4                isr14
+                0x00000000002043ce                isr20
+                0x00000000002043f6                isr21
+                0x00000000002043ff                isr30
+                0x0000000000204408                isr47
+ *fill*         0x0000000000204411        0xf 
+ .text          0x0000000000204420       0xfb bin/asm.o
+                0x0000000000204420                PIT_initasm
+                0x000000000020442f                PIT_readcount
+                0x0000000000204447                enable_A20
+                0x0000000000204493                GetCPUVendor
+                0x00000000002044ad                TLBflush
+                0x00000000002044b7                getESP
+                0x00000000002044c2                TSS_flush
+                0x00000000002044ca                jmp_user_mode
+                0x00000000002044f7                jmp_back_kernel
+                0x000000000020450b                memory_set_stack
+                0x0000000000204517                StackPointer
+ .text          0x000000000020451b      0x48d bin/errorHandl.o
+                0x000000000020451b                kernel_panic
+                0x000000000020461a                kernel_panic_dump
+                0x0000000000204791                InitFail
+                0x00000000002047f0                console_Warning
+                0x0000000000204842                error
+ .text          0x00000000002049a8      0x170 bin/keyboard.o
+                0x00000000002049a8                keybin
+                0x00000000002049eb                putonscr
+                0x0000000000204a04                IS_pressed
+                0x0000000000204a37                hang_for_key
+                0x0000000000204a62                InitKbrd
+ .text          0x0000000000204b18      0x3c0 bin/memory.o
+                0x0000000000204b18                memory_init
+                0x0000000000204b39                GRUB_GetMemInfo
+                0x0000000000204c20                malloc
+                0x0000000000204d9f                demalloc
+                0x0000000000204e02                kmemset
+                0x0000000000204e32                MemCopy
+                0x0000000000204e87                strcopy
+ .text          0x0000000000204ed8      0x3e4 bin/pci.o
+                0x0000000000204ed8                getPCIval
+                0x0000000000204f79                GetPCIDevice
+                0x0000000000205128                pciConfigRead
+                0x00000000002051ce                pciConfigWrite
+                0x0000000000205272                pciGetInterruptLine
+ .text          0x00000000002052bc      0x853 bin/ahci.o
+                0x00000000002052bc                AHCI_init
+                0x0000000000205339                getBAR5
+                0x00000000002053bf                AHCI_setup_port
+                0x00000000002053f1                search_drives
+                0x000000000020566f                port_rebase
+                0x00000000002057d1                start_cmd
+                0x0000000000205813                stop_cmd
+                0x0000000000205869                Read_SATA
+                0x0000000000205a89                find_cmdslot
+ .text          0x0000000000205b0f     0x1020 bin/ATA.o
+                0x0000000000205b0f                ATA_init
+                0x0000000000205dba                ATAPI_init
+                0x0000000000205dd3                ATAwait
+                0x0000000000205e06                ATAPI_CHECK
+                0x0000000000205f2f                ATA_swreset
+                0x0000000000205fc7                DRIVE_ERROR_DETECT
+                0x0000000000206021                nIEN_rs
+                0x0000000000206069                PIO_READ_ATA
+                0x0000000000206203                PIO_WRITE_ATA
+                0x00000000002063f1                PIO_READ_ATAPI
+                0x000000000020676d                DMA_ATA_SETUP
+                0x000000000020686c                DMA_ATA_READ
+                0x00000000002069be                DMA_ATA_WRITE
+                0x0000000000206ac1                ATA_STANDARD
+ .text          0x0000000000206b2f       0xf6 bin/mfat.o
+                0x0000000000206b2f                MFAT_format
+ .text          0x0000000000206c25      0xbf8 bin/fat.o
+                0x0000000000206c25                GetBootCodeFAT
+                0x0000000000206c6c                FATinit
+                0x0000000000206d19                GetFile
+                0x0000000000206d92                FindFile
+                0x0000000000206e80                FAT_Traverse
+                0x0000000000206f34                fat_find_dir
+                0x0000000000207051                FindNextDir
+                0x0000000000207175                FAT32_WRITE_FILE
+                0x000000000020729b                FAT32_DIRPREP
+                0x0000000000207369                FAT32_Write_cluster
+                0x00000000002073bb                FAT32_READ_FILE
+                0x0000000000207427                FAT_cluster_LBA
+                0x000000000020745f                FAT_read_table
+                0x000000000020754d                ReadDir
+                0x00000000002076b4                FATFindFreeClusterChain
+ .text          0x000000000020781d      0x261 bin/hdd.o
+                0x000000000020781d                get_drive_info
+                0x00000000002079e1                GetFirstSectLBA
+ .text          0x0000000000207a7e        0x0 bin/iso.o
+ .text          0x0000000000207a7e      0x1f8 bin/DRVhandl.o
+                0x0000000000207a7e                driver_type
+                0x0000000000207aae                FindDriver
+                0x0000000000207bf8                run_v86_driver
+ *fill*         0x0000000000207c76        0xa 
+ .text          0x0000000000207c80       0x61 bin/v86.o
+                0x0000000000207c80                v86_enter
+                0x0000000000207cb9                do_exor
+                0x0000000000207cc8                do_regs
+ .text          0x0000000000207ce1      0x81f bin/multitasking.o
+                0x0000000000207ce1                Task_Save_State
+                0x0000000000207def                task_timeguard
+                0x0000000000207f17                task_push_v86
+                0x0000000000207fd9                task_push
+                0x000000000020809c                task_pop
+                0x000000000020830c                task_save
+                0x0000000000208429                task_findnew
+                0x000000000020849d                task_internal_ret_from_interrupt
+ .text          0x0000000000208500       0x72 bin/v86c.o
+                0x0000000000208500                v86_linear_to_sgoff
+                0x000000000020853d                v86_sgoff_to_linear
+ *fill*         0x0000000000208572        0xe 
+ .text          0x0000000000208580     0x1000 bin/stack.o
+                0x0000000000208580                stack
+                0x0000000000209580                end_stack
 
 .text.__x86.get_pc_thunk.bx
-                0x0000000000209620        0x4
+                0x0000000000209580        0x4
  .text.__x86.get_pc_thunk.bx
-                0x0000000000209620        0x4 bin/kc.o
-                0x0000000000209620                __x86.get_pc_thunk.bx
+                0x0000000000209580        0x4 bin/kc.o
+                0x0000000000209580                __x86.get_pc_thunk.bx
 
 .text.__x86.get_pc_thunk.ax
-                0x0000000000209624        0x4
+                0x0000000000209584        0x4
  .text.__x86.get_pc_thunk.ax
-                0x0000000000209624        0x4 bin/sys.o
-                0x0000000000209624                __x86.get_pc_thunk.ax
+                0x0000000000209584        0x4 bin/sys.o
+                0x0000000000209584                __x86.get_pc_thunk.ax
 
 .text.__x86.get_pc_thunk.dx
-                0x0000000000209628        0x4
+                0x0000000000209588        0x4
  .text.__x86.get_pc_thunk.dx
-                0x0000000000209628        0x4 bin/multitasking.o
-                0x0000000000209628                __x86.get_pc_thunk.dx
+                0x0000000000209588        0x4 bin/multitasking.o
+                0x0000000000209588                __x86.get_pc_thunk.dx
 
-.iplt           0x0000000000209630        0x0
- .iplt          0x0000000000209630        0x0 bin/stack.o
+.iplt           0x0000000000209590        0x0
+ .iplt          0x0000000000209590        0x0 bin/stack.o
 
-.rodata         0x000000000020962c      0x978
- .rodata        0x000000000020962c      0x15b bin/kc.o
- .rodata        0x0000000000209787        0x3 bin/screen.o
-                0x0000000000209787                height
-                0x0000000000209788                width
-                0x0000000000209789                depth
- .rodata        0x000000000020978a      0x130 bin/isr.o
- .rodata        0x00000000002098ba       0x1b bin/util.o
- *fill*         0x00000000002098d5        0x3 
- .rodata        0x00000000002098d8      0x3d8 bin/errorHandl.o
- .rodata        0x0000000000209cb0        0xe bin/keyboard.o
- .rodata        0x0000000000209cbe       0x36 bin/pci.o
- .rodata        0x0000000000209cf4       0x9a bin/ahci.o
- *fill*         0x0000000000209d8e        0x2 
- .rodata        0x0000000000209d90      0x12c bin/ATA.o
- .rodata        0x0000000000209ebc       0x49 bin/mfat.o
- .rodata        0x0000000000209f05       0x22 bin/fat.o
- .rodata        0x0000000000209f27       0x11 bin/hdd.o
- .rodata        0x0000000000209f38       0x54 bin/DRVhandl.o
- .rodata        0x0000000000209f8c       0x18 bin/multitasking.o
+.rodata         0x000000000020958c      0x8cc
+ .rodata        0x000000000020958c       0xc1 bin/kc.o
+ .rodata        0x000000000020964d        0x3 bin/screen.o
+                0x000000000020964d                height
+                0x000000000020964e                width
+                0x000000000020964f                depth
+ .rodata        0x0000000000209650       0xd0 bin/isr.o
+ .rodata        0x0000000000209720       0x1b bin/util.o
+ *fill*         0x000000000020973b        0x1 
+ .rodata        0x000000000020973c      0x430 bin/errorHandl.o
+ .rodata        0x0000000000209b6c        0xe bin/keyboard.o
+ .rodata        0x0000000000209b7a       0x36 bin/pci.o
+ .rodata        0x0000000000209bb0       0x9a bin/ahci.o
+ *fill*         0x0000000000209c4a        0x2 
+ .rodata        0x0000000000209c4c      0x12c bin/ATA.o
+ .rodata        0x0000000000209d78       0x49 bin/mfat.o
+ .rodata        0x0000000000209dc1        0xb bin/fat.o
+ .rodata        0x0000000000209dcc       0x11 bin/hdd.o
+ .rodata        0x0000000000209ddd       0x54 bin/DRVhandl.o
+ .rodata        0x0000000000209e31       0x27 bin/multitasking.o
 
-.eh_frame       0x0000000000209fa4     0x153c
- .eh_frame      0x0000000000209fa4       0x58 bin/kc.o
- .eh_frame      0x0000000000209ffc      0x114 bin/sys.o
+.eh_frame       0x0000000000209e58     0x1558
+ .eh_frame      0x0000000000209e58       0x58 bin/kc.o
+ .eh_frame      0x0000000000209eb0      0x114 bin/sys.o
                                         0x12c (size before relaxing)
- .eh_frame      0x000000000020a110      0x1c8 bin/screen.o
+ .eh_frame      0x0000000000209fc4      0x1c8 bin/screen.o
                                         0x208 (size before relaxing)
- .eh_frame      0x000000000020a2d8       0x8c bin/gdt.o
+ .eh_frame      0x000000000020a18c       0x8c bin/gdt.o
                                          0xcc (size before relaxing)
- .eh_frame      0x000000000020a364      0x1fc bin/hardw.o
+ .eh_frame      0x000000000020a218      0x1fc bin/hardw.o
                                         0x23c (size before relaxing)
- .eh_frame      0x000000000020a560       0xa4 bin/cpu.o
+ .eh_frame      0x000000000020a414       0xa4 bin/cpu.o
                                          0xe4 (size before relaxing)
- .eh_frame      0x000000000020a604      0x23c bin/isr.o
+ .eh_frame      0x000000000020a4b8      0x23c bin/isr.o
                                         0x27c (size before relaxing)
- .eh_frame      0x000000000020a840      0x20c bin/util.o
+ .eh_frame      0x000000000020a6f4      0x20c bin/util.o
                                         0x24c (size before relaxing)
- .eh_frame      0x000000000020aa4c       0x88 bin/errorHandl.o
-                                         0xb4 (size before relaxing)
- .eh_frame      0x000000000020aad4       0xa4 bin/keyboard.o
+ .eh_frame      0x000000000020a900       0xa4 bin/errorHandl.o
+                                         0xd0 (size before relaxing)
+ .eh_frame      0x000000000020a9a4       0xa4 bin/keyboard.o
                                          0xe4 (size before relaxing)
- .eh_frame      0x000000000020ab78       0xec bin/memory.o
+ .eh_frame      0x000000000020aa48       0xec bin/memory.o
                                         0x118 (size before relaxing)
- .eh_frame      0x000000000020ac64       0xc8 bin/pci.o
+ .eh_frame      0x000000000020ab34       0xc8 bin/pci.o
                                         0x108 (size before relaxing)
- .eh_frame      0x000000000020ad2c      0x160 bin/ahci.o
+ .eh_frame      0x000000000020abfc      0x160 bin/ahci.o
                                         0x1a0 (size before relaxing)
- .eh_frame      0x000000000020ae8c      0x1f8 bin/ATA.o
+ .eh_frame      0x000000000020ad5c      0x1f8 bin/ATA.o
                                         0x238 (size before relaxing)
- .eh_frame      0x000000000020b084       0x24 bin/mfat.o
+ .eh_frame      0x000000000020af54       0x24 bin/mfat.o
                                          0x50 (size before relaxing)
- .eh_frame      0x000000000020b0a8      0x228 bin/fat.o
+ .eh_frame      0x000000000020af78      0x228 bin/fat.o
                                         0x268 (size before relaxing)
- .eh_frame      0x000000000020b2d0       0x48 bin/hdd.o
+ .eh_frame      0x000000000020b1a0       0x48 bin/hdd.o
                                          0x74 (size before relaxing)
- .eh_frame      0x000000000020b318       0x68 bin/DRVhandl.o
+ .eh_frame      0x000000000020b1e8       0x68 bin/DRVhandl.o
                                          0xa8 (size before relaxing)
- .eh_frame      0x000000000020b380      0x120 bin/multitasking.o
+ .eh_frame      0x000000000020b250      0x120 bin/multitasking.o
                                         0x160 (size before relaxing)
- .eh_frame      0x000000000020b4a0       0x40 bin/v86c.o
+ .eh_frame      0x000000000020b370       0x40 bin/v86c.o
                                          0x6c (size before relaxing)
 
 .note.gnu.property
-                0x000000000020b4e0       0x1c
+                0x000000000020b3b0       0x1c
  .note.gnu.property
-                0x000000000020b4e0       0x1c bin/stack.o
+                0x000000000020b3b0       0x1c bin/stack.o
 
-.rel.dyn        0x000000000020b4fc        0x0
- .rel.got       0x000000000020b4fc        0x0 bin/stack.o
- .rel.iplt      0x000000000020b4fc        0x0 bin/stack.o
- .rel.text      0x000000000020b4fc        0x0 bin/stack.o
- .rel.data.rel  0x000000000020b4fc        0x0 bin/stack.o
+.rel.dyn        0x000000000020b3cc        0x0
+ .rel.got       0x000000000020b3cc        0x0 bin/stack.o
+ .rel.iplt      0x000000000020b3cc        0x0 bin/stack.o
+ .rel.text      0x000000000020b3cc        0x0 bin/stack.o
+ .rel.data.rel  0x000000000020b3cc        0x0 bin/stack.o
 
-.data           0x000000000020b4fc       0x19
+.data           0x000000000020b3cc       0x18
  *(.data)
- .data          0x000000000020b4fc        0x4 bin/kc.o
-                0x000000000020b4fc                GRUBMAGIC
- .data          0x000000000020b500        0x0 bin/sys.o
- .data          0x000000000020b500        0x4 bin/screen.o
-                0x000000000020b500                color
- .data          0x000000000020b504        0x0 bin/gdt.o
- .data          0x000000000020b504        0x4 bin/hardw.o
-                0x000000000020b504                CMOS_NMI_disable
- .data          0x000000000020b508        0x0 bin/cpu.o
- .data          0x000000000020b508        0x0 bin/isr.o
- .data          0x000000000020b508        0x0 bin/util.o
- .data          0x000000000020b508        0x0 bin/errorHandl.o
- .data          0x000000000020b508        0x4 bin/keyboard.o
-                0x000000000020b508                scancodeset
- .data          0x000000000020b50c        0x8 bin/memory.o
-                0x000000000020b50c                MEM_start
-                0x000000000020b510                mem_table_entry
- .data          0x000000000020b514        0x0 bin/pci.o
- .data          0x000000000020b514        0x0 bin/ahci.o
- .data          0x000000000020b514        0x0 bin/ATA.o
- .data          0x000000000020b514        0x0 bin/mfat.o
- .data          0x000000000020b514        0x0 bin/fat.o
- .data          0x000000000020b514        0x0 bin/hdd.o
- .data          0x000000000020b514        0x0 bin/iso.o
- .data          0x000000000020b514        0x0 bin/DRVhandl.o
- .data          0x000000000020b514        0x1 bin/multitasking.o
- .data          0x000000000020b515        0x0 bin/v86c.o
+ .data          0x000000000020b3cc        0x4 bin/kc.o
+                0x000000000020b3cc                GRUBMAGIC
+ .data          0x000000000020b3d0        0x0 bin/sys.o
+ .data          0x000000000020b3d0        0x4 bin/screen.o
+                0x000000000020b3d0                color
+ .data          0x000000000020b3d4        0x0 bin/gdt.o
+ .data          0x000000000020b3d4        0x4 bin/hardw.o
+                0x000000000020b3d4                CMOS_NMI_disable
+ .data          0x000000000020b3d8        0x0 bin/cpu.o
+ .data          0x000000000020b3d8        0x0 bin/isr.o
+ .data          0x000000000020b3d8        0x0 bin/util.o
+ .data          0x000000000020b3d8        0x0 bin/errorHandl.o
+ .data          0x000000000020b3d8        0x4 bin/keyboard.o
+                0x000000000020b3d8                scancodeset
+ .data          0x000000000020b3dc        0x8 bin/memory.o
+                0x000000000020b3dc                MEM_start
+                0x000000000020b3e0                mem_table_entry
+ .data          0x000000000020b3e4        0x0 bin/pci.o
+ .data          0x000000000020b3e4        0x0 bin/ahci.o
+ .data          0x000000000020b3e4        0x0 bin/ATA.o
+ .data          0x000000000020b3e4        0x0 bin/mfat.o
+ .data          0x000000000020b3e4        0x0 bin/fat.o
+ .data          0x000000000020b3e4        0x0 bin/hdd.o
+ .data          0x000000000020b3e4        0x0 bin/iso.o
+ .data          0x000000000020b3e4        0x0 bin/DRVhandl.o
+ .data          0x000000000020b3e4        0x0 bin/multitasking.o
+ .data          0x000000000020b3e4        0x0 bin/v86c.o
 
-.data.rel       0x000000000020b518        0x4
- .data.rel      0x000000000020b518        0x4 bin/keyboard.o
-                0x000000000020b518                kbrdbfr
+.data.rel       0x000000000020b3e4        0x4
+ .data.rel      0x000000000020b3e4        0x4 bin/keyboard.o
+                0x000000000020b3e4                kbrdbfr
 
 .data.rel.local
-                0x000000000020b51c        0xc
+                0x000000000020b3e8        0xc
  .data.rel.local
-                0x000000000020b51c        0xc bin/DRVhandl.o
-                0x000000000020b51c                UNKOWN
-                0x000000000020b520                EMPTY
-                0x000000000020b524                VESA
+                0x000000000020b3e8        0xc bin/DRVhandl.o
+                0x000000000020b3e8                UNKOWN
+                0x000000000020b3ec                EMPTY
+                0x000000000020b3f0                VESA
 
-.got            0x000000000020b528        0x0
- .got           0x000000000020b528        0x0 bin/stack.o
+.got            0x000000000020b3f4        0x0
+ .got           0x000000000020b3f4        0x0 bin/stack.o
 
-.got.plt        0x000000000020b528        0xc
- .got.plt       0x000000000020b528        0xc bin/stack.o
-                0x000000000020b528                _GLOBAL_OFFSET_TABLE_
+.got.plt        0x000000000020b3f4        0xc
+ .got.plt       0x000000000020b3f4        0xc bin/stack.o
+                0x000000000020b3f4                _GLOBAL_OFFSET_TABLE_
 
-.igot.plt       0x000000000020b534        0x0
- .igot.plt      0x000000000020b534        0x0 bin/stack.o
+.igot.plt       0x000000000020b400        0x0
+ .igot.plt      0x000000000020b400        0x0 bin/stack.o
 
-.bss            0x000000000020b540    0x68f10
+.bss            0x000000000020b400    0x68f10
  *(.bss)
- .bss           0x000000000020b540        0xc bin/kc.o
-                0x000000000020b540                KERNEL_FLAGS
- .bss           0x000000000020b54c        0x0 bin/sys.o
- .bss           0x000000000020b54c       0x10 bin/screen.o
-                0x000000000020b54c                cursorX
-                0x000000000020b550                cursorY
- *fill*         0x000000000020b55c        0x4 
- .bss           0x000000000020b560       0x5e bin/gdt.o
- *fill*         0x000000000020b5be        0x2 
- .bss           0x000000000020b5c0        0x8 bin/hardw.o
- *fill*         0x000000000020b5c8       0x18 
- .bss           0x000000000020b5e0      0x826 bin/cpu.o
- *fill*         0x000000000020be06        0x2 
- .bss           0x000000000020be08        0xc bin/isr.o
-                0x000000000020be08                sec
- .bss           0x000000000020be14       0x10 bin/util.o
- .bss           0x000000000020be24        0x8 bin/errorHandl.o
- .bss           0x000000000020be2c       0x1c bin/keyboard.o
-                0x000000000020be2c                enter
-                0x000000000020be30                bEnterPause
-                0x000000000020be34                boolsk3
-                0x000000000020be38                noreturn
-                0x000000000020be3c                shift
- .bss           0x000000000020be48        0x8 bin/memory.o
- .bss           0x000000000020be50        0x8 bin/pci.o
- .bss           0x000000000020be58        0x8 bin/ahci.o
- .bss           0x000000000020be60        0x8 bin/ATA.o
- .bss           0x000000000020be68        0x8 bin/mfat.o
- .bss           0x000000000020be70       0x10 bin/fat.o
- .bss           0x000000000020be80        0x8 bin/hdd.o
- .bss           0x000000000020be88        0x8 bin/iso.o
- .bss           0x000000000020be90        0x8 bin/DRVhandl.o
- .bss           0x000000000020be98        0xc bin/multitasking.o
-                0x000000000020be98                CurrentTasks
- .bss           0x000000000020bea4        0x8 bin/v86c.o
- *fill*         0x000000000020beac       0x14 
- COMMON         0x000000000020bec0    0x283e4 bin/kc.o
-                0x000000000020bec0                BPB
-                0x000000000020bee0                tasks
-                0x000000000020c180                systeminfo
-                0x000000000020c200                pci_device_info
-                0x0000000000234200                segments
-                0x0000000000234204                vfs_info
-                0x0000000000234220                devices
-                0x00000000002342a0                abar
- *fill*         0x00000000002342a4       0x1c 
- COMMON         0x00000000002342c0       0x68 bin/gdt.o
-                0x00000000002342c0                tss
- COMMON         0x0000000000234328        0x8 bin/cpu.o
-                0x0000000000234328                VendorID
-                0x000000000023432c                cpuvend
- COMMON         0x0000000000234330        0xe bin/isr.o
-                0x0000000000234330                before_int_ax
-                0x0000000000234332                tckcounter
-                0x0000000000234334                int_stack
-                0x0000000000234338                last_interrupt
-                0x000000000023433a                before_int_di
-                0x000000000023433c                counter
- *fill*         0x000000000023433e        0x2 
- COMMON         0x0000000000234340      0x100 bin/keyboard.o
-                0x0000000000234340                buff
- COMMON         0x0000000000234440    0x40004 bin/memory.o
-                0x0000000000234440                mem_table
-                0x0000000000274440                MEM_MAX
- COMMON         0x0000000000274444        0x8 bin/ATA.o
-                0x0000000000274444                prdt
-                0x0000000000274448                BMR
- COMMON         0x000000000027444c        0x4 bin/fat.o
-                0x000000000027444c                ROOTDIR
+ .bss           0x000000000020b400        0xc bin/kc.o
+                0x000000000020b400                KERNEL_FLAGS
+ .bss           0x000000000020b40c        0x0 bin/sys.o
+ .bss           0x000000000020b40c       0x10 bin/screen.o
+                0x000000000020b40c                cursorX
+                0x000000000020b410                cursorY
+ *fill*         0x000000000020b41c        0x4 
+ .bss           0x000000000020b420       0x5e bin/gdt.o
+ *fill*         0x000000000020b47e        0x2 
+ .bss           0x000000000020b480        0x8 bin/hardw.o
+ *fill*         0x000000000020b488       0x18 
+ .bss           0x000000000020b4a0      0x826 bin/cpu.o
+ *fill*         0x000000000020bcc6        0x2 
+ .bss           0x000000000020bcc8        0xc bin/isr.o
+                0x000000000020bcc8                sec
+ .bss           0x000000000020bcd4       0x10 bin/util.o
+ .bss           0x000000000020bce4        0x8 bin/errorHandl.o
+ .bss           0x000000000020bcec       0x1c bin/keyboard.o
+                0x000000000020bcec                enter
+                0x000000000020bcf0                bEnterPause
+                0x000000000020bcf4                boolsk3
+                0x000000000020bcf8                noreturn
+                0x000000000020bcfc                shift
+ .bss           0x000000000020bd08        0x8 bin/memory.o
+ .bss           0x000000000020bd10        0x8 bin/pci.o
+ .bss           0x000000000020bd18        0x8 bin/ahci.o
+ .bss           0x000000000020bd20        0x8 bin/ATA.o
+ .bss           0x000000000020bd28        0x8 bin/mfat.o
+ .bss           0x000000000020bd30       0x10 bin/fat.o
+ .bss           0x000000000020bd40        0x8 bin/hdd.o
+ .bss           0x000000000020bd48        0x8 bin/iso.o
+ .bss           0x000000000020bd50        0x8 bin/DRVhandl.o
+ .bss           0x000000000020bd58        0xd bin/multitasking.o
+                0x000000000020bd58                CurrentTasks
+ *fill*         0x000000000020bd65        0x3 
+ .bss           0x000000000020bd68        0x8 bin/v86c.o
+ *fill*         0x000000000020bd70       0x10 
+ COMMON         0x000000000020bd80    0x283e4 bin/kc.o
+                0x000000000020bd80                BPB
+                0x000000000020bda0                tasks
+                0x000000000020c040                systeminfo
+                0x000000000020c0c0                pci_device_info
+                0x00000000002340c0                segments
+                0x00000000002340c4                vfs_info
+                0x00000000002340e0                devices
+                0x0000000000234160                abar
+ *fill*         0x0000000000234164       0x1c 
+ COMMON         0x0000000000234180       0x68 bin/gdt.o
+                0x0000000000234180                tss
+ COMMON         0x00000000002341e8        0x8 bin/cpu.o
+                0x00000000002341e8                VendorID
+                0x00000000002341ec                cpuvend
+ COMMON         0x00000000002341f0        0xe bin/isr.o
+                0x00000000002341f0                before_int_ax
+                0x00000000002341f2                tckcounter
+                0x00000000002341f4                int_stack
+                0x00000000002341f8                last_interrupt
+                0x00000000002341fa                before_int_di
+                0x00000000002341fc                counter
+ *fill*         0x00000000002341fe        0x2 
+ COMMON         0x0000000000234200      0x100 bin/keyboard.o
+                0x0000000000234200                buff
+ COMMON         0x0000000000234300    0x40004 bin/memory.o
+                0x0000000000234300                mem_table
+                0x0000000000274300                MEM_MAX
+ COMMON         0x0000000000274304        0x8 bin/ATA.o
+                0x0000000000274304                prdt
+                0x0000000000274308                BMR
+ COMMON         0x000000000027430c        0x4 bin/fat.o
+                0x000000000027430c                ROOTDIR
 LOAD bin/kasm.o
 LOAD bin/kc.o
 LOAD bin/sys.o

@@ -46,22 +46,12 @@ getVESAControllerInfo:
         cmp cx, 0xFFFF
         je setRes
 
-       
-        push gs
-
         mov ax, 0x4F01
         mov di, VESAModeInfo
         int 0x10
-
-        mov ax, 0
-        mov ds, ax
-        mov es, ax
-        mov fs, ax
-        mov gs, ax
-
-        pop gs
-
-        cmp DWORD [VESAModeInfo.PhysBasePtr], 0x00
+        
+        mov eax, DWORD [VESAModeInfo.PhysBasePtr]
+        cmp eax, 0x00
         je .next
 
         push edx
@@ -75,7 +65,7 @@ getVESAControllerInfo:
         cmp eax, edx
         jna .next
 
-        mov gs, cx
+        mov word [val], cx
         mov edx, eax
 
 .next:
@@ -86,13 +76,15 @@ getVESAControllerInfo:
        jmp $
 
 setRes:
-    mov cx, gs
+    mov cx, word [val]
     mov ax, 0x4F01
     mov di, VESAModeInfo
     int 0x10
 
     mov ax, 0x4F02
     mov bx, cx
+    or bx, 0x4000
+    mov di, VESAModeInfo
     int 0x10
 
     jmp infinite
@@ -108,6 +100,7 @@ pVESA_SetDiffMode:
 
 infinite:
     jmp $
+
 
 VESAinfo: ;VESA
 .VBEsignature db "VBE2"
@@ -128,6 +121,8 @@ VESAinfo: ;VESA
 .OEMProductRevSegment dw 0x0000
 .Reserved times 222 db 0
 .OEMDatatimes times 256 db 0
+
+times 8 dd 0x00 ;just for safety
 
 VESAModeInfo:
 .ModeAttributes dw 0
@@ -159,11 +154,13 @@ VESAModeInfo:
 .RsvdMaskSize db 0
 .RsvdFieldPosition db 0
 .DirectColorModeInfo db 0
-.PhysBasePtr dd 0
+.PhysBasePtr dd 0 
 .OffScreenMemOffset dd 0
 .OffScreenMemSize dw 0
 .ReservedB times 206 db 0x00
 
 finished db '_VIREO-DONE'
+
+val dw 0
 
 size_marker:

@@ -162,6 +162,8 @@ jmp_user_mode:
 pop edi
 pop eax
 
+push edi
+
 push eax
 mov ax, 0x23
 mov ds, ax
@@ -171,6 +173,9 @@ mov gs, ax
 pop eax
 
 mov ecx, esp
+
+pop edi
+
 push 0x23
 push ecx
 pushf 
@@ -178,11 +183,12 @@ pushf
 push 0x1B
 push eax
 
+
 call do_exor
 call do_regs
 
 iret
-.string db "eip=%i\n", 0x00
+.string db "eip=%i", 0x00
 
 global jmp_back_kernel
 extern do_regs

@@ -4,8 +4,10 @@
 #include "types.h"
 #include "../io/hardware.h"
 #include "../drivers/screen.h"
+#include "../io/multitasking.h"
 
 void kernel_panic(char* error);
+void kernel_panic_dump(char* error);
 void InitFail(char* fail);
 void console_Warning(char* warning);
 

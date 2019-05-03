@@ -40,6 +40,7 @@ extern counter
 
 isr0:
 pushad
+call Task_Save_State
 cld
 call isr0c
 push 300
@@ -49,6 +50,8 @@ iretd
 
 isr1:
 pushad
+call Task_Save_State
+
 cld
 call isr1c
 popad
@@ -81,6 +84,7 @@ iretd
 
 isr8:
 pushad
+call Task_Save_State
 cld
 call isr8c
 popad

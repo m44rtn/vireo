@@ -12,6 +12,7 @@ vframe /W30 /H4 /B0x00 /F0x07 shadow /C
 vecho Copying files...
 REM copy boot.zip C:\boot.zip
 mkdir C:\BIRDOS 
+del C:\BIRDOS\*.*
 copy D:\VESA.SYS C:\BIRDOS\VESA.SYS
 copy D:\TASK1.SYS C:\BIRDOS\TASK1.SYS
 copy D:\TASK2.SYS C:\BIRDOS\TASK2.SYS

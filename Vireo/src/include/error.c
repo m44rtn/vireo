@@ -3,7 +3,7 @@
 void kernel_panic(char* error){
 	clearscr();
 	
-	paintscr(0x70);
+	paintscr(0x1F);
 	print("Your PC is being shutdown to prevent any further damage to your computer.\n\n");
 	print("Error:\n\t");
 	print(error);
@@ -19,6 +19,33 @@ void kernel_panic(char* error){
 	print("For more contact information see the website: http://feathercode.github.io");
 	print("\n\nBy sending this info we can solve the problem in future builds.\n");
 	disablecursor();
+	while(1);
+}
+
+void kernel_panic_dump(char* error)
+{
+	clearscr();
+	
+	paintscr(0x1F);
+	print("Your PC is being shutdown to prevent any further damage to your computer.\n\n");
+	print("Error:\n\t");
+	print(error);
+	print("\n\n\n");
+	
+	print("Register dump:\n");
+	trace("eax=%i\t", tasks[0].registers.eax);
+	trace("ecx=%i\t", tasks[0].registers.ecx);
+	trace("edx=%i\t", tasks[0].registers.edx);
+	trace("ebx=%i\n", tasks[0].registers.ebx);
+	trace("esi=%i\t", tasks[0].registers.esi);
+	trace("edi=%i\t", tasks[0].registers.edi);
+
+	trace("esp=%i\t", tasks[0].registers.esp);
+	trace("ebp=%i\n\n", tasks[0].registers.ebp);
+
+	trace("eip=%i\n", tasks[0].entry_ptr);
+
+
 	while(1);
 }
 

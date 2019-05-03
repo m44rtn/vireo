@@ -42,13 +42,13 @@ void isrinst(){
 void isr0c(){ 
 
 	//divide by 0 exception
-	kernel_panic("DEVISION_BY_ZERO");
+	kernel_panic_dump("DEVISION_BY_ZERO");
 	outb(PIC1, 0x20); //say the PIC that we're done with the interrupt
 
 }
 
 void isr1c(){
-	kernel_panic("DEBUG");
+	kernel_panic_dump("DEBUG");
 	sleep(300);
 	outb(PIC1, 0x20);
 	
@@ -79,7 +79,7 @@ void isr7c(){
 
 void isr8c(){
 
-	kernel_panic("DOUBLE_FAULT");
+	kernel_panic_dump("DOUBLE_FAULT");
 	while(1);
 	outb(PIC1,0x20);
 	outb(PIC2, 0x20);
@@ -115,13 +115,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 { 
 	//general protection fault
 
-	setcolor(0x0E);
-	print("\n\n#GP");
-	setcolor(0x07);
-	trace(" -IP=%i", ip);
-	trace("\t-CS=%i", cs);
-	trace("\t-SP=%i", esp);
-	trace("\t-SS=%i\n", ss);
+	
 	//trace("\t-EFLAGS=%i\n", eflags);
 	CTX ctx;
 	
@@ -137,10 +131,10 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 
 			//reserve some stack space
 			stack -= 3;
-			ctx.esp = ((esp & 0xffff) - 6) & 0xffff;
+			ctx.esp = ((esp & 0xffff) - 8) & 0xffff;
 
 			//put our return stuff on the stack
-			stack[0] =  ip + 2;
+			stack[0] =  ip_addr + 2;
 			stack[1] = 0x1b;
 			stack[2] = (uint16_t) 0x20202;
 
@@ -151,9 +145,11 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.eip = (uint32_t) ivt[*(ip_addr + 1) * 2];
 			
 			
-			trace("tasks[0].registers.eax = %i\n", tasks[0].registers.eax);
-			trace("tasks[0].registers.edi = %i\n", tasks[0].registers.edi);
-			/*trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);*/
+			//trace("tasks[0].registers.eax = %i\n", tasks[0].registers.eax);
+			//trace("tasks[0].registers.edi = %i\n", tasks[0].registers.edi);
+			
+			//trace("stack = %i\n",    (uint32_t) stack);
+			//trace("stack[0] = %i\n", (uint32_t) stack[0]);
 
 			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
@@ -172,7 +168,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.esp = ((esp & 0xffff) - 2) & 0xffff;
 
 			//maybe this needs to be switched around
-			//stack[0] = (uint16_t) 0; //0x200006;
+			stack[0] = (uint16_t) 0; //0x200006;
 						
 			ctx.cs = (uint32_t) cs;
 			ctx.ss = 0x23;
@@ -185,7 +181,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		case 0x9d:
 			//basically just ignore this one
 			//print("v86 POPF\n");
-			ctx.esp = ((esp & 0xffff) + 0) & 0xffff;
+			ctx.esp = ((esp & 0xffff) + 2) & 0xffff;
 			//ctx.eflags = (uint16_t) 0x20202;
 
 			stack[0] = 0;
@@ -199,19 +195,21 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		break;
 
 		case 0xcf:
-			print("v86 IRET\n");
-			//stack = esp;
-			
-			ctx.eip	= (uint32_t) stack[0];
+			//print("v86 IRET\n");
+
+			trace("stack = %i\n",    (uint32_t) stack);
+			trace("stack[0] = %i\n", (uint32_t) stack[1]);
+						
+			ctx.eip	= (uint32_t) (stack[1] - 0x1b0);
 			ctx.cs	=  0x1b;
-			ctx.esp	= (uint32_t) ((esp & 0xffff) + 6) & 0xffff;
+			ctx.esp	= (uint32_t) ( (esp & 0xffff) + 8) & 0xffff;
 			ctx.ss	=  0x23;
 
 			
-			trace("CTX: -IP=%i", ctx.eip);
+			/*trace("CTX: -IP=%i", ctx.eip);
 			trace("\t-CS=%i", ctx.cs);
 			trace("\t-SP=%i", ctx.esp);
-			trace("\t-SS=%i\n", ctx.ss);
+			trace("\t-SS=%i\n", ctx.ss);*/
 										
 			outb(PIC1, 0x20);
 			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
@@ -247,9 +245,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		break;
 
 		default:
-			trace("tasks[0].registers.eax = %i\n", tasks[0].registers.eax);
-			trace("tasks[0].registers.edi = %i\n", tasks[0].registers.edi);
-			trace("tasks[0].registers.ecx = %i\n", tasks[0].registers.ecx);
+			kernel_panic_dump("GENERAL_PROTECTION_FAULT");
 			while(1); //just for testing purposes
 			kernel_panic("GENERAL_PROTECTION_FAULT");
 			
@@ -271,7 +267,7 @@ void isr15(){
 uint16_t counter;
 void isr20c(){
 	systeminfo.PITcount++;
-
+	
 	if(systeminfo.PITcount > 0xFFFFFFFF) systeminfo.PITcount == 0;
 
 	if((systeminfo.FLAGS & INFO_FLAG_MULTITASKING_ENABLED))
