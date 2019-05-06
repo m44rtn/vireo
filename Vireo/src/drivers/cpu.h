@@ -2,7 +2,7 @@
 #define CPU_H
 
 #include "../include/types.h"
-#include "screen.h"
+#include "screen/screen.h"
 #include "../io/sys.h"
 #include "../include/info.h"
 

@@ -22,7 +22,7 @@ SOFTWARE.
  */ 
 
 #include "include/types.h"
-#include "drivers/screen.h"
+#include "drivers/screen/screen.h"
 #include "io/gdt.h"
 #include "drivers/cpu.h"
 #include "io/isr.h"
@@ -45,6 +45,7 @@ SOFTWARE.
 #include "include/DEFATA.h"
 #include "include/GRUB/multiboot.h" //mutliboot stuff --> grub
 #include "include/version.h"
+#include "drivers/screen/VESA.h"
 
 void kernel_version();
 
@@ -97,7 +98,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//clearscr();
 	
-	trace("number: %s\n", intstr(4096));
+	
 
 	/* setting up the test tasks */
 	/*uint32_t *task1 = malloc(4096);

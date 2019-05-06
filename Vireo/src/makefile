@@ -7,19 +7,16 @@ SETUPLOC = ../../SETUP/
 OBJFILES = bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o \
 	bin/hardw.o bin/cpu.o bin/isr.o bin/util.o bin/idta.o bin/isra.o bin/asm.o bin/errorHandl.o bin/keyboard.o \
 	bin/memory.o bin/pci.o bin/ahci.o bin/ATA.o bin/mfat.o bin/fat.o bin/hdd.o bin/iso.o bin/DRVhandl.o \
-	bin/v86.o bin/multitasking.o bin/v86c.o
+	bin/v86.o bin/multitasking.o bin/v86c.o bin/vesa.o
 
 #CFLAGS = -m32 -c -ffreestanding
 #ASFLAGS = -f elf32
 
 
 kernel: 
-	#get xenops here: https://github.com/m44rtn/xenops
-	xenops --file include/version.h --build
-
-	gcc $(GCCPARAMS) -o bin/kc.o -c kernel.c
 	nasm $(ASPARAMS) -o bin/kasm.o kernel.asm
-	gcc $(GCCPARAMS) -o bin/screen.o -c drivers/screen.c
+	gcc $(GCCPARAMS) -o bin/screen.o -c drivers/screen/screen.c
+	gcc $(GCCPARAMS) -o bin/vesa.o -c drivers/screen/VESA.c
 	gcc $(GCCPARAMS) -o bin/sys.o -c io/sys.c
 	gcc $(GCCPARAMS) -o bin/gdt.o -c io/gdt.c
 	nasm $(ASPARAMS) -o bin/gdtasm.o  asm/gdt.asm
@@ -50,6 +47,11 @@ kernel:
 
 	gcc $(GCCPARAMS) -o bin/DRVhandl.o -c drivers/DriverHandler.c
 	gcc $(GCCPARAMS) -o bin/multitasking.o -c io/multitasking.c
+
+	#get xenops here: https://github.com/m44rtn/xenops
+	xenops --file include/version.h --build
+
+	gcc $(GCCPARAMS) -o bin/kc.o -c kernel.c
 		
 	#STACK.O SHOULD ALWAYS BE THE LAST MODULE!
 	ld $(LDPARAMS) -T linker.ld -o bin/Build/kernel.sys $(OBJFILES) bin/stack.o -Map=kernel.map 

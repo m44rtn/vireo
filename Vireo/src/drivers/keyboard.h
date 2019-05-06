@@ -2,14 +2,13 @@
 #define KEYBOARD_H
 
 #include "../include/types.h"
-#include "screen.h"
 #include "../include/info.h"
 #include "../include/error.h"
 #include "../io/hardware.h"
 #include "../io/util.h"
 
 #include "../io/memory.h"
-#include "../drivers/screen.h"
+#include "../drivers/screen/screen.h"
 
 void hang_for_key(char key);
 bool IS_pressed(char key);

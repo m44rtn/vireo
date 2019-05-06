@@ -3,7 +3,7 @@
 
 #include "types.h"
 #include "../io/hardware.h"
-#include "../drivers/screen.h"
+#include "../drivers/screen/screen.h"
 #include "../io/multitasking.h"
 
 void kernel_panic(char* error);

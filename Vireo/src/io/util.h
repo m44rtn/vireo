@@ -3,7 +3,7 @@
 
 #include "../include/types.h"
 #include "sys.h"
-#include "../drivers/screen.h"
+#include "../drivers/screen/screen.h"
 #include "memory.h"
 
 #ifndef UTIL_LOWERCASE

@@ -272,11 +272,11 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
     uint8_t status;
 
     ATA_swreset();
-    trace("Drive is: %i\n", (int) drive);
-    trace("Start read sector at: %i\n", (int) start);
+    //trace("Drive is: %i\n", (int) drive);
+    //trace("Start read sector at: %i\n", (int) start);
     if(drive > 1) error(6);
     outb(ATA_PRIMARY_DRIVE_SELECTP, 0xE0 | (drive << 4));
-    trace("Send drive is: %i\n", (int) 0xE0 | 1 << 4);
+    //trace("Send drive is: %i\n", (int) 0xE0 | 1 << 4);
     
     inb(ATA_PRIMARY_DRIVE_CONTROLP);
     inb(ATA_PRIMARY_DRIVE_CONTROLP);
@@ -285,7 +285,7 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
 
     nIEN_rs(); //clear if set, so that we can receive interrupts
 
-    print("setting drive features and max buffersize...");
+    //print("setting drive features and max buffersize...");
     outb(ATA_PRIMARY_DRIVE_FEATURES, 0x00); //no DMA
 
 
@@ -293,7 +293,7 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
     outb(ATA_PRIMARY_DRIVE_LBAHIP, 2048 >> 8);  //same here (upper byte of value 512)
     print("done!\n");
 
-    print("Sending ATAPI packet...");
+    //print("Sending ATAPI packet...");
     outb(ATA_PRIMARY_DRIVE_COMSTAT, 0xA0); //command
     
 
@@ -304,14 +304,14 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
 
     //while((inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x80 == 0x80));
 
-    print(" done!\n");
+    //print(" done!\n");
     
    if(status & 0x01)
     {
         return;
     }
 
-    print("Sending ATAPI command...");
+    //print("Sending ATAPI command...");
 
     readcom[9] = 1; //one sector
     readcom[2] = (start >> 0x18);
@@ -341,11 +341,11 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
    //while(systeminfo.waitingforATAPI){ }
   
     int transfersize = inb(ATA_PRIMARY_DRIVE_LBAHIP) << 8 | inb(ATA_PRIMARY_DRIVE_LBAMIDP);
-    trace("Transfer size (b): %i\n", transfersize);
+    //trace("Transfer size (b): %i\n", transfersize);
     transfersize = transfersize / 2; //divide by two
-    trace("Transfer size (w): %i\n", transfersize);
+    //trace("Transfer size (w): %i\n", transfersize);
     
-    print("fetching data...");
+    //print("fetching data...");
     int i = 0;       
 
         while(i < transfersize){
@@ -358,7 +358,7 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
             //asm("hlt");
         }
     
-    print("done!\n");
+    //print("done!\n");
 
     //ATAwait();
     //sleep(300);
