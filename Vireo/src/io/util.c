@@ -102,6 +102,52 @@ char* hexstr(long val){
 	return outputstr;
 }
 
+/*char* intstr(long val)
+{
+	long tempval = val;
+	char* outputstr = /*malloc(11); "00000000\0";
+
+	char chrIndex;
+	char *Dig = "0123456789";
+
+	for(uint8_t i = 0; i < 8; i++)
+	{
+		chrIndex = ( (uint8_t) tempval & 0xFF) | 0x30;
+		trace("%i", chrIndex);
+		outputstr[i] = Dig[0 + chrIndex];
+		tempval >> 8;
+	}
+
+	return outputstr;
+}*/
+
+char *intstr(uint32_t val) {          
+    uint32_t i, sign;
+	char *str, *ret_str;
+    if ((sign = val) < 0) val = -val;
+    i = 0;
+    do {
+        str[i++] = val % 10 + '0';         
+    } while ((val /= 10) > 0);
+
+    if (sign < 0) str[i++] = '-';
+
+	i--;
+
+	uint32_t bi = i + 1;
+	uint32_t j;
+	for(j = 0; j < bi; j++)
+	{
+		ret_str[j] = str[i];
+		i--;
+	}
+
+	ret_str[j] = '\0';
+
+	return ret_str;
+    /* TODO: implement "reverse" */
+}
+
 uint32_t strlen(char* s){
 	uint32_t i = 0;
 	while(s[i])

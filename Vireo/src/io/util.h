@@ -17,6 +17,7 @@
 uint8_t getBYTE(uint32_t address, uint8_t BYTE);
 uint16_t getWORD(uint32_t address, uint8_t BYTE);
 char* hexstr(long val);
+char *intstr(uint32_t val);
 uint8_t eqlstr(char* str, char* strcom);
 
 void sleep(uint32_t sec);

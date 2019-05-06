@@ -134,7 +134,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.esp = ((esp & 0xffff) - 8) & 0xffff;
 
 			//put our return stuff on the stack
-			stack[0] =  ip_addr + 2;
+			stack[0] =  (uint16_t) ip_addr + 2;
 			stack[1] = 0x1b;
 			stack[2] = (uint16_t) 0x20202;
 

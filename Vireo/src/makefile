@@ -14,6 +14,9 @@ OBJFILES = bin/kasm.o bin/kc.o bin/sys.o bin/screen.o bin/gdt.o bin/gdtasm.o \
 
 
 kernel: 
+	#get xenops here: https://github.com/m44rtn/xenops
+	xenops --file include/version.h --build
+
 	gcc $(GCCPARAMS) -o bin/kc.o -c kernel.c
 	nasm $(ASPARAMS) -o bin/kasm.o kernel.asm
 	gcc $(GCCPARAMS) -o bin/screen.o -c drivers/screen.c
