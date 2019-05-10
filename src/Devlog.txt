@@ -1,0 +1,194 @@
+[devlog - system only]
+
+29/oct/2017 - BirdOS v0.20.279 --> v0.20.281
+- Used GRUB as bootloader, Memory requirements are now 128MB
+- Enabled paging
+
+22/oct/2017 - BirdOS v0.20.278
+- We're now using flat memory model instead of segmented memory model
+
+22/sept/2017 - BirdOS v0.20.275.0 --> BirdOS v0.20.277.0
+- Added the revision number to the systeminfo.version
+- Added console_Warning(), for warnings in the console
+- Added a function that can paint a piece of text a different color
+
+
+15/sept/2017 - BirdOS v0.20.274.0 --> BirdOS v0.20.274.8 [WINDOWS DEV SESSION]
+- Fixed an issue with keyboard scancodes not working properly
+- Began implementing keyboard scancode set 2 (standard) instead of 1
+- Added some Warning and Error functions
+
+
+7/sept/2017 - BirdOS v0.20.273.0
+- Added Sleep function
+- Fixed the PIT interrupt counting two times per interrupt
+
+
+2/sept/2017 - BirdOS v0.20.272.0
+- Fixed the PIT
+
+
+23/aug/2017 - Loader v0.01.1.0 --> Loader v0.01.2.0
+- added simple print for real mode
+- started working on higher resolutions (VESA mode for now)
+
+--[NOTE: As we have a loader and a kernel now, we will be changing the way we indicate things. The Loader
+is indicated with Loader v[major].[minor].[build].[revision] AND BirdOS will be indicated 
+with Kernel v[major].[minor].[build].[revision]; You'll also see brackets ('[]') with Kernel or Loader written between them
+to indicate what is what (only when we've worked on both of them on the same day).]--
+
+6/aug/2017 - build 02268-02271
+- Stopped working on physical memory manager but started directly on paging
+- Made the SystemInfo struct better and nicer to work with
+- Got a system info function working
+
+29/july/2017 - build 02255-02267
+- Finally! there is a working CPU Vendor detection
+
+19/july/2017 - build 02246-02254
+- Worked on the memory manager, first time it sort of works --> simple concept not good enough for an usable manager
+
+14/july/2017 - build 02240-02245
+- Worked on the memory manager
+
+12/july/2017 - build 02233-02239
+- Worked on the memory manager
+
+9/july/2017 - build 02232
+- Fixed a typo which wouldn't clear the last line
+- Discovered a bug where tapping [TAB] 31 times and then type a command and hit enter would result 
+in the system repeating the command as text several times on the screen on the same location.
+- Bug (because of excluding tab and space from the keybuffer) where the 'is not a command' message is on the same
+line as the command after using [TAB] until the next line
+
+7/july/2017 - build 02231-02260 - [Bug fixing]
+- Added-in [TAB]
+- We're now able to disable the cursor (for the kernel panic)
+- Ignored space in the keybuffer
+- re-wrote the "echo"-function (this also fixed the "WCHO" issue) and command and typed string dividing function 
+- fixed an issue where the single quote would be shown as '0' or 'Σ'
+- Added a kernel panic
+- Fixed the help message --> updated "CLSCR" to "CLS"
+- Fixed the numpad star character ('*') not showing on the screen
+- The [6] key works again
+- Fixed an issue where some keys would be seen as [ENTER]
+- Fixed an issue where [SHIFT] would show as symbols ([SHIFT] is still unsupported)
+- Fixed an issue where [ALT] and [CTRL/COMMAND] would show as symbols
+- Finally added the double fault (double error kind of thing) interrupt
+
+6/july/2017 - build 02230 - [QA session]
+- Found a bug where some keyboard keys are seen as [ENTER]
+- Found an issue where "ECHO[character]" is accepted as a command
+- Found an issue where "WCHO" is seen as the "ECHO" command
+- Found a problem where the fn and an [F..] key is seen as letters on laptops
+
+14/june/2017 - build 02224-02229
+- Fixed an issue where enter for pause would make the shell to start a new line (after pause)
+
+9/june/2017 - build 02222-02223
+- Changed 'CLSCR' to 'CLS' to make it more user friendly
+- Bug: Single Quote shows as 0
+- Solved: numpad star (*) showed as M / Bug: it shows as nothing
+
+2/june/2017 - build 02218-02221
+- Started on cleaning-up and commenting the code
+
+1/june/2017 - build 02215-02218
+- Gave the stack his own place, so it can't overwrite the kernel in case of a stack overflow (security against attackers)
+
+28/may/2017 - build 02195-02214
+- We have a working header storing info on free and used memory
+- Bug: [6] doesn't work because of the [SHIFT] exclusion
+
+23/may/2017 - build 02194-02195
+- Started on memory management (basic, the 'baby steps' to paging)
+
+22/may/2017 - build 02190-02193
+- Fixed [SHIFT] showing as 6
+
+20/may/2017 - build 02185-02189
+- Fixed the issue where after using the echo command, false commands wouldn't be seen as false
+- Fixed an issue with PAUSE not starting a new line
+
+5/may/2017
+- Started on a bootloader
+
+22/apr/2017 - build 02185
+- Removed code which was actually faulty but was overwritten by another piece of code
+- Added some extra version info (state e.g. 'pre' or 'test', architecture e.g. 'x86') looks like: [state.major.minor.build architecture] e.g. [pre.0.20.185 x86]
+
+21/apr/2017 - build 02184
+- Found a bug where after using the 'ECHO' command, one character would be seen as an empty one
+
+20/apr/2017 - build 02177-02183
+- New command: "NUM"
+
+16/apr/2017 - build 02135-02176
+- Did some code cleanup
+- Fixed an issue that printed the version info every time [ENTER] was pressed
+- Fixed an issue with [BACKSPACE] deleting characters which were not typed by the keyboard (but instead printed by the system)
+- New commands: "echo", "exit", "pause"
+
+15/apr/2017 - build 02105-02134
+- Fixed the bug with the keyboard buffer, it now stores correctly
+- Began working on the shell, commands: "help", "ver", "clscr"
+
+14/apr/2017 - build 02104 - [QA session]
+- Found a bug where the keyboard buffer is stored and used incorrectly [solved]
+- Found a problem where the PIT is incorrectly initialized
+- Found a glitch with [BACKSPACE] where you sometimes have to press 2 times in order to delete a character [solved]
+- Found a bug where software interrupts are handled incorrectly
+
+12/apr/2017 - build 0283-02103
+- Fixed  [ENTER] and the cursor (would be on the end instead of the next line when asked to)
+- Fixed [BACKSPACE] not backspacing when the cursor was located a line earlier or at the end of the screen
+- Added-in almost every keyboard key
+- Implemented CMOS_time, which fetches the time and prints it to the screen (although incorrect)
+
+7/apr/2017 - build 0251-0282
+- Optimized the number keycode finding algorithm (it now supports all numbers)
+- Enabled [TAB], [BACKSPACE] and [ENTER], still a bit buggy though
+
+4/apr/2017 - build 0246-0250
+- Started on the keyboard configuration (US keyboard only)
+
+1/apr/2017 - build 0245
+- Fixed the keyboard issue, it now works
+
+19/march/2017 - build 0241-0244
+- Did some system information variable storing
+- Redid the PIC initialization, it now at least reacts to a keyboard press (with a double-fault though)
+
+4/march/2017 - build 0228-0240
+- Found why the ISR 21 bug exists
+
+3/march/2017 - build 0224-0227
+- Fixed the double fault when you pressed a key > The A20 line was being enabled even when it already was enabled, raising an exception
+
+2/march/2017
+- Brainstorming how the ISR 21 bug and the double fault can be fixed
+
+1/march/2017 - build 0214-0223
+- Fixed an issue with the C kernel failing to initialize
+- The A20 line is enabled when starting the kernel 
+- Bug: No ISR seems to work [FIXED] > switched two values for debugging purposes, but didn't switch them back after debugging
+- Bug: ISR 21 doesn't get called
+- Enabled the keyboard hardware
+- Bug: Double fault after a key is pressed
+- CMOS time runs smoother, but still has the 4 = 1 bug
+
+24/feb/2017 - build 0213
+- Started on keyboard and A20 line (doesn't work)
+
+11/feb/2017 - build 0211 and more
+- Added a printline function with the abillity to print something at a specific location
+- Bug: CMOS time sometimes counts 4 seconds as 1, could be a CMOS specific problem
+
+9/feb/2017 - build 0201 and more
+- Started this devlog, hoping to update it a lot
+- Bug: CMOS_wait() can't handle double-digit numbers
+- Finished: CMOS_wait(int seconds), it waits for up to 9 seconds
+- Finished: Global Descriptor Table, System has 134,2 MB for it's own
+- Finished: Kernel.asm, which setups stack and loads kernel.c
+- Finished: Print(char* msg)
+- Finished: sys.c, which handles port-in and port-out data

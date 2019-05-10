@@ -1,0 +1,79 @@
+char getkey1_alpha(char key){ 		//keycode set 1
+	char keych;
+	
+	int i = 0x01;
+	int j = 0;
+	for(i; i < 0x0B & i != key; i++){	//numbers 0-9
+		if(i + 1 == key){				
+			if(i + 1 == 0x0B) keych = 0x30;
+			if(i + 1 == key && i + 1 != 0x0B) keych = 0x30 + j + 1;	
+			
+		}else{
+			j++;
+		}
+
+	}
+	if(key == 0x01)	keych = 0x01; //esc
+	if(key == 0x0C)	keych = 0x31; // - 
+	if(key == 0x0D) keych = '=';
+	if(key == 0x0E){
+		/* systeminfo.keybrdbfrloc--;
+				if(systeminfo.keybrdbfrloc < 0){
+					systeminfo.keybrdbfrloc = 0;
+				}*/
+				if(systeminfo.keybrdbfrloc <= 0){
+					systeminfo.keybrdbfrloc = 0;
+				}else{
+					putchar('\b');
+					systeminfo.keybrdbfrloc--;
+				}
+			
+	} //keych = '\b'; //bckspc
+	if(key == 0x0F)	keych = '\t'; //tab
+	if(key == 0x10 && shift == 0) keych = 'q'; else if(key == 0x10 & shift == 1) keych = 'Q';
+	if(key == 0x11) keych = 'w';
+	if(key == 0x12) keych = 'e';
+	if(key == 0x13) keych = 'r';
+	if(key == 0x14) keych = 't';
+	if(key == 0x15) keych = 'y';
+	if(key == 0x16) keych = 'u';
+	if(key == 0x17) keych = 'i';
+	if(key == 0x18) keych = 'o'; //
+	if(key == 0x19) keych = 'p';
+	if(key == 0x1A) keych = '[';
+	if(key == 0x1B) keych = ']';
+	if(key == 0x1C) enter = 1;    //enter
+	
+	if(key == 0x1D) keych = 0; //left ctrl
+	if(key == 0x1E) keych = 'a';
+	if(key == 0x1F) keych = 's';
+	if(key == 0x20) keych = 'd';
+	if(key == 0x21) keych = 'f';
+	if(key == 0x22) keych = 'g';
+	if(key == 0x23) keych = 'h';
+	if(key == 0x24) keych = 'j';
+	if(key == 0x25) keych = 'k';
+	if(key == 0x26) keych = 'l';
+	if(key == 0x27) keych = ';';
+	if(key == 0x28) keych = '\'';
+	if(key == 0x29) keych = '`';
+	if(key == 0x2A) keych = 0; //left shift
+	if(key == 0xAA) keych = 0; //left shift released
+	if(key == 0x2B) keych = '\\';
+	if(key == 0x2C) keych = 'z';
+	if(key == 0x2D) keych = 'x';
+	if(key == 0x2E) keych = 'c';
+	if(key == 0x2F) keych = 'v';
+	if(key == 0x30) keych = 'b';
+	if(key == 0x31) keych = 'n';
+	if(key == 0x32) keych = 'm';
+	if(key == 0x33) keych = ',';
+	if(key == 0x34) keych = '.';
+	if(key == 0x35) keych = '/';
+	if(key == 0x36) keych = 0; //right shift
+	if(key == 0x37) keych = 0x2A; //keypad star
+	if(key == 0x38) keych = 0; //left alt
+	if(key == 0x39) keych = ' '; //space
+	if(key == 0x9D) keych = 0; //right ctrl
+	return keych;
+}
