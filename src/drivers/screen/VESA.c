@@ -61,11 +61,9 @@ uint16_t vesa_findmode(int x, int y, int d)
     strncpy(ctrl->vbesign, "VBE2", 4);
 
     registers->eax = 0x4F00;
-    registers->edi = 0x2000;
-    registers->esi = 0x0000;
+    registers->edi = 0x2000 - 0x230;
 
     v86_interrupt(0x10, registers);
-    //print("Hello, VESA world!\n");
 
     trace("registers->eax = %i\n", registers->eax);
     if(registers->eax != 0x004F) return best;

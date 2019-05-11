@@ -143,7 +143,7 @@ Linker script and memory map
 
                 0x0000000000200000                . = 0x200000
 
-.text           0x0000000000200000     0x88ab
+.text           0x0000000000200000     0x88a1
  *(.text)
  .text          0x0000000000200000     0x20ad ../bin/obj/kasm.o
                 0x000000000020000c                start
@@ -367,157 +367,157 @@ Linker script and memory map
                 0x000000000020840a                v86_sgoff_to_linear
                 0x000000000020843f                v86_interrupt
                 0x00000000002084b7                v86_save_state
- .text          0x000000000020850f      0x39c ../bin/obj/vesa.o
+ .text          0x000000000020850f      0x392 ../bin/obj/vesa.o
                 0x000000000020850f                vesa_findmode
-                0x0000000000208826                vesa_difference
-                0x000000000020883b                vesa_put_pixel
+                0x000000000020881c                vesa_difference
+                0x0000000000208831                vesa_put_pixel
 
 .text.__x86.get_pc_thunk.ax
-                0x00000000002088ab        0x4
+                0x00000000002088a1        0x4
  .text.__x86.get_pc_thunk.ax
-                0x00000000002088ab        0x4 ../bin/obj/kc.o
-                0x00000000002088ab                __x86.get_pc_thunk.ax
+                0x00000000002088a1        0x4 ../bin/obj/kc.o
+                0x00000000002088a1                __x86.get_pc_thunk.ax
 
 .text.__x86.get_pc_thunk.bx
-                0x00000000002088af        0x4
+                0x00000000002088a5        0x4
  .text.__x86.get_pc_thunk.bx
-                0x00000000002088af        0x4 ../bin/obj/kc.o
-                0x00000000002088af                __x86.get_pc_thunk.bx
+                0x00000000002088a5        0x4 ../bin/obj/kc.o
+                0x00000000002088a5                __x86.get_pc_thunk.bx
 
 .text.__x86.get_pc_thunk.dx
-                0x00000000002088b3        0x4
+                0x00000000002088a9        0x4
  .text.__x86.get_pc_thunk.dx
-                0x00000000002088b3        0x4 ../bin/obj/multitasking.o
-                0x00000000002088b3                __x86.get_pc_thunk.dx
+                0x00000000002088a9        0x4 ../bin/obj/multitasking.o
+                0x00000000002088a9                __x86.get_pc_thunk.dx
 
-.iplt           0x00000000002088b8        0x0
- .iplt          0x00000000002088b8        0x0 ../bin/obj/stack.o
+.iplt           0x00000000002088b0        0x0
+ .iplt          0x00000000002088b0        0x0 ../bin/obj/stack.o
 
-.rodata         0x00000000002088b8      0x7a5
- .rodata        0x00000000002088b8       0x50 ../bin/obj/kc.o
- .rodata        0x0000000000208908        0x3 ../bin/obj/screen.o
-                0x0000000000208908                height
-                0x0000000000208909                width
-                0x000000000020890a                depth
- .rodata        0x000000000020890b       0xb5 ../bin/obj/isr.o
- .rodata        0x00000000002089c0       0x1b ../bin/obj/util.o
- *fill*         0x00000000002089db        0x1 
- .rodata        0x00000000002089dc      0x430 ../bin/obj/errorHandl.o
- .rodata        0x0000000000208e0c        0xe ../bin/obj/keyboard.o
- .rodata        0x0000000000208e1a       0x36 ../bin/obj/pci.o
- .rodata        0x0000000000208e50       0x9a ../bin/obj/ahci.o
- .rodata        0x0000000000208eea       0x6d ../bin/obj/ATA.o
- .rodata        0x0000000000208f57        0xb ../bin/obj/fat.o
- .rodata        0x0000000000208f62       0x11 ../bin/obj/hdd.o
- .rodata        0x0000000000208f73       0x54 ../bin/obj/DRVhandl.o
- .rodata        0x0000000000208fc7       0x27 ../bin/obj/multitasking.o
- .rodata        0x0000000000208fee       0x6f ../bin/obj/vesa.o
+.rodata         0x00000000002088b0      0x7a5
+ .rodata        0x00000000002088b0       0x50 ../bin/obj/kc.o
+ .rodata        0x0000000000208900        0x3 ../bin/obj/screen.o
+                0x0000000000208900                height
+                0x0000000000208901                width
+                0x0000000000208902                depth
+ .rodata        0x0000000000208903       0xb5 ../bin/obj/isr.o
+ .rodata        0x00000000002089b8       0x1b ../bin/obj/util.o
+ *fill*         0x00000000002089d3        0x1 
+ .rodata        0x00000000002089d4      0x430 ../bin/obj/errorHandl.o
+ .rodata        0x0000000000208e04        0xe ../bin/obj/keyboard.o
+ .rodata        0x0000000000208e12       0x36 ../bin/obj/pci.o
+ .rodata        0x0000000000208e48       0x9a ../bin/obj/ahci.o
+ .rodata        0x0000000000208ee2       0x6d ../bin/obj/ATA.o
+ .rodata        0x0000000000208f4f        0xb ../bin/obj/fat.o
+ .rodata        0x0000000000208f5a       0x11 ../bin/obj/hdd.o
+ .rodata        0x0000000000208f6b       0x54 ../bin/obj/DRVhandl.o
+ .rodata        0x0000000000208fbf       0x27 ../bin/obj/multitasking.o
+ .rodata        0x0000000000208fe6       0x6f ../bin/obj/vesa.o
 
-.eh_frame       0x0000000000209060     0x1660
- .eh_frame      0x0000000000209060       0x8c ../bin/obj/kc.o
- .eh_frame      0x00000000002090ec      0x100 ../bin/obj/sys.o
+.eh_frame       0x0000000000209058     0x1660
+ .eh_frame      0x0000000000209058       0x8c ../bin/obj/kc.o
+ .eh_frame      0x00000000002090e4      0x100 ../bin/obj/sys.o
                                         0x12c (size before relaxing)
- .eh_frame      0x00000000002091ec      0x1c8 ../bin/obj/screen.o
+ .eh_frame      0x00000000002091e4      0x1c8 ../bin/obj/screen.o
                                         0x208 (size before relaxing)
- .eh_frame      0x00000000002093b4       0x8c ../bin/obj/gdt.o
+ .eh_frame      0x00000000002093ac       0x8c ../bin/obj/gdt.o
                                          0xcc (size before relaxing)
- .eh_frame      0x0000000000209440      0x1fc ../bin/obj/hardw.o
+ .eh_frame      0x0000000000209438      0x1fc ../bin/obj/hardw.o
                                         0x23c (size before relaxing)
- .eh_frame      0x000000000020963c       0xa4 ../bin/obj/cpu.o
+ .eh_frame      0x0000000000209634       0xa4 ../bin/obj/cpu.o
                                          0xe4 (size before relaxing)
- .eh_frame      0x00000000002096e0      0x23c ../bin/obj/isr.o
+ .eh_frame      0x00000000002096d8      0x23c ../bin/obj/isr.o
                                         0x27c (size before relaxing)
- .eh_frame      0x000000000020991c      0x22c ../bin/obj/util.o
+ .eh_frame      0x0000000000209914      0x22c ../bin/obj/util.o
                                         0x26c (size before relaxing)
- .eh_frame      0x0000000000209b48       0xa4 ../bin/obj/errorHandl.o
+ .eh_frame      0x0000000000209b40       0xa4 ../bin/obj/errorHandl.o
                                          0xd0 (size before relaxing)
- .eh_frame      0x0000000000209bec       0xa4 ../bin/obj/keyboard.o
+ .eh_frame      0x0000000000209be4       0xa4 ../bin/obj/keyboard.o
                                          0xe4 (size before relaxing)
- .eh_frame      0x0000000000209c90      0x10c ../bin/obj/memory.o
+ .eh_frame      0x0000000000209c88      0x10c ../bin/obj/memory.o
                                         0x138 (size before relaxing)
- .eh_frame      0x0000000000209d9c       0xc8 ../bin/obj/pci.o
+ .eh_frame      0x0000000000209d94       0xc8 ../bin/obj/pci.o
                                         0x108 (size before relaxing)
- .eh_frame      0x0000000000209e64      0x160 ../bin/obj/ahci.o
+ .eh_frame      0x0000000000209e5c      0x160 ../bin/obj/ahci.o
                                         0x1a0 (size before relaxing)
- .eh_frame      0x0000000000209fc4      0x1f8 ../bin/obj/ATA.o
+ .eh_frame      0x0000000000209fbc      0x1f8 ../bin/obj/ATA.o
                                         0x238 (size before relaxing)
- .eh_frame      0x000000000020a1bc      0x228 ../bin/obj/fat.o
+ .eh_frame      0x000000000020a1b4      0x228 ../bin/obj/fat.o
                                         0x268 (size before relaxing)
- .eh_frame      0x000000000020a3e4       0x48 ../bin/obj/hdd.o
+ .eh_frame      0x000000000020a3dc       0x48 ../bin/obj/hdd.o
                                          0x74 (size before relaxing)
- .eh_frame      0x000000000020a42c       0x20 ../bin/obj/iso.o
+ .eh_frame      0x000000000020a424       0x20 ../bin/obj/iso.o
                                          0x4c (size before relaxing)
- .eh_frame      0x000000000020a44c       0x68 ../bin/obj/DRVhandl.o
+ .eh_frame      0x000000000020a444       0x68 ../bin/obj/DRVhandl.o
                                          0xa8 (size before relaxing)
- .eh_frame      0x000000000020a4b4      0x120 ../bin/obj/multitasking.o
+ .eh_frame      0x000000000020a4ac      0x120 ../bin/obj/multitasking.o
                                         0x160 (size before relaxing)
- .eh_frame      0x000000000020a5d4       0x84 ../bin/obj/v86c.o
+ .eh_frame      0x000000000020a5cc       0x84 ../bin/obj/v86c.o
                                          0xb0 (size before relaxing)
- .eh_frame      0x000000000020a658       0x68 ../bin/obj/vesa.o
+ .eh_frame      0x000000000020a650       0x68 ../bin/obj/vesa.o
                                          0xa8 (size before relaxing)
 
 .note.gnu.property
-                0x000000000020a6c0       0x1c
+                0x000000000020a6b8       0x1c
  .note.gnu.property
-                0x000000000020a6c0       0x1c ../bin/obj/stack.o
+                0x000000000020a6b8       0x1c ../bin/obj/stack.o
 
-.rel.dyn        0x000000000020a6dc        0x0
- .rel.got       0x000000000020a6dc        0x0 ../bin/obj/stack.o
- .rel.iplt      0x000000000020a6dc        0x0 ../bin/obj/stack.o
- .rel.text      0x000000000020a6dc        0x0 ../bin/obj/stack.o
- .rel.data.rel  0x000000000020a6dc        0x0 ../bin/obj/stack.o
+.rel.dyn        0x000000000020a6d4        0x0
+ .rel.got       0x000000000020a6d4        0x0 ../bin/obj/stack.o
+ .rel.iplt      0x000000000020a6d4        0x0 ../bin/obj/stack.o
+ .rel.text      0x000000000020a6d4        0x0 ../bin/obj/stack.o
+ .rel.data.rel  0x000000000020a6d4        0x0 ../bin/obj/stack.o
 
-.data           0x000000000020a6dc       0x18
+.data           0x000000000020a6d4       0x18
  *(.data)
- .data          0x000000000020a6dc        0x0 ../bin/obj/kc.o
- .data          0x000000000020a6dc        0x0 ../bin/obj/sys.o
- .data          0x000000000020a6dc        0x4 ../bin/obj/screen.o
-                0x000000000020a6dc                color
- .data          0x000000000020a6e0        0x0 ../bin/obj/gdt.o
- .data          0x000000000020a6e0        0x4 ../bin/obj/hardw.o
-                0x000000000020a6e0                CMOS_NMI_disable
- .data          0x000000000020a6e4        0x0 ../bin/obj/cpu.o
- .data          0x000000000020a6e4        0x0 ../bin/obj/isr.o
- .data          0x000000000020a6e4        0x0 ../bin/obj/util.o
- .data          0x000000000020a6e4        0x0 ../bin/obj/errorHandl.o
- .data          0x000000000020a6e4        0x4 ../bin/obj/keyboard.o
-                0x000000000020a6e4                scancodeset
- .data          0x000000000020a6e8        0x8 ../bin/obj/memory.o
-                0x000000000020a6e8                MEM_start
-                0x000000000020a6ec                mem_table_entry
- .data          0x000000000020a6f0        0x0 ../bin/obj/pci.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/ahci.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/ATA.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/fat.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/hdd.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/iso.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/DRVhandl.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/multitasking.o
- .data          0x000000000020a6f0        0x0 ../bin/obj/v86c.o
- .data          0x000000000020a6f0        0x4 ../bin/obj/vesa.o
-                0x000000000020a6f0                screen
+ .data          0x000000000020a6d4        0x0 ../bin/obj/kc.o
+ .data          0x000000000020a6d4        0x0 ../bin/obj/sys.o
+ .data          0x000000000020a6d4        0x4 ../bin/obj/screen.o
+                0x000000000020a6d4                color
+ .data          0x000000000020a6d8        0x0 ../bin/obj/gdt.o
+ .data          0x000000000020a6d8        0x4 ../bin/obj/hardw.o
+                0x000000000020a6d8                CMOS_NMI_disable
+ .data          0x000000000020a6dc        0x0 ../bin/obj/cpu.o
+ .data          0x000000000020a6dc        0x0 ../bin/obj/isr.o
+ .data          0x000000000020a6dc        0x0 ../bin/obj/util.o
+ .data          0x000000000020a6dc        0x0 ../bin/obj/errorHandl.o
+ .data          0x000000000020a6dc        0x4 ../bin/obj/keyboard.o
+                0x000000000020a6dc                scancodeset
+ .data          0x000000000020a6e0        0x8 ../bin/obj/memory.o
+                0x000000000020a6e0                MEM_start
+                0x000000000020a6e4                mem_table_entry
+ .data          0x000000000020a6e8        0x0 ../bin/obj/pci.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/ahci.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/ATA.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/fat.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/hdd.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/iso.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/DRVhandl.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/multitasking.o
+ .data          0x000000000020a6e8        0x0 ../bin/obj/v86c.o
+ .data          0x000000000020a6e8        0x4 ../bin/obj/vesa.o
+                0x000000000020a6e8                screen
 
-.data.rel       0x000000000020a6f4        0x4
- .data.rel      0x000000000020a6f4        0x4 ../bin/obj/keyboard.o
-                0x000000000020a6f4                kbrdbfr
+.data.rel       0x000000000020a6ec        0x4
+ .data.rel      0x000000000020a6ec        0x4 ../bin/obj/keyboard.o
+                0x000000000020a6ec                kbrdbfr
 
 .data.rel.local
-                0x000000000020a6f8        0xc
+                0x000000000020a6f0        0xc
  .data.rel.local
-                0x000000000020a6f8        0xc ../bin/obj/DRVhandl.o
-                0x000000000020a6f8                UNKOWN
-                0x000000000020a6fc                EMPTY
-                0x000000000020a700                VESA
+                0x000000000020a6f0        0xc ../bin/obj/DRVhandl.o
+                0x000000000020a6f0                UNKOWN
+                0x000000000020a6f4                EMPTY
+                0x000000000020a6f8                VESA
 
-.got            0x000000000020a704        0x0
- .got           0x000000000020a704        0x0 ../bin/obj/stack.o
+.got            0x000000000020a6fc        0x0
+ .got           0x000000000020a6fc        0x0 ../bin/obj/stack.o
 
-.got.plt        0x000000000020a704        0xc
- .got.plt       0x000000000020a704        0xc ../bin/obj/stack.o
-                0x000000000020a704                _GLOBAL_OFFSET_TABLE_
+.got.plt        0x000000000020a6fc        0xc
+ .got.plt       0x000000000020a6fc        0xc ../bin/obj/stack.o
+                0x000000000020a6fc                _GLOBAL_OFFSET_TABLE_
 
-.igot.plt       0x000000000020a710        0x0
- .igot.plt      0x000000000020a710        0x0 ../bin/obj/stack.o
+.igot.plt       0x000000000020a708        0x0
+ .igot.plt      0x000000000020a708        0x0 ../bin/obj/stack.o
 
 .bss            0x000000000020a720    0x69f10
  *(.bss)
