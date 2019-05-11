@@ -1,3 +1,5 @@
+section .bss
+
 global stack
 global end_stack
 stack: 

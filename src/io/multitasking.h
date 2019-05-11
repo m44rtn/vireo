@@ -15,23 +15,6 @@
 #define TASK_FLAG_v86 0b01
 #define TASK_FLAG_KERNEL 0b10
 
-typedef struct 
-{
-    uint32_t eax;
-    uint32_t ecx;
-    uint32_t edx;
-    uint32_t ebx;
-
-    uint32_t esp;
-    uint32_t ebp;
-
-    uint32_t esi;
-    uint32_t edi;
-
-    uint32_t EFLAGS;
-} __attribute__ ((packed)) REGISTERS;
-
-
 typedef struct{
     //serves as eip
     uint32_t entry_ptr;
@@ -41,7 +24,7 @@ typedef struct{
     uint8_t priority;
     uint16_t flags;
 
-    REGISTERS registers;
+    tREGISTERS registers;
 } __attribute__ ((packed)) tTask;
 
 tTask tasks[15];

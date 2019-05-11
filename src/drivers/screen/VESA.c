@@ -22,7 +22,7 @@ uint16_t vesa_findmode(int x, int y, int d)
 {
     tVBE_INFO *ctrl = (tVBE_INFO *) 0x2000;
     tMODE_INFO *info = (tMODE_INFO *) 0x3000;
-    REGISTERS *registers = (REGISTERS *) 0x4000;
+    tREGISTERS *registers = (tREGISTERS *) 0x4000;
 
     uint16_t *modes;
     int i;
@@ -31,13 +31,20 @@ uint16_t vesa_findmode(int x, int y, int d)
     int depthdiff, bestdepthdiff = (8 >= d)? 8 - d : (d - 8) * 2;
 
     registers->eax = 0x4f00;
-    registers->edi = ((uint32_t *) ctrl) - 0x1b0;
-    v86_interrupt(0x10, registers);
+    registers->edi = v86_linear_to_sgoff(0x2000) & 0xFFFF;
+    registers->esi = (v86_linear_to_sgoff(0x2000) >> 16) & 0xFFFF;
 
+    v86_interrupt(0x10, 0x4000);
     print("Hello, VESA world!\n");
+    
     /* todo, oh and different way of doing v86 -> with calling a function to exec int? */
     //v86_interrupt();
 
+}
+
+void vesa_hello()
+{
+    print("Hello, VESA world!\n");
 }
 
 int vesa_difference(int low, int high)

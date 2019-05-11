@@ -51,5 +51,6 @@ void isr30c();
 void isr47c();
 
 extern void PIT_readcount(uint16_t countval);
+extern void v86_ret(uint32_t esp);
 
 #endif

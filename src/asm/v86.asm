@@ -13,16 +13,23 @@ bits 32
 global v86_enter
 global do_regs
 global do_exor
+global v86_ret
+
+extern vesa_hello
 extern Prep_TSS
 
 extern trace
 v86_enter:
     mov esi, [esp + 4]
     mov edi, [esp + 8]
-
+    ;pusha
+    
     ;mov eax, cr4
     ;or eax, 0x01
     ;mov cr4, eax
+
+    pusha
+    mov [edi + 16], esp
 
     .continue:
         mov ax, 0x23
@@ -51,6 +58,9 @@ v86_enter:
         
 
         iret
+.return:
+popa
+ret 
 
 
 do_exor:
@@ -80,4 +90,19 @@ do_regs:
     mov edi,  dword [edi + 28]
     
 ret
+
+
+v86_ret:
+mov edi, 0x4000
+mov eax, dword [edi + 16]
+add eax, 8
+mov esp, eax
+
+push ss
+push esp
+pushfd
+push cs
+push v86_enter.return;dword [esp]
+
+iretd
 .string$ db "eax=%i", 0x00

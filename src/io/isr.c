@@ -115,7 +115,8 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 	
 	//trace("\t-EFLAGS=%i\n", eflags);
 	CTX ctx;
-	
+	tREGISTERS *registers = (tREGISTERS *) 0x4000;
+	uint32_t *PMstack;
 	uint16_t *stack = (uint16_t *) v86_sgoff_to_linear(ss, esp);
 	uint16_t *ivt = 0; //255 IVT entries
 	uint8_t *ip_addr = (uint8_t *) v86_sgoff_to_linear(cs, ip);
@@ -194,22 +195,24 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		case 0xcf:
 			//print("v86 IRET\n");
 
-			trace("stack = %i\n",    (uint32_t) stack);
-			trace("stack[0] = %i\n", (uint32_t) stack[1]);
-						
-			ctx.eip	= (uint32_t) (stack[0] - 0x1b0);
-			ctx.cs	=  0x1b;
-			ctx.esp	= (uint32_t) ( (esp & 0xffff) + 8) & 0xffff;
-			ctx.ss	=  0x23;
+			//trace("stack = %i\n",    (uint32_t) stack);
+			//trace("stack[0] = %i\n", (uint32_t) stack[1]);
+			
+			//PMstack = registers->esp; 
+			//ctx.eip	= (uint32_t) PMstack[1];
+			//ctx.cs	=  PMstack[2];
+			//ctx.esp	= (uint32_t) registers->esp;
+			//ctx.ss	=  PMstack[5];
 
 			
-			/*trace("CTX: -IP=%i", ctx.eip);
-			trace("\t-CS=%i", ctx.cs);
-			trace("\t-SP=%i", ctx.esp);
-			trace("\t-SS=%i\n", ctx.ss);*/
+			//trace("CTX: -IP=%i", ctx.eip);
+			//trace("\t-CS=%i", ctx.cs);
+			//trace("\t-SP=%i", ctx.esp);
+			//trace("\t-SS=%i\n", ctx.ss);
+			//while(1);
 										
 			outb(PIC1, 0x20);
-			v86_enter((uint32_t *) &ctx, (uint32_t *) &tasks[0].registers);
+			v86_ret(registers->esp);
 		break;
 
 		case 0xF0:

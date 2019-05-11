@@ -1,3 +1,5 @@
 .vscode
 bin
 SETUP/test_setup.iso
+pVESA.map
+kernel.map

@@ -112,6 +112,7 @@ call isr12c
 iret
 
 extern Task_Save_State
+extern v86_save_state
 isr13:
 pushad
 
@@ -122,7 +123,7 @@ mov	fs, ax
 mov	gs, ax
 mov	ss, ax
 
-call Task_Save_State
+call v86_save_state
 popad
 
 pop eax

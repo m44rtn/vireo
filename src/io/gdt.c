@@ -34,7 +34,7 @@ typedef struct{
     uint32_t IOPB;
 } __attribute__ ((packed)) TSS;
 
-extern int StackPointer;
+extern uint32_t StackPointer;
 static gdt_desc gdt[gdtlen];
 static gdt_ptr gdtptr;
 TSS tss;

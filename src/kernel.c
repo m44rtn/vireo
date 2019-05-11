@@ -128,7 +128,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	systeminfo.FLAGS = KERNEL_FLAGS = INFO_FLAG_MULTITASKING_ENABLED;*/
 	
 	//task_push(TASK_HIGH, (uint32_t) task3, NULL);
-
+	print("it fucking worked!\n");
 	while(1);
 
 

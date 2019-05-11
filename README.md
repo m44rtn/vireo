@@ -15,5 +15,4 @@ The operating system is made for learning purposes. BirdOS will have a GUI and i
 The project's ultimate goal would be to run on an x86 UEFI powered 2-in-1 tablet/laptop thingy.
 
 ### Contributions
-I will currently not accept contributions to this repository. In the future when the kernel is 'finished' and one of the above named goals is reached (except the faster than windows one), I will.
-Feedback, though, is welcome!
+Feedback is welcome!
