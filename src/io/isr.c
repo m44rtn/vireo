@@ -101,9 +101,6 @@ typedef struct
 	//uint32_t eflags;
 	uint32_t cs;
 	uint32_t eip;
-
-	uint32_t ax;
-	uint32_t di;
 } __attribute__ ((packed)) CTX;
 
 uint8_t last_interrupt;
@@ -200,7 +197,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			trace("stack = %i\n",    (uint32_t) stack);
 			trace("stack[0] = %i\n", (uint32_t) stack[1]);
 						
-			ctx.eip	= (uint32_t) (stack[1] - 0x1b0);
+			ctx.eip	= (uint32_t) (stack[0] - 0x1b0);
 			ctx.cs	=  0x1b;
 			ctx.esp	= (uint32_t) ( (esp & 0xffff) + 8) & 0xffff;
 			ctx.ss	=  0x23;

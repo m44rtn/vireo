@@ -5,6 +5,14 @@
 
 ///
 
+typedef struct
+{
+	uint32_t ss;
+	uint32_t esp;
+	uint32_t cs;
+	uint32_t eip;
+} __attribute__ ((packed)) CTX;
+
 uint32_t v86_linear_to_sgoff(uint32_t ptr)
 {
     
@@ -24,12 +32,16 @@ uint32_t v86_sgoff_to_linear(uint16_t segment, uint16_t offset)
     return LinearAddress;
 }
 
-void v86_interrupt(uint16_t interrupt, char *registers, ...)
+void v86_interrupt(uint16_t interrupt, REGISTERS *registers)
 {
-    /* the location of the other arguments */
-    uint32_t *other_stuff = (&interrupt +  sizeof(char*)) ;
+    /* the location of the ivt */
+    uint16_t *ivt   =   0x0000;
+    CTX ctx;
+    ctx.cs          =   ivt[ interrupt * 2 + 1];
+	ctx.ss          =   (uint32_t) 0x23;
+	ctx.eip         =   (uint32_t) ivt[interrupt * 2];
 
-    trace("other stuff %i", other_stuff[1]);
+    v86_enter(&ctx, registers);			
 }
 
 

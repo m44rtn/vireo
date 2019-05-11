@@ -5,10 +5,10 @@
 #include "DriverHandler.h"
 #include "../io/memory.h"
 
+
 uint32_t v86_linear_to_sgoff(uint32_t ptr);
 uint32_t v86_sgoff_to_linear(uint16_t segment, uint16_t offset);
-void v86_interrupt(uint16_t interrupt, char *registers, ...);
-
+void v86_interrupt(uint16_t interrupt, REGISTERS *registers);
 extern void v86_enter(uint32_t *vtask, uint32_t *task_registers);
 
 #endif

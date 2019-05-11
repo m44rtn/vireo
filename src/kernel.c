@@ -94,7 +94,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//apparantly this is necesarry
 	uint32_t len = 0;
 
-	v86_interrupt(0x10, "hi", 0x10);
+	vesa_findmode(320, 480, 2);
 	//uint32_t *thing = FindDriver("VESA    SYS"); //lot's of errors
 	
 	//clearscr();

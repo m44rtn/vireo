@@ -3,5 +3,8 @@
 
 #include "../../include/types.h"
 #include "../v86.h"
+#include "../../io/multitasking.h"
+
+uint16_t vesa_findmode(int x, int y, int d);
 
 #endif
