@@ -195,21 +195,13 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 		case 0xcf:
 			//print("v86 IRET\n");
 
-			//trace("stack = %i\n",    (uint32_t) stack);
-			//trace("stack[0] = %i\n", (uint32_t) stack[1]);
-			
-			//PMstack = registers->esp; 
-			//ctx.eip	= (uint32_t) PMstack[1];
-			//ctx.cs	=  PMstack[2];
-			//ctx.esp	= (uint32_t) registers->esp;
-			//ctx.ss	=  PMstack[5];
+			registers->eax = tasks[0].registers.eax;
+			registers->ecx = tasks[0].registers.ecx;
+			registers->edx = tasks[0].registers.edx;
+			registers->ebx = tasks[0].registers.ebx;
 
-			
-			//trace("CTX: -IP=%i", ctx.eip);
-			//trace("\t-CS=%i", ctx.cs);
-			//trace("\t-SP=%i", ctx.esp);
-			//trace("\t-SS=%i\n", ctx.ss);
-			//while(1);
+			registers->esi = tasks[0].registers.esi;
+			registers->edi = tasks[0].registers.edi;
 										
 			outb(PIC1, 0x20);
 			v86_ret(registers->esp);

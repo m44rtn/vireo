@@ -40,7 +40,7 @@ SOFTWARE.
 #include "drivers/FS/ISO9660.h"
 #include "drivers/HDD.h"
 #include "drivers/DriverHandler.h"
-#include "drivers/v86.h"
+#include "io/v86.h"
 #include "io/multitasking.h"
 #include "include/DEFATA.h"
 #include "include/GRUB/multiboot.h" //mutliboot stuff --> grub
@@ -78,8 +78,8 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	print("\nDetecting slave type...\n");
 	systeminfo.slave = ATA_init(1); //search for ATA devices
 	systeminfo.slave = SYS_PATAPI;
-	trace("Master is type: %i\n", systeminfo.master);
-	trace("Slave is type: %i\n", systeminfo.slave);
+	//trace("Master is type: %i\n", systeminfo.master);
+	//trace("Slave is type: %i\n", systeminfo.slave);
 
 	if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
 		
@@ -94,7 +94,38 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//apparantly this is necesarry
 	uint32_t len = 0;
 
-	vesa_findmode(320, 480, 2);
+	uint16_t best = vesa_findmode(800, 600, 32);
+	trace("mode = %i\n", best);
+
+	//sleep(50);
+	clearscr();
+	tREGISTERS *registers = (tREGISTERS *) 0x4000;
+	
+	/* because the mode info isn't returned correctly, I used the 800x600x32 mode. */
+	registers->ecx = 0x4118;
+	registers->eax = 0x4f01;
+	registers->esi = 0x00;
+	registers->edi = 0x3000;
+
+	v86_interrupt(0x10, registers);
+
+	kmemset(0x4000, 0x000, sizeof(tREGISTERS));
+	registers->eax = 0x4f02;
+	registers->ebx = 0x4118;
+	registers->esi = 0;
+	registers->edi = 0x3000;
+	v86_interrupt(0x10, 0x4000);
+
+	//vesa_clearscr();
+
+	for(uint32_t y = 0; y < 600; y++)
+	{
+		for(uint32_t x = 0; x < 800; x++)
+		{
+			vesa_put_pixel(x, y, 0xff0000);
+		}
+	}
+		
 	//uint32_t *thing = FindDriver("VESA    SYS"); //lot's of errors
 	
 	//clearscr();
@@ -128,7 +159,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	systeminfo.FLAGS = KERNEL_FLAGS = INFO_FLAG_MULTITASKING_ENABLED;*/
 	
 	//task_push(TASK_HIGH, (uint32_t) task3, NULL);
-	print("it fucking worked!\n");
+	//print("it fucking worked!\n");
 	while(1);
 
 
@@ -143,11 +174,11 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 
 void kernel_version()
 {
-	trace(" Vireo kernel v%s.", (int) intstr(RELEASE));
-	trace("%s.", (int) intstr(MAJOR));
-	trace("%s.", (int) intstr(MINOR));
-	trace("%s ", (int) intstr(BUILD));
-	print("x86\n\n");
+	//trace(" Vireo kernel v%s.", (int) intstr(RELEASE));
+	//trace("%s.", (int) intstr(MAJOR));
+	//trace("%s.", (int) intstr(MINOR));
+	//trace("%s ", (int) intstr(BUILD));
+	//print("x86\n\n");
 }
 
 

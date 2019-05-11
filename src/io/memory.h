@@ -18,6 +18,7 @@ void *kmemset(void *ptr, uint32_t val, size_t size);
 
 void MemCopy(uint32_t *src, uint32_t *dest, uint32_t size);
 char *strcopy(char* dest, char* src);
+void strncpy(char *dest, char* src, uint32_t size);
 
 extern void memory_set_stack();
 

@@ -6,7 +6,7 @@
 #include "../include/DriverTypes.h"
 #include "../io/util.h"
 #include "../io/multitasking.h"
-#include "v86.h"
+#include "../io/v86.h"
 
 typedef struct{
     uint8_t jmp, shrt, nop;

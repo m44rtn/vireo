@@ -27,7 +27,7 @@ kernel:
 	nasm $(ASPARAMS)stack.o asm/stack.asm
 	nasm $(ASPARAMS)v86.o asm/v86.asm
 
-	gcc $(GCCPARAMS)v86c.o -c  drivers/v86.c
+	gcc $(GCCPARAMS)v86c.o -c  io/v86.c
 	gcc $(GCCPARAMS)screen.o -c  drivers/screen/screen.c
 	gcc $(GCCPARAMS)vesa.o -c  drivers/screen/VESA.c
 	gcc $(GCCPARAMS)sys.o -c  io/sys.c

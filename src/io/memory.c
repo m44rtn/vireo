@@ -138,3 +138,11 @@ char *strcopy(char* dest, char* src)
 	dest[i] = 0;
 	return dest;
 }
+
+void strncpy(char* dest, char* src, uint32_t size)
+{
+	int i;
+	for(i = 0; i < size; i++) dest[i] = src[i];
+	dest[i] = 0;
+	return dest;
+}

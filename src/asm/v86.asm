@@ -75,17 +75,10 @@ ret
 
 
 do_regs:
-    ;push dword [edi]
-    ;push .string$
-    ;call trace
-
     mov eax, dword [edi]
     mov ecx, dword [edi + 4]
     mov edx, dword [edi + 8]
     mov ebx, dword [edi + 12]
-    ;mov esp, dword [edi + 16] ;we could delete this
-    ;mov ebp, dword [edi + 20]
-
     mov esi, dword [edi + 24]
     mov edi,  dword [edi + 28]
     

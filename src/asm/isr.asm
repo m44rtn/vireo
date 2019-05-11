@@ -123,7 +123,7 @@ mov	fs, ax
 mov	gs, ax
 mov	ss, ax
 
-call v86_save_state
+call Task_Save_State
 popad
 
 pop eax
