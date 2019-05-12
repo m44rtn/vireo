@@ -78,8 +78,8 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	print("\nDetecting slave type...\n");
 	systeminfo.slave = ATA_init(1); //search for ATA devices
 	systeminfo.slave = SYS_PATAPI;
-	//trace("Master is type: %i\n", systeminfo.master);
-	//trace("Slave is type: %i\n", systeminfo.slave);
+	trace("Master is type: %i\n", systeminfo.master);
+	trace("Slave is type: %i\n", systeminfo.slave);
 
 	if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
 		
@@ -90,19 +90,16 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//trace("drive = HD%i\n", vfs_info.HD0);
 	FATinit(vfs_info.HD0);
 	uint8_t drive = vfs_info.HD0; //vfs_info.HD0;
-	
-	//apparantly this is necesarry
-	uint32_t len = 0;
 
 	uint16_t best = vesa_findmode(800, 600, 32);
 	trace("mode = %i\n", best);
+	
+	
 
-	//sleep(50);
-	clearscr();
 	tREGISTERS *registers = (tREGISTERS *) 0x4000;
 	
 	/* because the mode info isn't returned correctly, I used the 800x600x32 mode. */
-	registers->ecx = 0x4118;
+	registers->ecx = best;
 	registers->eax = 0x4f01;
 	registers->esi = 0x00;
 	registers->edi = 0x3000;
@@ -111,7 +108,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 
 	kmemset(0x4000, 0x000, sizeof(tREGISTERS));
 	registers->eax = 0x4f02;
-	registers->ebx = 0x4118;
+	registers->ebx = best;
 	registers->esi = 0;
 	registers->edi = 0x3000;
 	v86_interrupt(0x10, 0x4000);
@@ -174,11 +171,11 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 
 void kernel_version()
 {
-	//trace(" Vireo kernel v%s.", (int) intstr(RELEASE));
-	//trace("%s.", (int) intstr(MAJOR));
-	//trace("%s.", (int) intstr(MINOR));
-	//trace("%s ", (int) intstr(BUILD));
-	//print("x86\n\n");
+	trace(" Vireo kernel v%s.", (int) intstr(RELEASE));
+	trace("%s.", (int) intstr(MAJOR));
+	trace("%s.", (int) intstr(MINOR));
+	trace("%s ", (int) intstr(BUILD));
+	print("x86\n\n");
 }
 
 

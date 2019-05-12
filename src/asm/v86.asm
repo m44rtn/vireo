@@ -34,9 +34,12 @@ v86_enter:
     .continue:
         mov ax, 0x23
         mov ds, ax
-        mov es, ax
+        
         mov fs, ax
         mov gs, ax
+
+        mov ax, 0x23
+        mov es, ax
 
         call Prep_TSS
 

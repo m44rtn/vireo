@@ -45,7 +45,7 @@ typedef struct
 } tMODE_INFO;
 
 
-uint8_t *screen = 0xE0000000;// VGA: 0xA0000;
+uint8_t *screen = 0xdfff1dd6;// VGA: 0xA0000;
 
 uint16_t vesa_findmode(int x, int y, int d)
 {
@@ -58,27 +58,30 @@ uint16_t vesa_findmode(int x, int y, int d)
     int pixdiff, bestpixdiff = vesa_difference(320 * 200, x * y);
     int depthdiff, bestdepthdiff = (8 >= d)? 8 - d : (d - 8) * 2;
 
-    strncpy(ctrl->vbesign, "VBE2", 4);
+    kmemset(0x2000, 0, 512);
+    ctrl->vbesign[0] = 'V';
+    ctrl->vbesign[1] = 'B';
+    ctrl->vbesign[2] = 'E';
+    ctrl->vbesign[3] = '2';
 
     registers->eax = 0x4F00;
-    registers->edi = 0x2000 - 0x230;
+    registers->edi = 0x2000;
 
     v86_interrupt(0x10, registers);
 
     trace("registers->eax = %i\n", registers->eax);
     if(registers->eax != 0x004F) return best;
-
+   
     trace("tVBE_INFO->signature = %s \n", ctrl->vbesign);
     trace("tVBE_INFO->version = %i \n", ctrl->version);
-
+    
     modes = (uint16_t *) ctrl->videoModeptr;
-    trace("modes = %i\n", v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0]));
+    //trace("modes = %i\n", v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0]));
     for(uint32_t i = 0; modes[i] < 0xFFFF; i++)
     {
         //kmemset(0x4000, 0, sizeof(tREGISTERS));
         registers->eax = 0x4f01;
         registers->ecx = (uint32_t) modes[i];
-        registers->esi = 0x0000;
         registers->edi = 0x3000;
 
         v86_interrupt(0x10, 0x4000);
