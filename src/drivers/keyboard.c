@@ -53,4 +53,13 @@ void InitKbrd(){
 	
 }
 
+void ps2_mouse_init()
+{
+	//set to defaults
+	outb(0x60, 0xf6);
+
+	//wait for ACK
+	while((inb(0x60) & 0xFA) != 0xFA);
+}
+
 

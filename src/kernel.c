@@ -89,8 +89,11 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	get_drive_info();
 	//trace("drive = HD%i\n", vfs_info.HD0);
 	FATinit(vfs_info.HD0);
-	uint8_t drive = vfs_info.HD0; //vfs_info.HD0;
+	uint8_t drive = vfs_info.HD0;
 
+	ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
+
+	/*
 	uint16_t best = vesa_findmode(800, 600, 32);
 	trace("mode = %i\n", best);
 	
@@ -99,7 +102,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	tREGISTERS *registers = (tREGISTERS *) 0x4000;
 	
 	/* because the mode info isn't returned correctly, I used the 800x600x32 mode. */
-	registers->ecx = best;
+	/*registers->ecx = best;
 	registers->eax = 0x4f01;
 	registers->esi = 0x00;
 	registers->edi = 0x3000;
@@ -126,7 +129,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//uint32_t *thing = FindDriver("VESA    SYS"); //lot's of errors
 	
 	//clearscr();
-	
+	*/
 	
 
 	/* setting up the test tasks */
