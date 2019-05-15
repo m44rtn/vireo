@@ -32,7 +32,7 @@ void isrinst(){
 	setidt(0x15, (uint32_t)isr15);
 	setidt(0x20, (uint32_t)isr20);
 	setidt(0x21, (uint32_t)isr21); 
-
+	setidt(0x2c, (uint32_t)isr2c); 
 	setidt(0x30, (uint32_t)isr30);
 	setidt(0x47, (uint32_t)isr47);
 	
@@ -274,6 +274,12 @@ void isr21c(){
 	if(c < 0x81){
 		keybin((char) c);
 	}
+	outb(PIC1,0x20);
+}
+
+void isr2cc()
+{
+	print("ISR2C INTERRUPT\n");
 	outb(PIC1,0x20);
 }
 

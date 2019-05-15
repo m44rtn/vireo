@@ -55,11 +55,29 @@ void InitKbrd(){
 
 void ps2_mouse_init()
 {
-	//set to defaults
-	outb(0x60, 0xf6);
-
-	//wait for ACK
+	//should wait with sending before sending, but doesn't yet
+	
+	outb(0x64, 0xa8);
 	while((inb(0x60) & 0xFA) != 0xFA);
+
+	outb(0x60, 0xff);
+	while((inb(0x60) & 0xFA) != 0xFA);
+	//outb(0x60, 0xf6);
+	//while((inb(0x60) & 0xFA) != 0xFA);
+
+	//enable the thing
+	outb(0x64, 0x20);
+
+	uint8_t status = inb(0x64);
+	status |= 0x02;
+	status &= 0xffdf;
+
+	outb(0x64, 0x60);
+	outb(0x60, status);
+
+	
+	
+	print("MOUSE INIT COMPLETE\n");
 }
 
 

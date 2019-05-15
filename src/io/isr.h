@@ -27,6 +27,7 @@ extern void isr14();
 extern void isr15();
 extern void isr20();
 extern void isr21();
+extern void isr2c();
 
 extern void isr30();
 extern void isr47();
@@ -45,6 +46,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp , uint16_t ss);
 void isr15c();
 void isr20c();
 void isr21c();
+void isr2cc();
 void isr2ec();
 void isr2fc();
 void isr30c();

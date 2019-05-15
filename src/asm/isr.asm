@@ -13,6 +13,7 @@ global isr13
 global isr14
 global isr20
 global isr21
+global isr2c
 global isr30
 global isr47
 global isr2e
@@ -29,6 +30,7 @@ extern isr12c
 extern isr13c
 extern isr14c
 extern isr20c
+extern isr2cc
 extern isr21c
 extern isr30c
 extern isr47c
@@ -195,6 +197,13 @@ isr21:
 pushad
 cld
 call isr21c
+popad
+iretd
+
+isr2c:
+pushad
+cld
+call isr2cc
 popad
 iretd
 
