@@ -42,15 +42,15 @@ typedef struct
     uint32_t physbase;
     uint32_t resv1;
     uint16_t resv2;
-} tMODE_INFO;
+} __attribute__ ((packed)) tMODE_INFO;
 
 
-uint8_t *screen = 0xdfff1dd6;// VGA: 0xA0000;
+uint8_t *screen = (uint8_t *) 0xdffa8700;// VGA: 
 
 uint16_t vesa_findmode(int x, int y, int d)
 {
-    tVBE_INFO *ctrl = (tVBE_INFO *) 0x2000;
-    tMODE_INFO *info = (tMODE_INFO *) 0x3000;
+    tVBE_INFO *ctrl = (tVBE_INFO *) 0x1042c;
+    tMODE_INFO *info = (tMODE_INFO *) 0x1042c;//512; //0x3000
     tREGISTERS *registers = (tREGISTERS *) 0x4000;
 
     uint16_t *modes;
@@ -58,40 +58,48 @@ uint16_t vesa_findmode(int x, int y, int d)
     int pixdiff, bestpixdiff = vesa_difference(320 * 200, x * y);
     int depthdiff, bestdepthdiff = (8 >= d)? 8 - d : (d - 8) * 2;
 
-    kmemset(0x2000, 0, 512);
-    ctrl->vbesign[0] = 'V';
-    ctrl->vbesign[1] = 'B';
-    ctrl->vbesign[2] = 'E';
-    ctrl->vbesign[3] = '2';
+    if (!hasStr("VESA", ctrl->vbesign))
+    {
+        kmemset((void *) ctrl, 0, 512);
+        ctrl->vbesign[0] = 'V';
+        ctrl->vbesign[1] = 'B';
+        ctrl->vbesign[2] = 'E';
+        ctrl->vbesign[3] = '2';
+        ctrl->version    = 0x300;
+        registers->eax = 0x4f00;
+        registers->edi = (uint32_t) &ctrl;
 
-    registers->eax = 0x4F00;
-    registers->edi = 0x2000;
+        v86_interrupt(0x10, registers);
 
-    v86_interrupt(0x10, registers);
-
-    trace("registers->eax = %i\n", registers->eax);
-    if(registers->eax != 0x004F) return best;
+        trace("registers->eax = %i\n", registers->eax);
+        trace("edi = %i\n", registers->edi);
+        trace("ctrl = %i\n", (uint32_t) ctrl);
+        if(registers->eax != 0x004F) return best;
+    }
    
     trace("tVBE_INFO->signature = %s \n", ctrl->vbesign);
     trace("tVBE_INFO->version = %i \n", ctrl->version);
     
     modes = (uint16_t *) ctrl->videoModeptr;
-    //trace("modes = %i\n", v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0]));
+    trace("modes = %i\n", ctrl->videoModeptr); //v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0])
     for(uint32_t i = 0; modes[i] < 0xFFFF; i++)
     {
-        //kmemset(0x4000, 0, sizeof(tREGISTERS));
+        kmemset((void *) info, 0, sizeof(tREGISTERS));
         registers->eax = 0x4f01;
         registers->ecx = (uint32_t) modes[i];
-        registers->edi = 0x3000;
+        registers->edi = (uint32_t) info;
 
-        v86_interrupt(0x10, 0x4000);
+        v86_interrupt(0x10, registers);
+
+        
 
         if(registers->eax != 0x004F)  continue;
 
         if(!(info->attributes & 0x90)) continue;
-        print("register == 0x004F");
+        
 
-        if(info->memory_model != 4 && info->memory_model != 6) continue;
+        //if(info->memory_model != 4 && info->memory_model != 6) continue;
+        print("register == 0x004F\n");
 
         if(info->Xres == x && info->Yres == y && info->bpp == d) return modes[i];
 
@@ -116,6 +124,8 @@ uint32_t vesa_difference(uint32_t low, uint32_t high)
 
 void vesa_put_pixel(uint32_t x, uint32_t y, uint32_t color)
 {
+
+    //this only works for 800x600, needs to be 'rewritten'
     uint32_t where = x * 4 + y * 3200;
     screen[where] = color & 255;
     screen[where + 1] = (color >> 8) & 255;

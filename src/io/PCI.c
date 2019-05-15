@@ -14,8 +14,55 @@
 #define PCI_DATA			0xCFC
 
 
+void pci_init()
+{	
+	uint8_t list = 0;
+	uint8_t bus, device, func;
+	uint8_t class;
+	uint8_t subclass;
+	
+	for(bus = 0; bus != 255; bus++){ // PCI busses are 8 bits, 256 possible combinations numbered 0 - 255
+		for(device = 0; device < 32; device++){ // PCI busses are 5 bits, 32 possible combinations numbered 0 - 31
+			for(func = 0; func < 8; func++){ // PCI busses are 3 bits, 8 possible combinations numbered 0 - 7
+			uint16_t VendorID = pci_get_val(bus, device, func, 0x00, 0, GETWORD);
 
-uint16_t getPCIval(uint8_t bus, uint8_t device, uint8_t func, uint8_t reg, uint8_t strt, bool BorW){
+				if(VendorID == 0xFFFF) continue;
+
+				pci_devices[list].bus 			= bus;
+				pci_devices[list].device 		= device;
+				pci_devices[list].func 			= func;
+				pci_devices[list].header_type	= pci_get_val(bus, device, func, 0x03, 3, GETBYTE);
+				pci_devices[list].class 		= pci_get_val(bus, device, func, 0x02, 3, GETBYTE); //get the class of the current thing
+				pci_devices[list].subclass 		= pci_get_val(bus, device, func, 0x02, 2, GETBYTE); //get the subclass of the current thing
+
+				list++;
+			}
+		}
+	}
+}
+
+uint32_t pci_get_device(uint8_t class, uint8_t subclass)
+{
+	//RETURNS:
+	// byte 3: N/A
+	// byte 2: bus
+	// byte 1: device
+	// byte 0: function
+
+	uint32_t dev_found;
+	for(uint8_t i = 0; i < 256; i++)
+	{
+		if(pci_devices[i].class != class) continue;
+		if(pci_devices[i].subclass != subclass) continue;
+
+		dev_found = ((uint32_t) pci_devices[i].bus << 16) | ((uint32_t) pci_devices[i].device << 8) | ((uint32_t) pci_devices[i].func);
+		break;
+	}
+	return dev_found;
+}
+
+uint16_t pci_get_val(uint8_t bus, uint8_t device, uint8_t func, uint8_t reg, uint8_t strt, bool BorW)
+{
 	uint32_t address = pciConfigRead(bus, device, func, reg);
 	uint32_t result;
 
@@ -29,8 +76,10 @@ uint16_t getPCIval(uint8_t bus, uint8_t device, uint8_t func, uint8_t reg, uint8
 	return result;
 }
 
+
 uint32_t GetPCIDevice(uint8_t basecl, uint8_t subcl, bool iTrace, bool iErr) // I previously did this with a list, but that didn' t work either
 { 
+	//DEPECRATED, but here until pci_get_device(class, subclass) works
 
 	//RETURNS:
 	// byte 3: none
@@ -51,12 +100,12 @@ uint32_t GetPCIDevice(uint8_t basecl, uint8_t subcl, bool iTrace, bool iErr) // 
 	for(bus = 0; bus != 255; bus++){ // PCI busses are 8 bits, 256 possible combinations numbered 0 - 255
 		for(device = 0; device < 32; device++){ // PCI busses are 5 bits, 32 possible combinations numbered 0 - 31
 			for(func = 0; func < 8; func++){ // PCI busses are 3 bits, 8 possible combinations numbered 0 - 7
-			uint16_t VendorID = getPCIval(bus, device, func, 0x00, 0, GETWORD);
+			uint16_t VendorID = pci_get_val(bus, device, func, 0x00, 0, GETWORD);
 
 				if(VendorID != 0xFFFF){ //does device exist?
 
-					class = getPCIval(bus, device, func, 0x02, 3, GETBYTE); //get the class of the current thing
-					subclass = getPCIval(bus, device, func, 0x02, 2, GETBYTE); //get the subclass of the current thing
+					class = pci_get_val(bus, device, func, 0x02, 3, GETBYTE); //get the class of the current thing
+					subclass = pci_get_val(bus, device, func, 0x02, 2, GETBYTE); //get the subclass of the current thing
 
 					//Is it the right thing?
 					if(class == basecl)

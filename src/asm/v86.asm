@@ -33,13 +33,13 @@ v86_enter:
 
     .continue:
         mov ax, 0x23
-        mov ds, ax
-        
+        mov ds, ax       
         mov fs, ax
         mov gs, ax
 
-        mov ax, 0x23
+        mov ax, 0x00
         mov es, ax
+        
 
         call Prep_TSS
 
@@ -55,7 +55,7 @@ v86_enter:
 
         ;call do_regs
         push edi
-        call do_exor
+        ;call do_exor
         pop edi
         call do_regs
         

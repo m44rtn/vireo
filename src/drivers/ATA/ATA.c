@@ -34,18 +34,22 @@ uint8_t ATA_init(uint8_t drive) //0 for master and 1 for slave
     systeminfo.waitingforATAPI = false;
 
     //can we find any devices at all
-    if(!GetPCIDevice(0x01, 0x01, true, true) && !GetPCIDevice(0x01, 0x05, true, true)) return 0;
+    //if(!GetPCIDevice(0x01, 0x01, true, true) && !GetPCIDevice(0x01, 0x05, true, true)) return 0;
 
     //if we can, give us the device and if both were found only use the ATA controller
-    if(GetPCIDevice(0x01, 0x01, true, true)) device = GetPCIDevice(0x01, 0x01, false, true);
-    if(GetPCIDevice(0x01, 0x05, true, true)) device = GetPCIDevice(0x01, 0x05, false, true);
+    //if(GetPCIDevice(0x01, 0x01, true, true)) device = GetPCIDevice(0x01, 0x01, false, true);
+    //if(GetPCIDevice(0x01, 0x05, true, true)) device = GetPCIDevice(0x01, 0x05, false, true);
     
+    device = pci_get_device(0x01, 0x01);
 
     //get the bus, device and function of the ATA controller
     uint8_t bus = getBYTE(device, 2);
     uint8_t dev = getBYTE(device, 1);
     uint8_t fun = getBYTE(device, 0);
     
+    trace("found ATA device -- bus=%i ", bus);
+    trace("device=%i ", device);
+    trace("function=%i\n", fun);
 
     //Set the interrupt (not useful at all)
     uint8_t interrupt = pciGetInterruptLine(bus, dev, fun);

@@ -71,6 +71,8 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 
 	//Setup Memory info
 	memory_init(mbh);
+	pci_init();
+
 	
 	//Setup all drive management stuff
 	print("\nDetecting master type...\n");
@@ -83,7 +85,6 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 
 	if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
 		
-	
 	//drive testing stuff
 	
 	get_drive_info();
@@ -91,30 +92,30 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	FATinit(vfs_info.HD0);
 	uint8_t drive = vfs_info.HD0;
 
-	ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
+	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
 
-	/*
-	uint16_t best = vesa_findmode(800, 600, 32);
+	while(1);
+	uint16_t best = vesa_findmode(640, 480, 1);
 	trace("mode = %i\n", best);
 	
-	
+	//while(1);
 
 	tREGISTERS *registers = (tREGISTERS *) 0x4000;
 	
 	/* because the mode info isn't returned correctly, I used the 800x600x32 mode. */
-	/*registers->ecx = best;
+	registers->ecx = 0x4118;
 	registers->eax = 0x4f01;
 	registers->esi = 0x00;
 	registers->edi = 0x3000;
 
 	v86_interrupt(0x10, registers);
 
-	kmemset(0x4000, 0x000, sizeof(tREGISTERS));
+	kmemset((void *) registers, 0x000, sizeof(tREGISTERS));
 	registers->eax = 0x4f02;
-	registers->ebx = best;
+	registers->ebx = 0x4118;
 	registers->esi = 0;
 	registers->edi = 0x3000;
-	v86_interrupt(0x10, 0x4000);
+	v86_interrupt(0x10, registers);
 
 	//vesa_clearscr();
 
@@ -122,14 +123,14 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	{
 		for(uint32_t x = 0; x < 800; x++)
 		{
-			vesa_put_pixel(x, y, 0xff0000);
+			vesa_put_pixel(x, y, 0xffffff);
 		}
 	}
 		
 	//uint32_t *thing = FindDriver("VESA    SYS"); //lot's of errors
 	
 	//clearscr();
-	*/
+	
 	
 
 	/* setting up the test tasks */

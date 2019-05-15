@@ -42,7 +42,7 @@ void v86_interrupt(uint16_t interrupt, tREGISTERS *registers)
 	ctx.eip         =   (uint32_t) *(&ivt[interrupt * 2]);
     ctx.esp         =   0xFFFF;
 
-    v86_enter(&ctx, registers);			
+    v86_enter((uint32_t *) &ctx, (uint32_t *) registers);			
 }
 
 uint32_t v86_save_state(uint32_t edi, uint32_t esi, uint32_t ebp, uint32_t esp, uint32_t ebx, uint32_t edx, 
