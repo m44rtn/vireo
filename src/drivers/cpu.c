@@ -47,11 +47,11 @@ void IDT_add(int n, uint32_t handler)
 	idt[n].typeatrib = 0x8E;
 	idt[n].offset2 = (uint16_t) ((handler >> 16) & 0x0000ffff); //high
 
-	asm("cli");
+	__asm__("cli");
 
 	idtent();
 
-	asm("sti");
+	__asm__("sti");
 }
 
 
@@ -59,6 +59,6 @@ void IDT_add(int n, uint32_t handler)
 
 void cpuSetMSR(uint32_t msr, uint32_t lo, uint32_t hi)
 {
-	asm volatile("wrmsr" :: "a" (lo), "d" (hi), "c" (msr));
+	__asm__ __volatile__("wrmsr" :: "a" (lo), "d" (hi), "c" (msr));
 }
 

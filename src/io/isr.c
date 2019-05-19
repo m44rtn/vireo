@@ -63,7 +63,7 @@ void isr3c(uint32_t eax){
 }
 
 void isr4c(){
-	asm("int $15");
+	__asm__("int $15");
 }
 
 void isr7c(){
@@ -74,7 +74,7 @@ void isr7c(){
 	}else{
 	outb(PIC1, 0x20); //say the PIC that we're done with the interrupt
 	}
-	asm("iret");
+	__asm__("iret");
 }
 
 void isr8c(){
@@ -91,7 +91,7 @@ void isr11c(){
 
 void isr12c(){
 		kernel_panic("STACK_SEGMENT_FAULT");
-	asm("hlt");
+	__asm__("hlt");
 }
 
 typedef struct
@@ -132,7 +132,7 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 			ctx.esp = ((esp & 0xffff) - 8) & 0xffff;
 
 			//put our return stuff on the stack
-			stack[0] =  ((uint16_t) ip_addr + 2);
+			stack[0] = (uint16_t) ((uint32_t) ip_addr + 2);
 			stack[1] = 0x1b;
 			stack[2] = (uint16_t) 0x20202;
 
@@ -253,7 +253,7 @@ void isr14c(){
 }
 void isr15(){
 	kernel_panic("UNSUPPORTED_INTERRUPT");
-	asm("hlt");
+	__asm__("hlt");
 	
 }
 uint16_t counter;

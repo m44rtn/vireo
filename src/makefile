@@ -52,17 +52,19 @@ kernel:
 	gcc $(GCCPARAMS)DRVhandl.o -c  drivers/DriverHandler.c
 	gcc $(GCCPARAMS)multitasking.o -c  io/multitasking.c
 
-	#get xenops here: https://github.com/m44rtn/xenops
-	xenops --file  include/version.h --build
-
 	gcc $(GCCPARAMS)kc.o -c  kernel.c
 		
 	#STACK.O SHOULD ALWAYS BE THE LAST MODULE!
 	ld $(LDPARAMS) -T linker.ld -o ../bin/kernel/kernel.sys $(OBJFILES)  ../bin/obj/stack.o -Map=kernel.map 
-	
+
 	rm ../grub/boot/kernel.sys
 	cp -i ../bin/kernel/kernel.sys ../grub/boot/kernel.sys
 	grub-mkrescue -o ../birdos.iso ../grub/
+
+	#get xenops here: https://github.com/m44rtn/xenops
+	xenops --file  include/version.h --build
+
+
 
 module:
 	nasm  modules/pVESA.asm -f bin -o modules/bin/VESA.SYS

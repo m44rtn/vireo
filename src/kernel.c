@@ -76,29 +76,28 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//Setup all drive management stuff
 	print("\nDetecting master type...\n");
-	systeminfo.master = ATA_init(0); //search for ATA devices
+	//systeminfo.master = ATA_init(0); //search for ATA devices
 	print("\nDetecting slave type...\n");
-	systeminfo.slave = ATA_init(1); //search for ATA devices
-	systeminfo.slave = SYS_PATAPI;
+	//systeminfo.slave = ATA_init(1); //search for ATA devices
 	trace("Master is type: %i\n", systeminfo.master);
 	trace("Slave is type: %i\n", systeminfo.slave);
 
-	if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
+	//if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
 		
 	//drive testing stuff
 	
-	get_drive_info();
+	//get_drive_info();
 	//trace("drive = HD%i\n", vfs_info.HD0);
-	FATinit(vfs_info.HD0);
+	//FATinit(vfs_info.HD0);
 	uint8_t drive = vfs_info.HD0;
 
 	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
 
-	while(1);
-	uint16_t best = vesa_findmode(640, 480, 1);
+	//while(1);
+	uint16_t best = vesa_findmode(800, 600, 24);
 	trace("mode = %i\n", best);
 	
-	//while(1);
+	while(1);
 
 	tREGISTERS *registers = (tREGISTERS *) 0x4000;
 	

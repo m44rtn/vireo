@@ -302,9 +302,9 @@ void PIO_READ_ATAPI(uint8_t drive, uint32_t start, uint32_t sctrWRITE, uint16_t 
     
 
     //wait for the drive to process the packet command
-   while(inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x80) asm volatile("pause"); //pause apparently helps cpu performance
+   while(inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x80) __asm__ __volatile__("pause"); //pause apparently helps cpu performance
    while(!(status = inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x08) && !(status & 0x1)) 
-   asm volatile("pause"); //pause apparently helps cpu performance
+   __asm__ __volatile__("pause"); //pause apparently helps cpu performance
 
     //while((inb(ATA_PRIMARY_DRIVE_COMSTAT) & 0x80 == 0x80));
 

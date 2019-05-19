@@ -32,28 +32,27 @@ v86_enter:
     mov [edi + 16], esp
 
     .continue:
-        mov ax, 0x23
-        mov ds, ax       
-        mov fs, ax
-        mov gs, ax
+        ;mov ax, 0x23
+        ;mov ds, ax       
+        ;mov fs, ax
+        ;mov gs, ax
 
-        mov ax, 0x00
-        mov es, ax
+        ;mov ax, 0x00
+        ;mov es, ax
         
 
         call Prep_TSS
 
-        push dword [esi] ;0x23
+        push dword [esi] 
         push dword [esi + 4]
 
         pushfd
 
-        or dword [esp], 0x20202; 0x25202 ; (1 << 17) ;vm flag 0x20202 ; SHOULD BE OR'RED
+        or dword [esp], 0x20202
 
-        push dword [esi + 8] ;0x1B
+        push dword [esi + 8]
         push dword [esi + 12]
 
-        ;call do_regs
         push edi
         ;call do_exor
         pop edi
