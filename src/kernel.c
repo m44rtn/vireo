@@ -94,35 +94,14 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
 
 	//while(1);
-	uint16_t best = vesa_findmode(800, 600, 24);
-	trace("mode = %i\n", best);
-	
-	while(1);
-
-	tREGISTERS *registers = (tREGISTERS *) 0x4000;
-	
-	/* because the mode info isn't returned correctly, I used the 800x600x32 mode. */
-	registers->ecx = 0x4118;
-	registers->eax = 0x4f01;
-	registers->esi = 0x00;
-	registers->edi = 0x3000;
-
-	v86_interrupt(0x10, registers);
-
-	kmemset((void *) registers, 0x000, sizeof(tREGISTERS));
-	registers->eax = 0x4f02;
-	registers->ebx = 0x4118;
-	registers->esi = 0;
-	registers->edi = 0x3000;
-	v86_interrupt(0x10, registers);
-
+	vesa_init(1360, 720, 32);
 	//vesa_clearscr();
 
-	for(uint32_t y = 0; y < 600; y++)
+	for(uint32_t y = 0; y < 728; y++)
 	{
-		for(uint32_t x = 0; x < 800; x++)
+		for(uint32_t x = 0; x < 1024; x++)
 		{
-			vesa_put_pixel(x, y, 0xffffff);
+			vesa_put_pixel(x, y, 0xffab00);
 		}
 	}
 		

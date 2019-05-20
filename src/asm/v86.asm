@@ -34,14 +34,6 @@ v86_enter:
     mov [edi + 16], esp
 
     .continue:
-        ;mov ax, 0x23
-        ;mov ds, ax       
-        ;mov fs, ax
-        ;mov gs, ax
-
-        ;mov ax, 0x00
-        ;mov es, ax
-        
 
         call Prep_TSS
 

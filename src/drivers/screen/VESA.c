@@ -18,34 +18,34 @@ typedef struct
     uint8_t OEMdata[256];
 } __attribute__ ((packed)) tVBE_INFO;
 
-typedef struct
+
+uint8_t *screen;
+
+void vesa_init(int x, int y, int d)
 {
-    uint16_t attributes;
-    uint8_t winA, winB;
-    uint16_t granularity;
-    uint16_t winsize;
-    uint16_t WinsegA, WinsegB;
-    uint32_t WinFuncptr;
-    uint16_t bPerLine;
+    tREGISTERS *registers = (tREGISTERS *) 0x4000;
+	
+    uint16_t mode = vesa_findmode(x, y, d);
+    current_vid_mode_inf = (tMODE_INFO *) 0x3000;
 
-    uint16_t Xres, Yres;
-    uint8_t Wchar, Ychar, planes, bpp, banks;
-    uint8_t memory_model, bank_size, image_pages;
-    uint8_t resv0;
+    registers->ecx = mode;
+	registers->eax = 0x4f01;
+	registers->esi = 0x00;
+	registers->edi = (uint32_t) current_vid_mode_inf;
+	registers->es = 0;
 
-    uint8_t red_mask, red_pos;
-    uint8_t green_mask, green_pos;
-    uint8_t blue_mask, blue_pos;
-    uint8_t resv_mask, resv_pos;
-    uint8_t directcolor_attrib;
+	v86_interrupt(0x10, registers);
 
-    uint32_t physbase;
-    uint32_t resv1;
-    uint16_t resv2;
-} __attribute__ ((packed)) tMODE_INFO;
+	kmemset((void *) registers, 0x000, sizeof(tREGISTERS));
+	registers->eax = 0x4f02;
+	registers->ebx = mode;
+	registers->es = 0;
+	registers->edi = (uint32_t) current_vid_mode_inf;
 
+	v86_interrupt(0x10, registers);
 
-uint8_t *screen = (uint8_t *) 0xdffa8700;// VGA: 
+    screen = (uint8_t *) current_vid_mode_inf->physbase;
+}
 
 uint16_t vesa_findmode(int x, int y, int d)
 {
@@ -70,22 +70,12 @@ uint16_t vesa_findmode(int x, int y, int d)
 
     v86_interrupt(0x10, registers);
 
-    trace("registers->eax = %i\n", registers->eax);
-    trace("edi = %i\n", registers->edi);
-    trace("ctrl = %i\n", (uint32_t) ctrl);
     if(registers->eax != 0x004F) return best;
 
-    trace("edi = %i\n", registers->edi);
-
-    ctrl = (tVBE_INFO *) ((uint16_t) registers->edi);
-
     trace("ctrl = %i\n", (uint32_t) ctrl);
-   
-    trace("tVBE_INFO->signature = %s \n", ctrl->vbesign);
-    trace("tVBE_INFO->version = %i \n", ctrl->version);
     
-    modes = (uint16_t *) ctrl->videoModeptr;
-    trace("modes = %i\n", ctrl->videoModeptr); //v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0])
+    modes = (uint16_t *) v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0]);
+    trace("modes = %i\n", v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0]));
 
     for(uint32_t i = 0; modes[i] < 0xFFFF; i++)
     {
@@ -93,6 +83,7 @@ uint16_t vesa_findmode(int x, int y, int d)
         registers->eax = 0x4f01;
         registers->ecx = (uint32_t) modes[i];
         registers->edi = (uint32_t) 0x3000;
+        registers->es = 0;
 
         v86_interrupt(0x10, registers);
 
@@ -101,9 +92,8 @@ uint16_t vesa_findmode(int x, int y, int d)
         if(!(info->attributes & 0x90)) continue;
         
         if(info->memory_model != 4 && info->memory_model != 6) continue;
-        //print("register == 0x004F\n");
 
-        if(info->Xres == x && info->Yres == y && info->bpp == d) return modes[i];
+        if(info->Xres == x && info->Yres == y && info->bpp == d) return modes[i] | 0x4000;
 
         pixdiff = vesa_difference(info->Xres * info->Yres, x * y);
         depthdiff = (info->bpp >= d)? info->bpp - d : (d - info->bpp) * 2;
@@ -115,7 +105,9 @@ uint16_t vesa_findmode(int x, int y, int d)
         }
     }
     if(x == 640 & y == 480 && d == 1) return 0x11;
-    return best | 0x4000;
+
+    best |= 0x4000;
+    return best;
 }
 
 
@@ -128,7 +120,7 @@ void vesa_put_pixel(uint32_t x, uint32_t y, uint32_t color)
 {
 
     //this only works for 800x600, needs to be 'rewritten'
-    uint32_t where = x * 4 + y * 3200;
+    uint32_t where = (x * (current_vid_mode_inf->bpp / 8)) + (y * current_vid_mode_inf->bPerLine);
     screen[where] = color & 255;
     screen[where + 1] = (color >> 8) & 255;
     screen[where + 2] = (color >> 16) & 255;
