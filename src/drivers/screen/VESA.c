@@ -66,6 +66,7 @@ uint16_t vesa_findmode(int x, int y, int d)
    
     registers->eax = 0x4f00;
     registers->edi = (uint32_t) ctrl;
+    registers->es = (uint32_t) 0;
 
     v86_interrupt(0x10, registers);
 
