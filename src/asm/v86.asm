@@ -20,10 +20,12 @@ extern Prep_TSS
 
 extern trace
 v86_enter:
+
     mov esi, [esp + 4]
     mov edi, [esp + 8]
+
     ;pusha
-    
+
     ;mov eax, cr4
     ;or eax, 0x01
     ;mov cr4, eax
@@ -43,6 +45,12 @@ v86_enter:
 
         call Prep_TSS
 
+        ; push segment registers to use (GS, FS, DS, ES)
+        push dword [edi + 36]
+        push dword [edi + 40]
+        push dword [edi + 44]
+        push dword [edi + 48]
+
         push dword [esi] 
         push dword [esi + 4]
 
@@ -57,7 +65,6 @@ v86_enter:
         ;call do_exor
         pop edi
         call do_regs
-        
 
         iret
 .return:

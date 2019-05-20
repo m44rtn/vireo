@@ -34,6 +34,10 @@ typedef struct
     uint32_t edi;
 
     uint32_t EFLAGS;
+    uint32_t gs;
+    uint32_t fs;
+    uint32_t ds;
+    uint32_t es;
 } __attribute__ ((packed)) tREGISTERS;
 
 #endif
