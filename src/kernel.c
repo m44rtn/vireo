@@ -76,34 +76,33 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//Setup all drive management stuff
 	print("\nDetecting master type...\n");
-	//systeminfo.master = ATA_init(0); //search for ATA devices
+	systeminfo.master = ATA_init(0); //search for ATA devices
 	print("\nDetecting slave type...\n");
-	//systeminfo.slave = ATA_init(1); //search for ATA devices
+	systeminfo.slave = ATA_init(1); //search for ATA devices
 	trace("Master is type: %i\n", systeminfo.master);
 	trace("Slave is type: %i\n", systeminfo.slave);
 
-	//if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
+	if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
 		
 	//drive testing stuff
 	
-	//get_drive_info();
-	//trace("drive = HD%i\n", vfs_info.HD0);
-	//FATinit(vfs_info.HD0);
+	get_drive_info();
+	FATinit(vfs_info.HD0);
 	uint8_t drive = vfs_info.HD0;
 
-	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
+	ps2_keyb_init();
+	ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
 
-	//while(1);
-	vesa_init(1360, 720, 32);
-	//vesa_clearscr();
+	//while(1) printline("R", 10, 10);
+	//vesa_init(1360, 720, 32);
 
-	for(uint32_t y = 0; y < 728; y++)
-	{
-		for(uint32_t x = 0; x < 1024; x++)
-		{
-			vesa_put_pixel(x, y, 0xffab00);
-		}
-	}
+	//for(uint32_t y = 0; y < 728; y++)
+	//{
+	//	for(uint32_t x = 0; x < 1024; x++)
+	//	{
+	//		vesa_put_pixel(x, y, 0xffab00);
+	//	}
+	//}
 		
 	//uint32_t *thing = FindDriver("VESA    SYS"); //lot's of errors
 	

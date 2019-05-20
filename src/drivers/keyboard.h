@@ -10,6 +10,12 @@
 #include "../io/memory.h"
 #include "../drivers/screen/screen.h"
 
+void ps2_keyb_init();
+void ps2_mouse_init();
+
+void ps2_wait_write();
+void ps2_wait_read();
+
 void hang_for_key(char key);
 bool IS_pressed(char key);
 void putonscr(char chr);

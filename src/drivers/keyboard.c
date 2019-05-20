@@ -31,53 +31,71 @@ void hang_for_key(char key){
 	while(!IS_pressed(key));
 }
 
-void InitKbrd(){
+void ps2_keyb_init()
+{
 	/*Set Keyboard scancode set*/
-	uint8_t Keyboard_Reply;
-	Keyboard_Reply = inb(0x64);
-	//outb(0x64, 0x14);
-	outb(0x64, 0xF0 | 0);
-	Keyboard_Reply = inb(0x64);
-	scancodeset = inb(0x64);
-	
-	if(Keyboard_Reply == ACK){
-		print("Acknowledged\n");
-		sleep(200);
-		scancodeset = inb(0x64);
-		
-	}else if(Keyboard_Reply == 0xFE){
-		sleep(200);
-	}else{
-	
-	}
+	uint8_t status; 
+	ps2_wait_write();
+	outb(0x60, 0xff);
+	ps2_wait_read();
+	//if(inb(0x60) != 0xFA) return;
+	while(inb(0x60) & 0xAA != 0xAA);
 	
 }
 
 void ps2_mouse_init()
-{
-	//should wait with sending before sending, but doesn't yet
-	
-	outb(0x64, 0xa8);
-	while((inb(0x60) & 0xFA) != 0xFA);
-
-	outb(0x60, 0xff);
-	while((inb(0x60) & 0xFA) != 0xFA);
-	//outb(0x60, 0xf6);
-	//while((inb(0x60) & 0xFA) != 0xFA);
-
+{	
 	//enable the thing
+	ps2_wait_write();
+
+	outb(0x64, 0xad);
+	
+	ps2_wait_write();
+	outb(0x64, 0xa8);
+	
+	ps2_wait_write();
+	outb(0x64, 0xd4);
+
+	ps2_wait_write();
+	outb(0x60, 0xff);
+
+	ps2_wait_read();
+	uint8_t status = inb(0x60);
+	while((inb(0x60) & 0xAA) != 0xAA) ps2_wait_read();
+	
+	ps2_wait_read();
+	status = inb(0x60); //read mouseID?
+
+	ps2_wait_write();
 	outb(0x64, 0x20);
 
-	uint8_t status = inb(0x64);
+	ps2_wait_read();
+	status = inb(0x60);
+	trace("status=%i\n", status);
 	status |= 0x02;
-	status &= 0xffdf;
-
-	outb(0x64, 0x60);
-	outb(0x60, status);
-
+	//status &= 0xffdf;
 	
+	ps2_wait_write();
+	outb(0x64, 0x60);
+	ps2_wait_write();
+	outb(0x60, status);
+	
+	ps2_wait_write();
+	outb(0x60, 0xF4);
+	
+	ps2_wait_write();
+	outb(0x64, 0xAE);
 	
 	print("MOUSE INIT COMPLETE\n");
 }
 
 
+void ps2_wait_write()
+{
+	while(inb(0x64) & 0x02 != 0x00);
+}
+
+void ps2_wait_read()
+{
+	while(inb(0x64) & 0x01 != 0x01);
+}

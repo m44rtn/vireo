@@ -279,8 +279,10 @@ void isr21c(){
 
 void isr2cc()
 {
+	int c = inb(0x60);
 	print("ISR2C INTERRUPT\n");
 	outb(PIC1,0x20);
+	outb(PIC2,0x20);
 }
 
 
