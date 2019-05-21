@@ -66,16 +66,13 @@ uint16_t vesa_findmode(int x, int y, int d)
    
     registers->eax = 0x4f00;
     registers->edi = (uint32_t) ctrl;
-    registers->es = (uint32_t) 0;
+    registers->es = (uint32_t) 0x0;
 
     v86_interrupt(0x10, registers);
 
     if(registers->eax != 0x004F) return best;
-
-    trace("ctrl = %i\n", (uint32_t) ctrl);
     
     modes = (uint16_t *) v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0]);
-    trace("modes = %i\n", v86_sgoff_to_linear(ctrl->videoModeptr[1], ctrl->videoModeptr[0]));
 
     for(uint32_t i = 0; modes[i] < 0xFFFF; i++)
     {

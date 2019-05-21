@@ -33,7 +33,7 @@ void setints(){				//Initialize the interrupts
 
 	isrinst();		//setup the ISR
 	initpics(0x20, 0x28); //setup the PICs
-	PIC_remap(PIC1, PIC2); // remap 'em too
+	//PIC_remap(PIC1, PIC2); // remap 'em too
 	IRQclrallmsks();
 	PIT_initasm(); //That Wasn't much of a rescue!
 	asm("sti");
@@ -101,7 +101,7 @@ void initpics(int pic1, int pic2){
 	outb(PIC2DATA, 2);
 	
 	//send to ICW4
-	outb(PIC1DATA, 0x05);
+	outb(PIC1DATA, ICW4);//outb(PIC1DATA, 0x05);
 	outb(PIC2DATA, ICW4);
 	
 	//disable the IRQs
@@ -129,7 +129,7 @@ void PIC_remap(int offset1, int offset2){
 	outb(PIC1DATA, PIC1);         //vector offset master
 	outb(PIC2DATA, PIC2);         //vector offset slave
 	outb(PIC1DATA, 4);               //Master: there is a slave PIC at irq2 (0000 0100)
-	outb(PIC2DATA, 2);               //Slave: I tell you the cascade identity (0000 0010)
+	outb(PIC2DATA, 2);               //Slave: cascade identity (0000 0010)
 	
 	outb(PIC1DATA, ICW4_8086);
 	outb(PIC2DATA, ICW4_8086);
@@ -139,7 +139,7 @@ void PIC_remap(int offset1, int offset2){
 	
 }
 
-void PIT_init(){ 						//LOL
+void PIT_init(){ 						
 
 	int PIT_freq  = 1193180 / 256;                    //Frequency of the PIT
 	outb(0x43, 0x36);//0b00110110);

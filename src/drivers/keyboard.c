@@ -29,6 +29,7 @@ bool IS_pressed(char key){
 
 void hang_for_key(char key){
 	while(!IS_pressed(key));
+	systeminfo.LastKey = 0;
 }
 
 void ps2_keyb_init()
@@ -43,50 +44,74 @@ void ps2_keyb_init()
 	
 }
 
+void mouse_write(uint8_t byte)
+{
+	mouse_wait(1);
+	outb(0x64, 0xD4);
+
+	mouse_wait(1);
+	outb(0x60, byte);
+}
+
+uint8_t mouse_read()
+{
+	mouse_wait(0);
+	return inb(0x60);
+}
+
+void mouse_wait(uint8_t type)
+{
+	uint32_t timeout = 100000;
+
+	if(type == 0)
+	{
+		while(timeout--)
+			if( (inb(0x64) & 1) == 1) return;
+	}
+	else
+	{
+		while(timeout--)
+			if( (inb(0x64) & 2) == 0) return;
+	}
+
+}
+
 void ps2_mouse_init()
 {	
 	//enable the thing
-	ps2_wait_write();
+	uint8_t status;
 
-	outb(0x64, 0xad);
-	
-	ps2_wait_write();
-	outb(0x64, 0xa8);
-	
-	ps2_wait_write();
-	outb(0x64, 0xd4);
+	mouse_wait(1);
+	outb(0x64, 0xA8);
+	print("A8\n");
 
-	ps2_wait_write();
-	outb(0x60, 0xff);
-
-	ps2_wait_read();
-	uint8_t status = inb(0x60);
-	while((inb(0x60) & 0xAA) != 0xAA) ps2_wait_read();
-	
-	ps2_wait_read();
-	status = inb(0x60); //read mouseID?
-
-	ps2_wait_write();
+	mouse_wait(1);
 	outb(0x64, 0x20);
+	print("20\n");
 
-	ps2_wait_read();
-	status = inb(0x60);
-	trace("status=%i\n", status);
-	status |= 0x02;
-	//status &= 0xffdf;
-	
-	ps2_wait_write();
+	mouse_wait(0);
+	status = inb(0x60) | 2;
+	print("got status\n");
+
+	mouse_wait(1);
 	outb(0x64, 0x60);
-	ps2_wait_write();
+	mouse_wait(1);
 	outb(0x60, status);
-	
-	ps2_wait_write();
-	outb(0x60, 0xF4);
-	
-	ps2_wait_write();
-	outb(0x64, 0xAE);
-	
-	print("MOUSE INIT COMPLETE\n");
+
+	print("60 and status\n");
+
+	mouse_write(0xff);
+	print("reset\n");
+
+	mouse_write(0xF6);
+	mouse_read();
+	print("F6\n");
+
+	mouse_write(0xF4);
+	mouse_read();
+	print("F4\n");
+
+	//IRQclrmsk(12);	
 }
 
 

@@ -86,11 +86,11 @@ void isr8c(){
 }
 
 void isr11c(){
-	kernel_panic("AGNMENT_CHECK");
+	kernel_panic_dump("AGNMENT_CHECK");
 }
 
 void isr12c(){
-		kernel_panic("STACK_SEGMENT_FAULT");
+		kernel_panic_dump("STACK_SEGMENT_FAULT");
 	__asm__("hlt");
 }
 
@@ -249,10 +249,10 @@ void isr13c(uint16_t ip, uint16_t cs, uint16_t esp, uint16_t ss)
 	
 }
 void isr14c(){
-	kernel_panic("PAGE_FAULT");
+	kernel_panic_dump("PAGE_FAULT");
 }
 void isr15(){
-	kernel_panic("UNSUPPORTED_INTERRUPT");
+	kernel_panic_dump("UNSUPPORTED_INTERRUPT");
 	__asm__("hlt");
 	
 }
@@ -277,12 +277,32 @@ void isr21c(){
 	outb(PIC1,0x20);
 }
 
+uint8_t mouse_cycle;
+int8_t mouse_byte[2];
+
 void isr2cc()
 {
-	int c = inb(0x60);
-	print("ISR2C INTERRUPT\n");
-	outb(PIC1,0x20);
-	outb(PIC2,0x20);
+	switch(mouse_cycle)
+	{
+		case 0:
+			mouse_byte[0] = inb(0x60);
+			mouse_cycle++;
+		break;
+
+		case 1:
+			mouse_byte[1] = inb(0x60);
+			mouse_cycle++;
+		break;
+
+		case 2:
+			systeminfo.mouseY = inb(0x60);
+			systeminfo.mouseX = mouse_byte[1];
+			mouse_cycle = 0;
+		break;			
+
+	}
+	print("MOUSE INTERRUPT\n");
+	inthndld(12);
 }
 
 

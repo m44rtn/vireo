@@ -48,6 +48,8 @@ typedef struct{
 	uint16_t *ATAPIbuf;
 	bool ATAPIint;
 	bool waitingforATAPI;
+
+	uint32_t mouseX, mouseY;
 } SystemInfo;
 
 SystemInfo systeminfo;

@@ -13,6 +13,10 @@
 void ps2_keyb_init();
 void ps2_mouse_init();
 
+void mouse_write(uint8_t byte);
+uint8_t mouse_read();
+void mouse_wait(uint8_t type);
+
 void ps2_wait_write();
 void ps2_wait_read();
 

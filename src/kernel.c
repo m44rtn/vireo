@@ -65,9 +65,12 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	Prep_TSS();
 	GDT();
 
+	systeminfo.mouseX = systeminfo.mouseY = 0;
+	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
+
 	//Setup interrupts                             
 	setints();	
-	//systeminfo.FLAGS = 0;
+	
 
 	//Setup Memory info
 	memory_init(mbh);
@@ -90,19 +93,18 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	FATinit(vfs_info.HD0);
 	uint8_t drive = vfs_info.HD0;
 
-	ps2_keyb_init();
-	ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
+	print("Press enter to continue...\n");
+	hang_for_key(KEYB_ENTER);
+	clearscr();
+	vesa_init(1024, 768, 32);
 
-	//while(1) printline("R", 10, 10);
-	//vesa_init(1360, 720, 32);
-
-	//for(uint32_t y = 0; y < 728; y++)
-	//{
-	//	for(uint32_t x = 0; x < 1024; x++)
-	//	{
-	//		vesa_put_pixel(x, y, 0xffab00);
-	//	}
-	//}
+	for(uint32_t y = 0; y < 768; y++)
+	{
+		for(uint32_t x = 0; x < 1024; x++)
+		{
+			vesa_put_pixel(x, y, 0x23272a);
+		}
+	}
 		
 	//uint32_t *thing = FindDriver("VESA    SYS"); //lot's of errors
 	
@@ -138,7 +140,6 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//task_push(TASK_HIGH, (uint32_t) task3, NULL);
 	//print("it fucking worked!\n");
-	while(1);
 
 
 	print("Press enter to continue...\n");
