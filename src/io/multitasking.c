@@ -6,7 +6,7 @@
 
 //...With only a max of 15 processes at a time! very efficient.
 
-
+bool isMultitasking = false;
 uint8_t CurrentTasks = 0;       //amount of tasks in the queue
 static uint8_t ExecTask = 0; //current task
 
@@ -48,6 +48,16 @@ void task_timeguard()
     
     //return if we don't have tasks in the queue
    
+    if(!isMultitasking)
+    {
+        task_findnew();
+        trace("Exectask = %i\t", ExecTask);
+        trace("entryptr = %i\n", tasks[ExecTask].entry_ptr);
+        outb(PIC1, 0x20);
+        isMultitasking = true;
+        jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);  
+        return;
+    }
 
     //check if the task has used up it's time slice, otherwise give it more time.
     if(tasks[ExecTask].quantum != 0)
@@ -66,12 +76,16 @@ void task_timeguard()
     } 
     
     //If the task isn't done, save it's state before we delete it.
-    uint32_t *ebp = (uint32_t *) tasks[ExecTask].registers.ebp;
-    if(!eqlstr( (char *) ebp, TASK_DONE)) task_save();
+    //uint32_t *ebp = (uint32_t *) tasks[ExecTask].registers.ebp;
+    //if(!eqlstr( (char *) ebp, TASK_DONE)) 
 
-    //clear the task and get a new one
-    task_pop(ExecTask);  
+    task_save();
     task_findnew();
+    outb(PIC1, 0x20);
+    jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers); 
+    //clear the task and get a new one
+    //task_pop(ExecTask);  
+    //task_findnew();
 
     //tell the PIC we're done with the interrupt to (hopefully) avoid 
     //being in an interrupt forever.
@@ -188,17 +202,9 @@ void task_findnew()
     //if so, our queue is empty while it shouldn't. Re-init it.
     //if(tasks[0].priority == 0 && ExecTask != 0xFF) InitTasking(/*BlueBird*//*);
 
-    for(uint8_t i = 0; i < 15; i++)
-    {
-        //if(tasks[i].priority == 0) InitTasking(); //we've reached the end of the queue which is bad, and we just re-init it
-
-        if(highest_prior < tasks[i].priority)
-        {
-            highest_prior = tasks[i].priority;
-            task = i;
-        } 
-
-    }
+    if(isMultitasking)
+        task = ExecTask + 1;
+    else task = 0;
 
     ExecTask = task;
     

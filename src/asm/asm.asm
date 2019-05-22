@@ -183,7 +183,6 @@ pushf
 push 0x1B
 push eax
 
-
 call do_exor
 call do_regs
 
