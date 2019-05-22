@@ -106,8 +106,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//		vesa_put_pixel(x, y, 0x23272a);
 	//	}
 	//}
-		
-
+	
 	/* setting up the test tasks */
 	uint32_t *task1 = malloc(4096);
     File *file = FindFile("TASK1   SYS", vfs_info.SYSFOLDER_CLUST, drive);
@@ -125,8 +124,9 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	func_ptr = &kernel_thing;
 	
 	trace("task 1 eip=%i\n", (uint32_t) task1);
-	task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
 	task_push(TASK_HIGH, (uint32_t) func_ptr, TASK_FLAG_KERNEL);
+	task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
+	
 	//clearscr();
 	sleep(1);
 	systeminfo.FLAGS = KERNEL_FLAGS = INFO_FLAG_MULTITASKING_ENABLED;

@@ -1,6 +1,6 @@
 #include "gdt.h"
 
-#define gdtlen 7
+#define gdtlen 6
 
 typedef struct{
     uint32_t prev;

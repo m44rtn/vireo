@@ -47,15 +47,18 @@ void task_timeguard()
     //gets run every PIT tick
     
     //return if we don't have tasks in the queue
+    //tREGISTERS *regs = &tasks[ExecTask].registers;
    
     if(!isMultitasking)
     {
         task_findnew();
         trace("Exectask = %i\t", ExecTask);
         trace("entryptr = %i\n", tasks[ExecTask].entry_ptr);
-        outb(PIC1, 0x20);
+        trace("registers = %i\n", &tasks[ExecTask].registers);
         isMultitasking = true;
-        jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);  
+        
+        //outb(PIC1, 0x20);
+        //jmp_user_mode(&tasks[ExecTask].entry_ptr, &tasks[ExecTask].registers);  
         return;
     }
 
@@ -79,7 +82,7 @@ void task_timeguard()
     //uint32_t *ebp = (uint32_t *) tasks[ExecTask].registers.ebp;
     //if(!eqlstr( (char *) ebp, TASK_DONE)) 
 
-    task_save();
+    //task_save();
     task_findnew();
     outb(PIC1, 0x20);
     jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers); 

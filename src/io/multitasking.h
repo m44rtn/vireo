@@ -41,6 +41,6 @@ void task_findnew();
 
 void task_internal_ret_from_interrupt();
 
-extern void jmp_back_kernel(uint32_t regs_eip, uint32_t *registers);
+extern void jmp_back_kernel(uint32_t *regs_eip, tREGISTERS *registers);
 
 #endif

@@ -152,42 +152,44 @@ global jmp_user_mode
 extern do_regs
 extern do_exor
 extern trace
+extern sleep
 jmp_user_mode:
     ;jumps to user mode -there's a lot that isn't right in this function
     ;input:
-    ;   - a location of a function that should be executed by this thing
-    ;   - location of register stuff
+    ;   - a location of a function that should be executed by this thing (eax)
+    ;   - location of register stuff (edi)
     ;output:
     ;   - n/a
-pop edi
-pop eax
 
-push edi
-
-push eax
 mov ax, 0x23
 mov ds, ax
 mov es, ax
 mov fs, ax
 mov gs, ax
-pop eax
-
-mov ecx, esp
 
 pop edi
+pop eax
 
-push 0x23
-push ecx
-pushf 
+;push 5
+;call sleep
 
-push 0x1B
-push eax
+;push edi
+;push .string
+;call trace
+;jmp $
 
+;push 0x23
+;push esp
+;pushf 
+
+;push 0x1B
+;push dword [eax]
+
+;call do_regs
 call do_exor
-call do_regs
 
 iret
-.string db "eip=%i", 0x00
+.string db "eax=%i", 0x00
 
 global jmp_back_kernel
 extern do_regs

@@ -272,6 +272,7 @@ void isr21c(){
 	int c = inb(0x60);
 
 	if(c < 0x81){
+		//print("Keyboard interrupt\n");
 		keybin((char) c);
 	}
 	outb(PIC1,0x20);
