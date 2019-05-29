@@ -3,24 +3,43 @@
 #define ACK (int) 0xFA
 
 
-bool enter = 0;
-int bEnterPause = 0;
-int boolsk3 = 0;
-char buff[256];
-char* kbrdbfr = (char*) &buff; 
-//systeminfo.keybrdbfrloc = 0;
+char* key_bfr;
 int noreturn = 0;
-int shift = 0;
+
+bool shift = false;
+
 int scancodeset = 1;
 
-
+char *keyboard_chars = "  1234567890-=\b\tqwertyuiop[]\n asdfghjkl;'` \\zxcvbnm,./    ";
 
 void keybin(char key){
 	systeminfo.LastKey = key;
-	if(systeminfo.KEYB_OnScreenEnabled) putonscr(key);
+	if(systeminfo.KEYB_OnScreenEnabled) keyboard_putonscr(key);
 }
 
-void putonscr(char chr){}
+void keyboard_putonscr(char key)
+{
+	bool show_char = false; // this helps us ignore SHIFT 'n such (otherwise they show up as a space)
+	if(key == KEYB_ONE || key > KEYB_SPACE) return;
+	
+	char c = keyboard_chars[key];
+
+	//bug: thing only works once (shift never becomes false again)
+	if(key == KEYB_LEFT_SHIFT_PRESSED || key == KEYB_RIGHT_SHIFT_PRESSED) shift = true;
+	else if(key == KEYB_LEFT_SHIFT_RELEASED || key == KEYB_RIGHT_SHIFT_RELEASED) shift = false;
+	else show_char = true;
+	
+	if(c == '\b') 
+
+	if(shift) c = util_c_transform_uc(c, UTIL_UPPERCASE);
+
+	if(show_char && (systeminfo.key_bfr_loc < 512) )
+	{
+		key_bfr[systeminfo.key_bfr_loc];
+		putchar(c);
+		systeminfo.key_bfr_loc++;
+	}
+}
 
 bool IS_pressed(char key){
 	if(key == systeminfo.LastKey) return true;
@@ -34,13 +53,15 @@ void hang_for_key(char key){
 
 void ps2_keyb_init()
 {
-	/*Set Keyboard scancode set*/
+	/*Set Keyboard scancode set
 	uint8_t status; 
 	ps2_wait_write();
 	outb(0x60, 0xff);
 	ps2_wait_read();
 	//if(inb(0x60) != 0xFA) return;
-	while(inb(0x60) & 0xAA != 0xAA);
+	while(inb(0x60) & 0xAA != 0xAA);*/
+	systeminfo.key_bfr_loc = 0;
+	key_bfr = (char*) malloc(512);
 	
 }
 

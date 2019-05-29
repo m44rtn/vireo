@@ -5,7 +5,7 @@ nop
 jmp setup
 
 setup:
-    mov eax, 0x80000000
+    mov eax, 0xFFFFFFFF
     jmp decrease
 
 decrease:

@@ -151,8 +151,10 @@ ret
 global jmp_user_mode
 extern do_regs
 extern do_exor
-extern trace
+extern trace, print
 extern sleep
+extern kernel_thing
+extern Prep_TSS
 jmp_user_mode:
     ;jumps to user mode -there's a lot that isn't right in this function
     ;input:
@@ -161,35 +163,85 @@ jmp_user_mode:
     ;output:
     ;   - n/a
 
+rdtsc
+
 mov ax, 0x23
 mov ds, ax
 mov es, ax
 mov fs, ax
 mov gs, ax
 
-pop edi
-pop eax
+pop dword [.regs]
+pop dword [.instrptr]
 
-;push 5
-;call sleep
+call Prep_TSS
 
-;push edi
-;push .string
-;call trace
-;jmp $
+push dword [.instrptr]
+mov eax, esp
 
-;push 0x23
-;push esp
-;pushf 
+push 0x23
+push eax
 
-;push 0x1B
-;push dword [eax]
+push dword 0x0202 
 
-;call do_regs
-call do_exor
+push 0x1B
+push asm_fix_stack
 
-iret
-.string db "eax=%i", 0x00
+mov edi, dword [.regs]
+call do_regs
+
+iretd
+
+.regs dd 0x0000
+.instrptr dd 0x0000
+
+global asm_fix_stack
+
+asm_fix_stack:
+;pop eax
+add esp, 4
+push .string
+call print
+
+jmp $
+
+.string db "Hello, Userland! ", 0
+
+global task1
+task1:
+
+push .string
+call print
+jmp $
+.string db "Red Alert!\n", 0
+
+global task2
+extern clearscr
+task2:
+
+;call clearscr
+mov eax, 4
+
+push eax
+push .string
+call trace
+
+jmp $
+.string db "eax=%i!\n", 0
+
+global asm_stuff
+extern task_push
+asm_stuff:
+push 3
+push task1
+push 1
+call task_push
+
+push 3
+push task2
+push 1
+call task_push
+ret
 
 global jmp_back_kernel
 extern do_regs

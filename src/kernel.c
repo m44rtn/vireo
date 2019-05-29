@@ -49,7 +49,7 @@ SOFTWARE.
 
 void kernel_thing();
 void kernel_version();
-
+void (*func_ptr) (uint32_t);
 uint32_t KERNEL_FLAGS = 0;
 
 void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
@@ -94,51 +94,45 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	FATinit(vfs_info.HD0);
 	uint8_t drive = vfs_info.HD0;
 
-	print("Press enter to continue...\n");
-	hang_for_key(KEYB_ENTER);
-	clearscr();
-	//vesa_init(1024, 768, 32);
-
-	//for(uint32_t y = 0; y < 768; y++)
-	//{
-	//	for(uint32_t x = 0; x < 1024; x++)
-	//	{
-	//		vesa_put_pixel(x, y, 0x23272a);
-	//	}
-	//}
-	
-	/* setting up the test tasks */
-	uint32_t *task1 = malloc(4096);
-    File *file = FindFile("TASK1   SYS", vfs_info.SYSFOLDER_CLUST, drive);
-    uint32_t lba = FAT_cluster_LBA(file->FileLoc);
-    PIO_READ_ATA(0, lba, ((file->size / 512) + 1), (uint16_t *) task1);
-
-
-
-	uint32_t *task2 = malloc(4096);
-    File *file2 = FindFile("TASK2   SYS", vfs_info.SYSFOLDER_CLUST, drive);
-    uint32_t lba2 = FAT_cluster_LBA(file2->FileLoc);
-    PIO_READ_ATA(0, lba2, ((file2->size / 512) + 1), (uint16_t *) task2);
-	
-	void (*func_ptr) (uint32_t);
-	func_ptr = &kernel_thing;
-	
-	trace("task 1 eip=%i\n", (uint32_t) task1);
-	task_push(TASK_HIGH, (uint32_t) func_ptr, TASK_FLAG_KERNEL);
-	task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
-	
+	//print("Press enter to continue...\n");
+	//hang_for_key(KEYB_ENTER);
 	//clearscr();
-	sleep(1);
-	systeminfo.FLAGS = KERNEL_FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
+	/*vesa_init(1024, 768, 32); 
+
+	for(uint32_t y = 0; y < 768; y++)
+	{
+		for(uint32_t x = 0; x < 1024; x++)
+		{
+			vesa_put_pixel(x, y, 0x23272a);
+		}
+	}*/
 	
-	//print("\nRed Alert!\n");
-	//print("Hold it right there, pardner!\n");
+	ps2_keyb_init();
+	systeminfo.KEYB_OnScreenEnabled = true;
+	
+	//while(1);
+	//task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
+	//task_push(TASK_HIGH, (uint32_t) task2, TASK_FLAG_KERNEL);
+
+	extern void asm_stuff();
+	//asm_stuff();
+	
+	sleep(1);
+		
+	tREGISTERS *registers;
+	kmemset(registers, 0, sizeof(tREGISTERS));
+	systeminfo.FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
+	jmp_user_mode(kernel_thing, registers);
+	//clearscr();
+
 	while(1);
 }
 
 void kernel_thing()
 {
 	print("\nRed Alert!\n");
+	//kernel_panic_dump("LCARS_RED_ALERT");
+	while(1);
 }
 
 void kernel_version()

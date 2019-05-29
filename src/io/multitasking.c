@@ -6,7 +6,7 @@
 
 //...With only a max of 15 processes at a time! very efficient.
 
-bool isMultitasking = false;
+bool isMultitasking = true;
 uint8_t CurrentTasks = 0;       //amount of tasks in the queue
 static uint8_t ExecTask = 0; //current task
 
@@ -57,8 +57,8 @@ void task_timeguard()
         trace("registers = %i\n", &tasks[ExecTask].registers);
         isMultitasking = true;
         
-        //outb(PIC1, 0x20);
-        //jmp_user_mode(&tasks[ExecTask].entry_ptr, &tasks[ExecTask].registers);  
+        outb(PIC1, 0x20);
+        jmp_user_mode(tasks[ExecTask].entry_ptr, &tasks[ExecTask].registers);  
         return;
     }
 
@@ -73,8 +73,7 @@ void task_timeguard()
         //print("\n");
         uint16_t i = 0;
         while(i < 0xFFFF) i++;
-        //outb(PIC1, 0x20);
-        //jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);
+        
         return;
     } 
     
@@ -82,42 +81,13 @@ void task_timeguard()
     //uint32_t *ebp = (uint32_t *) tasks[ExecTask].registers.ebp;
     //if(!eqlstr( (char *) ebp, TASK_DONE)) 
 
-    //task_save();
+    
+    //task_push(TASK_HIGH, (uint32_t) kernel_thing, TASK_FLAG_KERNEL);
+    task_save();
     task_findnew();
     outb(PIC1, 0x20);
     jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers); 
-    //clear the task and get a new one
-    //task_pop(ExecTask);  
-    //task_findnew();
 
-    //tell the PIC we're done with the interrupt to (hopefully) avoid 
-    //being in an interrupt forever.
-    //outb(PIC1, 0x20);
-    //systeminfo.FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
-    //jmp_user_mode(tasks[ExecTask].entry_ptr, (uint32_t *) &tasks[ExecTask].registers);    
-}
-
-
-void task_push_v86(uint32_t ebp, uint32_t entry_point, uint8_t priority, uint16_t flags)
-{
-    //if the queue is full, ignore the request -> could end badly
-    if(CurrentTasks == 15) return;
-
-    //prepare the task
-    tTask task;
-    task.entry_ptr = entry_point;
-    task.quantum = 8;              //every task has 8 ticks (that's a 32nd of a second)
-    task.priority = priority;
-
-    //ensure the v86 bit is set
-    task.flags = TASK_FLAG_v86 | flags;
-
-    task.registers.ebp = 0x0000;
-    task.registers.esp = 0xFFFF;
-
-    //add the task to the queue
-    tasks[CurrentTasks] = task;
-    CurrentTasks++;    
 }
 
 void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
@@ -127,7 +97,7 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
     if(ExecTask == 0xFF) ExecTask = 0;
 
     //if the queue is full, ignore the request -> could end badly
-    if(CurrentTasks == 15) return;
+    if(CurrentTasks == 256) return;
 
     //prepare the task
     tTask task;
@@ -149,7 +119,7 @@ void task_push(uint8_t priority, uint32_t entry_point, uint16_t flags)
 void task_pop(uint8_t tasknum)
 {
     //move everything over by one so we don't have an empty gap
-    for(uint8_t i = tasknum; i < 14; i++)
+    for(uint8_t i = tasknum; i < 256; i++)
     {
         tasks[i].entry_ptr = tasks[i + 1].entry_ptr;
         tasks[i].quantum = tasks[i + 1].quantum;
@@ -169,8 +139,8 @@ void task_pop(uint8_t tasknum)
     }
 
     //clear the last entry if it isn't empty yet
-    if(tasks[14].entry_ptr > 0)
-        kmemset(&tasks[14], 0, sizeof(tTask));
+    if(tasks[255].entry_ptr > 0)
+        kmemset(&tasks[256], 0, sizeof(tTask));
 
     CurrentTasks--;
 }
@@ -196,6 +166,7 @@ void task_save()
 
 }
 
+
 void task_findnew()
 {
     uint8_t highest_prior = 0;
@@ -205,11 +176,15 @@ void task_findnew()
     //if so, our queue is empty while it shouldn't. Re-init it.
     //if(tasks[0].priority == 0 && ExecTask != 0xFF) InitTasking(/*BlueBird*//*);
 
-    if(isMultitasking)
-        task = ExecTask + 1;
-    else task = 0;
+    //if(isMultitasking)
+    //    task = ExecTask + 1;
+    //else task = 0;
 
-    ExecTask = task;
+    if(ExecTask < 254) ExecTask++;
+    else
+    {
+        kernel_panic_dump("MULTITASK_REQUEST_HELL");
+    }
     
     //SwitchTask(tasks[ExecTask]);
     

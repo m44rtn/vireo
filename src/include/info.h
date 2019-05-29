@@ -30,7 +30,7 @@ typedef struct{
 	uint32_t FLAGS;
 
 	//keyboard stuff
-	uint8_t keybrdbfrloc;
+	uint32_t key_bfr_loc;
 	char LastKey;
 	bool KEYB_OnScreenEnabled;
 
@@ -54,20 +54,6 @@ typedef struct{
 
 SystemInfo systeminfo;
 
-typedef struct{
-	uint16_t pci_vendor;
-	uint16_t pci_device_number;
-	uint8_t pci_baseclass;
-	uint8_t pci_subclass;
-	uint8_t bus;
-	uint8_t device;
-	uint8_t func;
-	uint8_t prog_if;
-	char* pci_devicetype;
-	char* pci_device;
-} PCI_device_info;
-
-PCI_device_info pci_device_info[8192];
 
 typedef struct
 {

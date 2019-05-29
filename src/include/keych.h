@@ -28,6 +28,8 @@
 #define KEYB_Y 0x15
 #define KEYB_Z 0x2C
 
+#define KEYB_SPACE 0x39
+
 #define KEYB_ZERO 0x0B
 #define KEYB_ONE 0x02
 #define KEYB_TWO 0x03
@@ -42,6 +44,13 @@
 #define KEYB_ENTER 0x1C
 #define KEYB_TAB 0x0F
 #define KEYB_ESC 0x01
+#define KEYB_CAPS 0x3A
+
+#define KEYB_LEFT_SHIFT_PRESSED  0x2A
+#define KEYB_RIGHT_SHIFT_PRESSED 0x36
+
+#define KEYB_LEFT_SHIFT_RELEASED  0xAA
+#define KEYB_RIGHT_SHIFT_RELEASED 0xB6
 
 
 #endif

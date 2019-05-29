@@ -73,8 +73,8 @@ void GDT(){
 	
 	//setGDT(&gdt[3], 0x7FFEFFF, 0x7FFFFFF, 0x92, 0xCF);  //ring0 data, stack, 4096 bytes (4kib)
 	
-	setGDT(&gdt[3], 0, 0xFFFFFFFF, 0xFA, 0xCF); //ring3 code
-	setGDT(&gdt[4], 0, 0xFFFFFFFF, 0xF2, 0xCF); //ring3 data
+	setGDT(&gdt[3], 0, 0xFFFFFFFF, 0xFA, 0xCF); //ring3 code //cf
+	setGDT(&gdt[4], 0, 0xFFFFFFFF, 0xF2, 0xCF); //ring3 data //cf
 
 	setGDT(&gdt[5], (uint32_t) &tss, ( ((uint32_t)&tss) + sizeof(TSS)), 0x89, 0x40);
 	

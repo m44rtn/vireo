@@ -182,10 +182,8 @@ mov	ss, ax
 mov eax, KERNEL_FLAGS
 and eax, 1
 
-cmp eax, 0
-je isr20_next
-
-call Task_Save_State
+cmp eax, 1
+je Task_Save_State
 
 isr20_next:
 call isr20c

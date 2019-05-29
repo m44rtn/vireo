@@ -29,6 +29,7 @@ uint32_t timer_end();
 
 char *movestr(char* str, uint32_t from);
 char* TransformUpLowUC(char* str, bool lORu);
+char util_c_transform_uc(char c, bool lORu);
 uint32_t strlen(char* s);
 
 char *PartyChop(char* str, const char* delim);

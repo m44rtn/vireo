@@ -4,6 +4,7 @@
 #include "../include/types.h"
 #include "../include/info.h"
 #include "../include/error.h"
+#include "../include/keych.h"
 #include "../io/hardware.h"
 #include "../io/util.h"
 
@@ -22,7 +23,7 @@ void ps2_wait_read();
 
 void hang_for_key(char key);
 bool IS_pressed(char key);
-void putonscr(char chr);
+void keyboard_putonscr(char key);
 void keybin(char key);
 
 bool DRIVE_ERROR_DETECT(uint16_t *buf, uint32_t BufSize_WORDS);

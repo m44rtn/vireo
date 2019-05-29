@@ -176,6 +176,23 @@ char* TransformUpLowUC(char* str, bool lORu)
 	return stra;
 }
 
+char util_c_transform_uc(char c, bool lORu)
+{
+	//I'm sorry brian kernighan...
+
+	char ca = c;
+	
+	if(ca == ' ') return; //if it's a space character ignore
+	if(ca == '\n') return;
+	if(ca == '\t') return;
+		
+
+	if(lORu) ca += 0x20; //lowercase
+	if(!lORu) ca -= 0x20; //uppercase
+
+	return ca;
+}
+
 
 //chops the party into parts
 char *PartyChop(char* str, const char* delim){
