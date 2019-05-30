@@ -121,7 +121,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 		
 	tREGISTERS *registers;
 	kmemset(registers, 0, sizeof(tREGISTERS));
-	systeminfo.FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
+	//systeminfo.FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
 	jmp_user_mode(kernel_thing, registers);
 	//clearscr();
 

@@ -49,7 +49,7 @@ void Prep_TSS()
 	tss.esp0 = StackPointer;
 
     tss.ES = 0x10;
-    tss.CS = 0x10;
+    tss.CS = 0x08;
     tss.DS = 0x10;
     tss.FS = 0x10;
     tss.GS = 0x10;

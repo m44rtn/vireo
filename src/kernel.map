@@ -26,6 +26,7 @@ mouse_cycle         0x1               ../bin/obj/isr.o
 mouse_byte          0x2               ../bin/obj/isr.o
 BMR                 0x4               ../bin/obj/ATA.o
 pci_devices         0x600             ../bin/obj/kc.o
+key_bfr_codes       0x4               ../bin/obj/keyboard.o
 devices             0x80              ../bin/obj/kc.o
 MEM_MAX             0x4               ../bin/obj/memory.o
 ROOTDIR             0x4               ../bin/obj/fat.o
@@ -152,126 +153,126 @@ Linker script and memory map
 
                 0x0000000000200000                . = 0x200000
 
-.text           0x0000000000200000     0x90ff
+.text           0x0000000000200000     0x91ef
  *(.text)
  .text          0x0000000000200000     0x20ad ../bin/obj/kasm.o
                 0x000000000020000c                start
                 0x0000000000200021                paging
- .text          0x00000000002020ad      0x29b ../bin/obj/kc.o
+ .text          0x00000000002020ad      0x28e ../bin/obj/kc.o
                 0x00000000002020ad                main
-                0x0000000000202274                kernel_thing
-                0x000000000020229b                kernel_version
- .text          0x0000000000202348      0x157 ../bin/obj/sys.o
-                0x0000000000202348                inb
-                0x000000000020236f                inw
-                0x0000000000202398                outb
-                0x00000000002023c3                outw
-                0x00000000002023ee                outl
-                0x0000000000202410                inl
-                0x0000000000202436                sysinlong
-                0x000000000020245c                outsw
- .text          0x000000000020249f      0x734 ../bin/obj/screen.o
-                0x000000000020249f                updCurs
-                0x0000000000202528                setcolor
-                0x0000000000202541                trace
-                0x0000000000202643                putchar
-                0x00000000002027b3                TextModeVideoMemDump
-                0x00000000002027f8                print
-                0x000000000020285a                printline
-                0x00000000002028d9                linecheck
-                0x000000000020290e                clearl
-                0x00000000002029ba                clearscr
-                0x0000000000202a08                scroll
-                0x0000000000202b0c                disablecursor
-                0x0000000000202b48                paintscr
- .text          0x0000000000202bd3      0x247 ../bin/obj/gdt.o
-                0x0000000000202bd3                Prep_TSS
-                0x0000000000202c72                TSS_update_stack
-                0x0000000000202ca1                GDT
- *fill*         0x0000000000202e1a        0x6 
- .text          0x0000000000202e20       0x36 ../bin/obj/gdtasm.o
-                0x0000000000202e20                gdt_set32
-                0x0000000000202e52                CRzero
- .text          0x0000000000202e56      0x5c4 ../bin/obj/hardw.o
-                0x0000000000202e56                setints
-                0x0000000000202e8d                IRQclrmsk
-                0x0000000000202f03                IRQclrallmsks
-                0x0000000000202f3c                IRQmskall
-                0x0000000000202f9e                IRQdisableall
-                0x0000000000202fda                IRQsetmsk
-                0x000000000020304e                initpics
-                0x0000000000203132                inthndld
-                0x0000000000203177                PIC_remap
-                0x0000000000203260                PIT_init
-                0x00000000002032b9                inita20
-                0x0000000000203357                DetectSpeed
-                0x00000000002033bf                keybsndcom
-                0x00000000002033f0                keybwait
- .text          0x000000000020341a      0x12a ../bin/obj/cpu.o
-                0x000000000020341a                idtent
-                0x0000000000203448                setidt
-                0x000000000020349e                CPUID
-                0x00000000002034cc                IDT_add
-                0x0000000000203529                cpuSetMSR
- .text          0x0000000000203544      0x90b ../bin/obj/isr.o
-                0x0000000000203544                isrinst
-                0x00000000002036a1                isr0c
-                0x00000000002036da                isr1c
-                0x0000000000203723                isr3c
-                0x000000000020374f                isr4c
-                0x0000000000203761                isr7c
-                0x00000000002037a8                isr8c
-                0x00000000002037cf                isr11c
-                0x00000000002037fa                isr12c
-                0x0000000000203826                isr13c
-                0x0000000000203be5                isr14c
-                0x0000000000203c10                isr15
-                0x0000000000203c3c                isr20c
-                0x0000000000203c8d                isr21c
-                0x0000000000203ce2                isr2cc
-                0x0000000000203dcb                isr30c
-                0x0000000000203e04                isr47c
- .text          0x0000000000203e4f      0x67d ../bin/obj/util.o
-                0x0000000000203e4f                getBYTE
-                0x0000000000203e84                getWORD
-                0x0000000000203eba                eqlstr
-                0x0000000000203f3e                sleep
-                0x0000000000203f7f                timer_start
-                0x0000000000203f9e                timer_end
-                0x0000000000203fcc                movestr
-                0x0000000000204045                hasStr
-                0x00000000002040a9                hexstr
-                0x0000000000204110                intstr
-                0x00000000002041c3                strlen
-                0x00000000002041f4                TransformUpLowUC
-                0x00000000002042a4                util_c_transform_uc
-                0x0000000000204302                PartyChop
-                0x0000000000204351                strtok
-                0x00000000002043a2                strsep
-                0x00000000002043fa                strpbrk
- *fill*         0x00000000002044cc        0x4 
- .text          0x00000000002044d0        0xa ../bin/obj/idta.o
-                0x00000000002044d0                idt_set
- *fill*         0x00000000002044da        0x6 
- .text          0x00000000002044e0       0xf9 ../bin/obj/isra.o
-                0x00000000002044e0                isr0
-                0x00000000002044fc                isr1
-                0x000000000020450a                isr3
-                0x0000000000204514                isr4
-                0x000000000020451c                isr7
-                0x0000000000204525                isr8
-                0x0000000000204533                isr9
-                0x0000000000204534                isr10
-                0x0000000000204537                isr11
-                0x0000000000204548                isr13
-                0x0000000000204584                isr14
-                0x000000000020458e                isr20
-                0x00000000002045b5                isr21
-                0x00000000002045be                isr2c
-                0x00000000002045c7                isr30
-                0x00000000002045d0                isr47
- *fill*         0x00000000002045d9        0x7 
- .text          0x00000000002045e0      0x18b ../bin/obj/asm.o
+                0x0000000000202267                kernel_thing
+                0x000000000020228e                kernel_version
+ .text          0x000000000020233b      0x157 ../bin/obj/sys.o
+                0x000000000020233b                inb
+                0x0000000000202362                inw
+                0x000000000020238b                outb
+                0x00000000002023b6                outw
+                0x00000000002023e1                outl
+                0x0000000000202403                inl
+                0x0000000000202429                sysinlong
+                0x000000000020244f                outsw
+ .text          0x0000000000202492      0x734 ../bin/obj/screen.o
+                0x0000000000202492                updCurs
+                0x000000000020251b                setcolor
+                0x0000000000202534                trace
+                0x0000000000202636                putchar
+                0x00000000002027a6                TextModeVideoMemDump
+                0x00000000002027eb                print
+                0x000000000020284d                printline
+                0x00000000002028cc                linecheck
+                0x0000000000202901                clearl
+                0x00000000002029ad                clearscr
+                0x00000000002029fb                scroll
+                0x0000000000202aff                disablecursor
+                0x0000000000202b3b                paintscr
+ .text          0x0000000000202bc6      0x247 ../bin/obj/gdt.o
+                0x0000000000202bc6                Prep_TSS
+                0x0000000000202c65                TSS_update_stack
+                0x0000000000202c94                GDT
+ *fill*         0x0000000000202e0d        0x3 
+ .text          0x0000000000202e10       0x36 ../bin/obj/gdtasm.o
+                0x0000000000202e10                gdt_set32
+                0x0000000000202e42                CRzero
+ .text          0x0000000000202e46      0x5c4 ../bin/obj/hardw.o
+                0x0000000000202e46                setints
+                0x0000000000202e7d                IRQclrmsk
+                0x0000000000202ef3                IRQclrallmsks
+                0x0000000000202f2c                IRQmskall
+                0x0000000000202f8e                IRQdisableall
+                0x0000000000202fca                IRQsetmsk
+                0x000000000020303e                initpics
+                0x0000000000203122                inthndld
+                0x0000000000203167                PIC_remap
+                0x0000000000203250                PIT_init
+                0x00000000002032a9                inita20
+                0x0000000000203347                DetectSpeed
+                0x00000000002033af                keybsndcom
+                0x00000000002033e0                keybwait
+ .text          0x000000000020340a      0x12a ../bin/obj/cpu.o
+                0x000000000020340a                idtent
+                0x0000000000203438                setidt
+                0x000000000020348e                CPUID
+                0x00000000002034bc                IDT_add
+                0x0000000000203519                cpuSetMSR
+ .text          0x0000000000203534      0x90b ../bin/obj/isr.o
+                0x0000000000203534                isrinst
+                0x0000000000203691                isr0c
+                0x00000000002036ca                isr1c
+                0x0000000000203713                isr3c
+                0x000000000020373f                isr4c
+                0x0000000000203751                isr7c
+                0x0000000000203798                isr8c
+                0x00000000002037bf                isr11c
+                0x00000000002037ea                isr12c
+                0x0000000000203816                isr13c
+                0x0000000000203bd5                isr14c
+                0x0000000000203c00                isr15
+                0x0000000000203c2c                isr20c
+                0x0000000000203c7d                isr21c
+                0x0000000000203cd2                isr2cc
+                0x0000000000203dbb                isr30c
+                0x0000000000203df4                isr47c
+ .text          0x0000000000203e3f      0x67d ../bin/obj/util.o
+                0x0000000000203e3f                getBYTE
+                0x0000000000203e74                getWORD
+                0x0000000000203eaa                eqlstr
+                0x0000000000203f2e                sleep
+                0x0000000000203f6f                timer_start
+                0x0000000000203f8e                timer_end
+                0x0000000000203fbc                movestr
+                0x0000000000204035                hasStr
+                0x0000000000204099                hexstr
+                0x0000000000204100                intstr
+                0x00000000002041b3                strlen
+                0x00000000002041e4                TransformUpLowUC
+                0x0000000000204294                util_c_transform_uc
+                0x00000000002042f2                PartyChop
+                0x0000000000204341                strtok
+                0x0000000000204392                strsep
+                0x00000000002043ea                strpbrk
+ *fill*         0x00000000002044bc        0x4 
+ .text          0x00000000002044c0        0xa ../bin/obj/idta.o
+                0x00000000002044c0                idt_set
+ *fill*         0x00000000002044ca        0x6 
+ .text          0x00000000002044d0      0x107 ../bin/obj/isra.o
+                0x00000000002044d0                isr0
+                0x00000000002044ec                isr1
+                0x00000000002044fa                isr3
+                0x0000000000204504                isr4
+                0x000000000020450c                isr7
+                0x0000000000204515                isr8
+                0x0000000000204523                isr9
+                0x0000000000204524                isr10
+                0x0000000000204527                isr11
+                0x0000000000204538                isr13
+                0x0000000000204574                isr14
+                0x000000000020457e                isr20
+                0x00000000002045a5                isr21
+                0x00000000002045bc                isr2c
+                0x00000000002045c5                isr30
+                0x00000000002045ce                isr47
+ *fill*         0x00000000002045d7        0x9 
+ .text          0x00000000002045e0      0x185 ../bin/obj/asm.o
                 0x00000000002045e0                PIT_initasm
                 0x00000000002045ef                PIT_readcount
                 0x0000000000204607                enable_A20
@@ -280,346 +281,347 @@ Linker script and memory map
                 0x0000000000204677                getESP
                 0x0000000000204682                TSS_flush
                 0x000000000020468a                jmp_user_mode
-                0x00000000002046d4                asm_fix_stack
-                0x00000000002046f5                task1
-                0x000000000020470e                task2
-                0x000000000020472a                asm_stuff
-                0x0000000000204747                jmp_back_kernel
-                0x000000000020475b                memory_set_stack
-                0x0000000000204767                StackPointer
- .text          0x000000000020476b      0x48d ../bin/obj/errorHandl.o
-                0x000000000020476b                kernel_panic
-                0x000000000020486a                kernel_panic_dump
-                0x00000000002049e1                InitFail
-                0x0000000000204a40                console_Warning
-                0x0000000000204a92                error
- .text          0x0000000000204bf8      0x482 ../bin/obj/keyboard.o
-                0x0000000000204bf8                keybin
-                0x0000000000204c3b                keyboard_putonscr
-                0x0000000000204d07                IS_pressed
-                0x0000000000204d3a                hang_for_key
-                0x0000000000204d74                ps2_keyb_init
-                0x0000000000204db3                mouse_write
-                0x0000000000204e0f                mouse_read
-                0x0000000000204e40                mouse_wait
-                0x0000000000204ebd                ps2_mouse_init
-                0x0000000000205023                ps2_wait_write
-                0x0000000000205053                ps2_wait_read
- .text          0x000000000020507a      0x3fd ../bin/obj/memory.o
-                0x000000000020507a                memory_init
-                0x000000000020509b                GRUB_GetMemInfo
-                0x0000000000205182                malloc
-                0x0000000000205301                demalloc
-                0x0000000000205364                kmemset
-                0x0000000000205394                MemCopy
-                0x00000000002053e9                strcopy
-                0x000000000020543a                strncpy
- .text          0x0000000000205477      0x691 ../bin/obj/pci.o
-                0x0000000000205477                pci_init
-                0x000000000020563b                pci_get_device
-                0x0000000000205724                pci_get_val
-                0x00000000002057c5                GetPCIDevice
-                0x0000000000205974                pciConfigRead
-                0x0000000000205a1a                pciConfigWrite
-                0x0000000000205abe                pciGetInterruptLine
- .text          0x0000000000205b08      0x853 ../bin/obj/ahci.o
-                0x0000000000205b08                AHCI_init
-                0x0000000000205b85                getBAR5
-                0x0000000000205c0b                AHCI_setup_port
-                0x0000000000205c3d                search_drives
-                0x0000000000205ebb                port_rebase
-                0x000000000020601d                start_cmd
-                0x000000000020605f                stop_cmd
-                0x00000000002060b5                Read_SATA
-                0x00000000002062d5                find_cmdslot
- .text          0x000000000020635b      0xf1a ../bin/obj/ATA.o
-                0x000000000020635b                ATA_init
-                0x00000000002065db                ATAPI_init
-                0x00000000002065f4                ATAwait
-                0x0000000000206627                ATAPI_CHECK
-                0x0000000000206750                ATA_swreset
-                0x00000000002067e8                DRIVE_ERROR_DETECT
-                0x0000000000206842                nIEN_rs
-                0x000000000020688a                PIO_READ_ATA
-                0x0000000000206a24                PIO_WRITE_ATA
-                0x0000000000206c12                PIO_READ_ATAPI
-                0x0000000000206eb3                DMA_ATA_SETUP
-                0x0000000000206fb2                DMA_ATA_READ
-                0x0000000000207104                DMA_ATA_WRITE
-                0x0000000000207207                ATA_STANDARD
- .text          0x0000000000207275      0xbf8 ../bin/obj/fat.o
-                0x0000000000207275                GetBootCodeFAT
-                0x00000000002072bc                FATinit
-                0x0000000000207369                GetFile
-                0x00000000002073e2                FindFile
-                0x00000000002074d0                FAT_Traverse
-                0x0000000000207584                fat_find_dir
-                0x00000000002076a1                FindNextDir
-                0x00000000002077c5                FAT32_WRITE_FILE
-                0x00000000002078eb                FAT32_DIRPREP
-                0x00000000002079b9                FAT32_Write_cluster
-                0x0000000000207a0b                FAT32_READ_FILE
-                0x0000000000207a77                FAT_cluster_LBA
-                0x0000000000207aaf                FAT_read_table
-                0x0000000000207b9d                ReadDir
-                0x0000000000207d04                FATFindFreeClusterChain
- .text          0x0000000000207e6d      0x261 ../bin/obj/hdd.o
-                0x0000000000207e6d                get_drive_info
-                0x0000000000208031                GetFirstSectLBA
- .text          0x00000000002080ce       0x19 ../bin/obj/iso.o
-                0x00000000002080ce                iso_init
- .text          0x00000000002080e7      0x1f8 ../bin/obj/DRVhandl.o
-                0x00000000002080e7                driver_type
-                0x0000000000208117                FindDriver
-                0x0000000000208261                run_v86_driver
- *fill*         0x00000000002082df        0x1 
- .text          0x00000000002082e0       0x79 ../bin/obj/v86.o
-                0x00000000002082e0                v86_enter
-                0x000000000020831a                do_exor
-                0x0000000000208329                do_regs
-                0x000000000020833b                v86_ret
- .text          0x0000000000208359      0x801 ../bin/obj/multitasking.o
-                0x0000000000208359                Task_Save_State
-                0x0000000000208467                task_timeguard
-                0x000000000020866c                task_push
-                0x0000000000208735                task_pop
-                0x0000000000208958                task_save
-                0x0000000000208aa6                task_findnew
-                0x0000000000208af7                task_internal_ret_from_interrupt
- .text          0x0000000000208b5a      0x142 ../bin/obj/v86c.o
-                0x0000000000208b5a                v86_linear_to_sgoff
-                0x0000000000208b97                v86_sgoff_to_linear
-                0x0000000000208bcc                v86_interrupt
-                0x0000000000208c44                v86_save_state
- .text          0x0000000000208c9c      0x463 ../bin/obj/vesa.o
-                0x0000000000208c9c                vesa_init
-                0x0000000000208d8a                vesa_findmode
-                0x0000000000209058                vesa_difference
-                0x000000000020906d                vesa_put_pixel
+                0x00000000002046ce                asm_fix_stack
+                0x00000000002046ef                task1
+                0x0000000000204708                task2
+                0x0000000000204724                asm_stuff
+                0x0000000000204741                jmp_back_kernel
+                0x0000000000204755                memory_set_stack
+                0x0000000000204761                StackPointer
+ .text          0x0000000000204765      0x48d ../bin/obj/errorHandl.o
+                0x0000000000204765                kernel_panic
+                0x0000000000204864                kernel_panic_dump
+                0x00000000002049db                InitFail
+                0x0000000000204a3a                console_Warning
+                0x0000000000204a8c                error
+ .text          0x0000000000204bf2      0x56f ../bin/obj/keyboard.o
+                0x0000000000204bf2                keybin
+                0x0000000000204c78                keyboard_putonscr
+                0x0000000000204dd4                IS_pressed
+                0x0000000000204e07                hang_for_key
+                0x0000000000204e41                ps2_keyb_init
+                0x0000000000204e9a                mouse_write
+                0x0000000000204ef6                mouse_read
+                0x0000000000204f27                mouse_wait
+                0x0000000000204fa4                ps2_mouse_init
+                0x000000000020510a                ps2_wait_write
+                0x000000000020513a                ps2_wait_read
+ .text          0x0000000000205161      0x3fd ../bin/obj/memory.o
+                0x0000000000205161                memory_init
+                0x0000000000205182                GRUB_GetMemInfo
+                0x0000000000205269                malloc
+                0x00000000002053e8                demalloc
+                0x000000000020544b                kmemset
+                0x000000000020547b                MemCopy
+                0x00000000002054d0                strcopy
+                0x0000000000205521                strncpy
+ .text          0x000000000020555e      0x691 ../bin/obj/pci.o
+                0x000000000020555e                pci_init
+                0x0000000000205722                pci_get_device
+                0x000000000020580b                pci_get_val
+                0x00000000002058ac                GetPCIDevice
+                0x0000000000205a5b                pciConfigRead
+                0x0000000000205b01                pciConfigWrite
+                0x0000000000205ba5                pciGetInterruptLine
+ .text          0x0000000000205bef      0x853 ../bin/obj/ahci.o
+                0x0000000000205bef                AHCI_init
+                0x0000000000205c6c                getBAR5
+                0x0000000000205cf2                AHCI_setup_port
+                0x0000000000205d24                search_drives
+                0x0000000000205fa2                port_rebase
+                0x0000000000206104                start_cmd
+                0x0000000000206146                stop_cmd
+                0x000000000020619c                Read_SATA
+                0x00000000002063bc                find_cmdslot
+ .text          0x0000000000206442      0xf1a ../bin/obj/ATA.o
+                0x0000000000206442                ATA_init
+                0x00000000002066c2                ATAPI_init
+                0x00000000002066db                ATAwait
+                0x000000000020670e                ATAPI_CHECK
+                0x0000000000206837                ATA_swreset
+                0x00000000002068cf                DRIVE_ERROR_DETECT
+                0x0000000000206929                nIEN_rs
+                0x0000000000206971                PIO_READ_ATA
+                0x0000000000206b0b                PIO_WRITE_ATA
+                0x0000000000206cf9                PIO_READ_ATAPI
+                0x0000000000206f9a                DMA_ATA_SETUP
+                0x0000000000207099                DMA_ATA_READ
+                0x00000000002071eb                DMA_ATA_WRITE
+                0x00000000002072ee                ATA_STANDARD
+ .text          0x000000000020735c      0xbf8 ../bin/obj/fat.o
+                0x000000000020735c                GetBootCodeFAT
+                0x00000000002073a3                FATinit
+                0x0000000000207450                GetFile
+                0x00000000002074c9                FindFile
+                0x00000000002075b7                FAT_Traverse
+                0x000000000020766b                fat_find_dir
+                0x0000000000207788                FindNextDir
+                0x00000000002078ac                FAT32_WRITE_FILE
+                0x00000000002079d2                FAT32_DIRPREP
+                0x0000000000207aa0                FAT32_Write_cluster
+                0x0000000000207af2                FAT32_READ_FILE
+                0x0000000000207b5e                FAT_cluster_LBA
+                0x0000000000207b96                FAT_read_table
+                0x0000000000207c84                ReadDir
+                0x0000000000207deb                FATFindFreeClusterChain
+ .text          0x0000000000207f54      0x261 ../bin/obj/hdd.o
+                0x0000000000207f54                get_drive_info
+                0x0000000000208118                GetFirstSectLBA
+ .text          0x00000000002081b5       0x19 ../bin/obj/iso.o
+                0x00000000002081b5                iso_init
+ .text          0x00000000002081ce      0x1f8 ../bin/obj/DRVhandl.o
+                0x00000000002081ce                driver_type
+                0x00000000002081fe                FindDriver
+                0x0000000000208348                run_v86_driver
+ *fill*         0x00000000002083c6        0xa 
+ .text          0x00000000002083d0       0x79 ../bin/obj/v86.o
+                0x00000000002083d0                v86_enter
+                0x000000000020840a                do_exor
+                0x0000000000208419                do_regs
+                0x000000000020842b                v86_ret
+ .text          0x0000000000208449      0x801 ../bin/obj/multitasking.o
+                0x0000000000208449                Task_Save_State
+                0x0000000000208557                task_timeguard
+                0x000000000020875c                task_push
+                0x0000000000208825                task_pop
+                0x0000000000208a48                task_save
+                0x0000000000208b96                task_findnew
+                0x0000000000208be7                task_internal_ret_from_interrupt
+ .text          0x0000000000208c4a      0x142 ../bin/obj/v86c.o
+                0x0000000000208c4a                v86_linear_to_sgoff
+                0x0000000000208c87                v86_sgoff_to_linear
+                0x0000000000208cbc                v86_interrupt
+                0x0000000000208d34                v86_save_state
+ .text          0x0000000000208d8c      0x463 ../bin/obj/vesa.o
+                0x0000000000208d8c                vesa_init
+                0x0000000000208e7a                vesa_findmode
+                0x0000000000209148                vesa_difference
+                0x000000000020915d                vesa_put_pixel
 
 .text.__x86.get_pc_thunk.ax
-                0x00000000002090ff        0x4
+                0x00000000002091ef        0x4
  .text.__x86.get_pc_thunk.ax
-                0x00000000002090ff        0x4 ../bin/obj/kc.o
-                0x00000000002090ff                __x86.get_pc_thunk.ax
+                0x00000000002091ef        0x4 ../bin/obj/kc.o
+                0x00000000002091ef                __x86.get_pc_thunk.ax
 
 .text.__x86.get_pc_thunk.bx
-                0x0000000000209103        0x4
+                0x00000000002091f3        0x4
  .text.__x86.get_pc_thunk.bx
-                0x0000000000209103        0x4 ../bin/obj/kc.o
-                0x0000000000209103                __x86.get_pc_thunk.bx
+                0x00000000002091f3        0x4 ../bin/obj/kc.o
+                0x00000000002091f3                __x86.get_pc_thunk.bx
 
 .text.__x86.get_pc_thunk.dx
-                0x0000000000209107        0x4
+                0x00000000002091f7        0x4
  .text.__x86.get_pc_thunk.dx
-                0x0000000000209107        0x4 ../bin/obj/pci.o
-                0x0000000000209107                __x86.get_pc_thunk.dx
+                0x00000000002091f7        0x4 ../bin/obj/pci.o
+                0x00000000002091f7                __x86.get_pc_thunk.dx
 
-.iplt           0x0000000000209110        0x0
- .iplt          0x0000000000209110        0x0 ../bin/obj/stack.o
+.iplt           0x0000000000209200        0x0
+ .iplt          0x0000000000209200        0x0 ../bin/obj/stack.o
 
-.rodata         0x000000000020910c      0x85f
- .rodata        0x000000000020910c       0x9a ../bin/obj/kc.o
- .rodata        0x00000000002091a6        0x3 ../bin/obj/screen.o
-                0x00000000002091a6                height
-                0x00000000002091a7                width
-                0x00000000002091a8                depth
- .rodata        0x00000000002091a9       0xc6 ../bin/obj/isr.o
- .rodata        0x000000000020926f       0x1b ../bin/obj/util.o
- *fill*         0x000000000020928a        0x2 
- .rodata        0x000000000020928c      0x430 ../bin/obj/errorHandl.o
- .rodata        0x00000000002096bc       0x6d ../bin/obj/keyboard.o
- .rodata        0x0000000000209729       0x36 ../bin/obj/pci.o
- *fill*         0x000000000020975f        0x1 
- .rodata        0x0000000000209760       0x9a ../bin/obj/ahci.o
- .rodata        0x00000000002097fa       0xa1 ../bin/obj/ATA.o
- .rodata        0x000000000020989b        0xb ../bin/obj/fat.o
- .rodata        0x00000000002098a6       0x11 ../bin/obj/hdd.o
- .rodata        0x00000000002098b7       0x54 ../bin/obj/DRVhandl.o
- .rodata        0x000000000020990b       0x60 ../bin/obj/multitasking.o
+.rodata         0x00000000002091fc      0x85f
+ .rodata        0x00000000002091fc       0x9a ../bin/obj/kc.o
+ .rodata        0x0000000000209296        0x3 ../bin/obj/screen.o
+                0x0000000000209296                height
+                0x0000000000209297                width
+                0x0000000000209298                depth
+ .rodata        0x0000000000209299       0xc6 ../bin/obj/isr.o
+ .rodata        0x000000000020935f       0x1b ../bin/obj/util.o
+ *fill*         0x000000000020937a        0x2 
+ .rodata        0x000000000020937c      0x430 ../bin/obj/errorHandl.o
+ .rodata        0x00000000002097ac       0x6d ../bin/obj/keyboard.o
+ .rodata        0x0000000000209819       0x36 ../bin/obj/pci.o
+ *fill*         0x000000000020984f        0x1 
+ .rodata        0x0000000000209850       0x9a ../bin/obj/ahci.o
+ .rodata        0x00000000002098ea       0xa1 ../bin/obj/ATA.o
+ .rodata        0x000000000020998b        0xb ../bin/obj/fat.o
+ .rodata        0x0000000000209996       0x11 ../bin/obj/hdd.o
+ .rodata        0x00000000002099a7       0x54 ../bin/obj/DRVhandl.o
+ .rodata        0x00000000002099fb       0x60 ../bin/obj/multitasking.o
 
-.eh_frame       0x000000000020996c     0x17f0
- .eh_frame      0x000000000020996c       0xac ../bin/obj/kc.o
- .eh_frame      0x0000000000209a18      0x100 ../bin/obj/sys.o
+.eh_frame       0x0000000000209a5c     0x17f4
+ .eh_frame      0x0000000000209a5c       0xac ../bin/obj/kc.o
+ .eh_frame      0x0000000000209b08      0x100 ../bin/obj/sys.o
                                         0x12c (size before relaxing)
- .eh_frame      0x0000000000209b18      0x1c8 ../bin/obj/screen.o
+ .eh_frame      0x0000000000209c08      0x1c8 ../bin/obj/screen.o
                                         0x208 (size before relaxing)
- .eh_frame      0x0000000000209ce0       0x8c ../bin/obj/gdt.o
+ .eh_frame      0x0000000000209dd0       0x8c ../bin/obj/gdt.o
                                          0xcc (size before relaxing)
- .eh_frame      0x0000000000209d6c      0x1fc ../bin/obj/hardw.o
+ .eh_frame      0x0000000000209e5c      0x1fc ../bin/obj/hardw.o
                                         0x23c (size before relaxing)
- .eh_frame      0x0000000000209f68       0xa4 ../bin/obj/cpu.o
+ .eh_frame      0x000000000020a058       0xa4 ../bin/obj/cpu.o
                                          0xe4 (size before relaxing)
- .eh_frame      0x000000000020a00c      0x260 ../bin/obj/isr.o
+ .eh_frame      0x000000000020a0fc      0x260 ../bin/obj/isr.o
                                         0x2a0 (size before relaxing)
- .eh_frame      0x000000000020a26c      0x24c ../bin/obj/util.o
+ .eh_frame      0x000000000020a35c      0x24c ../bin/obj/util.o
                                         0x28c (size before relaxing)
- .eh_frame      0x000000000020a4b8       0xa4 ../bin/obj/errorHandl.o
+ .eh_frame      0x000000000020a5a8       0xa4 ../bin/obj/errorHandl.o
                                          0xd0 (size before relaxing)
- .eh_frame      0x000000000020a55c      0x184 ../bin/obj/keyboard.o
-                                        0x1c4 (size before relaxing)
- .eh_frame      0x000000000020a6e0      0x10c ../bin/obj/memory.o
+ .eh_frame      0x000000000020a64c      0x188 ../bin/obj/keyboard.o
+                                        0x1c8 (size before relaxing)
+ .eh_frame      0x000000000020a7d4      0x10c ../bin/obj/memory.o
                                         0x138 (size before relaxing)
- .eh_frame      0x000000000020a7ec      0x128 ../bin/obj/pci.o
+ .eh_frame      0x000000000020a8e0      0x128 ../bin/obj/pci.o
                                         0x168 (size before relaxing)
- .eh_frame      0x000000000020a914      0x160 ../bin/obj/ahci.o
+ .eh_frame      0x000000000020aa08      0x160 ../bin/obj/ahci.o
                                         0x1a0 (size before relaxing)
- .eh_frame      0x000000000020aa74      0x1f8 ../bin/obj/ATA.o
+ .eh_frame      0x000000000020ab68      0x1f8 ../bin/obj/ATA.o
                                         0x238 (size before relaxing)
- .eh_frame      0x000000000020ac6c      0x228 ../bin/obj/fat.o
+ .eh_frame      0x000000000020ad60      0x228 ../bin/obj/fat.o
                                         0x268 (size before relaxing)
- .eh_frame      0x000000000020ae94       0x48 ../bin/obj/hdd.o
+ .eh_frame      0x000000000020af88       0x48 ../bin/obj/hdd.o
                                          0x74 (size before relaxing)
- .eh_frame      0x000000000020aedc       0x20 ../bin/obj/iso.o
+ .eh_frame      0x000000000020afd0       0x20 ../bin/obj/iso.o
                                          0x4c (size before relaxing)
- .eh_frame      0x000000000020aefc       0x68 ../bin/obj/DRVhandl.o
+ .eh_frame      0x000000000020aff0       0x68 ../bin/obj/DRVhandl.o
                                          0xa8 (size before relaxing)
- .eh_frame      0x000000000020af64       0xe8 ../bin/obj/multitasking.o
+ .eh_frame      0x000000000020b058       0xe8 ../bin/obj/multitasking.o
                                         0x13c (size before relaxing)
- .eh_frame      0x000000000020b04c       0x84 ../bin/obj/v86c.o
+ .eh_frame      0x000000000020b140       0x84 ../bin/obj/v86c.o
                                          0xb0 (size before relaxing)
- .eh_frame      0x000000000020b0d0       0x8c ../bin/obj/vesa.o
+ .eh_frame      0x000000000020b1c4       0x8c ../bin/obj/vesa.o
                                          0xcc (size before relaxing)
 
 .note.gnu.property
-                0x000000000020b15c       0x1c
+                0x000000000020b250       0x1c
  .note.gnu.property
-                0x000000000020b15c       0x1c ../bin/obj/stack.o
+                0x000000000020b250       0x1c ../bin/obj/stack.o
 
-.rel.dyn        0x000000000020b178        0x0
- .rel.got       0x000000000020b178        0x0 ../bin/obj/stack.o
- .rel.iplt      0x000000000020b178        0x0 ../bin/obj/stack.o
- .rel.text      0x000000000020b178        0x0 ../bin/obj/stack.o
+.rel.dyn        0x000000000020b26c        0x0
+ .rel.got       0x000000000020b26c        0x0 ../bin/obj/stack.o
+ .rel.iplt      0x000000000020b26c        0x0 ../bin/obj/stack.o
+ .rel.text      0x000000000020b26c        0x0 ../bin/obj/stack.o
 
-.data           0x000000000020b178       0x18
+.data           0x000000000020b26c       0x18
  *(.data)
- .data          0x000000000020b178        0x0 ../bin/obj/kc.o
- .data          0x000000000020b178        0x0 ../bin/obj/sys.o
- .data          0x000000000020b178        0x4 ../bin/obj/screen.o
-                0x000000000020b178                color
- .data          0x000000000020b17c        0x0 ../bin/obj/gdt.o
- .data          0x000000000020b17c        0x4 ../bin/obj/hardw.o
-                0x000000000020b17c                CMOS_NMI_disable
- .data          0x000000000020b180        0x0 ../bin/obj/cpu.o
- .data          0x000000000020b180        0x0 ../bin/obj/isr.o
- .data          0x000000000020b180        0x0 ../bin/obj/util.o
- .data          0x000000000020b180        0x0 ../bin/obj/errorHandl.o
- .data          0x000000000020b180        0x4 ../bin/obj/keyboard.o
-                0x000000000020b180                scancodeset
- .data          0x000000000020b184        0x8 ../bin/obj/memory.o
-                0x000000000020b184                MEM_start
-                0x000000000020b188                mem_table_entry
- .data          0x000000000020b18c        0x0 ../bin/obj/pci.o
- .data          0x000000000020b18c        0x0 ../bin/obj/ahci.o
- .data          0x000000000020b18c        0x0 ../bin/obj/ATA.o
- .data          0x000000000020b18c        0x0 ../bin/obj/fat.o
- .data          0x000000000020b18c        0x0 ../bin/obj/hdd.o
- .data          0x000000000020b18c        0x0 ../bin/obj/iso.o
- .data          0x000000000020b18c        0x0 ../bin/obj/DRVhandl.o
- .data          0x000000000020b18c        0x4 ../bin/obj/multitasking.o
-                0x000000000020b18c                isMultitasking
- .data          0x000000000020b190        0x0 ../bin/obj/v86c.o
- .data          0x000000000020b190        0x0 ../bin/obj/vesa.o
+ .data          0x000000000020b26c        0x0 ../bin/obj/kc.o
+ .data          0x000000000020b26c        0x0 ../bin/obj/sys.o
+ .data          0x000000000020b26c        0x4 ../bin/obj/screen.o
+                0x000000000020b26c                color
+ .data          0x000000000020b270        0x0 ../bin/obj/gdt.o
+ .data          0x000000000020b270        0x4 ../bin/obj/hardw.o
+                0x000000000020b270                CMOS_NMI_disable
+ .data          0x000000000020b274        0x0 ../bin/obj/cpu.o
+ .data          0x000000000020b274        0x0 ../bin/obj/isr.o
+ .data          0x000000000020b274        0x0 ../bin/obj/util.o
+ .data          0x000000000020b274        0x0 ../bin/obj/errorHandl.o
+ .data          0x000000000020b274        0x4 ../bin/obj/keyboard.o
+                0x000000000020b274                scancodeset
+ .data          0x000000000020b278        0x8 ../bin/obj/memory.o
+                0x000000000020b278                MEM_start
+                0x000000000020b27c                mem_table_entry
+ .data          0x000000000020b280        0x0 ../bin/obj/pci.o
+ .data          0x000000000020b280        0x0 ../bin/obj/ahci.o
+ .data          0x000000000020b280        0x0 ../bin/obj/ATA.o
+ .data          0x000000000020b280        0x0 ../bin/obj/fat.o
+ .data          0x000000000020b280        0x0 ../bin/obj/hdd.o
+ .data          0x000000000020b280        0x0 ../bin/obj/iso.o
+ .data          0x000000000020b280        0x0 ../bin/obj/DRVhandl.o
+ .data          0x000000000020b280        0x4 ../bin/obj/multitasking.o
+                0x000000000020b280                isMultitasking
+ .data          0x000000000020b284        0x0 ../bin/obj/v86c.o
+ .data          0x000000000020b284        0x0 ../bin/obj/vesa.o
 
 .data.rel.local
-                0x000000000020b190       0x10
+                0x000000000020b284       0x10
  .data.rel.local
-                0x000000000020b190        0x4 ../bin/obj/keyboard.o
-                0x000000000020b190                keyboard_chars
+                0x000000000020b284        0x4 ../bin/obj/keyboard.o
+                0x000000000020b284                keyboard_chars
  .data.rel.local
-                0x000000000020b194        0xc ../bin/obj/DRVhandl.o
-                0x000000000020b194                UNKOWN
-                0x000000000020b198                EMPTY
-                0x000000000020b19c                VESA
+                0x000000000020b288        0xc ../bin/obj/DRVhandl.o
+                0x000000000020b288                UNKOWN
+                0x000000000020b28c                EMPTY
+                0x000000000020b290                VESA
 
-.got            0x000000000020b1a0        0x0
- .got           0x000000000020b1a0        0x0 ../bin/obj/stack.o
+.got            0x000000000020b294        0x0
+ .got           0x000000000020b294        0x0 ../bin/obj/stack.o
 
-.got.plt        0x000000000020b1a0        0xc
- .got.plt       0x000000000020b1a0        0xc ../bin/obj/stack.o
-                0x000000000020b1a0                _GLOBAL_OFFSET_TABLE_
+.got.plt        0x000000000020b294        0xc
+ .got.plt       0x000000000020b294        0xc ../bin/obj/stack.o
+                0x000000000020b294                _GLOBAL_OFFSET_TABLE_
 
-.igot.plt       0x000000000020b1ac        0x0
- .igot.plt      0x000000000020b1ac        0x0 ../bin/obj/stack.o
+.igot.plt       0x000000000020b2a0        0x0
+ .igot.plt      0x000000000020b2a0        0x0 ../bin/obj/stack.o
 
-.bss            0x000000000020b1c0    0x45d74
+.bss            0x000000000020b2a0    0x45d74
  *(.bss)
- .bss           0x000000000020b1c0        0xc ../bin/obj/kc.o
-                0x000000000020b1c0                KERNEL_FLAGS
- .bss           0x000000000020b1cc        0x0 ../bin/obj/sys.o
- .bss           0x000000000020b1cc       0x10 ../bin/obj/screen.o
-                0x000000000020b1cc                cursorX
-                0x000000000020b1d0                cursorY
- *fill*         0x000000000020b1dc        0x4 
- .bss           0x000000000020b1e0       0x56 ../bin/obj/gdt.o
- *fill*         0x000000000020b236        0x2 
- .bss           0x000000000020b238        0x8 ../bin/obj/hardw.o
- .bss           0x000000000020b240      0x826 ../bin/obj/cpu.o
- *fill*         0x000000000020ba66        0x2 
- .bss           0x000000000020ba68        0xc ../bin/obj/isr.o
-                0x000000000020ba68                sec
- .bss           0x000000000020ba74       0x10 ../bin/obj/util.o
- .bss           0x000000000020ba84        0x8 ../bin/obj/errorHandl.o
- .bss           0x000000000020ba8c       0x10 ../bin/obj/keyboard.o
-                0x000000000020ba8c                noreturn
-                0x000000000020ba90                shift
- .bss           0x000000000020ba9c        0x8 ../bin/obj/memory.o
- .bss           0x000000000020baa4        0x8 ../bin/obj/pci.o
- .bss           0x000000000020baac        0x8 ../bin/obj/ahci.o
- .bss           0x000000000020bab4        0x8 ../bin/obj/ATA.o
- .bss           0x000000000020babc       0x10 ../bin/obj/fat.o
- .bss           0x000000000020bacc        0x8 ../bin/obj/hdd.o
- .bss           0x000000000020bad4        0x8 ../bin/obj/iso.o
- .bss           0x000000000020badc        0x8 ../bin/obj/DRVhandl.o
- .bss           0x000000000020bae4        0xd ../bin/obj/multitasking.o
-                0x000000000020bae4                CurrentTasks
- *fill*         0x000000000020baf1        0x3 
- .bss           0x000000000020baf4        0x8 ../bin/obj/v86c.o
- .bss           0x000000000020bafc        0x8 ../bin/obj/vesa.o
- .bss           0x000000000020bb04     0x1000 ../bin/obj/stack.o
-                0x000000000020bb04                stack
-                0x000000000020cb04                end_stack
- *fill*         0x000000000020cb04       0x1c 
- COMMON         0x000000000020cb20     0x4348 ../bin/obj/kc.o
-                0x000000000020cb20                BPB
-                0x000000000020cb40                tasks
-                0x0000000000210740                systeminfo
-                0x00000000002107b4                current_vid_mode_inf
-                0x00000000002107b8                segments
-                0x00000000002107bc                vfs_info
-                0x00000000002107e0                pci_devices
-                0x0000000000210de0                devices
-                0x0000000000210e60                func_ptr
-                0x0000000000210e64                abar
- *fill*         0x0000000000210e68       0x18 
- COMMON         0x0000000000210e80       0x68 ../bin/obj/gdt.o
-                0x0000000000210e80                tss
- COMMON         0x0000000000210ee8        0x8 ../bin/obj/cpu.o
-                0x0000000000210ee8                VendorID
-                0x0000000000210eec                cpuvend
- COMMON         0x0000000000210ef0       0x11 ../bin/obj/isr.o
-                0x0000000000210ef0                before_int_ax
-                0x0000000000210ef2                tckcounter
-                0x0000000000210ef4                int_stack
-                0x0000000000210ef8                last_interrupt
-                0x0000000000210efa                before_int_di
-                0x0000000000210efc                counter
-                0x0000000000210efe                mouse_cycle
-                0x0000000000210eff                mouse_byte
- *fill*         0x0000000000210f01        0x3 
- COMMON         0x0000000000210f04        0x4 ../bin/obj/keyboard.o
-                0x0000000000210f04                key_bfr
- *fill*         0x0000000000210f08       0x18 
- COMMON         0x0000000000210f20    0x40004 ../bin/obj/memory.o
-                0x0000000000210f20                mem_table
-                0x0000000000250f20                MEM_MAX
- COMMON         0x0000000000250f24        0x8 ../bin/obj/ATA.o
-                0x0000000000250f24                prdt
-                0x0000000000250f28                BMR
- COMMON         0x0000000000250f2c        0x4 ../bin/obj/fat.o
-                0x0000000000250f2c                ROOTDIR
- COMMON         0x0000000000250f30        0x4 ../bin/obj/vesa.o
-                0x0000000000250f30                screen
+ .bss           0x000000000020b2a0        0xc ../bin/obj/kc.o
+                0x000000000020b2a0                KERNEL_FLAGS
+ .bss           0x000000000020b2ac        0x0 ../bin/obj/sys.o
+ .bss           0x000000000020b2ac       0x10 ../bin/obj/screen.o
+                0x000000000020b2ac                cursorX
+                0x000000000020b2b0                cursorY
+ *fill*         0x000000000020b2bc        0x4 
+ .bss           0x000000000020b2c0       0x56 ../bin/obj/gdt.o
+ *fill*         0x000000000020b316        0x2 
+ .bss           0x000000000020b318        0x8 ../bin/obj/hardw.o
+ .bss           0x000000000020b320      0x826 ../bin/obj/cpu.o
+ *fill*         0x000000000020bb46        0x2 
+ .bss           0x000000000020bb48        0xc ../bin/obj/isr.o
+                0x000000000020bb48                sec
+ .bss           0x000000000020bb54       0x10 ../bin/obj/util.o
+ .bss           0x000000000020bb64        0x8 ../bin/obj/errorHandl.o
+ .bss           0x000000000020bb6c       0x10 ../bin/obj/keyboard.o
+                0x000000000020bb6c                code_bfr_loc
+                0x000000000020bb70                shift
+ .bss           0x000000000020bb7c        0x8 ../bin/obj/memory.o
+ .bss           0x000000000020bb84        0x8 ../bin/obj/pci.o
+ .bss           0x000000000020bb8c        0x8 ../bin/obj/ahci.o
+ .bss           0x000000000020bb94        0x8 ../bin/obj/ATA.o
+ .bss           0x000000000020bb9c       0x10 ../bin/obj/fat.o
+ .bss           0x000000000020bbac        0x8 ../bin/obj/hdd.o
+ .bss           0x000000000020bbb4        0x8 ../bin/obj/iso.o
+ .bss           0x000000000020bbbc        0x8 ../bin/obj/DRVhandl.o
+ .bss           0x000000000020bbc4        0xd ../bin/obj/multitasking.o
+                0x000000000020bbc4                CurrentTasks
+ *fill*         0x000000000020bbd1        0x3 
+ .bss           0x000000000020bbd4        0x8 ../bin/obj/v86c.o
+ .bss           0x000000000020bbdc        0x8 ../bin/obj/vesa.o
+ .bss           0x000000000020bbe4     0x1000 ../bin/obj/stack.o
+                0x000000000020bbe4                stack
+                0x000000000020cbe4                end_stack
+ *fill*         0x000000000020cbe4       0x1c 
+ COMMON         0x000000000020cc00     0x4348 ../bin/obj/kc.o
+                0x000000000020cc00                BPB
+                0x000000000020cc20                tasks
+                0x0000000000210820                systeminfo
+                0x0000000000210894                current_vid_mode_inf
+                0x0000000000210898                segments
+                0x000000000021089c                vfs_info
+                0x00000000002108c0                pci_devices
+                0x0000000000210ec0                devices
+                0x0000000000210f40                func_ptr
+                0x0000000000210f44                abar
+ *fill*         0x0000000000210f48       0x18 
+ COMMON         0x0000000000210f60       0x68 ../bin/obj/gdt.o
+                0x0000000000210f60                tss
+ COMMON         0x0000000000210fc8        0x8 ../bin/obj/cpu.o
+                0x0000000000210fc8                VendorID
+                0x0000000000210fcc                cpuvend
+ COMMON         0x0000000000210fd0       0x11 ../bin/obj/isr.o
+                0x0000000000210fd0                before_int_ax
+                0x0000000000210fd2                tckcounter
+                0x0000000000210fd4                int_stack
+                0x0000000000210fd8                last_interrupt
+                0x0000000000210fda                before_int_di
+                0x0000000000210fdc                counter
+                0x0000000000210fde                mouse_cycle
+                0x0000000000210fdf                mouse_byte
+ *fill*         0x0000000000210fe1        0x3 
+ COMMON         0x0000000000210fe4        0x8 ../bin/obj/keyboard.o
+                0x0000000000210fe4                key_bfr
+                0x0000000000210fe8                key_bfr_codes
+ *fill*         0x0000000000210fec       0x14 
+ COMMON         0x0000000000211000    0x40004 ../bin/obj/memory.o
+                0x0000000000211000                mem_table
+                0x0000000000251000                MEM_MAX
+ COMMON         0x0000000000251004        0x8 ../bin/obj/ATA.o
+                0x0000000000251004                prdt
+                0x0000000000251008                BMR
+ COMMON         0x000000000025100c        0x4 ../bin/obj/fat.o
+                0x000000000025100c                ROOTDIR
+ COMMON         0x0000000000251010        0x4 ../bin/obj/vesa.o
+                0x0000000000251010                screen
 LOAD ../bin/obj/kasm.o
 LOAD ../bin/obj/kc.o
 LOAD ../bin/obj/sys.o

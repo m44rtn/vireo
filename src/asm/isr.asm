@@ -193,6 +193,14 @@ iretd
 
 isr21:
 pushad
+
+mov ax, 0x10 	   ;load segment registers
+mov	ds, ax
+mov	es, ax
+mov	fs, ax
+mov	gs, ax
+mov	ss, ax
+
 cld
 call isr21c
 popad

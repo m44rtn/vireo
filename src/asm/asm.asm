@@ -176,7 +176,7 @@ pop dword [.instrptr]
 
 call Prep_TSS
 
-push dword [.instrptr]
+;push dword [.instrptr]
 mov eax, esp
 
 push 0x23

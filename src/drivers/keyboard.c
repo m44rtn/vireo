@@ -4,7 +4,8 @@
 
 
 char* key_bfr;
-int noreturn = 0;
+char *key_bfr_codes; //for all the pressed key codes
+uint32_t code_bfr_loc = 0;
 
 bool shift = false;
 
@@ -15,29 +16,45 @@ char *keyboard_chars = "  1234567890-=\b\tqwertyuiop[]\n asdfghjkl;'` \\zxcvbnm,
 void keybin(char key){
 	systeminfo.LastKey = key;
 	if(systeminfo.KEYB_OnScreenEnabled) keyboard_putonscr(key);
+	key_bfr_codes[code_bfr_loc] = key;
+	if(code_bfr_loc < 512) code_bfr_loc++;	
+	else code_bfr_loc = 0;
 }
 
 void keyboard_putonscr(char key)
 {
 	bool show_char = false; // this helps us ignore SHIFT 'n such (otherwise they show up as a space)
-	if(key == KEYB_ONE || key > KEYB_SPACE) return;
+	if(key < KEYB_ONE || key > KEYB_SPACE) return;
 	
 	char c = keyboard_chars[key];
 
-	//bug: thing only works once (shift never becomes false again)
+	//bug: thing only works once (shift never becomes false again) -- but now it doesn't work at all...
 	if(key == KEYB_LEFT_SHIFT_PRESSED || key == KEYB_RIGHT_SHIFT_PRESSED) shift = true;
 	else if(key == KEYB_LEFT_SHIFT_RELEASED || key == KEYB_RIGHT_SHIFT_RELEASED) shift = false;
 	else show_char = true;
 	
-	if(c == '\b') 
-
-	if(shift) c = util_c_transform_uc(c, UTIL_UPPERCASE);
-
-	if(show_char && (systeminfo.key_bfr_loc < 512) )
+	if(c == '\b' && !(systeminfo.key_bfr_loc > 0)) return;
+	else if(c == '\b') 
 	{
-		key_bfr[systeminfo.key_bfr_loc];
-		putchar(c);
+		systeminfo.key_bfr_loc--;
+		key_bfr[systeminfo.key_bfr_loc] = '\0';
+		putchar(c);	
+		return;
+	}
+
+	if(shift)
+	{
+		c = util_c_transform_uc(c, UTIL_UPPERCASE);
+		shift = false;
+	}
+
+	if(show_char && (systeminfo.key_bfr_loc < 512))
+	{
+		key_bfr[systeminfo.key_bfr_loc] = c;
 		systeminfo.key_bfr_loc++;
+		putchar(c);
+
+		if(c == '\n') systeminfo.key_bfr_loc = 0;
 	}
 }
 
@@ -62,6 +79,7 @@ void ps2_keyb_init()
 	while(inb(0x60) & 0xAA != 0xAA);*/
 	systeminfo.key_bfr_loc = 0;
 	key_bfr = (char*) malloc(512);
+	key_bfr_codes = (char*) malloc(512);
 	
 }
 
