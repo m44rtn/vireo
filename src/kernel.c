@@ -114,11 +114,12 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	//task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
 	//task_push(TASK_HIGH, (uint32_t) task2, TASK_FLAG_KERNEL);
 
-	extern void asm_stuff();
+	
 	//asm_stuff();
 	
-	sleep(1);
-		
+	asm __volatile__("mov $30, %eax\n" "int $3");
+	
+	while(1);
 	tREGISTERS *registers;
 	kmemset(registers, 0, sizeof(tREGISTERS));
 	//systeminfo.FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
