@@ -1,4 +1,4 @@
-GCCPARAMS = -m32 -ffreestanding -o ../bin/obj/
+GCCPARAMS = -m32 -ffreestanding -nostdinc -nostartfiles -nostdlib -fno-builtin -o ../bin/obj/
 ASPARAMS = -f elf32 -o ../bin/obj/
 LDPARAMS = -m elf_i386
 
@@ -8,7 +8,7 @@ SETUPLOC = ../SETUP/
 OBJFILES =  ../bin/obj/kasm.o  ../bin/obj/kc.o  ../bin/obj/sys.o  ../bin/obj/screen.o  ../bin/obj/gdt.o  ../bin/obj/gdtasm.o \
 	 ../bin/obj/hardw.o  ../bin/obj/cpu.o  ../bin/obj/isr.o  ../bin/obj/util.o  ../bin/obj/idta.o  ../bin/obj/isra.o  ../bin/obj/asm.o  ../bin/obj/errorHandl.o  ../bin/obj/keyboard.o \
 	 ../bin/obj/memory.o  ../bin/obj/pci.o  ../bin/obj/ahci.o  ../bin/obj/ATA.o  ../bin/obj/fat.o  ../bin/obj/hdd.o \
-	 ../bin/obj/iso.o  ../bin/obj/DRVhandl.o  ../bin/obj/v86.o  ../bin/obj/multitasking.o  ../bin/obj/v86c.o  ../bin/obj/vesa.o
+	 ../bin/obj/iso.o  ../bin/obj/DRVhandl.o  ../bin/obj/v86.o  ../bin/obj/multitasking.o  ../bin/obj/v86c.o  ../bin/obj/vesa.o ../bin/obj/api_kernel.o
 
 OBJDIR =  ../bin/obj	
 #CFLAGS = -m32 -c -ffreestanding
@@ -39,6 +39,8 @@ kernel:
 	gcc $(GCCPARAMS)keyboard.o -c  drivers/keyboard.c
 	gcc $(GCCPARAMS)memory.o -c  io/memory.c
 	gcc $(GCCPARAMS)errorHandl.o -c  include/error.c
+
+	gcc $(GCCPARAMS)api_kernel.o -c  api/api_kernel.c
 	
 	gcc $(GCCPARAMS)ahci.o -c  drivers/ATA/SATA.c
 	gcc $(GCCPARAMS)ATA.o -c  drivers/ATA/ATA.c

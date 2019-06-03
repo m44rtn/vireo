@@ -75,8 +75,12 @@ mov	ss, ax
 cld
 call isr3c 
 
+;pop eax
+
 popad
 iretd
+
+.location dd 0
 
 isr4:
 popad

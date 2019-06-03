@@ -117,7 +117,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//asm_stuff();
 	
-	asm __volatile__("mov $30, %eax\n" "int $3");
+	asm __volatile__("mov $0, %eax\n" "int $3");
 	
 	while(1);
 	tREGISTERS *registers;

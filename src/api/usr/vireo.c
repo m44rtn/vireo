@@ -34,7 +34,7 @@ typedef struct
 
 typedef struct
 {
-    char signature[5]; // VIREO
+    char signature[8]; // VIREOSYS
     uint16_t proc_ID;
     uint32_t *shared_memory;
     uint32_t *program_end;

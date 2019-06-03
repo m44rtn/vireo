@@ -56,8 +56,12 @@ void isr1c(){
 
 void isr3c(uint32_t eax){
 	switch(eax){
-		case 0x00:		//return to ring 0
+		case 0x00:
 			api_init((uint32_t *) eax);
+			break;
+		
+		default:
+			api_error(eax);
 			break;
 	}
 	outb(PIC1, 0x20);
