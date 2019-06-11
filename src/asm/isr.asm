@@ -75,7 +75,7 @@ mov	ss, ax
 cld
 call isr3c 
 
-;pop eax
+pop eax
 
 popad
 iretd

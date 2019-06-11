@@ -1,4 +1,4 @@
-GCCPARAMS = -m32 -ffreestanding -nostdinc -nostartfiles -nostdlib -fno-builtin -o ../bin/obj/
+GCCPARAMS = -m32 -ffreestanding -nostdlib -o ../bin/obj/
 ASPARAMS = -f elf32 -o ../bin/obj/
 LDPARAMS = -m elf_i386
 

@@ -26,6 +26,8 @@ void sleep(uint32_t sec);
 void timer_start();
 uint32_t timer_end();
 
+uint32_t util_str_int(char *str);
+uint32_t util_to_the_powerof_ten(uint32_t num, uint8_t power);
 
 char *movestr(char* str, uint32_t from);
 char* TransformUpLowUC(char* str, bool lORu);

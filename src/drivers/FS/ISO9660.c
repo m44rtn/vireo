@@ -29,6 +29,7 @@ typedef struct
 
 typedef struct
 {
+    tVOL_DESC_GLOBAL vol_desc;
     uint8_t zero;
 
     char systemid[32];
@@ -81,9 +82,10 @@ typedef struct
     char reserved[653];
 } tVOL_DESC_PRIMARY;
 
+tVOL_DESC_PRIMARY primary;
 
-void iso_init(uint8_t drive)
+/* void iso_init(uint8_t drive)
 {
     /* init the filesystem */ 
-
-}
+   /* PIO_READ_ATAPI(x ,0x10, 1, )
+} */

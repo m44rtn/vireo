@@ -67,7 +67,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	GDT();
 
 	systeminfo.mouseX = systeminfo.mouseY = 0;
-	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2 in the future
+	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2.c in the future
 
 	//Setup interrupts                             
 	setints();	
@@ -109,6 +109,12 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	ps2_keyb_init();
 	systeminfo.KEYB_OnScreenEnabled = true;
+
+	/* char *response = user_ask("Please enter the number of the PATAPI device: "); */
+
+	char *num = "1145";
+	uint32_t res = util_str_int(num);
+	trace("num: %s\n", intstr(res));
 	
 	//while(1);
 	//task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
@@ -117,7 +123,7 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	
 	//asm_stuff();
 	
-	asm __volatile__("mov $0, %eax\n" "int $3");
+	
 	
 	while(1);
 	tREGISTERS *registers;

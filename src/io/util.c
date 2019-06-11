@@ -193,6 +193,32 @@ char util_c_transform_uc(char c, bool lORu)
 	return ca;
 }
 
+uint32_t util_str_int(char *str)
+{
+	uint32_t len = strlen(str);
+	trace("%i\n" , len);
+	uint32_t result = 0;;
+
+	uint32_t i;
+	for(i = 0; i < len; i++)
+	{
+		result += util_to_the_powerof_ten(((str[i]) - '0'), (len - i - 1) );
+	}
+		trace("%i\n", result);
+	
+	return result;
+}
+
+uint32_t util_to_the_powerof_ten(uint32_t num, uint8_t power)
+{
+	uint32_t i;
+	for(i = 0; i < power; i++)
+	{
+		num *= 10;
+	}
+
+	return num;
+}
 
 //chops the party into parts
 char *PartyChop(char* str, const char* delim){
