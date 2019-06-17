@@ -50,12 +50,18 @@ void keyboard_putonscr(char key)
 
 	if(show_char && (systeminfo.key_bfr_loc < 512))
 	{
+		if(key_bfr[systeminfo.key_bfr_loc - 1] == '\n') keyboard_clear_buffers();
 		key_bfr[systeminfo.key_bfr_loc] = c;
 		systeminfo.key_bfr_loc++;
 		putchar(c);
-
-		if(c == '\n') systeminfo.key_bfr_loc = 0;
 	}
+}
+
+void keyboard_clear_buffers()
+{
+	
+	systeminfo.key_bfr_loc = 0;
+	for(int i = 0; i < 512; i++) key_bfr[i] = '\0';
 }
 
 bool IS_pressed(char key){
@@ -70,16 +76,21 @@ void hang_for_key(char key){
 
 void ps2_keyb_init()
 {
-	/*Set Keyboard scancode set
-	uint8_t status; 
-	ps2_wait_write();
-	outb(0x60, 0xff);
-	ps2_wait_read();
-	//if(inb(0x60) != 0xFA) return;
-	while(inb(0x60) & 0xAA != 0xAA);*/
 	systeminfo.key_bfr_loc = 0;
 	key_bfr = (char*) malloc(512);
 	key_bfr_codes = (char*) malloc(512);
+
+	//reset and set defaults
+	mouse_wait(1);
+	outb(0x64, 0xFF);
+	
+	mouse_wait(0);
+	if(inb(0x60) != 0xAA) print("Error initializing keyboard!\n");
+
+	mouse_wait(1);
+	outb(0x64, 0xF6);
+	mouse_wait(0);
+	if(inb(0x60) != 0xFA);
 	
 }
 
@@ -104,11 +115,13 @@ void mouse_wait(uint8_t type)
 
 	if(type == 0)
 	{
+		//read
 		while(timeout--)
 			if( (inb(0x64) & 1) == 1) return;
 	}
 	else
 	{
+		//write
 		while(timeout--)
 			if( (inb(0x64) & 2) == 0) return;
 	}

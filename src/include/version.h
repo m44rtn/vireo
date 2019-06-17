@@ -1,9 +1,8 @@
 #ifndef VERSION_H
 #define VERSION_H
 
-#define BUILD 1064
+#define BUILD 1083
 #define MINOR   5
-#define MAJOR   5
-#define RELEASE 0
+#define MAJOR   0
 
 #endif

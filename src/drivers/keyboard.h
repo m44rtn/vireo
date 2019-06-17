@@ -21,6 +21,7 @@ void mouse_wait(uint8_t type);
 void ps2_wait_write();
 void ps2_wait_read();
 
+void keyboard_clear_buffers();
 void hang_for_key(char key);
 bool IS_pressed(char key);
 void keyboard_putonscr(char key);

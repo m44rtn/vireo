@@ -49,16 +49,16 @@ SOFTWARE.
 
 void kernel_thing();
 void kernel_version();
-void (*func_ptr) (uint32_t);
+void main_kernel_shell_startup();
 uint32_t KERNEL_FLAGS = 0;
 
 void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 {
 	//announce ourselves
 	clearscr();	
-	
-	kernel_version(); //release, major, minor, build
-	//setup the segments
+	kernel_version(); // major, minor, build
+
+	//setup the segments info
 	segments.cs = cs;
 	segments.ss = ss;
 
@@ -66,25 +66,24 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	Prep_TSS();
 	GDT();
 
-	systeminfo.mouseX = systeminfo.mouseY = 0;
+	//systeminfo.mouseX = systeminfo.mouseY = 0;
 	//ps2_mouse_init(); //is actually in keyboard.c, which may be renamed to ps2.c in the future
 
 	//Setup interrupts                             
 	setints();	
 	
-
 	//Setup Memory info
 	memory_init(mbh);
 	pci_init();
 
 	
 	//Setup all drive management stuff
-	print("\nDetecting master type...\n");
+	//print("\nDetecting master type...\n");
 	systeminfo.master = ATA_init(0); //search for ATA devices
-	print("\nDetecting slave type...\n");
+	//print("\nDetecting slave type...\n");
 	systeminfo.slave = ATA_init(1); //search for ATA devices
-	trace("Master is type: %i\n", systeminfo.master);
-	trace("Slave is type: %i\n", systeminfo.slave);
+	//trace("Master is type: %i\n", systeminfo.master);
+	//trace("Slave is type: %i\n", systeminfo.slave);
 
 	if(systeminfo.master == 0 && systeminfo.slave == 0) kernel_panic("DRIVE_NOT_FOUND");
 		
@@ -93,44 +92,12 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	get_drive_info();
 	FATinit(vfs_info.HD0);
 	uint8_t drive = vfs_info.HD0;
-
-	//print("Press enter to continue...\n");
-	//hang_for_key(KEYB_ENTER);
-	//clearscr();
-	/*vesa_init(1024, 768, 32); 
-
-	for(uint32_t y = 0; y < 768; y++)
-	{
-		for(uint32_t x = 0; x < 1024; x++)
-		{
-			vesa_put_pixel(x, y, 0x23272a);
-		}
-	}*/
 	
 	ps2_keyb_init();
-	systeminfo.KEYB_OnScreenEnabled = true;
+	
+	//char *response = user_ask("Please enter the number of the PATAPI device [0/1]: ");
 
-	/* char *response = user_ask("Please enter the number of the PATAPI device: "); */
-
-	char *num = "1145";
-	uint32_t res = util_str_int(num);
-	trace("num: %s\n", intstr(res));
-	
-	//while(1);
-	//task_push(TASK_HIGH, (uint32_t) task1, TASK_FLAG_KERNEL);
-	//task_push(TASK_HIGH, (uint32_t) task2, TASK_FLAG_KERNEL);
-
-	
-	//asm_stuff();
-	
-	
-	
-	while(1);
-	tREGISTERS *registers;
-	kmemset(registers, 0, sizeof(tREGISTERS));
-	//systeminfo.FLAGS = INFO_FLAG_MULTITASKING_ENABLED;
-	jmp_user_mode(kernel_thing, registers);
-	//clearscr();
+	main_kernel_shell_startup();	
 
 	while(1);
 }
@@ -144,7 +111,7 @@ void kernel_thing()
 
 void kernel_version()
 {
-	trace(" Vireo kernel v%s.", (int) intstr(RELEASE));
+	print(" Vireo kernel v");
 	trace("%s.", (int) intstr(MAJOR));
 	trace("%s.", (int) intstr(MINOR));
 	trace("%s ", (int) intstr(BUILD));
@@ -152,3 +119,25 @@ void kernel_version()
 }
 
 
+void main_kernel_shell_startup()
+{
+	//this is here until it gets it's own file
+	extern char *key_bfr;
+	systeminfo.KEYB_OnScreenEnabled = true;
+	print("% ");
+
+	while(1)
+	{
+		if(key_bfr[systeminfo.key_bfr_loc - 1] == '\n')
+		{ 
+			trace("\n %s \n", key_bfr);
+
+			if(hasStr(key_bfr, "clear")) clearscr();
+			keyboard_clear_buffers();
+
+			print("% ");
+
+			
+		}
+	}		
+}
