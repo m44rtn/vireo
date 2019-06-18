@@ -85,7 +85,7 @@ void ps2_keyb_init()
 	outb(0x64, 0xFF);
 	
 	mouse_wait(0);
-	if(inb(0x60) != 0xAA) print("Error initializing keyboard!\n");
+	//while(inb(0x60) != 0xAA);
 
 	mouse_wait(1);
 	outb(0x64, 0xF6);

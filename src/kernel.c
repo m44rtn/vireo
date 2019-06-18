@@ -102,13 +102,6 @@ void main(multiboot_info_t* mbh,  uint32_t ss, uint32_t cs)
 	while(1);
 }
 
-void kernel_thing()
-{
-	print("\nRed Alert!\n");
-	//kernel_panic_dump("LCARS_RED_ALERT");
-	while(1);
-}
-
 void kernel_version()
 {
 	print(" Vireo kernel v");
@@ -124,20 +117,19 @@ void main_kernel_shell_startup()
 	//this is here until it gets it's own file
 	extern char *key_bfr;
 	systeminfo.KEYB_OnScreenEnabled = true;
-	print("% ");
+	print("No configuration file found, please provide the path to one: ");
 
 	while(1)
 	{
 		if(key_bfr[systeminfo.key_bfr_loc - 1] == '\n')
 		{ 
-			trace("\n %s \n", key_bfr);
-
-			if(hasStr(key_bfr, "clear")) clearscr();
-			keyboard_clear_buffers();
-
-			print("% ");
-
-			
+			//main_get_config_file(key_bfr);			
 		}
-	}		
+	}	
+}
+
+void main_get_config_file(char *path)
+{
+	uint32_t cluster = FAT_Traverse(path);
+	//File* config_file = FindFile()
 }
