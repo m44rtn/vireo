@@ -117,13 +117,18 @@ void main_kernel_shell_startup()
 	//this is here until it gets it's own file
 	extern char *key_bfr;
 	systeminfo.KEYB_OnScreenEnabled = true;
-	print("No configuration file found, please provide the path to one: ");
+	//print("No configuration file found, please provide the path to one: ");
+	print("% ");
 
 	while(1)
 	{
 		if(key_bfr[systeminfo.key_bfr_loc - 1] == '\n')
 		{ 
-			//main_get_config_file(key_bfr);			
+			//main_get_config_file(key_bfr);	
+			if(hasStr(key_bfr, "load")) print("hi!\n");
+			//load_ELF(key_bfr);
+			print("% ");
+			key_bfr[0] = '0';
 		}
 	}	
 }
