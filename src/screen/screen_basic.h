@@ -21,30 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#ifndef __SCREEN_BASIC_H__
+#define __SCREEN_BASIC_H__
 
-#include "include/kernel_info.h"
-#include "include/types.h"
 
-#include "screen/screen_basic.h"
+void printf(char* text);
 
-/* for people who like to use the system compiler for a kernel */
-#if defined(__linux__)
-#error "This kernel expects to be compiled using a cross compiler"
 #endif
-
-/* (lets hope no one uses Windows or Mac...) */
-
-#if !defined(__i386__)
-#error "This is an i386 kernel, as such it expects an i386 compiler"
-#endif
-
-void main(void);
-
-void main(void)
-{
-
-    /* TODO: ASM FUNCTIONS --> in C or in assembly? */
-    int i = 0;
-    i++;
-
-}

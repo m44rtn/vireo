@@ -21,30 +21,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include "screen_basic.h"
+#include "types.h"
 
-#include "include/kernel_info.h"
-#include "include/types.h"
+#define SCREEN_BASIC_WIDTH          80
+#define SCREEN_BASIC_HEIGHT         25
+#define SCREEN_BASIC_DEPTH          2
 
-#include "screen/screen_basic.h"
+#define SCREEN_BASIC_DEFAULT_COLOR  0x07
 
-/* for people who like to use the system compiler for a kernel */
-#if defined(__linux__)
-#error "This kernel expects to be compiled using a cross compiler"
-#endif
+unsigned char color = SCREEN_BASIC_DEFAULT_COLOR;
 
-/* (lets hope no one uses Windows or Mac...) */
-
-#if !defined(__i386__)
-#error "This is an i386 kernel, as such it expects an i386 compiler"
-#endif
-
-void main(void);
-
-void main(void)
+static void update_cursor()
 {
-
-    /* TODO: ASM FUNCTIONS --> in C or in assembly? */
-    int i = 0;
-    i++;
-
+    
 }

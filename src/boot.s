@@ -33,11 +33,11 @@ SOFTWARE.
 .long FLAGS
 .long CHECKSUM
 
-.global START
+.section .text.START
+.global _start
 .extern main
 
-.section .text
-START:
+_start:
 / * does the initialization before we move on to the C part */
 
 /* Set up the stack */
@@ -54,6 +54,23 @@ HALT:
 hlt
 jmp HALT
 
+/*==============================
+ *        ASM_FUNCTIONS
+ *==============================
+ */
+
+.global ASM_OUTB
+ASM_OUTB:
+/* input: */
+pushl %ebp
+movl %esp, %ebp
+
+movl %eax, [%ebp + 12]
+
+popl %ebp
+movl %ebp, %esp 
+
+ret
 
 .section .bss
 STACK_END:
