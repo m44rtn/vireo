@@ -1,5 +1,7 @@
 .vscode
 bin
-SETUP/test_setup.iso
-pVESA.map
+
+grub/boot/kernel.sys
+
+birdos.iso
 kernel.map

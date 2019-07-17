@@ -1,5 +1,5 @@
 PROJDIRS := src 
-OBJDIR   := obj
+OBJDIR   := bin
 
 SRCFILES := $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
