@@ -10,7 +10,7 @@ The Wiki is currently not up-to-date.
 ## Goals of Vireo II
 The goal of Vireo II is to improve on Vireo I, and also add lots of features
 which didn't make it into the first kernel. This includes but is not limited to:
-- multitasking
+- Multitasking
 - ELF file loading and executing
 - FAT32 write support
 
@@ -23,9 +23,9 @@ Eventually, GRUB may be replaced by a custom bootloader. The custom bootloader i
 ## Building
 The Vireo II kernel is built using a cross compiler (i686-elf) from GCC version 8.3.0, using the C89 standard. You may be able to use a newer cross compiler, however it hasn't been tested. 
 
-Extra things you need
-    - xorriso (for now)
-    - Xenops, for the kernel version
-    - Virtualbox, for running the kernel
+Extra things you need:
+- xorriso (for now)
+- Xenops, for the kernel version
+- Virtualbox, for running the kernel
 
 Just run `make all` and you SHOULD be fine. If you get any linker errors, try `make clean` first. 

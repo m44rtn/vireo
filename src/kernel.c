@@ -19,44 +19,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
-
-.set ALIGN, 1<<0
-.set MEMINFO, 1<<1
-.set FLAGS, ALIGN | MEMINFO
-.set MAGIC, 0x1BADB002
-.set CHECKSUM, -(MAGIC + FLAGS)
-
-.section .multiboot
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
-
-.global START
-.extern main
-
-.section .text
-START:
-/ * does the initialization before we move on to the C part */
-
-/* Set up the stack */
-movl $STACK_TOP, %esp
-
-/* push the location of the GRUB loader information onto the stack */
-pushl %ebx
-
-/* TODO: GDT here, CPU init here, Paging init here */
-
-call main
-
-HALT:
-hlt
-jmp HALT
+ */
 
 
-.section .bss
-STACK_END:
-    .skip 0x4000
-STACK_TOP:
+/* for people who like to use the system compiler for a kernel */
+#if defined(__linux__)
+#error "This kernel expects to be compiled using a cross compiler"
+#endif
 
+/* (lets hope no-one uses Windows or Mac...) */
+#if !defined(__i386__)
+#error "This is an i386 kernel, as such it expects an i386 compiler"
+#endif
+
+void main(void);
+
+void main(void)
+{
+
+}

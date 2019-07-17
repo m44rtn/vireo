@@ -28,12 +28,11 @@ AC := i686-elf-as
 todolist: 
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
-all: clean $(OBJFILES)
+all: $(OBJFILES)
 	@$(CC) -ffreestanding -O2 -nostdlib -T linker.ld -o obj/kernel.sys src/boot.o $(LDFILES) -lgcc
-	make clean
 
 $(OBJFILES): $(SRCFILES) makefile $(ASOBJFILES)
-	$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
+	@$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
 $(ASOBJFILES): $(ASMFILES) makefile 
 	@$(AC) $(ASFLAGS) $< -o $@
