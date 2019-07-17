@@ -44,6 +44,7 @@ void main(void)
 {
 
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
+    /* TODO: USE NASM instead of GAS */
     int i = 0;
     i++;
 
