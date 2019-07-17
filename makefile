@@ -32,7 +32,7 @@ todo:
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
 all: $(OBJFILES)
-	@$(CC)  -T linker.ld -o obj/kernel.sys -ffreestanding -O2 -nostdlib src/boot.o src/kernel.o $(LDFILES) -lgcc
+	@$(CC)  -T linker.ld -o bin/kernel.sys -ffreestanding -O2 -nostdlib src/boot.o src/kernel.o $(LDFILES) -lgcc
 	
 	@# let xenops update the BUILD version for next time
 	@xenops --file src/include/kernel_info.h 
@@ -48,7 +48,7 @@ clean:
 	-@for file in $(OCLEAN:Makefile=); do rm $$file; done; true
 
 iso:
-	cp obj/kernel.sys grub/kernel.sys
+	cp bin/kernel.sys grub/kernel.sys
 	grub-mkrescue -o birdos.iso grub/
 
 

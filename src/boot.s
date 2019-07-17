@@ -65,7 +65,9 @@ ASM_OUTB:
 pushl %ebp
 movl %esp, %ebp
 
-movl %eax, [%ebp + 12]
+movl %ebp, %edx
+addl $12, %edx
+movl %eax, (%edx)
 
 popl %ebp
 movl %ebp, %esp 
