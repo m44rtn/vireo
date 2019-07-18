@@ -24,7 +24,7 @@ SOFTWARE.
 #include "screen_basic.h"
 
 #include "../include/types.h"
-#include "../basic/sys.h"
+
 
 #define SCREEN_BASIC_WIDTH          80
 #define SCREEN_BASIC_HEIGHT         25
