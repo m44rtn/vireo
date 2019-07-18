@@ -19,12 +19,12 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- */
-
+*/
+void main(void);
 
 #include "include/kernel_info.h"
 #include "include/types.h"
-
+#include "basic/sys.h"
 #include "screen/screen_basic.h"
 
 /* for people who like to use the system compiler for a kernel */
@@ -38,14 +38,12 @@ SOFTWARE.
 #error "This is an i386 kernel, as such it expects an i386 compiler"
 #endif
 
-void main(void);
-
-void main(void)
-{
+void main(void){
+    screen_basic_init();
+    printf("Hello, World!\n");
 
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
-    /* TODO: USE NASM instead of GAS */
     int i = 0;
     i++;
-
+    while(1);
 }

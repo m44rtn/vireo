@@ -19,16 +19,57 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- */
+*/
 
-#ifndef __SCREEN_BASIC_H__
-#define __SCREEN_BASIC_H__
+#include "../include/types.h"
 
-void screen_basic_init(void)
-void printf(char* text);
-void trace(char* text, void val);
-void screen_basic_clear_screen(void);
+#include "sys.h"
 
-void screen_basic_set_screen_color(unsigned char color);
+uint8_t inb(uint16_t _port){
+	
+	uint8_t rv;
+	__asm__ __volatile__ ("inb %1, %0" : "=a" (rv) : "dN" (_port) );
+	return rv;
+}
 
-#endif
+uint16_t inw(uint16_t _port){
+	uint16_t rv;
+	__asm__ __volatile__ ("inw %1, %0" : "=a" (rv) : "dN" (_port) );
+	return rv;
+}
+
+void outb (uint16_t _port, uint8_t _data){
+	
+	__asm__ __volatile__ ("outb %1, %0" :: "dN" (_port), "a" (_data) );
+}
+
+void outw (uint16_t _port, uint16_t _data){
+	
+	__asm__ __volatile__ ("outw %1, %0" :: "dN" (_port), "a" (_data) );
+}
+
+void outl(uint16_t _port, uint32_t _data){
+	__asm__ __volatile__ ("outl %1, %0" :: "dN" (_port), "a" (_data) );
+}
+
+long inl(uint16_t _port){
+	long rv;
+	__asm__ __volatile__ ("inl %1, %0" : "=a" (rv) : "dN" (_port) );
+	return rv;
+}
+
+long sysinlong(uint16_t _port){
+	long rv;
+	__asm__ __volatile__ ("inl %1, %0" : "=a" (rv) : "dN" (_port) );
+	return rv;
+}
+
+void outsw(uint16_t port, uint16_t *data, uint32_t size)
+{
+    unsigned long i;
+	for(i = 0; i < size; i++)
+	{
+		__asm__ __volatile__ ("outw %1, %0" :: "dN" (port), "a" (data[i]));
+	}
+	
+}

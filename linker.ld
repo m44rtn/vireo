@@ -1,4 +1,4 @@
-ENTRY(_start)
+ENTRY(start)
 
 SECTIONS
 {
@@ -8,7 +8,7 @@ SECTIONS
     .text BLOCK(0x1000) : ALIGN(0x1000)
     {
        
-        *(.multiboot)
+        /**(.multiboot)*/
         *(.text)
        
     }

@@ -21,61 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-.set ALIGN, 1<<0
-.set MEMINFO, 1<<1
-.set FLAGS, ALIGN | MEMINFO
-.set MAGIC, 0x1BADB002
-.set CHECKSUM, -(MAGIC + FLAGS)
+#ifndef __SYS_H__
+#define __SYS_H__
 
-.section .multiboot
-.align 4
-.long MAGIC
-.long FLAGS
-.long CHECKSUM
+uint8_t inb(uint16_t _port);
+void outl(uint16_t _port, uint32_t _data);
+long inl(uint16_t _port);
+uint16_t inw(uint16_t port);
+long sysinlong(uint16_t _port);
+void outb(uint16_t _port, uint8_t _data);
+void outw (uint16_t _port, uint16_t _data);
 
-.section .text.START
-.global _start
-.extern main
-
-_start:
-/ * does the initialization before we move on to the C part */
-
-/* Set up the stack */
-movl $STACK_TOP, %esp
-
-/* push the location of the GRUB loader information onto the stack */
-pushl %ebx
-
-/* TODO: GDT here, CPU init here, Paging init here */
-
-call main
-
-HALT:
-hlt
-jmp HALT
-
-/*==============================
- *        ASM_FUNCTIONS
- *==============================
- */
-
-.global ASM_OUTB
-ASM_OUTB:
-/* input: */
-pushl %ebp
-movl %esp, %ebp
-
-movl %ebp, %edx
-addl $12, %edx
-movl %eax, (%edx)
-
-popl %ebp
-movl %ebp, %esp 
-
-ret
-
-.section .bss
-STACK_END:
-    .skip 0x4000
-STACK_TOP:
-
+void outsw(uint16_t port, uint16_t *data, uint32_t size);
+#endif

@@ -1,8 +1,6 @@
-src/screen/screen_basic.o: src/kernel.c src/include/kernel_info.h \
- src/include/types.h src/screen/screen_basic.h
+src/screen/screen_basic.o: src/basic/sys.c src/basic/../include/types.h \
+ src/basic/sys.h
 
-src/include/kernel_info.h:
+src/basic/../include/types.h:
 
-src/include/types.h:
-
-src/screen/screen_basic.h:
+src/basic/sys.h:
