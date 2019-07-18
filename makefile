@@ -41,9 +41,6 @@ all: $(OBJFILES)
 	@xenops --file src/include/kernel_info.h 
 
 $(OBJFILES): $(SRCFILES) makefile $(ASOBJFILES)
-	@echo
-	@echo $(SRCFILES)
-	@echo
 	@$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
 $(ASOBJFILES): $(ASMFILES) makefile 
