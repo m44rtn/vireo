@@ -24,9 +24,9 @@ SOFTWARE.
 #ifndef __SCREEN_BASIC_H__
 #define __SCREEN_BASIC_H__
 
-void screen_basic_init(void)
+void screen_basic_init(void);
 void printf(char* text);
-void trace(char* text, void val);
+void trace(char* text, uint32_t val);
 void screen_basic_clear_screen(void);
 
 void screen_basic_set_screen_color(unsigned char color);

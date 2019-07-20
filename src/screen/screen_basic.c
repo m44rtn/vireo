@@ -23,6 +23,7 @@ SOFTWARE.
 
 #include "screen_basic.h"
 
+#include "../basic/io.h"
 #include "../include/types.h"
 
 
@@ -67,7 +68,8 @@ void screen_basic_set_screen_color(unsigned char color)
     screenData->chScreenColor = color;
 }
     
-void trace(char* str, void val){
+void trace(char* str, void val)
+{
 	/*uint16_t i = 0;  
 	uint8_t length = strlen(str);
 
@@ -208,7 +210,7 @@ static void screen_basic_clear_line(unsigned char from, unsigned char to)
 	for (i; i < (SCREEN_BASIC_WIDTH*to*SCREEN_BASIC_DEPTH); i++){
 		vidmem[(i / 2) * 2 + 1] = color;
 		vidmem[(i / 2) * 2] = 0;
-		//vidmem[i] = 0;
+		/*vidmem[i] = 0;*/
 	}
 }
 

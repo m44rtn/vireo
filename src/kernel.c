@@ -20,11 +20,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
-void main(void);
 
 #include "include/kernel_info.h"
 #include "include/types.h"
-#include "basic/sys.h"
+#include "basic/io.h"
 #include "screen/screen_basic.h"
 
 /* for people who like to use the system compiler for a kernel */
@@ -38,12 +37,15 @@ void main(void);
 #error "This is an i386 kernel, as such it expects an i386 compiler"
 #endif
 
-void main(void){
+void main(void)
+{
+    unsigned int i;
+    const char *hi = "Hello, World!\n";
     screen_basic_init();
-    printf("Hello, World!\n");
+    printf((char *) hi);
 
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
-    int i = 0;
+    i = 0;
     i++;
     while(1);
 }

@@ -9,32 +9,181 @@
     <style>
         body{
             font-family: 'Lato', sans-serif;
+            margin: 0px;
+        }
+
+        h1, h2 {
             text-align: center;
-        }
-
-        h1, h2 h3{
             font-style: italic;
+            margin: 10px;
+        }
+        
+        h3{
+            text-align: left;
+            margin: 10px;
+        }
+        p{
+            padding-bottom: 20px;
+            border-bottom: solid 1px #000000;
+            margin: 10px;
+            margin-right: 10%;
+        }
+        table, th, td{
+            border: solid 1px lightgray;
+            border-collapse: collapse;
+            margin: 10px;
+        }
+       
+        caption{
+            margin: 10px;
+            caption-side: bottom;
+            font-size: 10pt;
         }
 
+        #foot{
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            padding-top: 5px;
+            background-color: #23272a;
+            color: #fff;
+            margin: 0px; 
+            transform: translateY(95%);          
+        }
+        #foot p{
+            margin: 0px;
+        }
     </style>
-    
-    
-    <h1>Vireo II -- refman</h1>
-    <p style="font-style: italic">Technical notes and documentation for the Vireo II kernel.</p>
-    <br>
-    <p style="padding-bottom: 20px;border-bottom: solid 1px #000000">
+    <div id="foot">
+        <a style="color: #ffab14; margin-left: 10px; float:left" href="https://github.com/m44rtn/vireo-kernel" target="_blank">GitHub</a>
+        <a href="#top" style="color: #ffab14; float: right; margin-right: 10px">Back to top</a></div>
+    <!-- I'm sorry mercury0x000d for partly stealing your text-->
+    <h1 id="top">Vireo II -- refman</h1>
+    <p style="text-align: center; margin-right: 0px; border-bottom: none"><i>Technical notes and documentation for the Vireo II kernel.</i></p>
+
+    <p style="text-align: center; margin-right: 0px">
         <strong>Index</strong><br><br>
-        <a href="#introduction">1. Introduction to Vireo II</a>
+        <a href="#introduction">1. Introduction to Vireo II</a><br>
+        <a href="#building">2. Building the kernel</a><br>
+        <a href="#debugging">3. Debugging the kernel</a><br>
+        <a href="#conventions">4. Coding conventions</a><br>
+
+        <br><br>
+        <strong>Appendixes</strong><br><br>
+        <a href="#license">A0 - MIT license</a><br>
     </p>
     <br>
+
     <h3 id="introduction">1. Introduction to Vireo II</h3>
     <p>Vireo II is a rewrite of the Vireo I kernel, which was very unstable and poorly planned. Vireo I lacked a good architecture and good coding practices.
-        The new Vireo II should improve this quite a bit. It's rewritten, though not entirely from scratch: some code from the Vireo I kernel will be upcycled into the new Vireo II kernel.
+        The new Vireo II should improve this quite a bit. It's rewritten, though not entirely from scratch: some code from the Vireo I kernel will be upcycled into the new Vireo II kernel.  
+        <br><br><br>
+
+        <strong><i>Vireo I vs Vireo II</i></strong>
+        <br>Vireo I was very unstable and annoying to work with, because of the lack of planning and architecture beforehand. Furthermore, Vireo I used the GCC system compiler instead of a cross-compiler.
+        It had trouble with the keyboard and mouse, PATAPI and more. Some ISRs didn't seem to work. This may not be because of the GCC system compiler, but they are annoying bugs and problems.
+        Vireo II will improve on Vireo I in a few key ways:<br>
+        <br>- <b>Vireo II will be easier to work with;</b> thanks to a more dynamic makefile, more documentation, better function names and handling, etc.
+        <br>- <b>Vireo II will be better suited as an OS;</b> thanks to a new cross-compiler and better handling of its working environment.
+        <br>- <b>In 5 years the creator learnt a few things;</b> which means better code quality (hopefully) and more "hey, at least he knows what he's doing!"    
+        <br><br><br>
+
+        <strong><i>About this manual</i></strong>
+        <br>This manual is updated alongside the development of the kernel. It gets updated as necessary. This manual may be trusted above any other, possibly conflicting, sources; with an exception to the current source code, which is considered as more authoritative.
+        <br><br>
+    </p>
+    
+    <h3 id="building">2. Building the kernel</h3>
+    <p>The kernel is built using a GCC cross-compiler and NASM, using the utillity called <a target="_blank" href="https://github.com/m44rtn/xenops">Xenops</a> to increase the build number with every build. Currently, the kernel is built using an i686-elf
+        cross-compiler using GCC v8.3.0. A cross-compiler is not included with the kernel its source, but you can use <a target="_blank" href="https://wiki.osdev.org/GCC_Cross-Compiler">this guide</a> to easily build one yourself.
+        <br><br>
+        Use <code>make all</code> to build the entire kernel.<br>
+        Use <code>make iso</code> to make an ISO image using that kernel.<br>
+        <br>
+        Not every option in the makefile is (or will be) documented, but you can take a look at the makefile to see all the options.
+        <br><br>
+    </p>
+
+    <h3 id="debugging">3. Debugging the kernel</h3>
+    <p>Virtualbox is used to test and debug the kernel. Using the makefile the <code>make run</code> command will run any virtual machine called "Bird OS" (without "), and will automatically launch the Virtualbox debug console.
+        You can use this console to debug the kernel. A few useful commands are listed in <i>table 3.1</i>. <br><br>
+        <table style="width: 100%">
+            <caption>Table 3.1 - Useful Virtualbox debug console commands</caption>
+            <colgroup>
+                <col width="30%">
+                <col width="70%">
+            </colgroup>
+            <th>Command</th>
+            <th>Description</th>
+            <tr>
+                <td>d (address)</td>
+                <td>Dump memory at adress specified</td>
+            </tr>
+            <tr>
+                <td>r</td>
+                <td>Display active register set. In case of a Guru Meditation use <i>rg</i> instead.</td>
+            </tr>
+            <tr>
+                <td>rg</td>
+                <td>Display guest register set.</td>
+            </tr>
+            <tr>
+                <td>sa (address) "string"</td>
+                <td>Search for an ASCII string.</td>
+            </tr>
+            <tr>
+                <td>t</td>
+                <td>Trace/Single-step through, one instruction at a time.</td>
+            </tr>
+            <tr>
+                <td>u16/u32 (address)</td>
+                <td>Unassemble 16-bit/32-bit code at the address specified.</td>
+            </tr>
+        </table>
+        <br>
+    </p>
+
+    <h3 id="conventions">4. Coding conventions</h3>
+    <p>
+        Vireo II is written in the C89 C standard and the NASM standard. These conventions exist for consistancy, not to claim a 
+        particular style is better. The 3 main guidelines are:<br><br>
+        1. Match the style of the surrounding code and documentation.<br>
+        2. Keep code simple, fast and (at least semi-)secure.<br>
+        3. If something could be done better, feel free to change anything unless it contradicts statements 1 and/or 2.<br>
         
         <br>
+        It is possible for these guidelines to change in the future.
 
-        <strong></strong>
+        <br><br>
+        <b>Note to self:</b> try to be consistent.
+        <br><br>
     </p>
+
+    <h3 id="license">A0 - MIT license</h3>
+    <p style="border-bottom: none;">
+        
+        Copyright (c) 2019 Maarten Vermeulen<br>
+        <br>
+        Permission is hereby granted, free of charge, to any person obtaining a copy<br>
+        of this software and associated documentation files (the "Software"), to deal<br>
+        in the Software without restriction, including without limitation the rights<br>
+        to use, copy, modify, merge, publish, distribute, sublicense, and/or sell<br>
+        copies of the Software, and to permit persons to whom the Software is<br>
+        furnished to do so, subject to the following conditions:<br>
+        <br>
+        The above copyright notice and this permission notice shall be included in all<br>
+        copies or substantial portions of the Software.<br>
+        <br>
+        THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR<br>
+        IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,<br>
+        FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE<br>
+        AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER<br>
+        LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,<br>
+        OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE<br>
+        SOFTWARE.<br>
+        <br>
+    </p>
+    
     
 </body>
 

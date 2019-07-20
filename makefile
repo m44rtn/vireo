@@ -3,7 +3,7 @@ OBJDIR   := bin
 
 SRCFILES := $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
-ASMFILES := $(shell find $(PROJDIRS) -type f -name "*.asm")
+ASMFILES := src/boot.asm #done to fix the can't find symbol start error
 LDFILES  := $(shell find $(PROJDIRS) -type f -name "*.o")
 
 DCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.d")
@@ -23,7 +23,7 @@ WARNINGS := -Wall -Wextra -pedantic -Wshadow \
 	    -Wredundant-decls -Wnested-externs -Winline \
 	    -Wno-long-long -Wconversion -Wstrict-prototypes
 
-CCFLAGS := -ffreestanding -g -O2 -std=c89 $(WARNINGS)
+CCFLAGS := -nostdlib -ffreestanding -g -O2 -std=c89 $(WARNINGS)
 ASFLAGS := -w all -f elf32 #--fatal-warnings
 
 CC := i686-elf-gcc
@@ -35,7 +35,7 @@ todo:
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
 all: $(OBJFILES)
-	@$(CC)  -T linker.ld -o bin/kernel.sys src/boot.o src/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
+	$(CC)  -T linker.ld -o bin/kernel.sys src/boot.o src/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
 	@xenops --file src/include/kernel_info.h 

@@ -19,6 +19,8 @@
 ;OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ;SOFTWARE.
 
+bits 32
+
 section .multiboot
 align 4
 dd 0x1BADB002
@@ -45,14 +47,24 @@ HALT:
 hlt
 jmp HALT
 
-;==============================
-;        ASM_FUNCTIONS
-;==============================
+global ASM_OUTB
 
+ASM_OUTB:
+push ebp
+mov ebp, esp
 
+; either the port or the data
+mov eax, [ebp + 12]
+mov edx, [ebp + 8]
+
+out dx, al
+
+mov esp, ebp
+pop ebp
+
+ret 8
 
 section .bss
 STACK_END:
     resb 0x4000
 STACK_TOP:
-
