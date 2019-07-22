@@ -24,5 +24,5 @@ SOFTWARE.
 #ifndef __SYS_H__
 #define __SYS_H__
 
-extern void ASM_OUTB(uint32_t port, uint32_t data);
+extern void ASM_OUTB(unsigned int port, unsigned int data);
 #endif

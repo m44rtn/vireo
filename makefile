@@ -34,17 +34,19 @@ AC := nasm
 todo: 
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
-all: $(OBJFILES)
+all: $(OBJFILES) $(ASOBJFILES)
 	$(CC)  -T linker.ld -o bin/kernel.sys src/boot.o src/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
 	@xenops --file src/include/kernel_info.h 
 
-$(OBJFILES): $(SRCFILES) makefile $(ASOBJFILES)
-	@$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
+$(OBJFILES): $(SRCFILES) #$(OBJFILES): $(SRCFILES)
+	$(CC) $(CCFLAGS)  -c $< -o $@
+	
+	#-MMD -MP
 
 $(ASOBJFILES): $(ASMFILES) makefile 
-	@$(AC) $(ASFLAGS) $< -o $@
+	$(AC) $(ASFLAGS) $< -o $@
 
 clean:
 	-@for file in $(DCLEAN:Makefile=); do rm $$file; done; true

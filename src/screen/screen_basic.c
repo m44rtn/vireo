@@ -58,17 +58,17 @@ static void screen_basic_clear_line(unsigned char from, unsigned char to);
 void screen_basic_init(void)
 {
     screen_basic_set_screen_color(SCREEN_BASIC_DEFAULT_COLOR);
-    SCRscreenData->cursorY = SCRscreenData->cursorX = 0;
+    SCRscreenData.cursorY = SCRscreenData.cursorX = 0;
     
     screen_basic_clear_screen();
 }
 
 void screen_basic_set_screen_color(unsigned char color)
 {
-    screenData->chScreenColor = color;
+    SCRscreenData.chScreenColor = color;
 }
     
-void trace(char* str, void val)
+void trace(char* str, unsigned int val)
 {
 	/*uint16_t i = 0;  
 	uint8_t length = strlen(str);
@@ -99,7 +99,7 @@ void trace(char* str, void val)
 	}*/
 }
 
-void printf(char* str){
+void print(char* str){
 	
 	uint16_t i = 0;  
 	uint8_t length = 15; /* strlen(str);*/
@@ -111,10 +111,10 @@ void printf(char* str){
 }
 
 void screen_basic_clear_screen(void){
-	vidmem = (uint16_t *) 0xb8000;
+	uint16_t *vidmem = (uint16_t *) 0xb8000;
 	screen_basic_clear_line(0, SCREEN_BASIC_HEIGHT);
-	cursorX = 0;
-	cursorY = 0;
+	SCRscreenData.cursorX = 0;
+	SCRscreenData.cursorY = 0;
 	screen_basic_update_cursor();
 }
 
@@ -125,12 +125,12 @@ static void screen_basic_update_cursor(void)
 {
     unsigned temp;
 
-    temp = screenData->cursorY * SCREEN_BASIC_WIDTH + screenData->cursorX;
+    temp = SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX;
 	
-	outb(0x3D4, 14);
-	outb(0x3D5, temp >> 8);
-    outb(0x3D4, 15);
-    outb(0x3D5, temp);   
+	ASM_OUTB(0x3D4, 14);
+	ASM_OUTB(0x3D5, temp >> 8);
+    ASM_OUTB(0x3D4, 15);
+    ASM_OUTB(0x3D5, temp);   
 }
 
 static void screen_basic_char_put_on_screen(char c){
@@ -138,32 +138,32 @@ static void screen_basic_char_put_on_screen(char c){
 	int i = 0;
 	switch(c){
 			case ('\b'):
-				screenData->cursorX--;
-				vidmem[(screenData->cursorY * SCREEN_BASIC_WIDTH + screenData->cursorX)*SCREEN_BASIC_DEPTH] = 0;  
+				SCRscreenData.cursorX--;
+				vidmem[(SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX)*SCREEN_BASIC_DEPTH] = 0;  
 			
 			break;
 			
 			case ('\n'):
-			screenData->cursorY++;
-			screenData->cursorX = 0;
+			SCRscreenData.cursorY++;
+			SCRscreenData.cursorX = 0;
 			break;
 			
 			case ('\t'):
 			
 			for(i; i < 4; i++){
-				screenData->cursorX++;
+				SCRscreenData.cursorX++;
 			}
 			break;
 
 			case '\0':
-				screenData->cursorY++;
-				screenData->cursorX = 0;
+				SCRscreenData.cursorY++;
+				SCRscreenData.cursorX = 0;
 			break;
 
 			default:
-			 vidmem[((screenData->cursorY * SCREEN_BASIC_WIDTH + screenData->cursorX) * SCREEN_BASIC_DEPTH)] = c;
-		     vidmem[((screenData->cursorY * SCREEN_BASIC_WIDTH + screenData->cursorX)* SCREEN_BASIC_DEPTH + 1)] = color;
-		     screenData->cursorX++;
+			 vidmem[((SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX) * SCREEN_BASIC_DEPTH)] = c;
+		     vidmem[((SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX)* SCREEN_BASIC_DEPTH + 1)] = SCRscreenData.chScreenColor;
+		     SCRscreenData.cursorX++;
 			 break;
 	}
 
@@ -173,7 +173,7 @@ static void screen_basic_char_put_on_screen(char c){
 
 static void screen_basic_linecheck(void)
 {
-	if(screenData->cursorY >= SCREEN_BASIC_HEIGHT - 1){
+	if(SCRscreenData.cursorY >= SCREEN_BASIC_HEIGHT - 1){
 		screen_basic_scroll(1);
 	}
 }
@@ -184,19 +184,19 @@ static void screen_basic_scroll(unsigned char line)
 	char* vidmemloc = (char*) 0xb8000;
 	int i = 0;
 	
-	clearl(0, line - 1);
+	screen_basic_clear_line(0, line - 1);
 
 	for(i; i < SCREEN_BASIC_WIDTH * (SCREEN_BASIC_HEIGHT - 1) * SCREEN_BASIC_DEPTH; i++){
 		vidmemloc[i] = vidmemloc[i + SCREEN_BASIC_WIDTH*SCREEN_BASIC_DEPTH*line];
 	}
-	clearl(SCREEN_BASIC_HEIGHT-1-line,SCREEN_BASIC_HEIGHT-1);
+	screen_basic_clear_line(SCREEN_BASIC_HEIGHT-1-line,SCREEN_BASIC_HEIGHT-1);
 	
-	if((cursorY - line) < 0){
-		screenData->cursorY = 0;
-		screenData->cursorX = 0;
+	if((SCRscreenData.cursorY - line) < 0){
+		SCRscreenData.cursorY = 0;
+		SCRscreenData.cursorX = 0;
 	}
 	else{
-		screenData->cursorY -= line;
+		SCRscreenData.cursorY -= line;
 	}
 	screen_basic_update_cursor();
 }
@@ -208,7 +208,7 @@ static void screen_basic_clear_line(unsigned char from, unsigned char to)
 	char* vidmem = (char*) 0xb8000;
 	
 	for (i; i < (SCREEN_BASIC_WIDTH*to*SCREEN_BASIC_DEPTH); i++){
-		vidmem[(i / 2) * 2 + 1] = color;
+		vidmem[(i / 2) * 2 + 1] = SCRscreenData.chScreenColor;
 		vidmem[(i / 2) * 2] = 0;
 		/*vidmem[i] = 0;*/
 	}

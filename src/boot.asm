@@ -21,13 +21,16 @@
 
 bits 32
 
+global start
+extern cmain
+
 section .multiboot
 align 4
 dd 0x1BADB002
 dd 0x00
 dd -(0x1BADB002 + 0x00)
 
-global start
+
 
 section .text
 start:
@@ -40,8 +43,8 @@ mov esp, STACK_TOP
 push ebx
 
 ; TODO: GDT here, CPU init here, Paging init here
-;extern main
-call extern main
+
+call cmain
 
 HALT:
 hlt
