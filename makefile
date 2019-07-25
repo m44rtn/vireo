@@ -3,7 +3,7 @@ OBJDIR   := bin
 
 SRCFILES := $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
-ASMFILES := src/boot.asm #done to fix the can't find symbol start error
+ASMFILES :=  src/boot.asm #done to fix the can't find symbol start error
 LDFILES  := $(shell find $(PROJDIRS) -type f -name "*.o")
 
 DCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.d")
@@ -40,8 +40,11 @@ all: $(OBJFILES) $(ASOBJFILES)
 	@# let xenops update the BUILD version for next time
 	@xenops --file src/include/kernel_info.h 
 
-$(OBJFILES): $(SRCFILES) #$(OBJFILES): $(SRCFILES)
-	$(CC) $(CCFLAGS)  -c $< -o $@
+$(OBJFILES): $(SRCFILES)
+	@echo $(OBJFILES)
+	@echo $(SRCFILES)
+	$(CC) $(CCFLAGS) -c $< -o $@
+	#-c
 	
 	#-MMD -MP
 

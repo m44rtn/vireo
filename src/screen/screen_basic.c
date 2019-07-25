@@ -104,7 +104,7 @@ void print(char* str){
 	uint16_t i = 0;  
 	uint8_t length = 15; /* strlen(str);*/
 
-	for(i; i < length; i++){  //for i = less then the length of the char* do the following:
+	for(i; i < length; i++){ 
 		screen_basic_char_put_on_screen(str[i]);	
 	}
 
