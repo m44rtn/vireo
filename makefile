@@ -1,7 +1,8 @@
 PROJDIRS := src
 OBJDIR   := bin
 
-SRCFILES := $(shell find $(PROJDIRS) -type f -name "*.c")
+
+SRCFILES = $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
 ASMFILES :=  src/boot.asm #done to fix the can't find symbol start error
 LDFILES  := $(shell find $(PROJDIRS) -type f -name "*.o")
@@ -9,8 +10,8 @@ LDFILES  := $(shell find $(PROJDIRS) -type f -name "*.o")
 DCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.d")
 OCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.o")
 
-OBJFILES := $(patsubst %.c, %.o, $(SRCFILES))
-ASOBJFILES := $(patsubst %.asm, %.o, $(ASMFILES))
+OBJFILES := $(foreach thing,$(SRCFILES),$(thing:%.c=%.o)) #$(patsubst %.c, %.o, $(SRCFILES))
+ASOBJFILES := $(foreach thing,$(ASMFILES),$(thing:%.asm=%.o))
 
 LDOBJFILES := $(filter-out src/kernel.o, $(OBJFILES))
 LDASOBJFILES := $(filter-out src/boot.o, $(ASOBJFILES))
@@ -40,7 +41,7 @@ all: $(OBJFILES) $(ASOBJFILES)
 	@# let xenops update the BUILD version for next time
 	@xenops --file src/include/kernel_info.h 
 
-$(OBJFILES): $(SRCFILES)
+%.o: %.c
 	@echo $(OBJFILES)
 	@echo $(SRCFILES)
 	$(CC) $(CCFLAGS) -c $< -o $@
@@ -48,7 +49,7 @@ $(OBJFILES): $(SRCFILES)
 	
 	#-MMD -MP
 
-$(ASOBJFILES): $(ASMFILES) makefile 
+%.o: %.asm
 	$(AC) $(ASFLAGS) $< -o $@
 
 clean:

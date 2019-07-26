@@ -26,7 +26,7 @@ SOFTWARE.
 
 void screen_basic_init(void);
 void print(char* text);
-void trace(char* text, unsigned int val);
+/*void trace(char* text, unsigned int val);*/
 void screen_basic_clear_screen(void);
 
 void screen_basic_set_screen_color(unsigned char color);

@@ -50,22 +50,22 @@ HALT:
 hlt
 jmp HALT
 
-;global ASM_OUTB
+global ASM_OUTB
 
-;ASM_OUTB:
-;push ebp
-;mov ebp, esp
+ASM_OUTB:
+push ebp
+mov ebp, esp
 
 ; either the port or the data
-;mov eax, [ebp + 12]
-;mov edx, [ebp + 8]
+mov eax, [ebp + 12]
+mov edx, [ebp + 8]
 
-;out dx, al
+out dx, al
 
-;mov esp, ebp
-;pop ebp
+mov esp, ebp
+pop ebp
 
-;ret 8
+ret 8
 
 section .bss
 STACK_END:
