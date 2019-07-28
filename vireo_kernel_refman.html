@@ -228,7 +228,7 @@
             <th>Input</th>
             <th>Returns</th>
             <tr>
-                <td><br><code>screen_basic_init()</code><br><br>
+                <td><code>screen_basic_init()</code><br><br>
                     Initializes the internal variables for the module, enables the cursor and clears the screen.
                 </td>
 
@@ -239,7 +239,7 @@
                 </td>
             </tr>
             <tr>
-                    <td><br><code>screen_basic_enable_cursor()</code><br><br>
+                    <td><code>screen_basic_enable_cursor()</code><br><br>
                         Enables the cursor and sets the start and end of the scanlines.
                     </td>
     
@@ -247,8 +247,8 @@
                     - end of scanline</td>
     
                     <td>N/A</td>
-                </tr>
-                <tr>
+             </tr>
+            <tr>
                         <td><br><code>screen_basic_disable_cursor()</code><br><br>
                             Disables the cursor.
                         </td>
@@ -256,18 +256,37 @@
                         <td>N/A</td>
         
                         <td>N/A</td>
-                    </tr>
-                    <tr>
-                            <td><br><code>screen_basic_move_cursor()</code><br><br>
+                </tr>
+                <tr>
+                            <td><code>screen_basic_move_cursor()</code><br><br>
                                 Moves the cursor to the desired x and y position.
                             </td>
             
-                            <td>- new x position<br>
-                                - new y position
+                            <td>- new x position, BYTE<br>
+                                - new y position, BYTE
                             </td>
             
                             <td>N/A</td>
-                        </tr>
+                </tr>
+                <tr>
+                        <td><code>screen_basic_get_cursor_position()</code><br><br>
+                            Gets the cursor position and returns it.
+                        </td>
+        
+                        <td>N/A</td>
+        
+                        <td>- cursor position, WORD</td>
+                </tr>
+                <tr>
+                        <td><code>screen_basic_set_screen_color()</code><br><br>
+                            Sets the screen color.
+                        </td>
+        
+                        <td>- screen color (e.g. 0x07 light grey on black, 0x0F white on black), BYTE</td>
+        
+                        <td>N/A</td>
+                </tr>
+                
 
         </table>
 
