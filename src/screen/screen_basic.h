@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __SCREEN_BASIC_H__
 #define __SCREEN_BASIC_H__
 
-void screen_basic_init(void);
+unsigned char screen_basic_init(void);
 
 void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end);
 void screen_basic_disable_cursor(void);

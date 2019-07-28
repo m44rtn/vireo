@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include "../io/io.h"
 #include "../include/types.h"
+#include "../include/global_exit_codes.h"
 
 
 #define SCREEN_BASIC_WIDTH          80
@@ -43,19 +44,19 @@ typedef struct SCREENDATA
 static SCREENDATA SCRscreenData;
 
 /* Static function defines */
-static void screen_basic_update_cursor(void);
 static void screen_basic_char_put_on_screen(char c);
 static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(void);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
 
 /* TODO: code comment & document */
+/* TODO: exit codes? */
 
 /*
  * 'Public' part
  */
 
-void screen_basic_init(void)
+unsigned char screen_basic_init(void)
 {
     screen_basic_set_screen_color(SCREEN_BASIC_DEFAULT_COLOR);
     SCRscreenData.cursorY = SCRscreenData.cursorX = 0;
@@ -64,10 +65,14 @@ void screen_basic_init(void)
 
 	/* Enable the cursor and put it at the top */
 	screen_basic_enable_cursor(0, 15);
+	
+	return GLOBAL_FUNC_SUCCESS;
 }
 
 void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end)
 {
+	if(cursor_end > 15) cursor_end = 15;
+
 	ASM_OUTB(0x3D4, 0x0A);
 	ASM_OUTB(0x3D5, (uint8_t) (ASM_INB(0x3D5) & 0xC0) | cursor_start);
 
@@ -83,6 +88,9 @@ void screen_basic_disable_cursor(void)
 
 void screen_basic_move_cursor(unsigned char x, unsigned char y)
 {
+	if(x >= SCREEN_BASIC_WIDTH) x = SCREEN_BASIC_WIDTH - 1;
+	if(y >= SCREEN_BASIC_HEIGHT) y = SCREEN_BASIC_HEIGHT - 1;
+
 	uint16_t position = y * SCREEN_BASIC_WIDTH + x;
 
 	ASM_OUTB(0x3D4, 0x0F);
@@ -157,23 +165,13 @@ void screen_basic_clear_screen(void){
 	screen_basic_clear_line(0, SCREEN_BASIC_HEIGHT);
 	SCRscreenData.cursorX = 0;
 	SCRscreenData.cursorY = 0;
-	screen_basic_update_cursor();
+	screen_basic_move_cursor(SCRscreenData.cursorX, SCRscreenData.cursorY);
 }
+
 
 /*
  * 'Private' part
  */
-static void screen_basic_update_cursor(void)
-{
-    unsigned int temp;
-
-    temp = (unsigned int) SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX;
-	
-	ASM_OUTB(0x3D4, 14);
-	ASM_OUTB(0x3D5, temp >> 8);
-    ASM_OUTB(0x3D4, 15);
-    ASM_OUTB(0x3D5, temp);   
-}
 
 static void screen_basic_char_put_on_screen(char c){
 	char* vidmem = (char*) 0xb8000;
@@ -209,7 +207,7 @@ static void screen_basic_char_put_on_screen(char c){
 			 break;
 	}
 
-	screen_basic_update_cursor();
+	screen_basic_move_cursor(SCRscreenData.cursorX, SCRscreenData.cursorY);
 	screen_basic_linecheck();	
 }
 
@@ -240,7 +238,7 @@ static void screen_basic_scroll(unsigned char line)
 	else{
 		SCRscreenData.cursorY -= (unsigned short)  line;
 	}
-	screen_basic_update_cursor();
+	screen_basic_move_cursor(SCRscreenData.cursorX, SCRscreenData.cursorY);
 }
 
 static void screen_basic_clear_line(unsigned char from, unsigned char to)

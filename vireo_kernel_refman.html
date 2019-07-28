@@ -14,7 +14,7 @@
 
         h1, h2 {
             text-align: center;
-            font-style: italic;
+            /* font-style: italic;*/
             margin: 10px;
         }
         
@@ -58,7 +58,7 @@
         <a style="color: #ffab14; margin-left: 10px; float:left" href="https://github.com/m44rtn/vireo-kernel" target="_blank">GitHub</a>
         <a href="#top" style="color: #ffab14; float: right; margin-right: 10px">Back to top</a></div>
     <!-- I'm sorry mercury0x000d for partly stealing your text-->
-    <h1 id="top">Vireo II -- refman</h1>
+    <h1 id="top">VIREO II - REFMAN</h1>
     <p style="text-align: center; margin-right: 0px; border-bottom: none"><i>Technical notes and documentation for the Vireo II kernel.</i></p>
 
     <p style="text-align: center; margin-right: 0px">
@@ -67,10 +67,12 @@
         <a href="#building">2. Building the kernel</a><br>
         <a href="#debugging">3. Debugging the kernel</a><br>
         <a href="#conventions">4. Coding conventions</a><br>
+        <a href="#exit_codes">5. Exit codes</a><br>
 
         <br><br>
         <strong>Appendixes</strong><br><br>
-        <a href="#license">A0 - MIT license</a><br>
+        <a href="#funclist">A0 - Function listing</a><br>
+        <a href="#license">MIT license</a><br>
     </p>
     <br>
 
@@ -115,9 +117,9 @@
 
     <h3 id="debugging">3. Debugging the kernel</h3>
     <p>Virtualbox is used to test and debug the kernel. Using the makefile, the <code>make run</code> command will run any virtual machine called "Bird OS" (without "), and will automatically launch the Virtualbox debug console.
-        You can use this console to debug the kernel. A few useful commands are listed in <i>table 3.1</i>. <br><br>
+        You can use this console to debug the kernel. A few useful commands are listed in <i>table 3.0</i>. <br><br>
         <table style="width: 100%">
-            <caption>Table 3.1 - Useful Virtualbox debug console commands</caption>
+            <caption>Table 3.0 - Useful Virtualbox debug console commands</caption>
             <colgroup>
                 <col width="30%">
                 <col width="70%">
@@ -169,7 +171,116 @@
         <br><br>
     </p>
 
-    <h3 id="license">A0 - MIT license</h3>
+    <h3 id="exit_codes">5. Exit codes</h3>
+    <p>
+        Exit codes in the kernel are one byte long (<code>unsigned char</code>), meaning a maximum of 256 error codes, and indicate if the function has executed correctly. When an error occurs a function will return a non-zero exit code which indicates the type of error.
+        Although every module may have its own exit codes, the kernel provides some global exit codes. <br>
+
+        <br>The first sixteen error codes (0 - 15) are reserved for global use. Modules shouldn't use the values of these exit codes to indicate a different 'state' than described in <i>table 5.0</i>.<br><br>
+        Not all functions return exit codes, in fact initialization functions are the the most likely to return exit codes. It is possible that non-initialization functions will return an exit code.<br><br>
+        
+        Module specific exit codes can be found at their <a href="#funclist">function listing</a>.
+        <br><br>
+       
+       <table style="width: 100%">
+        <caption>Table 5.0 - Global exit codes</caption>
+        <colgroup>
+            <col width="33%">
+            <col width="5%">
+            <col width="33%">
+        </colgroup>
+        <th>Name</th>
+        <th>Value</th>
+        <th>Description</th>
+        <tr>
+            <td>GLOBAL_FUNC_SUCCESS</td>
+            <td>0</td>
+            <td>Means the function was executed correctly without any error</td>
+        </tr>
+        <tr>
+            <td><i>&lt;reserved&gt;</i></td>
+            <td>1 - 15</td>
+            <td>Reserved for future use</td>
+        </tr>
+        
+    </table>
+    </p>
+
+    <h3 id="funclist">A0 - Function listing</h3>
+    <p>
+        In every module (aka source code file) of the kernel, there are two kinds of functions: static (internal) and public. Static functions are not available to other modules and are inaccessible to them, they are not documented in the reference manual. Documentation for the static functions can be found in the code where necessary, as code comments.
+        <br><br>Public functions are available to every module in the kernel, and are made to be as error free as possible. 
+
+        <br><br><br>
+        <strong><i>Basic screen functions - basic_screen</i></strong>
+        <br><i>basic_screen</i> provides a simple interface to print text to the screen in text mode. The module is used by the kernel
+        at start-up and needs text mode to be already enabled by the BIOS. The list of functions in this module:
+        <br><br>
+        
+        <table style="width: 100%">
+            <caption>Table A0.0 - screen_basic module functions</caption>
+            <colgroup>
+                <col width="33%">
+                <col width="33%">
+                <col width="33%">
+            </colgroup>
+            <th>Function & description</th>
+            <th>Input</th>
+            <th>Returns</th>
+            <tr>
+                <td><br><code>screen_basic_init()</code><br><br>
+                    Initializes the internal variables for the module, enables the cursor and clears the screen.
+                </td>
+
+                <td>N/A</td>
+
+                <td>Exit code:<br>
+                    &nbsp; &nbsp; - GLOBAL_FUNC_SUCCESS, if successful
+                </td>
+            </tr>
+            <tr>
+                    <td><br><code>screen_basic_enable_cursor()</code><br><br>
+                        Enables the cursor and sets the start and end of the scanlines.
+                    </td>
+    
+                    <td>- start of scanline<br>
+                    - end of scanline</td>
+    
+                    <td>N/A</td>
+                </tr>
+                <tr>
+                        <td><br><code>screen_basic_disable_cursor()</code><br><br>
+                            Disables the cursor.
+                        </td>
+        
+                        <td>N/A</td>
+        
+                        <td>N/A</td>
+                    </tr>
+                    <tr>
+                            <td><br><code>screen_basic_move_cursor()</code><br><br>
+                                Moves the cursor to the desired x and y position.
+                            </td>
+            
+                            <td>- new x position<br>
+                                - new y position
+                            </td>
+            
+                            <td>N/A</td>
+                        </tr>
+
+        </table>
+
+        <i>This module has no additional exit codes.</i>
+        
+
+
+        
+
+        <br><br>
+    </p>
+
+    <h3 id="license">MIT license</h3>
     <p style="border-bottom: none;">
         
         Copyright (c) 2019 Maarten Vermeulen<br>

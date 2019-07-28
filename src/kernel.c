@@ -24,20 +24,29 @@ SOFTWARE.
 #include "kernel.h"
 
 #include "include/kernel_info.h"
+#include "include/global_exit_codes.h"
 #include "include/types.h"
+
 #include "io/io.h"
+
 #include "screen/screen_basic.h"
 
 
 void cmain(void)
 {
-    unsigned int i;
+    unsigned char exit_code = 0; /* universal variable to test exit codes of functions */
     const char *hi = "Hello, World!\n";
-    screen_basic_init();
+    
+
+    exit_ccode = screen_basic_init();
+    if(exit_code != GLOBAL_FUNC_SUCCESS) goto wait;
+
     print((char *) hi);
 
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
     i = 0;
     i++;
-    while(1);
+
+    wait:
+        while(1);
 }
