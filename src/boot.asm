@@ -50,22 +50,54 @@ HALT:
 hlt
 jmp HALT
 
+
+;FIXME: all of these assembly functions (OUTB&INB) in seperate file?
 global ASM_OUTB
 
 ASM_OUTB:
+; throws data to a port
+;   input:
+;       - port (first), WORD
+;       - data (second), BYTE
+;   output:
+;       - N/A
+
 push ebp
 mov ebp, esp
 
-; either the port or the data
-mov eax, [ebp + 12]
-mov edx, [ebp + 8]
+; port is first, data second
+mov edx, [ebp + 12]
+mov eax, [ebp + 8]
 
 out dx, al
 
 mov esp, ebp
 pop ebp
 
-ret 8
+ret
+
+
+global ASM_INB
+ASM_INB:
+; throws data to you when you ask it to
+;   input:
+;       - port, WORD
+;   output:
+;       - data, WORD
+
+push ebp
+mov ebp, esp
+
+mov dx, [ebp + 8]
+
+in al, dx
+
+mov [ebp + 8], ax
+
+mov esp, ebp
+pop ebp
+
+ret
 
 section .bss
 STACK_END:

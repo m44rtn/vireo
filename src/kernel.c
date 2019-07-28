@@ -25,7 +25,7 @@ SOFTWARE.
 
 #include "include/kernel_info.h"
 #include "include/types.h"
-#include "basic/io.h"
+#include "io/io.h"
 #include "screen/screen_basic.h"
 
 

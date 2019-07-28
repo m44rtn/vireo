@@ -23,7 +23,7 @@ SOFTWARE.
 
 #include "screen_basic.h"
 
-#include "../basic/io.h"
+#include "../io/io.h"
 #include "../include/types.h"
 
 
@@ -49,7 +49,7 @@ static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(void);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
 
-/* TODO: code comment */
+/* TODO: code comment & document */
 
 /*
  * 'Public' part
@@ -61,6 +61,48 @@ void screen_basic_init(void)
     SCRscreenData.cursorY = SCRscreenData.cursorX = 0;
     
     screen_basic_clear_screen();
+
+	/* Enable the cursor and put it at the top */
+	screen_basic_enable_cursor(0, 15);
+}
+
+void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end)
+{
+	ASM_OUTB(0x3D4, 0x0A);
+	ASM_OUTB(0x3D5, (uint8_t) (ASM_INB(0x3D5) & 0xC0) | cursor_start);
+
+	ASM_OUTB(0x3D4, 0x0B);
+	ASM_OUTB(0x3D5, (uint8_t) (ASM_INB(0x3D5) & 0xE0) | cursor_end);
+}
+
+void screen_basic_disable_cursor(void)
+{
+	ASM_OUTB(0x3D4, 0x0A);
+	ASM_OUTB(0x3D5, 0x20);
+}
+
+void screen_basic_move_cursor(unsigned char x, unsigned char y)
+{
+	uint16_t position = y * SCREEN_BASIC_WIDTH + x;
+
+	ASM_OUTB(0x3D4, 0x0F);
+	ASM_OUTB(0x3D5, (uint8_t) (position & 0xFF));
+
+	ASM_OUTB(0x3D4, 0x0E);
+	ASM_OUTB(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
+}
+
+unsigned short screen_basic_get_cursor_position(void)
+{
+	uint16_t position = 0;
+
+	ASM_OUTB(0x3D4, 0x0F);
+	position |= ASM_INB(0x3D5);
+
+	ASM_OUTB(0x3D4, 0x0E);
+	position |= ((uint16_t) ASM_INB(0x3D5) << 8);
+
+	return position;
 }
 
 void screen_basic_set_screen_color(unsigned char color)

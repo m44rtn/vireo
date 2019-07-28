@@ -75,36 +75,36 @@
     <br>
 
     <h3 id="introduction">1. Introduction to Vireo II</h3>
-    <p>Vireo II is a rewrite of the Vireo I kernel, which was very unstable and poorly planned. Vireo I lacked a good architecture and good coding practices.
-        The new Vireo II should improve this quite a bit. It's rewritten, though not entirely from scratch: some code from the Vireo I kernel will be upcycled into the new Vireo II kernel.  
+    <p>Vireo II is a rewrite of the Vireo I kernel, which was a very unstable and poorly thought through kernel. Vireo I lacked a good architecture and good coding practices, and was compiled using the system compiler.
+        The new Vireo II should improve this quite a bit. It's rewritten, though not entirely from scratch: some code from the Vireo I kernel will be 'upcycled' into the new Vireo II kernel.  
         <br><br><br>
 
         <strong><i>Vireo I vs Vireo II</i></strong>
-        <br>Vireo I was very unstable and annoying to work with, because of the lack of planning and architecture beforehand. Furthermore, Vireo I used the GCC system compiler instead of a cross-compiler.
-        It had trouble with the keyboard and mouse, PATAPI and more. Some ISRs didn't seem to work. This may not be because of the GCC system compiler, but they are annoying bugs and problems.
+        <br>Vireo I was very unstable and annoying to work with, because of the lack of planning beforehand. Furthermore, Vireo I used the GCC system compiler instead of a cross-compiler.
+        It had trouble with the keyboard and mouse, PATAPI and more. Some ISRs didn't seem to work. Not all of these problems were caused by the GCC system compiler, but they are annoying bugs and problems nevertheless.
         Vireo II will improve on Vireo I in a few key ways:<br>
         <br>- <b>Vireo II will be easier to work with;</b> thanks to a more dynamic makefile, more documentation, better function names and handling, etc.
         <br>- <b>Vireo II will be better suited as an OS;</b> thanks to a new cross-compiler and better handling of its working environment.
-        <br>- <b>In 5 years the creator learnt a few things;</b> which means better code quality (hopefully) and more "hey, at least he knows what he's doing!"    
+        <br>- <b>5 years more experience;</b> which means, or should mean, better source code and a better kernel.   
         <br><br><br>
 
         <strong><i>About Vireo I</i></strong>
-        <br>The project started on September 14th 2014 as a 16-bit kernel. After a long period of time the project was renewed. This time 
-        by making a 32-bit kernel with a GUI. Back then it had no name. Later on, however, it got the name Bird OS. In 2018 the Bird OS name was split up with a name for the GUI (Bluebird) and the kernel (Vireo). 
-        Halfway through 2019, the creator saw how awful the code was and thought it would be best to start all over... again.
+        <br>The project started on September 14th 2014 as a 16-bit kernel. After a long period of time, in which nothing was done, the project was renewed. This time 
+        by making a 32-bit kernel with a GUI (the GUI was never made). Back then it had no name. Later on, however, it got the name Bird OS. In 2018 the Bird OS name was split up with a name for the GUI (Bluebird) and the kernel (Vireo). 
+        Halfway through 2019, the creator saw how awful the kernel was and thought it would be best to start all over... again.
         <br><br>This is not to say, however, that Vireo I can't be used for anything. It may be a bad and picky kernel, which really wants some things to be there (for example, it needs a FAT32 formatted PATA harddrive with a BIRDOS directory on it in order to work).
-        However, you may be succesful at doing something with it. It cannot load ELF binaries, but it is able to single task flat binaries. This, unfortunately does require some extra code to be written, for it to find and execute the binary. There are functions to find files and execute a flat binary somewhere in the kernel, which can be used for this purpose.
+        However, you may be succesful at doing something with it. It cannot load ELF binaries, but it is able to single task flat binaries. This, unfortunately, does require some extra code to be written for it to find and execute the binary. There are functions to find files and execute a flat binary somewhere in the kernel, which can be used for this purpose.
          There's only one catch: there is no documentation for Vireo I.
 
         <br><br><br>
         <strong><i>About this manual</i></strong>
-        <br>This manual is updated alongside the development of the kernel. It gets updated as necessary. This manual may be trusted above any other, possibly conflicting, sources; with an exception to the current source code, which is considered as more authoritative.
+        <br>This manual is updated, as necessary, alongside the development of the kernel. This manual may be trusted above any other, possibly conflicting, sources; with an exception to the current source code, which is considered as more authoritative.
         <br><br>
     </p>
     
     <h3 id="building">2. Building the kernel</h3>
-    <p>The kernel is built using a GCC cross-compiler and NASM, using the utillity called <a target="_blank" href="https://github.com/m44rtn/xenops">Xenops</a> to increase the build number with every build. Currently, the kernel is built using an i686-elf
-        cross-compiler using GCC v8.3.0. A cross-compiler is not included with the kernel its source, but you can use <a target="_blank" href="https://wiki.osdev.org/GCC_Cross-Compiler">this guide</a> to easily build one yourself.
+    <p>The kernel is built using a GCC cross-compiler and NASM, using the utillity called <a target="_blank" href="https://github.com/m44rtn/xenops">Xenops</a> to increase the build number with every build, for the next build. Currently, the kernel is built using an i686-elf
+        cross-compiler using GCC v8.3.0. A cross-compiler is not included with the source source, but you can use <a target="_blank" href="https://wiki.osdev.org/GCC_Cross-Compiler">this guide</a> to easily build one yourself.
         <br><br>
         Use <code>make all</code> to build the entire kernel.<br>
         Use <code>make iso</code> to make an ISO image using that kernel.<br>
@@ -114,7 +114,7 @@
     </p>
 
     <h3 id="debugging">3. Debugging the kernel</h3>
-    <p>Virtualbox is used to test and debug the kernel. Using the makefile the <code>make run</code> command will run any virtual machine called "Bird OS" (without "), and will automatically launch the Virtualbox debug console.
+    <p>Virtualbox is used to test and debug the kernel. Using the makefile, the <code>make run</code> command will run any virtual machine called "Bird OS" (without "), and will automatically launch the Virtualbox debug console.
         You can use this console to debug the kernel. A few useful commands are listed in <i>table 3.1</i>. <br><br>
         <table style="width: 100%">
             <caption>Table 3.1 - Useful Virtualbox debug console commands</caption>
@@ -154,11 +154,10 @@
 
     <h3 id="conventions">4. Coding conventions</h3>
     <p>
-        Vireo II is written in the C89 C standard and the NASM standard. These conventions exist for consistancy, not to claim a 
+        Vireo II is written in the C89 C and the NASM standard. These conventions exist for consistancy, not to claim a 
         particular style is better. The 3 main guidelines are:<br><br>
         1. Match the style of the surrounding code and documentation.<br>
         2. Keep code simple, fast and (at least semi-)secure.<br>
-        3. If something could be done better, feel free to change anything unless it contradicts statements 1 and/or 2.<br>
         
         <br>
         It is possible for these guidelines to change in the future.

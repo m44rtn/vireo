@@ -36,21 +36,19 @@ todo:
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
 all: $(OBJFILES) $(ASOBJFILES)
-	$(CC)  -T linker.ld -o bin/kernel.sys src/boot.o src/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
+	@$(CC)  -T linker.ld -o bin/kernel.sys src/boot.o src/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
 	@xenops --file src/include/kernel_info.h 
 
 %.o: %.c
-	@echo $(OBJFILES)
-	@echo $(SRCFILES)
-	$(CC) $(CCFLAGS) -c $< -o $@
+	@$(CC) $(CCFLAGS) -c $< -o $@
 	#-c
 	
 	#-MMD -MP
 
 %.o: %.asm
-	$(AC) $(ASFLAGS) $< -o $@
+	@$(AC) $(ASFLAGS) $< -o $@
 
 clean:
 	-@for file in $(DCLEAN:Makefile=); do rm $$file; done; true
