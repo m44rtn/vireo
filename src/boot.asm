@@ -66,8 +66,8 @@ push ebp
 mov ebp, esp
 
 ; port is first, data second
-mov edx, [ebp + 12]
-mov eax, [ebp + 8]
+mov eax, [ebp + 12]
+mov edx, [ebp + 8]
 
 out dx, al
 
@@ -90,12 +90,17 @@ mov ebp, esp
 
 mov dx, [ebp + 8]
 
+xor eax, eax
+
 in al, dx
 
 mov [ebp + 8], ax
 
+;hlt
+
 mov esp, ebp
 pop ebp
+
 
 ret
 

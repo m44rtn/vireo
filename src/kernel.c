@@ -38,14 +38,12 @@ void cmain(void)
     const char *hi = "Hello, World!\n";
     
 
-    exit_ccode = screen_basic_init();
+    exit_code = screen_basic_init();
     if(exit_code != GLOBAL_FUNC_SUCCESS) goto wait;
 
     print((char *) hi);
 
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
-    i = 0;
-    i++;
 
     wait:
         while(1);
