@@ -35,12 +35,13 @@ SOFTWARE.
 void cmain(void)
 {
     unsigned char exit_code = 0; /* universal variable to test exit codes of functions */
-    const char *hi = "Hello, World!\n";
+    const char *hi = "Hello, World!";
     
 
     exit_code = screen_basic_init();
     if(exit_code != GLOBAL_FUNC_SUCCESS) goto wait;
 
+    print((char *) hi);
     print((char *) hi);
 
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
