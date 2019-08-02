@@ -19,28 +19,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- */
+*/
 
-#ifndef __SCREEN_BASIC_H__
-#define __SCREEN_BASIC_H__
+#include "global_flags.h"
+#include "global_exit_codes.h"
 
-/* EXIT CODES */
-#define SCREEN_BASIC_EXIT_CODE_CURSOR_MOVE_FAIL     16
+/* Note: functions in this file DO NOT have a filename prefix (e.g. global_functions_...) */
 
-/* SCREEN DATA FLAGS */
-#define SCREEN_BASIC_CURSOR_ENABLED                   1
-
-unsigned char screen_basic_init(void);
-
-void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end);
-void screen_basic_disable_cursor(void);
-unsigned char screen_basic_move_cursor(unsigned char x, unsigned char y);
-unsigned short screen_basic_get_cursor_position(void);
-
-void print(char* text);
-/*void trace(char* text, unsigned int val);*/
-void screen_basic_clear_screen(void);
-
-void screen_basic_set_screen_color(unsigned char color);
-
-#endif
+/* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when
+         the flag(s) is/are not enabled.
+*/
+unsigned char flag_check(unsigned int flag, unsigned int to_check)
+{
+    if((flag & to_check) == to_check) return 0;
+    return 1;
+}

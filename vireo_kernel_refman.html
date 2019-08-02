@@ -68,6 +68,7 @@
         <a href="#debugging">3. Debugging the kernel</a><br>
         <a href="#conventions">4. Coding conventions</a><br>
         <a href="#exit_codes">5. Exit codes</a><br>
+        <a href="#init_funcs">6. Initialization functions</a><br>
 
         <br><br>
         <strong>Appendixes</strong><br><br>
@@ -193,40 +194,97 @@
         <th>Value</th>
         <th>Description</th>
         <tr>
-            <td>GLOBAL_FUNC_SUCCESS</td>
+            <td>EXIT_CODE_GLOBAL_SUCCESS</td>
             <td>0</td>
             <td>Means the function was executed correctly without any error</td>
         </tr>
         <tr>
+            <td>EXIT_CODE_GLOBAL_GENERAL_FAIL</td>
+            <td>1</td>
+            <td>Means the function failed, but with no specific error</td>
+        </tr>
+        <tr>
             <td><i>&lt;reserved&gt;</i></td>
-            <td>1 - 15</td>
+            <td>2 - 15</td>
             <td>Reserved for future use</td>
         </tr>
-        
     </table>
+
     </p>
+
+    <h3 id="init_funcs">6. Initialization functions</h3>
+    <p>
+        Most modules are started by an initialization function, used to set-up its working environment and internal variables. 
+        In order for the modules to be 'independent' from the main kernel files, there are some conventions (here we go again). YAY!
+        <br><br>
+        Most of these conventions are specifically written down for the creator, because he messed up the previous attempt (aka Vireo I). However, every module should abide to them.
+        <br><br>
+
+        Initialization functions are called by the kernel because it thinks it will need them. The initialization function should then set-up everything it needs. Meaning: internal variables, its working environment, necessarry hardware, etc. However, it's not necessary to keep everything in the init function. It is expected, however, that any additional functions used by the init function (not intended to be used by other modules) to be static and defined inside the source file ('*.c'). The init function should always return an exit code.
+        
+        <br><br>
+    </p>
+
 
     <h3 id="funclist">A0 - Function listing</h3>
     <p>
-        In every module (aka source code file) of the kernel, there are two kinds of functions: static (internal) and public. Static functions are not available to other modules and are inaccessible to them, they are not documented in the reference manual. Documentation for the static functions can be found in the code where necessary, as code comments.
+        In every module (aka source code file) of the kernel, there are two kinds of functions: static (internal) and public functions. Static functions are not available to other modules and are inaccessible to them, they are not documented in the reference manual. Documentation for the static functions can be found in the code where necessary, as code comments.
         <br><br>Public functions are available to every module in the kernel, and are made to be as error free as possible. 
 
         <br><br><br>
-        <strong><i>Basic screen functions - basic_screen</i></strong>
-        <br><i>basic_screen</i> provides a simple interface to print text to the screen in text mode. The module is used by the kernel
-        at start-up and needs text mode to be already enabled by the BIOS. The list of functions in this module:
+
+        <strong><i>Global functions - global_functions</i></strong>
+        <br><i>global_functions</i> is a module which contains a few basic functions, which makes some tasks just that tiny bit easier. Pun intended.
+        <br><br><strong>Note:</strong> functions in this module DO NOT have a file name prefix (e.g. global_functions_[function name]).
+        
         <br><br>
         
         <table style="width: 100%">
-            <caption>Table A0.0 - screen_basic module functions</caption>
+            <caption>Table A0.1 - screen_basic module functions</caption>
             <colgroup>
                 <col width="33%">
                 <col width="33%">
                 <col width="33%">
             </colgroup>
             <th>Function & description</th>
-            <th>Input</th>
-            <th>Returns</th>
+            <th>Input (var name, description)</th>
+            <th>Returns, type/size</th>
+            <tr>
+                <td><code>flag_check()</code><br><br>
+                    Checks if a flag has certain flags enabled.
+                </td>
+
+                <td>
+                    - <code>flag</code>, flag<br>
+                    - <code>to_check</code>, flag(s) to check for (OR'ed together)
+                </td>
+
+                <td>Exit code, BYTE:<br>
+                    &nbsp; &nbsp; - EXIT_CODE_GLOBAL_SUCCESS, if all the flags are enabled<br>
+                    &nbsp; &nbsp; - EXIT_CODE_GLOBAL_GENERAL_FAIL, if any one of them is not enabled
+                </td>
+            </tr>
+        </table>
+
+        <i>This module has no additional exit codes.</i>
+
+        <br><br><br>
+        
+        <strong><i>Basic screen functions - basic_screen</i></strong>
+        <br><i>basic_screen</i> provides a simple interface to print text to the screen in text mode. The module is used by the kernel
+        at start-up and needs text mode to be already enabled by the BIOS. The list of functions in this module:
+        <br><br>
+        
+        <table style="width: 100%">
+            <caption>Table A0.1 - screen_basic module functions</caption>
+            <colgroup>
+                <col width="33%">
+                <col width="33%">
+                <col width="33%">
+            </colgroup>
+            <th>Function & description</th>
+            <th>Input (var name, description)</th>
+            <th>Returns, type/size</th>
             <tr>
                 <td><code>screen_basic_init()</code><br><br>
                     Initializes the internal variables for the module, enables the cursor and clears the screen.
@@ -234,8 +292,8 @@
 
                 <td>N/A</td>
 
-                <td>Exit code:<br>
-                    &nbsp; &nbsp; - GLOBAL_FUNC_SUCCESS, if successful
+                <td>Exit code, BYTE:<br>
+                    &nbsp; &nbsp; - EXIT_CODE_GLOBAL_SUCCESS, if successful
                 </td>
             </tr>
             <tr>
@@ -243,8 +301,8 @@
                         Enables the cursor and sets the start and end of the scanlines.
                     </td>
     
-                    <td>- start of scanline<br>
-                    - end of scanline</td>
+                    <td>- <code>cursor_start</code>, start of scanline<br>
+                    - <code>cursor_end</code>, end of scanline</td>
     
                     <td>N/A</td>
              </tr>
@@ -262,8 +320,8 @@
                                 Moves the cursor to the desired x and y position.
                             </td>
             
-                            <td>- new x position, BYTE<br>
-                                - new y position, BYTE
+                            <td>- <code>x</code>, new x position, BYTE<br>
+                                - <code>y</code>, new y position, BYTE
                             </td>
             
                             <td>N/A</td>
@@ -282,7 +340,7 @@
                             Sets the screen color.
                         </td>
         
-                        <td>- screen color (e.g. 0x07 light grey on black, 0x0F white on black), BYTE</td>
+                        <td>- <code>color</code>, screen color (e.g. 0x07 light grey on black, 0x0F white on black), BYTE</td>
         
                         <td>N/A</td>
                 </tr>
@@ -292,8 +350,8 @@
                         show integers on the screen.
                     </td>
     
-                    <td>- null-termintated string<br>
-                        - value/pointer (depending on option)<br><br>
+                    <td>- <code>str</code>, null-termintated string<br>
+                        - <code>val</code>, value/pointer (depending on option)<br><br>
 
                         options:<br>
                         &nbsp; &nbsp; %i - integer to decimal text<br>
@@ -310,7 +368,7 @@
                     Prints text to the screen.
                 </td>
 
-                <td>- null-termintated</td>
+                <td>- <code>str</code>, null-termintated string</td>
 
                 <td>N/A</td>
             </tr>
@@ -323,16 +381,29 @@
     
                 <td>N/A</td>
             </tr>
-                
-
         </table>
 
-        <i>This module has no additional exit codes.</i>
+        Additional exit codes:
+        <table style="width: 100%">
+            <caption>Table A0.2 - screen_basic module additional exit codes</caption>
+            <colgroup>
+                <col width="33%">
+                <col width="5%">
+                <col width="33%">
+            </colgroup>
+            <th>Name</th>
+            <th>Value</th>
+            <th>Description</th>
+            <tr>
+                <td>SCREEN_BASIC_EXIT_CODE_CURSOR_MOVE_FAIL</td>
+                <td>16</td>
+                <td>Means the cursor wasn't moved correctly
+                    (gets returned by <code>screen_basic_move_cursor()</code>)
+                </td>
+            </tr>
+        </table>
         
-
-
         
-
         <br><br>
     </p>
 

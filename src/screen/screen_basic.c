@@ -26,7 +26,7 @@ SOFTWARE.
 #include "../io/io.h"
 #include "../include/types.h"
 #include "../include/global_exit_codes.h"
-
+#include "../include/global_flags.h"
 
 #define SCREEN_BASIC_WIDTH          80
 #define SCREEN_BASIC_HEIGHT         25
@@ -36,14 +36,17 @@ SOFTWARE.
 
 typedef struct SCREENDATA
 {
-    unsigned short cursorY;
-    unsigned short cursorX;
-    char chScreenColor;
+	unsigned short cursorY;
+	unsigned short cursorX;
+    uint32_t SCREEN_FLAGS;
+
+	char chScreenColor;
 } SCREENDATA;
 
 static SCREENDATA SCRscreenData;
 
 /* Static function defines */
+static void screen_basic_print_warnings();
 static void screen_basic_char_put_on_screen(char c);
 static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(void);
@@ -58,7 +61,12 @@ static void screen_basic_clear_line(unsigned char from, unsigned char to);
 
 unsigned char screen_basic_init(void)
 {
+	uint8_t check;
+
+	SCRscreenData.SCREEN_FLAGS = 0;
+
     screen_basic_set_screen_color(SCREEN_BASIC_DEFAULT_COLOR);
+
     SCRscreenData.cursorY = 0;
 	SCRscreenData.cursorX = 0;
     
@@ -66,9 +74,14 @@ unsigned char screen_basic_init(void)
 
 	/* Enable the cursor and put it at the top */
 	screen_basic_enable_cursor(0, 15);
-	screen_basic_move_cursor(SCRscreenData.cursorX, SCRscreenData.cursorY);
-		
-	return GLOBAL_FUNC_SUCCESS;
+	check = screen_basic_move_cursor(SCRscreenData.cursorX, SCRscreenData.cursorY);
+
+	if(check == EXIT_CODE_GLOBAL_SUCCESS) SCRscreenData.SCREEN_FLAGS |= SCREEN_BASIC_CURSOR_ENABLED;
+
+	/* flag_check() returns 1 when the flag is not enabled. */
+	if(flag_check(SystemInfo.GLOBAL_FLAGS, GLOBAL_FLAG_QUIET)) screen_basic_print_warnings();
+
+	return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
 void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end)
@@ -89,18 +102,26 @@ void screen_basic_disable_cursor(void)
 	ASM_OUTB(0x3D5, 0x20);
 }
 
-void screen_basic_move_cursor(unsigned char x, unsigned char y)
+uint8_t screen_basic_move_cursor(unsigned char x, unsigned char y)
 {
 	/*if(x >= SCREEN_BASIC_WIDTH) x = SCREEN_BASIC_WIDTH - 1;
 	if(y >= SCREEN_BASIC_HEIGHT) y = SCREEN_BASIC_HEIGHT - 1;*/
 
 	uint16_t position = y * SCREEN_BASIC_WIDTH + x;
+	int i;
 
 	ASM_OUTB(0x3D4, 0x0E);
 	ASM_OUTB(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
 
 	ASM_OUTB(0x3D4, 0x0F);
 	ASM_OUTB(0x3D5, (uint8_t) (position & 0xFF));
+
+	for(i = 0; i < 10000; i++);
+	uint16_t verify_pos = screen_basic_get_cursor_position();
+
+	if(position != verify_pos) return SCREEN_BASIC_EXIT_CODE_CURSOR_MOVE_FAIL;
+	
+	return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
 unsigned short screen_basic_get_cursor_position(void)
@@ -175,6 +196,13 @@ void screen_basic_clear_screen(void){
 /*
  * 'Private' part
  */
+
+static void screen_basic_print_warnings()
+{
+	/* This may become a function with lots of if-else checks */
+
+	if(flag_check(SCRscreenData.SCREEN_FLAGS, SCREEN_BASIC_CURSOR_ENABLED)) print("[WARNING] Cursor not enabled\n");
+}
 
 static void screen_basic_char_put_on_screen(char c){
 	char* vidmem = (char*) 0xb8000;
