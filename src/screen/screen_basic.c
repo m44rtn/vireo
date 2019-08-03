@@ -241,7 +241,7 @@ static void screen_basic_char_put_on_screen(char c){
 
 void screen_basic_move_cursor_internal(void)
 {
-	uint16_t position = SCRscreenData.cursorY * ((unsigned short) SCREEN_BASIC_WIDTH) + SCRscreenData.cursorX;
+	uint16_t position = (uint16_t) (SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX);
 
 	ASM_OUTB(0x3D4, 0x0E);
 	ASM_OUTB(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
@@ -261,21 +261,23 @@ static void screen_basic_scroll(unsigned char line)
 {
 	
 	char* vidmemloc = (char*) 0xb8000;
-	unsigned int i;
+	const unsigned short EndOfScreen = SCREEN_BASIC_WIDTH * (SCREEN_BASIC_HEIGHT - 1) * SCREEN_BASIC_DEPTH;
+	unsigned short i;
 	
-	screen_basic_clear_line(0, line - 1);
+	screen_basic_clear_line(0, (unsigned char) (line - 1));
 
-	for(i = 0; i < SCREEN_BASIC_WIDTH * (SCREEN_BASIC_HEIGHT - 1) * SCREEN_BASIC_DEPTH; i++){
-		vidmemloc[i] = vidmemloc[i + SCREEN_BASIC_WIDTH*SCREEN_BASIC_DEPTH*line];
+	for(i = 0; i < EndOfScreen; i++){
+		/* a signed integer will be fine for here */
+		vidmemloc[i] = vidmemloc[(int) (i + SCREEN_BASIC_WIDTH * SCREEN_BASIC_DEPTH * line)];
 	}
-	screen_basic_clear_line( SCREEN_BASIC_HEIGHT - ((unsigned char) 1) - line, (SCREEN_BASIC_HEIGHT - 1));
+	screen_basic_clear_line( (unsigned char) (SCREEN_BASIC_HEIGHT -  1 - line), (SCREEN_BASIC_HEIGHT - 1));
 	
 	if((SCRscreenData.cursorY - line) < 0){
 		SCRscreenData.cursorY = 0;
 		SCRscreenData.cursorX = 0;
 	}
 	else{
-		SCRscreenData.cursorY -= (unsigned short) line;
+		SCRscreenData.cursorY = (unsigned short) (SCRscreenData.cursorY - line);
 	}
 	screen_basic_move_cursor(SCRscreenData.cursorX, SCRscreenData.cursorY);
 }
@@ -283,7 +285,7 @@ static void screen_basic_scroll(unsigned char line)
 static void screen_basic_clear_line(unsigned char from, unsigned char to)
 {
 	
-	unsigned short i = (unsigned short) SCREEN_BASIC_WIDTH * from * SCREEN_BASIC_DEPTH;
+	unsigned short i = (unsigned short) (SCREEN_BASIC_WIDTH * from * SCREEN_BASIC_DEPTH);
 	char* vidmem = (char*) 0xb8000;
 	
 	for (; i < (SCREEN_BASIC_WIDTH*to*SCREEN_BASIC_DEPTH); i++){
