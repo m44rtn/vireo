@@ -21,16 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "global_flags.h"
-#include "global_exit_codes.h"
+#ifndef __UTIL_H__
+#define __UTIL_H__
 
-/* Note: functions in this file DO NOT have a filename prefix (e.g. global_functions_...) */
+unsigned int strlen(char *str);
+char* hexstr(unsigned int val);
+char *intstr(uint32_t val);
 
-/* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when
-         the flag(s) is/are not enabled.
-*/
-unsigned char flag_check(unsigned int flag, unsigned int to_check)
-{
-    if((flag & to_check) == to_check) return 0;
-    return 1;
-}
+#endif

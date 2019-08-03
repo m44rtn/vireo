@@ -32,10 +32,12 @@ SOFTWARE.
 
 #include "screen/screen_basic.h"
 
+#include "util/util.h"
+
 void cmain(void)
 {
     unsigned char exit_code = 0; /* universal variable to test exit codes of functions */
-    const char *hi = "Hello, World!";  
+    const char *hi = "Hello, World!\nHello, Vireo II.\n Security, RED ALERT!\n";  
 
     SystemInfo.GLOBAL_FLAGS = 0;  
 

@@ -21,23 +21,63 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#include "util.h"
 
-#define NULL 0
+#include "../include/types.h"
 
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
 
-typedef uint32_t size_t; 
+unsigned int strlen(char *str)
+{
+    uint32_t i = 0;
+    while(str[i])
+        i++;
 
-typedef enum{
-    false,
-    true
-} bool;
+    return i;
+}
 
-#endif
+char* hexstr(unsigned int val)
+{
+	unsigned int tempval = val;
+	char* outputstr = "00000000\0";
+	
+	char chrIndex;
+	char* hexDig = "0123456789ABCDEF";
+	
+	for(int8_t loopcntr = 8; loopcntr > 0; loopcntr--){
+		chrIndex = tempval & 0x0000000F;
+		outputstr[loopcntr] = hexDig[0 + chrIndex];
+		tempval = tempval >> 4;
+	}
+	return outputstr;
+}
+
+/* TODO: make nicer */
+char *intstr(uint32_t val) 
+{          
+    uint32_t str_loc = 0, sign = 0;
+	
+    char *str, *ret_str;
+    
+    if ((sign = val) < 0) val = -val;;
+    
+    do {
+        str[str_loc++] = val % 10 + '0';         
+    } while ((val /= 10) > 0);
+
+    if (sign < 0) str[str_loc++] = '-';
+
+    str_loc--;
+
+	uint32_t EndOfString = str_loc + 1;
+	
+    uint32_t i;
+	for(i = 0; j < EndOfString; i++)
+	{
+		ret_str[j] = str[i];
+		str_loc--;
+	}
+
+	ret_str[j] = '\0';
+
+	return ret_str;
+}

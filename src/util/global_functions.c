@@ -21,23 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#include "../include/global_flags.h"
+#include "../include/global_exit_codes.h"
 
-#define NULL 0
+/* Note: functions in this file DO NOT have a filename prefix (e.g. global_functions_...) */
 
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-
-typedef uint32_t size_t; 
-
-typedef enum{
-    false,
-    true
-} bool;
-
-#endif
+/* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when
+         the flag(s) is/are not enabled.
+*/
+unsigned char flag_check(unsigned int flag, unsigned int to_check)
+{
+    if((flag & to_check) == to_check) return 0;
+    return 1;
+}

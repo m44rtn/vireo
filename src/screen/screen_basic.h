@@ -38,7 +38,7 @@ unsigned char screen_basic_move_cursor(unsigned short x, unsigned short y);
 unsigned short screen_basic_get_cursor_position(void);
 
 void print(char* text);
-/*void trace(char* text, unsigned int val);*/
+void trace(char* text, unsigned int val);
 void screen_basic_clear_screen(void);
 
 void screen_basic_set_screen_color(unsigned char color);

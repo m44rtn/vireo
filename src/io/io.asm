@@ -21,37 +21,54 @@
 
 bits 32
 
-global start
-extern cmain
+global ASM_OUTB
 
-section .multiboot
-align 4
-dd 0x1BADB002
-dd 0x00
-dd -(0x1BADB002 + 0x00)
+ASM_OUTB:
+; throws data to a port
+;   input:
+;       - port (first), WORD
+;       - data (second), BYTE
+;   output:
+;       - N/A
+
+push ebp
+mov ebp, esp
+
+; port is first, data second
+mov eax, [ebp + 12]
+mov edx, [ebp + 8]
+
+out dx, al
+
+mov esp, ebp
+pop ebp
+
+ret
 
 
+global ASM_INB
+ASM_INB:
+; throws data to you when you ask it to
+;   input:
+;       - port, WORD
+;   output:
+;       - data, WORD
 
-section .text
-start:
-; does the initialization before we move on to the C part
+push ebp
+mov ebp, esp
 
-; Set up the stack
-mov esp, STACK_TOP
+mov dx, [ebp + 8]
 
-; push the location of the GRUB loader information onto the stack
-push ebx
+xor eax, eax
 
-; TODO: GDT here, CPU init here, Paging init here
+in al, dx
 
-call cmain
+mov [ebp + 8], ax
 
-HALT:
-hlt
-jmp HALT
+;hlt
 
-section .bss
+mov esp, ebp
+pop ebp
 
-STACK_END:
-    resb 0x4000
-STACK_TOP:
+
+ret

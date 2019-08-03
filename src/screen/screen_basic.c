@@ -28,6 +28,8 @@ SOFTWARE.
 #include "../include/global_exit_codes.h"
 #include "../include/global_flags.h"
 
+#include "../util/util.h"
+
 #define SCREEN_BASIC_WIDTH          (unsigned char) 80
 #define SCREEN_BASIC_HEIGHT         (unsigned char) 25
 #define SCREEN_BASIC_DEPTH          (unsigned char) 2
@@ -142,22 +144,26 @@ void screen_basic_set_screen_color(unsigned char color)
     SCRscreenData.chScreenColor = color;
 }
     
-/*void trace(char* str, unsigned int val) TODO
+void trace(char* str, unsigned int val)
 {
-	uint16_t i = 0;  
-	uint8_t length = strlen(str);
+	unsigned int i;  
+	unsigned int length = strlen(str);
 
-	for(i; i < length; i++){ 
+	for(i = 0; i < length; i++){ 
 		switch(str[i]){
 			case '%': {
 
 			 switch(str[i+1]){
+				 case 'h':
+					print(hexstr(val));
+					i++;
+					break;
 				 case 'i':
-					screen_basic_char_put_on_screen(hexstr(val));
+					print(intstr(val));
 					i++;
 					break;
 				case 's':
-					screen_basic_char_put_on_screen((char*) val);
+					print((char*) val);
 					i++;
 					break;
 				default:
@@ -171,12 +177,12 @@ void screen_basic_set_screen_color(unsigned char color)
 			break;
 		}
 	}
-}*/
+}
 
 void print(char* str){
 	
-	uint16_t i;  
-	uint8_t length = 15; /* strlen(str);*/
+	unsigned int i;  
+	unsigned int length = strlen(str);
 
 	for(i = 0; i < length; i++){ 
 		screen_basic_char_put_on_screen(str[i]);	
@@ -221,11 +227,6 @@ static void screen_basic_char_put_on_screen(char c){
 			
 			case ('\t'):
 				SCRscreenData.cursorX = (unsigned short) (SCRscreenData.cursorX + 4);
-			break;
-
-			case '\0':
-				SCRscreenData.cursorY++;
-				SCRscreenData.cursorX = 0;
 			break;
 
 			default:
