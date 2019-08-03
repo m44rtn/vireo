@@ -43,9 +43,6 @@ all: $(OBJFILES) $(ASOBJFILES)
 
 %.o: %.c
 	@$(CC) $(CCFLAGS) -c $< -o $@
-	#-c
-	
-	#-MMD -MP
 
 %.o: %.asm
 	@$(AC) $(ASFLAGS) $< -o $@

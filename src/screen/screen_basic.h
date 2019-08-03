@@ -34,7 +34,7 @@ unsigned char screen_basic_init(void);
 
 void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end);
 void screen_basic_disable_cursor(void);
-unsigned char screen_basic_move_cursor(unsigned char x, unsigned char y);
+unsigned char screen_basic_move_cursor(unsigned short x, unsigned short y);
 unsigned short screen_basic_get_cursor_position(void);
 
 void print(char* text);
