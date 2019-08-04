@@ -21,6 +21,7 @@
 
 bits 32
 
+section .text
 global ASM_OUTB
 
 ASM_OUTB:
@@ -64,8 +65,6 @@ xor eax, eax
 in al, dx
 
 mov [ebp + 8], ax
-
-;hlt
 
 mov esp, ebp
 pop ebp

@@ -154,7 +154,7 @@ void trace(char* str, unsigned int val)
 			case '%': {
 
 			 switch(str[i+1]){
-				 case 'h':
+				 case 'x':
 					print(hexstr(val));
 					i++;
 					break;

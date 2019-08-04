@@ -24,7 +24,7 @@ bits 32
 global start
 extern cmain
 
-section .multiboot
+section .text
 align 4
 dd 0x1BADB002
 dd 0x00
@@ -32,7 +32,7 @@ dd -(0x1BADB002 + 0x00)
 
 
 
-section .text
+;section .text
 start:
 ; does the initialization before we move on to the C part
 

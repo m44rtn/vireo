@@ -35,49 +35,62 @@ unsigned int strlen(char *str)
     return i;
 }
 
-char* hexstr(unsigned int val)
+char* hexstr(unsigned int value)
 {
-	unsigned int tempval = val;
-	char* outputstr = "00000000\0";
+	unsigned int tempval = value;
+	char* outputstr = (char *) "00000000";
 	
 	char chrIndex;
-	char* hexDig = "0123456789ABCDEF";
+	const char* hexDig = "0123456789ABCDEF";
 	
-	for(int8_t loopcntr = 8; loopcntr > 0; loopcntr--){
+	int8_t loopcntr;
+	for(loopcntr = 8; loopcntr > 0; loopcntr--){
 		chrIndex = tempval & 0x0000000F;
-		outputstr[loopcntr] = hexDig[0 + chrIndex];
+		outputstr[loopcntr] = (char) hexDig[0 + chrIndex];
 		tempval = tempval >> 4;
 	}
 	return outputstr;
 }
 
 /* TODO: make nicer */
-char *intstr(uint32_t val) 
+/* Will only do unsigned integers :) */
+char *intstr(uint32_t value) 
 {          
-    uint32_t str_loc = 0, sign = 0;
+    char *ReturnString = 0xFFFF;
+	uint32_t strloc = digit_count(value);
+	uint32_t NullChar = strloc + 1;
 	
-    char *str, *ret_str;
-    
-    if ((sign = val) < 0) val = -val;;
-    
-    do {
-        str[str_loc++] = val % 10 + '0';         
-    } while ((val /= 10) > 0);
 
-    if (sign < 0) str[str_loc++] = '-';
-
-    str_loc--;
-
-	uint32_t EndOfString = str_loc + 1;
-	
-    uint32_t i;
-	for(i = 0; j < EndOfString; i++)
+	for(strloc = digit_count(value); strloc > 0; strloc--)
 	{
-		ret_str[j] = str[i];
-		str_loc--;
-	}
+		ReturnString[strloc] = value % 10 + '0';
+		
 
-	ret_str[j] = '\0';
+		value = value / 10;
+	}	
 
-	return ret_str;
+	ReturnString[NullChar] = '\0';
+
+	return ReturnString;
+}
+
+unsigned int digit_count(uint32_t value)
+{
+	/* So, the if statements are there for performance, because I've heard 
+	devision takes a lot of time.  */
+
+	if(value > 0 && value <= 9) return 1;
+	else if(value >= 10 && value <= 99) return 2;
+	else if(value >= 100 && value <= 999) return 3;
+	else if(value >= 1000 && value <= 9999) return 4;
+	else if(value >= 10000 && value <= 99999) return 5;
+	else if(value >= 100000 && value <= 999999) return 6;
+	else if(value >= 1000000 && value <= 9999999) return 7;
+	else if(value >= 10000000 && value <= 99999999) return 8;
+	else if(value >= 100000000 && value <= 999999999) return 9;
+	else if(value >= 1000000000) return 10; /* we can never have more than 10 digits in 32-bit PM */
+
+	/* in this case the value was 0, and so it is one digit.
+	(done to avoid compiler warning) */
+	return 1;
 }

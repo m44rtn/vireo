@@ -25,7 +25,8 @@ SOFTWARE.
 #define __UTIL_H__
 
 unsigned int strlen(char *str);
-char* hexstr(unsigned int val);
-char *intstr(uint32_t val);
+char* hexstr(unsigned int value);
+char *intstr(unsigned int value);
+unsigned int digit_count(unsigned int value);
 
 #endif
