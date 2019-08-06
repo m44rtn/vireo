@@ -35,6 +35,7 @@ unsigned int strlen(char *str)
     return i;
 }
 
+/* FIXME: malloc */
 char* hexstr(unsigned int value)
 {
 	unsigned int tempval = value;
@@ -44,7 +45,7 @@ char* hexstr(unsigned int value)
 	const char* hexDig = "0123456789ABCDEF";
 	
 	int8_t loopcntr;
-	for(loopcntr = 8; loopcntr > 0; loopcntr--){
+	for(loopcntr = 7; loopcntr >= 0; loopcntr--){
 		chrIndex = tempval & 0x0000000F;
 		outputstr[loopcntr] = (char) hexDig[0 + chrIndex];
 		tempval = tempval >> 4;
@@ -52,20 +53,18 @@ char* hexstr(unsigned int value)
 	return outputstr;
 }
 
-/* TODO: make nicer */
+/* FIXME: malloc */
 /* Will only do unsigned integers :) */
 char *intstr(uint32_t value) 
 {          
     char *ReturnString = 0xFFFF;
-	uint32_t strloc = digit_count(value);
-	uint32_t NullChar = strloc + 1;
+	int strloc = (int) digit_count(value);
+	uint32_t NullChar = digit_count(value);
 	
 
-	for(strloc = digit_count(value); strloc > 0; strloc--)
+	for(strloc = strloc - 1; strloc >= 0; strloc--)
 	{
 		ReturnString[strloc] = value % 10 + '0';
-		
-
 		value = value / 10;
 	}	
 
