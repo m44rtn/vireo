@@ -49,7 +49,7 @@ ret
 
 global ASM_INB
 ASM_INB:
-; throws data to you when you ask it to
+; throws data to you from a port when you ask it to
 ;   input:
 ;       - port, WORD
 ;   output:
@@ -68,6 +68,5 @@ mov [ebp + 8], ax
 
 mov esp, ebp
 pop ebp
-
 
 ret
