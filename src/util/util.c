@@ -39,7 +39,7 @@ unsigned int strlen(char *str)
 char* hexstr(unsigned int value)
 {
 	unsigned int tempval = value;
-	char* outputstr = (char *) "00000000";
+	char* outputstr = (char *) 0xFFFF; /*"00000000";*/
 	
 	char chrIndex;
 	const char* hexDig = "0123456789ABCDEF";
@@ -54,17 +54,16 @@ char* hexstr(unsigned int value)
 }
 
 /* FIXME: malloc */
-/* Will only do unsigned integers :) */
 char *intstr(uint32_t value) 
 {          
-    char *ReturnString = 0xFFFF;
+    char *ReturnString = (char *) 0xFFFF;
 	int strloc = (int) digit_count(value);
 	uint32_t NullChar = digit_count(value);
 	
 
 	for(strloc = strloc - 1; strloc >= 0; strloc--)
 	{
-		ReturnString[strloc] = value % 10 + '0';
+		ReturnString[strloc] = (char) (value % 10 + '0');
 		value = value / 10;
 	}	
 
@@ -75,11 +74,7 @@ char *intstr(uint32_t value)
 
 unsigned int digit_count(uint32_t value)
 {
-	/* So, the if statements are there for performance, because I've heard 
-	devision takes a lot of time.  */
-
-	if(value > 0 && value <= 9) return 1;
-	else if(value >= 10 && value <= 99) return 2;
+	if(value >= 10 && value <= 99) return 2;
 	else if(value >= 100 && value <= 999) return 3;
 	else if(value >= 1000 && value <= 9999) return 4;
 	else if(value >= 10000 && value <= 99999) return 5;
@@ -87,9 +82,7 @@ unsigned int digit_count(uint32_t value)
 	else if(value >= 1000000 && value <= 9999999) return 7;
 	else if(value >= 10000000 && value <= 99999999) return 8;
 	else if(value >= 100000000 && value <= 999999999) return 9;
-	else if(value >= 1000000000) return 10; /* we can never have more than 10 digits in 32-bit PM */
+	else if(value >= 1000000000) return 10;
 
-	/* in this case the value was 0, and so it is one digit.
-	(done to avoid compiler warning) */
 	return 1;
 }

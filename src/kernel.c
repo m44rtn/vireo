@@ -45,7 +45,7 @@ void cmain(void)
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
 
     print((char *) hi);
-    trace("build: %i",BUILD);
+    trace("build: %x", BUILD);
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
 
     wait:
