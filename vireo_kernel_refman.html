@@ -91,7 +91,7 @@
     
     <h3 id="building">2. Building the kernel</h3>
     <p>The kernel is built using a GCC cross-compiler and NASM, using the utillity called <a target="_blank" href="https://github.com/m44rtn/xenops">Xenops</a> to increase the build number with every build, for the next build. Currently, the kernel is built using an i686-elf
-        cross-compiler using GCC v8.3.0. A cross-compiler is not included with the source source, but you can use <a target="_blank" href="https://wiki.osdev.org/GCC_Cross-Compiler">this guide</a> to easily build one yourself.
+        cross-compiler using GCC v8.3.0. A cross-compiler is not included with the source, but you can use <a target="_blank" href="https://wiki.osdev.org/GCC_Cross-Compiler">this guide</a> to easily build one yourself.
         <br><br>
         Use <code>make all</code> to build the entire kernel.<br>
         Use <code>make iso</code> to make an ISO image using that kernel.<br>
@@ -224,7 +224,7 @@
         <br><br>
         
         <table style="width: 100%">
-            <caption>Table A0.1 - screen_basic module functions</caption>
+            <caption>Table A0.0 - global functions</caption>
             <colgroup>
                 <col width="33%">
                 <col width="33%">
@@ -263,8 +263,8 @@
             <caption>Table A0.1 - screen_basic module functions</caption>
             <colgroup>
                 <col width="33%">
-                <col width="33%">
-                <col width="33%">
+                <col width="30%">
+                <col width="36%">
             </colgroup>
             <th>Function & description</th>
             <th>Input (var name, description)</th>
@@ -297,7 +297,10 @@
         
                         <td>N/A</td>
         
-                        <td>N/A</td>
+                        <td>Exit code, BYTE:<br>
+                            &nbsp; &nbsp; - EXIT_CODE_GLOBAL_SUCCESS, if successful<br>
+                            &nbsp; &nbsp; - SCREEN_BASIC_EXIT_CODE_CURSOR_MOVE_FAIL, if somehow unsuccessful
+                        </td>
                 </tr>
                 <tr>
                             <td><code>screen_basic_move_cursor()</code><br><br>
@@ -381,9 +384,7 @@
             <tr>
                 <td>SCREEN_BASIC_EXIT_CODE_CURSOR_MOVE_FAIL</td>
                 <td>16</td>
-                <td>Means the cursor wasn't moved correctly
-                    (gets returned by <code>screen_basic_move_cursor()</code>)
-                </td>
+                <td>Means the cursor wasn't moved correctly</td>
             </tr>
         </table>
         
