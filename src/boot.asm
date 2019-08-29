@@ -42,7 +42,7 @@ mov esp, STACK_TOP
 ; push the location of the GRUB loader information onto the stack
 push ebx
 
-; TODO: GDT here, CPU init here, Paging init here
+; TODO: Paging init here
 
 call cmain
 
