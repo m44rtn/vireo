@@ -50,7 +50,10 @@ typedef struct GDT_ACCESS_
     bool isCodeSegment;
     bool dataisWritable; /* data segment only */
     bool codeisReadable; /* code segment only */
+    bool isAccessed;
 } GDT_ACCESS_;
+
+static uint8_t GDT_prepare_flags(GDT_FLAGS flags);
 
 /* sets up the GDT */
 void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
@@ -116,6 +119,8 @@ static uint8_t GDT_prepare_access(GDT_ACCESS_ access, uint8_t segment_type)
         output_access = output_access | ((access.dataisWritable & 1) << 1);
     else if(segment_type == GDT_SEGMENT_TYPE_CODE)
         output_access = output_access | ((access.codeisReadable & 1) << 1);
+
+    output_access = ouput_access | (access.isAccessed & 1);
     
     return output_access;
 }
