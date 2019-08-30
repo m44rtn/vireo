@@ -25,6 +25,8 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#define GDT_LENGTH                  5
+
 #define GDT_SEGMENT_TYPE_DATA       0
 #define GDT_SEGMENT_TYPE_CODE       1
 
@@ -47,7 +49,6 @@ typedef struct GDT_ACCESS_
 {
     bool isPresent;
     bool isRing3;
-    bool isCodeSegment;
     bool dataisWritable; /* data segment only */
     bool codeisReadable; /* code segment only */
     bool isAccessed;
@@ -59,16 +60,24 @@ static uint8_t GDT_prepare_flags(GDT_FLAGS flags);
 void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
 {
     GDT_ACCESS_ internal_access;
+    GDT_ENTRY GDT[GDT_LENGTH];
 
     internal_access.codeisReadable = access.codeisReadable;
     internal_access.dataisWritable = access.dataisWritable;
     
+    GDT_entry(&GDT[0], 0, 0, 0, 0);
 
+    internal_access.isPresent   = true;
+    internal_access.isRing3     = false;
+    internal_access.isAccessed  = false;
+    internal
+
+    GDT_entry(&GDT[1], 0, 0x000FFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), GDT_prepare_flags(flags));
 
     /* TODO */
 }
 
-static void GDT_entry(GDT_entry *entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
+static void GDT_entry(GDT_ENTRY *entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
 {
     flags = (flags & 0xf0) << 4;
 }
@@ -99,7 +108,7 @@ static uint8_t GDT_prepare_access(GDT_ACCESS_ access, uint8_t segment_type)
 {
     uint8_t output_access = 0;
 
-    output_access = ouput_access | ((access.isPresent & 1) << 7);
+    output_access = output_access | ((access.isPresent & 1) << 7);
 
     if(access.isRing3)
         output_access = output_access | (GDT_PRIVILEGE_ISRING3 << 5);
@@ -120,7 +129,7 @@ static uint8_t GDT_prepare_access(GDT_ACCESS_ access, uint8_t segment_type)
     else if(segment_type == GDT_SEGMENT_TYPE_CODE)
         output_access = output_access | ((access.codeisReadable & 1) << 1);
 
-    output_access = ouput_access | (access.isAccessed & 1);
+    output_access = output_access | (access.isAccessed & 1);
     
     return output_access;
 }
