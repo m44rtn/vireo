@@ -70,7 +70,7 @@ void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
     internal_access.isPresent   = true;
     internal_access.isRing3     = false;
     internal_access.isAccessed  = false;
-    internal
+    internal 
 
     GDT_entry(&GDT[1], 0, 0x000FFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), GDT_prepare_flags(flags));
 
