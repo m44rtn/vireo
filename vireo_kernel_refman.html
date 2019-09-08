@@ -252,7 +252,37 @@
 
         <i>This module has no additional exit codes.</i>
 
-        <br><br><br>
+        <br><br>
+        <strong><i>Utillity functions - util</i></strong>
+        <br><i>util</i> is a module that contains small functions to do whatever. I thought I'd written
+        this part already, but it seems not. So, here we go...
+
+        TODO
+
+        <table style="width: 100%">
+            <caption>Table A0.1 - screen_basic module functions</caption>
+            <colgroup>
+                <col width="33%">
+                <col width="30%">
+                <col width="36%">
+            </colgroup>
+            <th>Function & description</th>
+            <th>Input (var name, description)</th>
+            <th>Returns, type/size</th>
+            <tr>
+                <td><code>screen_basic_init()</code><br><br>
+                    Initializes the internal variables for the module, enables the cursor and clears the screen.
+                </td>
+
+                <td>N/A</td>
+
+                <td>Exit code, BYTE:<br>
+                    &nbsp; &nbsp; - EXIT_CODE_GLOBAL_SUCCESS, if successful
+                </td>
+            </tr>
+         
+        </table>
+        <br><br>
         
         <strong><i>Basic screen functions - basic_screen</i></strong>
         <br><i>basic_screen</i> provides a simple interface to print text to the screen in text mode. The module is used by the kernel
@@ -260,7 +290,7 @@
         <br><br>
         
         <table style="width: 100%">
-            <caption>Table A0.1 - screen_basic module functions</caption>
+            <caption>Table A0.2 - screen_basic module functions</caption>
             <colgroup>
                 <col width="33%">
                 <col width="30%">
@@ -372,7 +402,7 @@
 
         Additional exit codes:
         <table style="width: 100%">
-            <caption>Table A0.2 - screen_basic module additional exit codes</caption>
+            <caption>Table A0.3 - screen_basic module additional exit codes</caption>
             <colgroup>
                 <col width="33%">
                 <col width="5%">
@@ -387,6 +417,43 @@
                 <td>Means the cursor wasn't moved correctly</td>
             </tr>
         </table>
+        <br><Br>
+
+        <strong><i>GDT functions - gdt</i></strong>
+        <br><i>gdt</i> is THE module for all stuff GDT. It's responisble for setting up the new GDT
+        after sart-up.
+
+        <table style="width: 100%">
+            <caption>Table A0.4 - screen_basic module functions</caption>
+            <colgroup>
+                <col width="33%">
+                <col width="30%">
+                <col width="36%">
+            </colgroup>
+            <th>Function & description</th>
+            <th>Input (var name, description)</th>
+            <th>Returns, type/size</th>
+            <tr>
+                <td><code>GDT_setup()</code><br><br>
+                    Initializes the default kernel GDT, without a TSS
+                </td>
+
+                <td>- GDT_ACCESS access
+                    <br>
+                    - GDT_FLAGS flags<br>
+                    For what GDT_FLAGS and
+                    GDT_ACCESS are, see gdt.h
+                </td>
+
+                <td>N/A
+                </td>
+            </tr>
+            
+        </table>
+
+        <i>This module has no additional exit codes.</i>
+
+        <br><br>
         
         
         <br><br>

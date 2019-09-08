@@ -34,18 +34,32 @@ SOFTWARE.
 
 #include "util/util.h"
 
+#include "cpu/gdt.h"
+
 void cmain(void)
 {
     unsigned char exit_code = 0; /* universal variable to test exit codes of functions */
     const char *hi = "Hello, World!\nHello, Vireo II.\n Security, RED ALERT!\n";  
+
+    GDT_ACCESS access;
+    GDT_FLAGS flags;
 
     SystemInfo.GLOBAL_FLAGS = 0;  
 
     exit_code = screen_basic_init();
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
 
+
+    access.dataisWritable   = true;
+    access.codeisReadable   = true;
+
+    flags.Align4k           = true;
+    flags.use16             = false;
+    
+    GDT_setup(access, flags);
+
     print((char *) hi);
-    trace("build: %x", BUILD);
+    trace("build: %i", BUILD);
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
 
     wait:

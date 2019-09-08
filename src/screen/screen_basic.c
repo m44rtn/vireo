@@ -107,12 +107,12 @@ void screen_basic_disable_cursor(void)
 
 uint8_t screen_basic_move_cursor(unsigned short x, unsigned short y)
 {
+	uint16_t verify_pos;
+	uint16_t position = (uint16_t) (y * SCREEN_BASIC_WIDTH + x);
+
 	/* just to be sure? */
 	if(x >= SCREEN_BASIC_WIDTH) x = SCREEN_BASIC_WIDTH - 1;
 	if(y >= SCREEN_BASIC_HEIGHT) y = SCREEN_BASIC_HEIGHT - 1;
-
-	uint16_t verify_pos;
-	uint16_t position = (uint16_t) (y * SCREEN_BASIC_WIDTH + x);
 
 	ASM_OUTB(0x3D4, 0x0E);
 	ASM_OUTB(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
