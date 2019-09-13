@@ -99,6 +99,7 @@ void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
     descriptor.offset = (uint32_t) &GDT[0];
     descriptor.size   = (sizeof(GDT_ENTRY) * GDT_LENGTH) - 1;
 
+    /* FIXME: remove traces */
     trace("GDT: %x\t", descriptor.offset);
     trace("GDT size: %x\t", descriptor.size);
     trace("entry size: %x\n", sizeof(GDT_ENTRY));
