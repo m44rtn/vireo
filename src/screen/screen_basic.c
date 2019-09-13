@@ -50,7 +50,7 @@ static SCREENDATA SCRscreenData;
 /* Static function defines */
 static void screen_basic_print_warnings(void);
 static void screen_basic_char_put_on_screen(char c);
-void screen_basic_move_cursor_internal(void);
+static void screen_basic_move_cursor_internal(void);
 static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(void);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
@@ -241,7 +241,7 @@ static void screen_basic_char_put_on_screen(char c){
 	screen_basic_linecheck();	
 }
 
-void screen_basic_move_cursor_internal(void)
+static void screen_basic_move_cursor_internal(void)
 {
 	uint16_t position = (uint16_t) (SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX);
 

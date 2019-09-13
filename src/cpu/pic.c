@@ -21,27 +21,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __GDT_H__
-#define __GDT_H__
+#include "pic.h"
 
-/* only included for the bool */
 #include "../include/types.h"
 
-typedef struct GDT_FLAGS
+#include "../io/io.h"
+
+#define PIC_MASTER_CMNDSTAT     0x20
+#define PIC_MASTER_IMRDATA      0x21
+
+#define PIC_SLAVE_CMNDSTAT      0xA0
+#define PIC_SLAVE_IMRDATA       0xA1
+
+
+/* does not return an exit code (for now) */
+void PIC_controller_setup()
 {
-    bool Align4k;
-    bool use16;
-} GDT_FLAGS;
+    /* basically, this only remaps the PICs.
+    order: ICW1, ICW2, ICW3 and ICW4*/
 
-typedef struct GDT_ACCESS
-{
-    bool dataisWritable;
-    bool codeisReadable;
-} GDT_ACCESS;
+    ASM_OUTB(PIC_MASTER_CMNDSTAT, 0x11);
+    ASM_OUTB(PIC_SLAVE_CMNDSTAT,  0x11);
 
-/* extern things */
-extern void ASM_GDT_SUBMIT(unsigned int *descriptor);
+    ASM_OUTB(PIC_MASTER_IMRDATA, 0x20);
+    ASM_OUTB(PIC_SLAVE_IMRDATA,  0x28);
 
-void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags);
+    ASM_OUTB(PIC_MASTER_IMRDATA, 0x04);
+    ASM_OUTB(PIC_SLAVE_IMRDATA,  0x02);
 
-#endif
+    ASM_OUTB(PIC_MASTER_IMRDATA, 0x01);
+    ASM_OUTB(PIC_SLAVE_IMRDATA,  0x01);
+
+    /* TODO: disable and re-enable PICs */
+
+}

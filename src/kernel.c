@@ -36,19 +36,15 @@ SOFTWARE.
 
 #include "cpu/gdt.h"
 
-void cmain(void)
-{
-    unsigned char exit_code = 0; /* universal variable to test exit codes of functions */
-    const char *hi = "Hello, World!\nHello, Vireo II.\n Security, RED ALERT!\n";  
+/* do we need to include all the files we make? (spoiler alert: no we don't) */
 
+/* initializes 'the environment' */
+void init_env()
+{
+
+    /* setup the GDT */
     GDT_ACCESS access;
     GDT_FLAGS flags;
-
-    SystemInfo.GLOBAL_FLAGS = 0;  
-
-    exit_code = screen_basic_init();
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
-
 
     access.dataisWritable   = true;
     access.codeisReadable   = true;
@@ -57,6 +53,16 @@ void cmain(void)
     flags.use16             = false;
     
     GDT_setup(access, flags);
+}
+
+void cmain(void)
+{
+    unsigned int exit_code = 0;
+
+    SystemInfo.GLOBAL_FLAGS = 0;  
+
+    exit_code = screen_basic_init();
+    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
 
     print((char *) hi);
     trace("build: %i", BUILD);

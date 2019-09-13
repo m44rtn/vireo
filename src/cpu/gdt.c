@@ -160,10 +160,6 @@ static uint8_t GDT_prepare_access(GDT_ACCESS_ access, uint8_t segment_type)
 
     output_access = (uint8_t) (output_access | (segment_type << 3));
 
-    /* by using if else, we make sure that we're always safe no matter what argument is given.
-       the routine expects TYPE_DATA or TYPE_CODE (0 or 1), so by using if-else we make sure that if
-       a different (non-existing/expected) type is given that a) code is not readable and b) data is
-       not writable. maybe it's overkill, but at least we make sure nothing weird happens... :) */ 
     if(segment_type == GDT_SEGMENT_TYPE_DATA) 
         output_access = (uint8_t) (output_access | ((access.dataisWritable & 1) << 1));
     else if(segment_type == GDT_SEGMENT_TYPE_CODE)

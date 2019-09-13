@@ -21,27 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __GDT_H__
-#define __GDT_H__
-
-/* only included for the bool */
-#include "../include/types.h"
-
-typedef struct GDT_FLAGS
-{
-    bool Align4k;
-    bool use16;
-} GDT_FLAGS;
-
-typedef struct GDT_ACCESS
-{
-    bool dataisWritable;
-    bool codeisReadable;
-} GDT_ACCESS;
-
-/* extern things */
-extern void ASM_GDT_SUBMIT(unsigned int *descriptor);
-
-void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags);
+#ifndef __PIC_H__
+#define __PIC_H__
 
 #endif
