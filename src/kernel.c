@@ -35,11 +35,12 @@ SOFTWARE.
 #include "util/util.h"
 
 #include "cpu/gdt.h"
+#include "cpu/pic.h"
 
 /* do we need to include all the files we make? (spoiler alert: no we don't) */
 
 /* initializes 'the environment' */
-void init_env()
+void init_env(void)
 {
 
     /* setup the GDT */
@@ -53,6 +54,7 @@ void init_env()
     flags.use16             = false;
     
     GDT_setup(access, flags);
+    PIC_controller_setup();
 }
 
 void cmain(void)
@@ -64,8 +66,7 @@ void cmain(void)
     exit_code = screen_basic_init();
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
 
-    print((char *) hi);
-    trace("build: %i", BUILD);
+    trace((char *) "build: %i", BUILD);
     /* TODO: ASM FUNCTIONS --> in C or in assembly? */
 
     wait:

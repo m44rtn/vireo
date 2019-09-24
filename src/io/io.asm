@@ -70,3 +70,22 @@ mov esp, ebp
 pop ebp
 
 ret
+
+global ASM_IOWAIT
+ASM_IOWAIT:
+; uses the 'unused' port 0x80 to wait for IO OP's to complete
+;   input:
+;       - N/A
+;   output:
+;       - N/A
+
+push ebp
+mov ebp, esp
+
+mov al, 0
+out 0x80, al
+
+mov esp, ebp
+pop ebp
+
+ret

@@ -21,11 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __SYS_H__
-#define __SYS_H__
+#ifndef __IDT_H__
+#define __IDT_H__
 
-extern void ASM_OUTB(unsigned int port, unsigned int data);
-extern unsigned short ASM_INB(unsigned short port);
-extern void ASM_IOWAIT(void);
+
 
 #endif

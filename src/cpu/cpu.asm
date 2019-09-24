@@ -1,5 +1,6 @@
 bits 32
 
+;for lack of a better name
 global ASM_GDT_SUBMIT
 ASM_GDT_SUBMIT:
 ; gives the GDT descriptor to the cpu

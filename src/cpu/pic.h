@@ -24,4 +24,11 @@ SOFTWARE.
 #ifndef __PIC_H__
 #define __PIC_H__
 
+void PIC_controller_setup(void);
+
+void PIC_mask(unsigned char IRQ);
+void PIC_umask(unsigned char IRQ);
+void PIC_EOI(unsigned char IRQ);
+void PIC_read_ISR(void);
+
 #endif
