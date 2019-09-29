@@ -3,122 +3,123 @@ bits 32
 global ISR_00
 extern ISR_00_HANDLER
 ISR_00:
-pushad
-    jmp ISR_00_HANDLER
+pusha
+    cld
+    call ISR_00_HANDLER
     jmp $ 
-popad
+popa
 iret
 
 global ISR_01
 ISR_01:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_02
 ISR_02:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_03
 ISR_03:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_04
 ISR_04:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_05
 ISR_05:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_06
 ISR_06:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_07
 ISR_07:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_08
 ISR_08:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_09
 ISR_09:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_0A
 ISR_0A:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_0B
 ISR_0B:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_0C
 ISR_0C:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_0D
 ISR_0D:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_0E
 ISR_0E:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_20
 ISR_20:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 global ISR_21
 ISR_21:
-pushad
+pusha
     jmp $ 
-popad
+popa
 iret
 
 

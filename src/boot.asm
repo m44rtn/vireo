@@ -35,6 +35,7 @@ dd -(0x1BADB002 + 0x00)
 ;section .text
 start:
 ; does the initialization before we move on to the C part
+cli
 
 ; Set up the stack
 mov esp, STACK_TOP
@@ -49,6 +50,14 @@ call main
 HALT:
 hlt
 jmp HALT
+
+global div_zero
+div_zero:
+mov eax, 10
+mov ebx, 0
+
+div ebx
+ret
 
 section .bss
 

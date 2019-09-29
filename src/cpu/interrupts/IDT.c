@@ -25,6 +25,10 @@ SOFTWARE.
 
 #include "../../include/types.h"
 
+#ifndef NOT_DEBUG
+    #include "../../screen/screen_basic.h"
+#endif
+
 typedef struct IDT_ENTRY
 {
     uint16_t offset_low;
@@ -32,8 +36,15 @@ typedef struct IDT_ENTRY
     uint8_t always_zero;
     uint8_t type_attr;
     uint16_t offset_hi;
-} __attribute((packed)) IDT_ENTRY;
+} __attribute__((packed)) IDT_ENTRY;
 
+typedef struct IDT_DESCRIPTOR
+{
+    uint16_t size;
+    uint32_t address;
+} __attribute__((packed)) IDT_DESCRIPTOR;
+
+IDT_DESCRIPTOR *IDT_desc;
 IDT_ENTRY IDT[256];
 
 static void IDT_default_list(void);
@@ -65,15 +76,19 @@ static void IDT_default_list(void);
 void IDT_setup(void)
 {
     IDT_default_list();
-    ASM_IDT_SUBMIT((uint32_t *) &IDT);
+
+    IDT_desc->size    = (sizeof(IDT_ENTRY) * 256) - 1;
+    IDT_desc->address = (uint32_t) &IDT;
+	
+    ASM_IDT_SUBMIT((uint32_t *) IDT_desc);    
 }
 
 void IDT_add_handler(uint8_t index, uint32_t handler)
 {
-    IDT[index].offset_low   =  ((uint8_t) handler & 0xFFFF);
-    IDT[index].offset_hi    =  ((uint8_t) handler >> 16) & 0xFFFF;
+    IDT[index].offset_low   =  ((uint16_t) handler & 0xFFFF);
+    IDT[index].offset_hi    =  ((uint16_t)(handler >> 16)) & 0xFFFF;
 
-    IDT[index].selector     = 0;
+    IDT[index].selector     = 0x08;
     IDT[index].always_zero  = 0;
 
     /* present, DPL = 00, s = 0 and gatetype = 0xE */

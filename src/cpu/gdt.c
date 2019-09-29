@@ -41,11 +41,9 @@ typedef struct GDT_DESC
 
 typedef struct GDT_ENTRY
 {
-    uint8_t      limit_low;
-    uint8_t      limit_mid;
-    uint8_t      base_low;
-    uint8_t      base_mid1;
-    uint8_t      base_mid2;
+    uint16_t     limit_low;
+    uint16_t     base_low;
+    uint8_t      base_mid;
     uint8_t      access;
     uint8_t      flags_plus_limit;
     uint8_t      base_high;
@@ -86,15 +84,15 @@ void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
 
     varFlags  = GDT_prepare_flags(flags); 
         
-    /* Ring 0 stuff */
-    GDT_entry(&GDT[1], 0, 0x000FFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
-    GDT_entry(&GDT[2], 0, 0x000FFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
+    /* Ring 0 stuff - used to be 0x000FFFFF*/
+    GDT_entry(&GDT[1], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
+    GDT_entry(&GDT[2], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
 
     internal_access.isRing3     = true;
 
     /* Ring 3 stuff */
-    GDT_entry(&GDT[3], 0, 0x000FFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
-    GDT_entry(&GDT[4], 0, 0x000FFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
+    GDT_entry(&GDT[3], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
+    GDT_entry(&GDT[4], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
 
     descriptor.offset = (uint32_t) &GDT[0];
     descriptor.size   = (sizeof(GDT_ENTRY) * GDT_LENGTH) - 1;
@@ -106,11 +104,9 @@ void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
 
 static void GDT_entry(GDT_ENTRY *entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
 {
-    entry->limit_low        = (uint8_t) (limit & 0xFF);
-    entry->limit_mid        = (uint8_t) ((limit >> 8) & 0xFF);
-    entry->base_low         = (uint8_t) (base & 0xFF);
-    entry->base_mid1        = (uint8_t) ((base >> 8) & 0xFF);
-    entry->base_mid2        = (uint8_t) ((base >> 16) & 0xFF);
+    entry->limit_low        = (uint16_t) (limit & 0xFFFF);
+    entry->base_low         = (uint16_t) (base & 0xFFFF);
+    entry->base_mid         = (uint8_t) ((base >> 16) & 0xFF);
     entry->access           = access;
     entry->flags_plus_limit = (uint8_t) (flags | ((limit >> 16) & 0x0F));
     entry->base_high        = (uint8_t) ((base >> 24) & 0xFF);

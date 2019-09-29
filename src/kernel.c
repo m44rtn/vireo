@@ -39,6 +39,7 @@ SOFTWARE.
 #include "cpu/pic.h"
 
 void init_env(void);
+extern void div_zero();
 void main(void);
 
 /* initializes 'the environment' */
@@ -70,10 +71,12 @@ void main(void)
 
     exit_code = screen_basic_init();
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
+    
+    init_env();
 
-    trace((char *) "build: %i", BUILD);
+    trace((char *) "build: %i\n", BUILD);
 
-    ten = 10 / 0;
+    div_zero();
     
     wait:
         while(1);

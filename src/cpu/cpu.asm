@@ -9,7 +9,10 @@ ASM_GDT_SUBMIT:
 ;   output:
 ;       - N/A
 
-    mov eax, [esp + 4]
+    push ebp
+    mov ebp, esp
+
+    mov eax, [ebp + 8]
     lgdt [eax]
 
     mov eax, cr0
@@ -26,16 +29,26 @@ ASM_GDT_SUBMIT:
     mov fs, ax
     mov gs, ax
     mov ss, ax   
+
+    mov esp, ebp
+    pop ebp
 ret
 
 global ASM_IDT_SUBMIT
 ASM_IDT_SUBMIT:
-; gives the IDT location to the cpu
+; gives the IDT descriptor location to the cpu
 ;   input:
 ;       - pointer to the IDT
 ;   output:
 ;       - N/A
 
-    mov eax, [esp + 4]
-    lidt [eax]
+    push ebp
+    mov ebp, esp
+
+    mov edx, [ebp + 8]
+    lidt [edx]
+    sti
+
+    mov esp, ebp
+    pop ebp
 ret
