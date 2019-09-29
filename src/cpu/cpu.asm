@@ -3,9 +3,9 @@ bits 32
 ;for lack of a better name
 global ASM_GDT_SUBMIT
 ASM_GDT_SUBMIT:
-; gives the GDT descriptor to the cpu
+; gives the location of the GDT descriptor to the cpu
 ;   input:
-;       - descriptor
+;       - pointer to the GDT descriptor
 ;   output:
 ;       - N/A
 
@@ -26,4 +26,16 @@ ASM_GDT_SUBMIT:
     mov fs, ax
     mov gs, ax
     mov ss, ax   
+ret
+
+global ASM_IDT_SUBMIT
+ASM_IDT_SUBMIT:
+; gives the IDT location to the cpu
+;   input:
+;       - pointer to the IDT
+;   output:
+;       - N/A
+
+    mov eax, [esp + 4]
+    lidt [eax]
 ret

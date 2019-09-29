@@ -24,6 +24,30 @@ SOFTWARE.
 #ifndef __IDT_H__
 #define __IDT_H__
 
+void IDT_setup(void);
+void IDT_add_handler(unsigned char index, unsigned int handler);
 
+/* extern assembly functions */
+extern void ASM_IDT_SUBMIT(unsigned int *IDT);
+
+/* ASSEMBLY ISR HANDLERS */
+extern void ISR_00(void);
+extern void ISR_01(void);
+extern void ISR_02(void);
+extern void ISR_03(void);
+extern void ISR_04(void);
+extern void ISR_05(void);
+extern void ISR_06(void);
+extern void ISR_07(void);
+extern void ISR_08(void);
+extern void ISR_09(void);
+extern void ISR_0A(void);
+extern void ISR_0B(void);
+extern void ISR_0C(void);
+extern void ISR_0D(void);
+extern void ISR_0E(void);
+
+extern void ISR_20(void);
+extern void ISR_21(void);
 
 #endif

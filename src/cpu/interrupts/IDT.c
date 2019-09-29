@@ -36,6 +36,9 @@ typedef struct IDT_ENTRY
 
 IDT_ENTRY IDT[256];
 
+static void IDT_default_list(void);
+
+
 /* creates a basic IDT with the following stuff:
         - DIVISON_BY_ZERO
         - NON_MASKABLE_INT
@@ -45,9 +48,56 @@ IDT_ENTRY IDT[256];
         - INVALID_OPCODE
         - COPROCESSOR_NOT_AVAILABLE
         - DOUBLE_FAULT
-        - 
+        - COPROCESSOR_SEGMENT_OVERRUN
+        - INVALID_TSS
+        - SEGMENT_NOT_PRESENT
+        - STACK_FAULT
+        - GENERAL_PROTECTION_FAULT
+        - PAGE_FAULT
+        - COPROCESSOR_ERROR
+
+        - TIMER     (does little at this moment)
+        - KEYBOARD (directly prints to screen and doesn't store)
+        
+    It will hang at all of the exceptions for now, but will display a message
          */
-void IDT_setup()
+        
+void IDT_setup(void)
 {
+    IDT_default_list();
+    ASM_IDT_SUBMIT((uint32_t *) &IDT);
+}
+
+void IDT_add_handler(uint8_t index, uint32_t handler)
+{
+    IDT[index].offset_low   =  ((uint8_t) handler & 0xFFFF);
+    IDT[index].offset_hi    =  ((uint8_t) handler >> 16) & 0xFFFF;
+
+    IDT[index].selector     = 0;
+    IDT[index].always_zero  = 0;
+
+    /* present, DPL = 00, s = 0 and gatetype = 0xE */
+    IDT[index].type_attr    = 0x8E;
+}
+
+static void IDT_default_list(void)
+{
+    IDT_add_handler(0x00, (uint32_t) ISR_00);
+    IDT_add_handler(0x01, (uint32_t) ISR_01);
+    IDT_add_handler(0x02, (uint32_t) ISR_02);
+    IDT_add_handler(0x03, (uint32_t) ISR_03);
+    IDT_add_handler(0x04, (uint32_t) ISR_04);
+    IDT_add_handler(0x05, (uint32_t) ISR_05);
+    IDT_add_handler(0x06, (uint32_t) ISR_06);
+    IDT_add_handler(0x07, (uint32_t) ISR_07);
+    IDT_add_handler(0x08, (uint32_t) ISR_08);
+    IDT_add_handler(0x09, (uint32_t) ISR_09);
+    IDT_add_handler(0x0A, (uint32_t) ISR_0A);
+    IDT_add_handler(0x0B, (uint32_t) ISR_0B);
+    IDT_add_handler(0x0C, (uint32_t) ISR_0C);
+    IDT_add_handler(0x0D, (uint32_t) ISR_0D);
+    IDT_add_handler(0x0E, (uint32_t) ISR_0E);
     
+    IDT_add_handler(0x20, (uint32_t) ISR_20);   
+    IDT_add_handler(0x21, (uint32_t) ISR_21);    
 }

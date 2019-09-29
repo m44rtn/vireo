@@ -21,60 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "kernel.h"
+#ifndef __ISR_H__
+#define __ISR_H__
 
-#include "include/kernel_info.h"
-#include "include/global_exit_codes.h"
-#include "include/global_flags.h"
-#include "include/types.h"
+void ISR_00_HANDLER();
 
-#include "io/io.h"
-
-#include "screen/screen_basic.h"
-
-#include "util/util.h"
-
-#include "cpu/gdt.h"
-#include "cpu/interrupts/IDT.h"
-#include "cpu/pic.h"
-
-void init_env(void);
-void main(void);
-
-/* initializes 'the environment' */
-void init_env(void)
-{
-
-    /* setup the GDT */
-    GDT_ACCESS access;
-    GDT_FLAGS flags;
-
-    access.dataisWritable   = true;
-    access.codeisReadable   = true;
-
-    flags.Align4k           = true;
-    flags.use16             = false;
-    
-    GDT_setup(access, flags);
-    PIC_controller_setup();
-
-    IDT_setup();
-}
-
-void main(void)
-{
-    unsigned int exit_code = 0;
-    int ten;
-
-    SystemInfo.GLOBAL_FLAGS = 0;  
-
-    exit_code = screen_basic_init();
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
-
-    trace((char *) "build: %i", BUILD);
-
-    ten = 10 / 0;
-    
-    wait:
-        while(1);
-}
+#endif

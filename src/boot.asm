@@ -22,7 +22,7 @@
 bits 32
 
 global start
-extern cmain
+extern main
 
 section .text
 align 4
@@ -44,7 +44,7 @@ push ebx
 
 ; TODO: Paging init here
 
-call cmain
+call main
 
 HALT:
 hlt
