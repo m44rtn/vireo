@@ -21,15 +21,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __PIC_H__
-#define __PIC_H__
+#include "cpu.h"
 
-void PIC_controller_setup(void);
+#include "../include/types.h"
 
-void PIC_mask(unsigned char IRQ);
-void PIC_umask(unsigned char IRQ);
-void PIC_EOI(unsigned char IRQ);
+#include "../screen/screen_basic.h"
 
-unsigned short PIC_read_ISR(void);
+extern uint8_t CPUID_AVAILABLE;
+extern char *CPUID_VENDOR_STRING;
+extern char *CPUID_CPUNAME_STRING;
 
-#endif
+void CPU_init(void)
+{
+    ASM_CHECK_CPUID();
+    
+    if(!CPUID_AVAILABLE) 
+        return;
+    
+    ASM_CPU_GETVENDOR();
+    trace((char *) "[CPUID] %s\n", CPUID_VENDOR_STRING);
+
+    ASM_CPU_GETNAME();
+    trace((char *) "[CPUID] %s\n", CPUID_CPUNAME_STRING);
+
+
+}

@@ -29,7 +29,27 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
-void ISR_00_HANDLER()
+#include "../io/io.h"
+
+void ISR_00_HANDLER(void)
 {
-    print("DIVISION_BY_ZERO\n");
+    print((char *) "DIVISION_BY_ZERO\n");
+}
+
+void ISR_06_HANDLER(void)
+{
+    print((char *) "INVALID_OPCODE\n");
+}
+
+void ISR_20_HANDLER(void)
+{
+    PIC_EOI(0);
+}
+
+void ISR_21_HANDLER(void)
+{
+    uint16_t character;
+    character = ASM_INB(0x60);
+
+    PIC_EOI(1);
 }

@@ -37,9 +37,9 @@ SOFTWARE.
 #include "cpu/gdt.h"
 #include "cpu/interrupts/IDT.h"
 #include "cpu/pic.h"
+#include "cpu/cpu.h"
 
 void init_env(void);
-extern void div_zero();
 void main(void);
 
 /* initializes 'the environment' */
@@ -65,18 +65,18 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
-    int ten;
-
+    
     SystemInfo.GLOBAL_FLAGS = 0;  
 
     exit_code = screen_basic_init();
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
     
+    /* announce ourselves */
+    trace((char *) "[BUILD] %i\n\n", BUILD);
+    
     init_env();
 
-    trace((char *) "build: %i\n", BUILD);
-
-    div_zero();
+    CPU_init();
     
     wait:
         while(1);

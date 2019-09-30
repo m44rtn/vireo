@@ -46,9 +46,11 @@ popa
 iret
 
 global ISR_06
+extern ISR_06_HANDLER
 ISR_06:
 pusha
-    jmp $ 
+    cld
+    call ISR_06_HANDLER
 popa
 iret
 
@@ -109,16 +111,20 @@ popa
 iret
 
 global ISR_20
+extern ISR_20_HANDLER
 ISR_20:
 pusha
-    jmp $ 
+    cld
+    call ISR_20_HANDLER  
 popa
 iret
 
 global ISR_21
+extern ISR_21_HANDLER
 ISR_21:
 pusha
-    jmp $ 
+    cld
+    call ISR_21_HANDLER 
 popa
 iret
 

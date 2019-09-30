@@ -21,15 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __PIC_H__
-#define __PIC_H__
+#ifndef __CPU_H__
+#define __CPU_H__
 
-void PIC_controller_setup(void);
+void CPU_init(void);
 
-void PIC_mask(unsigned char IRQ);
-void PIC_umask(unsigned char IRQ);
-void PIC_EOI(unsigned char IRQ);
-
-unsigned short PIC_read_ISR(void);
+extern void ASM_CHECK_CPUID(void);
+extern void ASM_CPU_GETVENDOR(void);
+extern void ASM_CPU_GETNAME(void);
+extern void ASM_CPU_GETFREQ(void);
 
 #endif

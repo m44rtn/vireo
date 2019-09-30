@@ -24,6 +24,10 @@ SOFTWARE.
 #ifndef __ISR_H__
 #define __ISR_H__
 
-void ISR_00_HANDLER();
+void ISR_00_HANDLER(void);
+void ISR_06_HANDLER(void);
+void ISR_20_HANDLER(void);
+void ISR_21_HANDLER(void);
+
 
 #endif

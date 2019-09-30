@@ -51,14 +51,6 @@ HALT:
 hlt
 jmp HALT
 
-global div_zero
-div_zero:
-mov eax, 10
-mov ebx, 0
-
-div ebx
-ret
-
 section .bss
 
 STACK_END:

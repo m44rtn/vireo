@@ -25,10 +25,6 @@ SOFTWARE.
 
 #include "../../include/types.h"
 
-#ifndef NOT_DEBUG
-    #include "../../screen/screen_basic.h"
-#endif
-
 typedef struct IDT_ENTRY
 {
     uint16_t offset_low;
