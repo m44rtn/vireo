@@ -69,7 +69,7 @@ void main(void)
     SystemInfo.GLOBAL_FLAGS = 0;  
 
     exit_code = screen_basic_init();
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) goto wait;
+    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) while(1);
     
     /* announce ourselves */
     trace((char *) "[BUILD] %i\n\n", BUILD);
@@ -78,6 +78,5 @@ void main(void)
 
     CPU_init();
     
-    wait:
-        while(1);
+    while(1);
 }
