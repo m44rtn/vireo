@@ -191,7 +191,8 @@
        multiboot_uint16_t vbe_interface_off;
        multiboot_uint16_t vbe_interface_len;
      
-       multiboot_uint64_t framebuffer_addr;
+       multiboot_uint32_t framebuffer_addr_low;
+       multiboot_uint32_t framebuffer_addr_high;
        multiboot_uint32_t framebuffer_pitch;
        multiboot_uint32_t framebuffer_width;
        multiboot_uint32_t framebuffer_height;
