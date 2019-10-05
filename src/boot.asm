@@ -37,6 +37,9 @@ start:
 ; does the initialization before we move on to the C part
 cli
 
+mov DWORD [MAGICNUMBER], eax
+mov DWORD [BOOTLOADER_STRUCT_ADDR], ebx
+
 ; Set up the stack
 mov esp, STACK_TOP
 
@@ -50,6 +53,13 @@ call main
 HALT:
 hlt
 jmp HALT
+
+global MAGICNUMBER
+MAGICNUMBER             dd 0 ; will have 0x2BADB002 in here if it is multiboot compliant
+
+global BOOTLOADER_STRUCT_ADDR
+BOOTLOADER_STRUCT_ADDR  dd 0
+
 
 section .bss
 

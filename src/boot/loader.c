@@ -21,11 +21,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#include "loader.h"
 
-/* this is always the build number for next compilation. If you'd like to know the build number of the previous
-   binary you can do [number below] - 1 */
-#define BUILD 222
+#include "multiboot.h"
 
-#endif
+#include "../include/types.h"
+#include "../screen/screen_basic.h"
+
+#define LOADER_MAGICNUMBER_MULTIBOOT    0x2BADB002
+
+#define LOADER_FLAG_MULTIBOOT           1
+
+static void loader_multiboot_compliant(void);
+
+extern const uint32_t MAGICNUMBER;
+extern const uint32_t *BOOTLOADER_STRUCT_ADDR;
+
+uint32_t loader_flags = 0;
+
+void loader_detect(void)
+{
+    /* there'll be more supported loaders in the future so that's why we have this here */
+
+    if(MAGICNUMBER == LOADER_MAGICNUMBER_MULTIBOOT)
+        loader_multiboot_compliant();    
+    
+}
+
+static void loader_multiboot_compliant(void)
+{
+    multiboot_info_t *info = (multiboot_info_t *) BOOTLOADER_STRUCT_ADDR;
+    char *bootloader_name = (char *) info->boot_loader_name;
+
+    print((char *) "[LOADER] Reports multiboot compliant\n");
+    trace((char *) "[LOADER] Loaded by %s\n\n", (unsigned int) bootloader_name);
+
+    loader_flags |= LOADER_MAGICNUMBER_MULTIBOOT;
+}
+
+

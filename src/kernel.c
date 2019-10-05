@@ -28,6 +28,8 @@ SOFTWARE.
 #include "include/global_flags.h"
 #include "include/types.h"
 
+#include "boot/loader.h"
+
 #include "io/io.h"
 
 #include "screen/screen_basic.h"
@@ -45,11 +47,13 @@ void main(void);
 /* initializes 'the environment' */
 void init_env(void)
 {
-
-    /* setup the GDT */
+     /* GDT structures */
     GDT_ACCESS access;
     GDT_FLAGS flags;
 
+    loader_detect();
+
+    /* setup GDT structures */
     access.dataisWritable   = true;
     access.codeisReadable   = true;
 
@@ -60,23 +64,23 @@ void init_env(void)
     PIC_controller_setup();
 
     IDT_setup();
+    CPU_init();
 }
 
 void main(void)
 {
     unsigned int exit_code = 0;
-    
     SystemInfo.GLOBAL_FLAGS = 0;  
 
     exit_code = screen_basic_init();
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) while(1);
+   
+    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) 
+        while(1);
     
     /* announce ourselves */
-    trace((char *) "[BUILD] %i\n\n", BUILD);
+    trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
     
     init_env();
-
-    CPU_init();
-    
+        
     while(1);
 }

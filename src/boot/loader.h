@@ -21,35 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "isr.h"
+#ifndef __LOADER_H__
+#define __LOADER_H__
 
-#include "pic.h"
+void loader_detect(void);
 
-#include "../include/types.h"
-
-#include "../screen/screen_basic.h"
-
-#include "../io/io.h"
-
-void ISR_00_HANDLER(void)
-{
-    print((char *) "DIVISION_BY_ZERO\n");
-}
-
-void ISR_06_HANDLER(void)
-{
-    print((char *) "INVALID_OPCODE\n");
-}
-
-void ISR_20_HANDLER(void)
-{
-    PIC_EOI(0);
-}
-
-void ISR_21_HANDLER(void)
-{
-    uint16_t character;
-    character = ASM_INB(0x60);
-
-    PIC_EOI(1);
-}
+#endif

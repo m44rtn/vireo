@@ -104,8 +104,11 @@ popa
 iret
 
 global ISR_0E
+extern ISR_0E_handler
 ISR_0E:
 pusha
+    cld
+    call ISR_0E_handler
     jmp $ 
 popa
 iret

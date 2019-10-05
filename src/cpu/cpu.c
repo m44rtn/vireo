@@ -27,9 +27,9 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
-extern uint8_t CPUID_AVAILABLE;
-extern char *CPUID_VENDOR_STRING;
-extern char *CPUID_CPUNAME_STRING;
+extern const uint8_t CPUID_AVAILABLE;
+extern const char *CPUID_VENDOR_STRING;
+extern const char *CPUID_CPUNAME_STRING;
 
 void CPU_init(void)
 {
@@ -39,10 +39,10 @@ void CPU_init(void)
         return;
     
     ASM_CPU_GETVENDOR();
-    trace((char *) "[CPUID] %s\n", CPUID_VENDOR_STRING);
+    trace((char *) "[CPU] %s\n", (unsigned int) CPUID_VENDOR_STRING);
 
     ASM_CPU_GETNAME();
-    trace((char *) "[CPUID] %s\n", CPUID_CPUNAME_STRING);
+    trace((char *) "[CPU] %s\n\n", (unsigned int) CPUID_CPUNAME_STRING);
 
 
 }

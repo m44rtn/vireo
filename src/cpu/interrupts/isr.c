@@ -21,13 +21,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __ISR_H__
-#define __ISR_H__
+#include "isr.h"
 
-void ISR_00_HANDLER(void);
-void ISR_06_HANDLER(void);
-void ISR_20_HANDLER(void);
-void ISR_21_HANDLER(void);
+#include "../pic.h"
 
+#include "../../include/types.h"
 
-#endif
+#include "../../screen/screen_basic.h"
+
+#include "../../io/io.h"
+
+void ISR_00_HANDLER(void)
+{
+    print((char *) "DIVISION_BY_ZERO\n");
+}
+
+void ISR_06_HANDLER(void)
+{
+    print((char *) "INVALID_OPCODE\n");
+}
+
+void ISR_0E_handler(void)
+{
+    print((char *) "PAGE_FAULT\n");
+}
+
+void ISR_20_HANDLER(void)
+{
+    PIC_EOI(0);
+}
+
+void ISR_21_HANDLER(void)
+{
+    uint16_t character;
+    character = ASM_INB(0x60);
+
+    PIC_EOI(1);
+}

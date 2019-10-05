@@ -21,11 +21,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __ISR_H__
+#define __ISR_H__
 
-/* this is always the build number for next compilation. If you'd like to know the build number of the previous
-   binary you can do [number below] - 1 */
-#define BUILD 222
+void ISR_00_HANDLER(void);
+void ISR_06_HANDLER(void);
+void ISR_0E_handler(void);
+
+void ISR_20_HANDLER(void);
+void ISR_21_HANDLER(void);
+
 
 #endif
