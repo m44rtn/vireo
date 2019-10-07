@@ -32,12 +32,18 @@ SOFTWARE.
 
 #define LOADER_FLAG_MULTIBOOT           1
 
+#define LOADER_TYPE_UNKNOWN             0
+#define LOADER_TYPE_MULTIBOOT           1
+
 static void loader_multiboot_compliant(void);
 
 extern const uint32_t MAGICNUMBER;
 extern const uint32_t *BOOTLOADER_STRUCT_ADDR;
 
+/* FIXME: Do we need flags here? */
 uint32_t loader_flags = 0;
+
+static uint8_t loader_type = LOADER_TYPE_UNKNOWN;
 
 void loader_detect(void)
 {
@@ -46,6 +52,19 @@ void loader_detect(void)
     if(MAGICNUMBER == LOADER_MAGICNUMBER_MULTIBOOT)
         loader_multiboot_compliant();    
     
+}
+
+uint8_t loader_get_type()
+{
+    return loader_type;
+}
+
+uint32_t *loader_get_infoStruct()
+{
+    if(loader_type == LOADER_TYPE_MULTIBOOT)
+        return BOOTLOADER_STRUCT_ADDR;
+
+    return NULL;
 }
 
 static void loader_multiboot_compliant(void)
@@ -57,6 +76,7 @@ static void loader_multiboot_compliant(void)
     trace((char *) "[LOADER] Loaded by %s\n\n", (unsigned int) bootloader_name);
 
     loader_flags |= LOADER_MAGICNUMBER_MULTIBOOT;
+    loader_type   = LOADER_TYPE_MULTIBOOT;
 }
 
 
