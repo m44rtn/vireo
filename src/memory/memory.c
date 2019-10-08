@@ -21,15 +21,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __LOADER_H__
-#define __LOADER_H__
+#include "memory.h"
 
-#define LOADER_TYPE_UNKNOWN             0
-#define LOADER_TYPE_MULTIBOOT           1
+#include "../include/types.h"
+#include "../include/global_exit_codes.h"
 
-void loader_detect(void);
+#include "../boot/loader.h"
+#include "../boot/multiboot.h"
 
-unsigned char loader_get_type();
-unsigned int *loader_get_infoStruct();
+#include "../screen/screen_basic.h"
 
-#endif
+typedef struct
+{
+    uint32_t available_memory; /* in bytes */
+    uint32_t *usable_memory;   /* is an array */
+} MEMORY_INFO;
+
+uint8_t loader_type = 0;
+
+static void memory_get_multiboot(multiboot_info_t *mbt);
+
+uint8_t memory_init()
+{
+    uint32_t *infoStruct;
+
+    loader_type = loader_get_type();
+
+    /* If the loader type is unknown, we won't get an info struct.
+       TODO: implement int 15h ax=0xe820
+       FIXME: remove general fail exit code after implementing int 15h */
+    if(type == LOADER_TYPE_UNKNOWN)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+    infoStruct = loader_get_infoStruct();
+
+    if(infoStruct == NULL)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+    if(type == LOADER_TYPE_MULTIBOOT)
+        memory_get_multiboot((multiboot_info_t *) infoStruct);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+static void memory_get_multiboot(multiboot_info_t *mbt)
+{
+
+}

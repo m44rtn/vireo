@@ -30,18 +30,10 @@ SOFTWARE.
 
 #define LOADER_MAGICNUMBER_MULTIBOOT    0x2BADB002
 
-#define LOADER_FLAG_MULTIBOOT           1
-
-#define LOADER_TYPE_UNKNOWN             0
-#define LOADER_TYPE_MULTIBOOT           1
-
 static void loader_multiboot_compliant(void);
 
 extern const uint32_t MAGICNUMBER;
 extern const uint32_t *BOOTLOADER_STRUCT_ADDR;
-
-/* FIXME: Do we need flags here? */
-uint32_t loader_flags = 0;
 
 static uint8_t loader_type = LOADER_TYPE_UNKNOWN;
 
@@ -75,7 +67,6 @@ static void loader_multiboot_compliant(void)
     print((char *) "[LOADER] Reports multiboot compliant\n");
     trace((char *) "[LOADER] Loaded by %s\n\n", (unsigned int) bootloader_name);
 
-    loader_flags |= LOADER_MAGICNUMBER_MULTIBOOT;
     loader_type   = LOADER_TYPE_MULTIBOOT;
 }
 

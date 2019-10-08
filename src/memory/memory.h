@@ -21,15 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __LOADER_H__
-#define __LOADER_H__
+#ifndef __MEMORY_H__
+#define __MEMORY_H__
 
-#define LOADER_TYPE_UNKNOWN             0
-#define LOADER_TYPE_MULTIBOOT           1
-
-void loader_detect(void);
-
-unsigned char loader_get_type();
-unsigned int *loader_get_infoStruct();
 
 #endif
