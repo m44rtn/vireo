@@ -43,8 +43,8 @@ static void memory_get_multiboot(multiboot_info_t *mbt);
 
 uint8_t memory_init()
 {
-    uint32_t *infoStruct;
-
+    infoStruct;
+    
     loader_type = loader_get_type();
 
     /* If the loader type is unknown, we won't get an info struct.
@@ -55,16 +55,6 @@ uint8_t memory_init()
 
     infoStruct = loader_get_infoStruct();
 
-    if(infoStruct == NULL)
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-
-    if(type == LOADER_TYPE_MULTIBOOT)
-        memory_get_multiboot((multiboot_info_t *) infoStruct);
-
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-static void memory_get_multiboot(multiboot_info_t *mbt)
-{
-
-}

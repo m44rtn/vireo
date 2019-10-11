@@ -31,6 +31,7 @@ SOFTWARE.
 #define LOADER_MAGICNUMBER_MULTIBOOT    0x2BADB002
 
 static void loader_multiboot_compliant(void);
+static void 
 
 extern const uint32_t MAGICNUMBER;
 extern const uint32_t *BOOTLOADER_STRUCT_ADDR;
@@ -68,6 +69,11 @@ static void loader_multiboot_compliant(void)
     trace((char *) "[LOADER] Loaded by %s\n\n", (unsigned int) bootloader_name);
 
     loader_type   = LOADER_TYPE_MULTIBOOT;
+}
+
+static void loader_multiboot_convertInfoStruct()
+{
+
 }
 
 

@@ -27,6 +27,14 @@ SOFTWARE.
 #define LOADER_TYPE_UNKNOWN             0
 #define LOADER_TYPE_MULTIBOOT           1
 
+typedef struct
+{
+    uint32_t *mmap;
+    size_t    mmap_length;
+
+    /* TODO: add more stuff here */
+}
+
 void loader_detect(void);
 
 unsigned char loader_get_type();
