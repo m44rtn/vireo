@@ -50,6 +50,9 @@ char* hexstr(unsigned int value)
 		outputstr[loopcntr] = (char) hexDig[0 + chrIndex];
 		tempval = tempval >> 4;
 	}
+
+	outputstr[8] = '\0';
+	
 	return outputstr;
 }
 

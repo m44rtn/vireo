@@ -41,6 +41,8 @@ SOFTWARE.
 #include "cpu/pic.h"
 #include "cpu/cpu.h"
 
+#include "memory/memory.h"
+
 void init_env(void);
 void main(void);
 
@@ -50,6 +52,7 @@ void init_env(void)
      /* GDT structures */
     GDT_ACCESS access;
     GDT_FLAGS flags;
+    uint8_t exit_code;
 
     loader_detect();
 
@@ -65,6 +68,8 @@ void init_env(void)
 
     IDT_setup();
     CPU_init();
+    
+    exit_code = memory_init();
 }
 
 void main(void)

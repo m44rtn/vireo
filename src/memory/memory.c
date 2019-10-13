@@ -39,21 +39,27 @@ typedef struct
 
 uint8_t loader_type = 0;
 
-static void memory_get_multiboot(multiboot_info_t *mbt);
-
-uint8_t memory_init()
+uint8_t memory_init(void)
 {
-    infoStruct;
+    LOADER_INFO infoStruct;
     
     loader_type = loader_get_type();
 
     /* If the loader type is unknown, we won't get an info struct.
        TODO: implement int 15h ax=0xe820
        FIXME: remove general fail exit code after implementing int 15h */
-    if(type == LOADER_TYPE_UNKNOWN)
+    if(loader_type == LOADER_TYPE_UNKNOWN)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 
     infoStruct = loader_get_infoStruct();
+
+    /* should also use int 15h 
+    if(infoStruct == NULL)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL; */
+
+    trace((char *)"[MEMORY] Total memory: %i KiB\n", infoStruct.total_memory);
+    trace((char *)"[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
+    trace((char *)"[MEMORY] Memory map length: %i bytes\n", infoStruct.mmap_length);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }

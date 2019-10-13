@@ -29,15 +29,16 @@ SOFTWARE.
 
 typedef struct
 {
-    uint32_t *mmap;
-    size_t    mmap_length;
+    unsigned int *mmap;
+    unsigned int  mmap_length;
+    unsigned int  total_memory;
 
     /* TODO: add more stuff here */
-}
+} LOADER_INFO;
 
 void loader_detect(void);
 
-unsigned char loader_get_type();
-unsigned int *loader_get_infoStruct();
+unsigned char loader_get_type(void);
+LOADER_INFO loader_get_infoStruct(void);
 
 #endif

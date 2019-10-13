@@ -24,5 +24,6 @@ SOFTWARE.
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
+unsigned char memory_init(void);
 
 #endif

@@ -31,12 +31,14 @@ SOFTWARE.
 #define LOADER_MAGICNUMBER_MULTIBOOT    0x2BADB002
 
 static void loader_multiboot_compliant(void);
-static void 
-
+static void loader_multiboot_convertInfoStruct(void);
+ 
 extern const uint32_t MAGICNUMBER;
 extern const uint32_t *BOOTLOADER_STRUCT_ADDR;
 
 static uint8_t loader_type = LOADER_TYPE_UNKNOWN;
+
+LOADER_INFO loader_info;
 
 void loader_detect(void)
 {
@@ -47,17 +49,17 @@ void loader_detect(void)
     
 }
 
-uint8_t loader_get_type()
+uint8_t loader_get_type(void)
 {
     return loader_type;
 }
 
-uint32_t *loader_get_infoStruct()
+LOADER_INFO loader_get_infoStruct(void)
 {
-    if(loader_type == LOADER_TYPE_MULTIBOOT)
-        return BOOTLOADER_STRUCT_ADDR;
+    /*if(!loader_type)
+        return NULL;*/
 
-    return NULL;
+    return loader_info;
 }
 
 static void loader_multiboot_compliant(void)
@@ -69,11 +71,17 @@ static void loader_multiboot_compliant(void)
     trace((char *) "[LOADER] Loaded by %s\n\n", (unsigned int) bootloader_name);
 
     loader_type   = LOADER_TYPE_MULTIBOOT;
+    
+    loader_multiboot_convertInfoStruct();
 }
 
-static void loader_multiboot_convertInfoStruct()
+static void loader_multiboot_convertInfoStruct(void)
 {
-
+    multiboot_info_t *info = (multiboot_info_t *) BOOTLOADER_STRUCT_ADDR;
+    
+    loader_info.mmap = (uint32_t *) info->mmap_addr;
+    loader_info.mmap_length = info->mmap_length;
+    loader_info.total_memory = (info->mem_upper << 16) | info->mem_lower;
 }
 
 
