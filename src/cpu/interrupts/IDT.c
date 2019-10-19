@@ -40,7 +40,7 @@ typedef struct IDT_DESCRIPTOR
     uint32_t address;
 } __attribute__((packed)) IDT_DESCRIPTOR;
 
-IDT_DESCRIPTOR *IDT_desc;
+IDT_DESCRIPTOR IDT_desc;
 IDT_ENTRY IDT[256];
 
 static void IDT_default_list(void);
@@ -73,10 +73,10 @@ void IDT_setup(void)
 {
     IDT_default_list();
 
-    IDT_desc->size    = (sizeof(IDT_ENTRY) * 256) - 1;
-    IDT_desc->address = (uint32_t) &IDT;
-	
-    ASM_IDT_SUBMIT((uint32_t *) IDT_desc);    
+    IDT_desc.size    = (sizeof(IDT_ENTRY) * 256) - 1;
+    IDT_desc.address = (uint32_t) &IDT;
+    
+    ASM_IDT_SUBMIT((uint32_t *) &IDT_desc);    
 }
 
 void IDT_add_handler(uint8_t index, uint32_t handler)
