@@ -37,6 +37,8 @@ typedef struct
     uint32_t *usable_memory;   /* is an array */
 } MEMORY_INFO;
 
+MEMORY_INFO memory_info_t;
+
 uint8_t loader_type = 0;
 
 uint8_t memory_init(void)
@@ -52,12 +54,11 @@ uint8_t memory_init(void)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 
     infoStruct = loader_get_infoStruct();
+    
+    /* GRUB returns KB's and I like KiB's more */
+    memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory * 1.024);
 
-    /* should also use int 15h 
-    if(infoStruct == NULL)
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL; */
-
-    trace((char *)"[MEMORY] Total memory: %i KiB\n", infoStruct.total_memory);
+    trace((char *)"[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
     trace((char *)"[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
     trace((char *)"[MEMORY] Memory map length: %i bytes\n", infoStruct.mmap_length);
 

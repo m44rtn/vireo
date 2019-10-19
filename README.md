@@ -1,5 +1,7 @@
 # Vireo Kernel II
 
+NOTE:TODO:FIXME: The REFMAN is not up-to-date
+
 The Vireo kernel is an x86 kernel written in C.
 
 This is the rewrite of the Vireo I kernel (see branch master). Vireo I was very

@@ -43,10 +43,8 @@ LOADER_INFO loader_info;
 void loader_detect(void)
 {
     /* there'll be more supported loaders in the future so that's why we have this here */
-
     if(MAGICNUMBER == LOADER_MAGICNUMBER_MULTIBOOT)
         loader_multiboot_compliant();    
-    
 }
 
 uint8_t loader_get_type(void)
@@ -56,9 +54,6 @@ uint8_t loader_get_type(void)
 
 LOADER_INFO loader_get_infoStruct(void)
 {
-    /*if(!loader_type)
-        return NULL;*/
-
     return loader_info;
 }
 
@@ -79,9 +74,18 @@ static void loader_multiboot_convertInfoStruct(void)
 {
     multiboot_info_t *info = (multiboot_info_t *) BOOTLOADER_STRUCT_ADDR;
     
-    loader_info.mmap = (uint32_t *) info->mmap_addr;
-    loader_info.mmap_length = info->mmap_length;
-    loader_info.total_memory = (info->mem_upper << 16) | info->mem_lower;
+    if(info->flags & 0x40)
+    {
+        loader_info.mmap = (uint32_t *) info->mmap_addr;    
+        loader_info.mmap_length = info->mmap_length;
+    } 
+    else 
+    {
+        loader_info.mmap = (uint32_t *) 0;    
+        loader_info.mmap_length = 0;
+    }
+
+    loader_info.total_memory = info->mem_upper + info->mem_lower; 
 }
 
 

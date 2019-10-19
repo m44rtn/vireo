@@ -35,7 +35,7 @@ AC := nasm
 todo: 
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
-all: $(OBJFILES) $(ASOBJFILES)
+all: clean $(OBJFILES) $(ASOBJFILES)
 	@$(CC)  -T linker.ld -o bin/kernel.sys src/boot.o src/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
