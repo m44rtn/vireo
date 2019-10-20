@@ -62,7 +62,7 @@ BOOTLOADER_STRUCT_ADDR  dd 0
 
 
 section .bss
-
+global STACK_TOP
 STACK_END:
     resb 0x4000
 STACK_TOP:

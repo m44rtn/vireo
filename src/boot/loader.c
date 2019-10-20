@@ -34,7 +34,7 @@ static void loader_multiboot_compliant(void);
 static void loader_multiboot_convertInfoStruct(void);
  
 extern const uint32_t MAGICNUMBER;
-extern const uint32_t *BOOTLOADER_STRUCT_ADDR;
+extern uint32_t *BOOTLOADER_STRUCT_ADDR;
 
 static uint8_t loader_type = LOADER_TYPE_UNKNOWN;
 
@@ -55,6 +55,11 @@ uint8_t loader_get_type(void)
 LOADER_INFO loader_get_infoStruct(void)
 {
     return loader_info;
+}
+
+uint32_t *loader_get_multiboot_info_location(void)
+{
+    return BOOTLOADER_STRUCT_ADDR;
 }
 
 static void loader_multiboot_compliant(void)

@@ -29,4 +29,6 @@ char* hexstr(unsigned int value);
 char *intstr(unsigned int value);
 unsigned int digit_count(unsigned int value);
 
+void memset(char *start, unsigned int size, char val);
+
 #endif

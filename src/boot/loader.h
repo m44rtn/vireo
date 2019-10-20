@@ -40,5 +40,6 @@ void loader_detect(void);
 
 unsigned char loader_get_type(void);
 LOADER_INFO loader_get_infoStruct(void);
+unsigned int *loader_get_multiboot_info_location(void);
 
 #endif

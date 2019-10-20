@@ -89,3 +89,9 @@ unsigned int digit_count(uint32_t value)
 
 	return 1;
 }
+
+void memset(char *start, size_t size, char val)
+{
+	while(size--)
+		start[size] = val;
+}

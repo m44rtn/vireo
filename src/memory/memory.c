@@ -31,15 +31,40 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
+#include "../util/util.h"
+
+#define MEMORY_MMAP_TYPE_VIREO 1
+#define MEMORY_MMAP_TYPE_RESV  2
+
+typedef struct
+{
+    uint8_t type;
+    uint32_t loc_start;
+    uint32_t loc_end;
+} MEMORY_MAP;
+
 typedef struct
 {
     uint32_t available_memory; /* in bytes */
     uint32_t *usable_memory;   /* is an array */
 } MEMORY_INFO;
 
-MEMORY_INFO memory_info_t;
+typedef struct
+{
+    uint32_t *loc;
+    uint32_t size;
+} MEMORY_TABLE;
+
+extern void start(void);
+extern void STACK_TOP(void);
+
+MEMORY_INFO  memory_info_t;
+MEMORY_MAP   temp_memory_map[2];
+MEMORY_TABLE memory_table[128]; /* 1 KiB of information */
 
 uint8_t loader_type = 0;
+
+static void memory_create_temp_mmap(void);
 
 uint8_t memory_init(void)
 {
@@ -62,6 +87,33 @@ uint8_t memory_init(void)
     trace((char *)"[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
     trace((char *)"[MEMORY] Memory map length: %i bytes\n", infoStruct.mmap_length);
 
+    /* TODO: if exists, read memory map */
+    /* TODO: if not exists, try int 15h */
+    memory_create_temp_mmap();
+    
+    memset((char *) &memory_table, sizeof(MEMORY_TABLE)*128, 0);
+
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+/* FIXME: virtual not implemented */
+void vmalloc(void)
+{}
+
+void malloc(void)
+{
+    
+}
+
+static void memory_create_temp_mmap(void)
+{
+    /* where Vireo lives, sort of */
+    temp_memory_map[0].type = MEMORY_MMAP_TYPE_VIREO;
+    temp_memory_map[0].loc_start = (uint32_t) (start - 0x0C);
+    temp_memory_map[0].loc_end   = (uint32_t) STACK_TOP;
+
+    /* and here is the grub memory info */
+    temp_memory_map[1].type = MEMORY_MMAP_TYPE_RESV;
+    temp_memory_map[1].loc_start = (uint32_t) loader_get_multiboot_info_location();
+    temp_memory_map[1].loc_end   = (uint32_t) sizeof(multiboot_info_t);
+}
