@@ -36,6 +36,8 @@ SOFTWARE.
 #define MEMORY_MMAP_TYPE_VIREO 1
 #define MEMORY_MMAP_TYPE_RESV  2
 
+#define MEMORY_MALLOC_MEMSTRT  0x200000
+
 typedef struct
 {
     uint8_t type;
@@ -51,7 +53,7 @@ typedef struct
 
 typedef struct
 {
-    uint32_t *loc;
+    uint32_t loc;
     uint32_t size;
 } MEMORY_TABLE;
 
@@ -67,6 +69,7 @@ MEMORY_TABLE memory_table[128];
 
 uint8_t loader_type = 0;
 
+static void memory_update_table(uint8_t index, uint32_t loc, uint8_t blocks);
 static void memory_create_temp_mmap(void);
 
 uint8_t memory_init(void)
@@ -103,15 +106,19 @@ uint8_t memory_init(void)
 void vmalloc(void)
 {}
 
-void malloc(size_t size)
+/* TODO: rename this to kmalloc? */
+void *malloc(size_t size)
 {
+    uint32_t location;
     uint8_t loc, available = 0;
     uint8_t index;
+    int8_t mallocd_index;
 
-    uint32_t blocks = (size % 512) ? 1 : 0;
-    blocks = blocks + (size / 512);
+    uint8_t blocks = (size % 512) ? 1 : 0;
+    blocks = (uint8_t) (blocks + (size / 512));
+    
 
-    /* see if we can find enough 512 blocks to fit our needs */
+    /* see if we can find enough 512 blocks to fit our needs; look down below for a *very detailed* explanation on why this only does 512 byte blocks */
     for(loc = 0; loc < 128; loc++)
     {
         if(!memory_table[loc].loc)
@@ -125,24 +132,49 @@ void malloc(size_t size)
 
     /* not enough free memory */
     if(loc >= 128)
-        return NULL;
+        return (void *) NULL;
 
     /* calc the index for the memory table */
-    loc = loc - blocks + 1;
+    loc = (uint8_t) (loc - blocks + 1);
     index = loc;
 
-    /* TODO:
-       1. calc location
-       2. store information for all blocks
-       3. return location */
+    mallocd_index = (int8_t) ((index - 1 < 0)? -1 : (index - 1));
 
+    /* store the information in the memory table */
+    if(mallocd_index <= -1)
+        memory_update_table(0, MEMORY_MALLOC_MEMSTRT, blocks);
+    else
+    {
+        location = (uint32_t) (memory_table[mallocd_index].loc + (memory_table[mallocd_index].size * 512));
+        memory_update_table(index, location, blocks);
+    }
+
+    /* all done! :) */
+    return (void *) memory_table[index].loc;
+
+    /* alright! seems to work :)
+        So, you may be asking: 'why only use 512 byte blocks?!'
+        Well, I hope that the memory allocation this way is easier and more reliable than with Vireo-I */
+
+}
+
+static void memory_update_table(uint8_t index, uint32_t loc, uint8_t blocks)
+{
+    uint8_t i;
+    uint8_t end = (uint8_t) (index + blocks);
+
+    for(i = index; i < end; i++)
+    {
+        memory_table[i].loc = (uint32_t) loc;
+        memory_table[i].size = blocks;
+    }
 }
 
 static void memory_create_temp_mmap(void)
 {
     /* where Vireo lives, sort of */
     temp_memory_map[0].type = MEMORY_MMAP_TYPE_VIREO;
-    temp_memory_map[0].loc_start = (uint32_t) (start - 0x0C);
+    temp_memory_map[0].loc_start = (uint32_t) (((uint32_t)start) - 0x0C);
     temp_memory_map[0].loc_end   = (uint32_t) STACK_TOP;
 
     /* and here is the grub memory info */

@@ -87,8 +87,14 @@ void main(void)
     
     init_env();
 
-    malloc(512);
-    malloc(789);
-        
+    uint32_t *loc = (uint32_t *) malloc(512);
+    trace("loc 512: 0x%x\n", loc);
+    
+    loc = (uint32_t *) malloc(789);
+    trace("loc 789: 0x%x\n", loc);
+
+    loc = (uint32_t *) malloc(119);
+    trace("loc 119: 0x%x\n", loc);
+            
     while(1);
 }
