@@ -60,7 +60,10 @@ extern void STACK_TOP(void);
 
 MEMORY_INFO  memory_info_t;
 MEMORY_MAP   temp_memory_map[2];
-MEMORY_TABLE memory_table[128]; /* 1 KiB of information */
+
+/* 1 KiB of information, though I can imagine this being too little.
+This can store 64 KiB of memory this way */
+MEMORY_TABLE memory_table[128]; 
 
 uint8_t loader_type = 0;
 
@@ -80,7 +83,7 @@ uint8_t memory_init(void)
 
     infoStruct = loader_get_infoStruct();
     
-    /* GRUB returns KB's and I like KiB's more */
+    /* GRUB returns KB's but I like KiB's more */
     memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory * 1.024);
 
     trace((char *)"[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
@@ -100,9 +103,39 @@ uint8_t memory_init(void)
 void vmalloc(void)
 {}
 
-void malloc(void)
+void malloc(size_t size)
 {
-    
+    uint8_t loc, available = 0;
+    uint8_t index;
+
+    uint32_t blocks = (size % 512) ? 1 : 0;
+    blocks = blocks + (size / 512);
+
+    /* see if we can find enough 512 blocks to fit our needs */
+    for(loc = 0; loc < 128; loc++)
+    {
+        if(!memory_table[loc].loc)
+            available++;
+        else
+            available = 0;
+
+        if(available == blocks)
+            break;
+    }
+
+    /* not enough free memory */
+    if(loc >= 128)
+        return NULL;
+
+    /* calc the index for the memory table */
+    loc = loc - blocks + 1;
+    index = loc;
+
+    /* TODO:
+       1. calc location
+       2. store information for all blocks
+       3. return location */
+
 }
 
 static void memory_create_temp_mmap(void)

@@ -25,5 +25,6 @@ SOFTWARE.
 #define __MEMORY_H__
 
 unsigned char memory_init(void);
+void malloc(unsigned int size);
 
 #endif

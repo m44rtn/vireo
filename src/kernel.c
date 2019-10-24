@@ -86,6 +86,9 @@ void main(void)
     trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
     
     init_env();
+
+    malloc(512);
+    malloc(789);
         
     while(1);
 }
