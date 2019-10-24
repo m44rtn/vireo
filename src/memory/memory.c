@@ -118,7 +118,8 @@ void *malloc(size_t size)
     blocks = (uint8_t) (blocks + (size / 512));
     
 
-    /* see if we can find enough 512 blocks to fit our needs; look down below for a *very detailed* explanation on why this only does 512 byte blocks */
+    /* see if we can find enough 512 blocks to fit our needs; look down below for a *very detailed* explanation
+     on why this only allocates 512 byte blocks */
     for(loc = 0; loc < 128; loc++)
     {
         if(!memory_table[loc].loc)
