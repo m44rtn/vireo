@@ -27,5 +27,6 @@ SOFTWARE.
 unsigned char memory_init(void);
 void vmalloc(void);
 void *malloc(unsigned int size);
+void demalloc(void *ptr);
 
 #endif

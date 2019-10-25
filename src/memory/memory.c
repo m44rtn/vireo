@@ -38,6 +38,8 @@ SOFTWARE.
 
 #define MEMORY_MALLOC_MEMSTRT  0x200000
 
+#define MEMORY_TABLE_LENGTH    128 
+
 typedef struct
 {
     uint8_t type;
@@ -65,7 +67,7 @@ MEMORY_MAP   temp_memory_map[2];
 
 /* 1 KiB of information, though I can imagine this being too little.
 This can store 64 KiB of memory this way */
-MEMORY_TABLE memory_table[128]; 
+MEMORY_TABLE memory_table[MEMORY_TABLE_LENGTH]; 
 
 uint8_t loader_type = 0;
 
@@ -120,7 +122,7 @@ void *malloc(size_t size)
 
     /* see if we can find enough 512 blocks to fit our needs; look down below for a *very detailed* explanation
      on why this only allocates 512 byte blocks */
-    for(loc = 0; loc < 128; loc++)
+    for(loc = 0; loc < MEMORY_TABLE_LENGTH; loc++)
     {
         if(!memory_table[loc].loc)
             available++;
@@ -132,7 +134,7 @@ void *malloc(size_t size)
     }
 
     /* not enough free memory */
-    if(loc >= 128)
+    if(loc >= MEMORY_TABLE_LENGTH)
         return (void *) NULL;
 
     /* calc the index for the memory table */
@@ -156,6 +158,32 @@ void *malloc(size_t size)
     /* alright! seems to work :)
         So, you may be asking: 'why only use 512 byte blocks?!'
         Well, I hope that the memory allocation this way is easier and more reliable than with Vireo-I */
+
+}
+
+void demalloc(void *ptr)
+{
+    uint8_t i;
+
+    char *loc;
+    size_t size;
+    uint8_t len;
+
+    for(i = 0; i < MEMORY_TABLE_LENGTH; i++)
+        if(memory_table[i].loc == (uint32_t) ptr)
+            break;
+
+    loc = (char *) memory_table[i].loc;
+    size = memory_table[i].size * 512;
+
+    len = (uint8_t) (i + memory_table[i].size);
+    for(i = i; i < len; i++)
+    {
+        memory_table[i].loc  = 0;
+        memory_table[i].size = 0;
+    }
+
+    memset(loc, size, 0);
 
 }
 

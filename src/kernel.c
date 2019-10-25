@@ -95,6 +95,11 @@ void main(void)
 
     loc = (uint32_t *) malloc(119);
     trace("loc 119: 0x%x\n", loc);
+
+    demalloc(loc);
+
+    loc = malloc(119);
+    trace("loc 119: 0x%x\n", loc);
             
     while(1);
 }
