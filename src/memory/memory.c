@@ -165,7 +165,6 @@ void demalloc(void *ptr)
 {
     uint8_t i;
 
-    char *loc;
     size_t size;
     uint8_t len;
 
@@ -173,7 +172,6 @@ void demalloc(void *ptr)
         if(memory_table[i].loc == (uint32_t) ptr)
             break;
 
-    loc = (char *) memory_table[i].loc;
     size = memory_table[i].size * 512;
 
     len = (uint8_t) (i + memory_table[i].size);
@@ -183,7 +181,7 @@ void demalloc(void *ptr)
         memory_table[i].size = 0;
     }
 
-    memset(loc, size, 0);
+    memset(ptr, size, 0);
 
 }
 
