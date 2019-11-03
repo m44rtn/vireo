@@ -24,4 +24,8 @@ SOFTWARE.
 #ifndef __PAGING_H__
 #define __PAGING_H__
 
+void paging_init(void);
+
+extern void ASM_CPU_PAGING_ENABLE(unsigned int *table);
+
 #endif

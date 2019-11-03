@@ -67,8 +67,10 @@ static void loader_multiboot_compliant(void)
     multiboot_info_t *info = (multiboot_info_t *) BOOTLOADER_STRUCT_ADDR;
     char *bootloader_name = (char *) info->boot_loader_name;
 
+    #ifndef QUIET_KERNEL
     print((char *) "[LOADER] Reports multiboot compliant\n");
     trace((char *) "[LOADER] Loaded by %s\n\n", (unsigned int) bootloader_name);
+    #endif
 
     loader_type   = LOADER_TYPE_MULTIBOOT;
     

@@ -90,10 +90,12 @@ uint8_t memory_init(void)
     
     /* GRUB returns KB's but I like KiB's more */
     memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory * 1.024);
-
+    
+    #ifndef QUIET_KERNEL
     trace((char *)"[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
     trace((char *)"[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
-    trace((char *)"[MEMORY] Memory map length: %i bytes\n", infoStruct.mmap_length);
+    trace((char *)"[MEMORY] Memory map length: %i bytes\n\n", infoStruct.mmap_length);
+    #endif
 
     /* TODO: if exists, read memory map */
     /* TODO: if not exists, try int 15h */
@@ -168,6 +170,8 @@ void demalloc(void *ptr)
     size_t size;
     uint8_t len;
 
+    /* find the memory table entries that correspond to 
+        the pointer */
     for(i = 0; i < MEMORY_TABLE_LENGTH; i++)
         if(memory_table[i].loc == (uint32_t) ptr)
             break;

@@ -53,6 +53,28 @@ ASM_IDT_SUBMIT:
     pop ebp
 ret
 
+global ASM_CPU_PAGING_ENABLE
+ASM_CPU_PAGING_ENABLE:
+; hopefully this enables paging correctly
+;   input:
+;       - pointer to the page table
+;   output:
+;       - N/A
+
+    push ebp
+    mov ebp, esp
+
+    mov eax, [ebp + 8]
+    mov cr3, eax
+
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
+
+    mov esp, ebp
+    pop ebp
+ret
+
 global ASM_CHECK_CPUID
 ASM_CHECK_CPUID:
 ; check if CPUID is supported

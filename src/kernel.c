@@ -42,6 +42,7 @@ SOFTWARE.
 #include "cpu/cpu.h"
 
 #include "memory/memory.h"
+#include "memory/paging.h"
 
 void init_env(void);
 void main(void);
@@ -83,23 +84,13 @@ void main(void)
         while(1);
     
     /* announce ourselves */
+    #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
     trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
+    #endif
     
     init_env();
 
-    uint32_t *loc = (uint32_t *) malloc(512);
-    trace("loc 512: 0x%x\n", loc);
-    
-    loc = (uint32_t *) malloc(789);
-    trace("loc 789: 0x%x\n", loc);
-
-    loc = (uint32_t *) malloc(119);
-    trace("loc 119: 0x%x\n", loc);
-
-    demalloc(loc);
-
-    loc = malloc(119);
-    trace("loc 119: 0x%x\n", loc);
+    paging_init();
             
     while(1);
 }

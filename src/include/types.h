@@ -26,6 +26,9 @@ SOFTWARE.
 
 #define NULL 0
 
+/* if you want quiet start-up: */
+/*#define QUIET_KERNEL*/
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef signed short int16_t;

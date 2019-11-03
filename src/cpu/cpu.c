@@ -39,10 +39,16 @@ void CPU_init(void)
         return;
     
     ASM_CPU_GETVENDOR();
+
+    #ifndef QUIET_KERNEL
     trace((char *) "[CPU] %s\n", (unsigned int) CPUID_VENDOR_STRING);
+    #endif
 
     ASM_CPU_GETNAME();
+
+    #ifndef QUIET_KERNEL
     trace((char *) "[CPU] %s\n\n", (unsigned int) CPUID_CPUNAME_STRING);
+    #endif
 
 
 }
