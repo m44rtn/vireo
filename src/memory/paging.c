@@ -49,7 +49,6 @@ void paging_init(void)
     trace("[PAGING] page_directory -> 0x%x\n", page_directory[0]);
     #endif
     
-
     ASM_CPU_PAGING_ENABLE(&page_directory[0]);
 
     #ifndef QUIET_KERNEL
