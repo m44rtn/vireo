@@ -26,22 +26,24 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#ifndef QUIET_KERNEL
 #include "../screen/screen_basic.h"
+#endif
 
 void paging_init(void)
 {
-    /* so let's try some paging */
     uint32_t i;
-    uint32_t *page_directory = 0x200000;
-    uint32_t *page_table = 0x201000;
+    uint32_t *page_directory = (uint32_t *) 0x200000;
+    uint32_t *page_table     = (uint32_t *) 0x201000;
 
     for(i = 0; i < 1024; i++)
-        page_directory[i] = 0x02;
+        page_directory[i] = (uint32_t ) 0x02;
     for(i = 0; i < 1024; i++)
-        page_table[i] = (i * 0x1000) | 3;
+        page_table[i] = (uint32_t ) ((i * 0x1000) | 3);
 
     page_directory[0] = (uint32_t) &page_table[0] | 3;
 
+    /* these are temporary so they won't get casts */
     #ifndef QUIET_KERNEL
     trace("[PAGING] &page_table -> 0x%x\n", page_table);
     trace("[PAGING] page_directory -> 0x%x\n", page_directory[0]);
@@ -51,6 +53,6 @@ void paging_init(void)
     ASM_CPU_PAGING_ENABLE(&page_directory[0]);
 
     #ifndef QUIET_KERNEL
-    print("[PAGING] Hello paging world! :)\n\n");
+    print((char *) "[PAGING] Hello paging world! :)\n\n");
     #endif
 }

@@ -26,7 +26,10 @@ SOFTWARE.
 #include "multiboot.h"
 
 #include "../include/types.h"
+
+#ifndef QUIET_KERNEL
 #include "../screen/screen_basic.h"
+#endif
 
 #define LOADER_MAGICNUMBER_MULTIBOOT    0x2BADB002
 

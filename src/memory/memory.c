@@ -29,7 +29,9 @@ SOFTWARE.
 #include "../boot/loader.h"
 #include "../boot/multiboot.h"
 
+#ifndef QUIET_KERNEL
 #include "../screen/screen_basic.h"
+#endif
 
 #include "../util/util.h"
 

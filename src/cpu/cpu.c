@@ -25,7 +25,9 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#ifndef QUIET_KERNEL
 #include "../screen/screen_basic.h"
+#endif
 
 extern const uint8_t CPUID_AVAILABLE;
 extern const char *CPUID_VENDOR_STRING;

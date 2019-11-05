@@ -23,8 +23,6 @@ SOFTWARE.
 
 #include "gdt.h"
 
-#include "../screen/screen_basic.h"
-
 #define GDT_LENGTH                  5
 
 #define GDT_SEGMENT_TYPE_DATA       0
