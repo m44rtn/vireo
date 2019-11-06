@@ -50,10 +50,8 @@
         <a href="#introduction">1. Introduction to Vireo II</a><br>
         <a href="#building">2. Building the kernel</a><br>
         <a href="#debugging">3. Debugging the kernel</a><br>
-        <a href="#conventions">4. Coding conventions</a><br>
-        <a href="#exit_codes">5. Exit codes</a><br>
-        <a href="#init_funcs">6. Initialization functions</a><br>
-
+        <a href="#exit_codes">4. Exit codes</a><br>
+        
         <br><br>
         <strong>Appendixes</strong><br><br>
         <a href="#funclist">A0 - Function listing</a><br>
@@ -102,7 +100,7 @@
 
     <h3 id="debugging">3. Debugging the kernel</h3>
     <p>Virtualbox is used to test and debug the kernel. Using the makefile, the <code>make run</code> command will run any virtual machine called "Bird OS" (without "), and will automatically launch the Virtualbox debug console.
-        You can use this console to debug the kernel. A few useful commands are listed in <i>table 3.0</i>. <br><br>
+        You can use this console to debug the kernel. A few useful commands of the Virtualbox debug console are listed in <i>table 3.0</i>. <br><br>
         <table style="width: 100%">
             <caption>Table 3.0 - Useful Virtualbox debug console commands</caption>
             <colgroup>
@@ -139,24 +137,7 @@
         <br>
     </p>
 
-    <h3 id="conventions">4. Coding conventions</h3>
-    <p>
-        Vireo II is written in the C89 C and the NASM standard. These conventions exist for consistancy, not to claim a 
-        particular style is better. The 3 main guidelines are:<br><br>
-        1. Match the style of the surrounding code and documentation.<br>
-        2. Keep code simple, fast and (at least semi-)secure.<br>
-        
-        <br>
-        It is possible for these guidelines to change in the future.
-
-        <br><br>
-        <b>Note to self:</b> try to be consistent.
-        <br><br>
-        Any comments or feedback about the conventions in use by the code or listed above are very welcome! :)
-        <br><br>
-    </p>
-
-    <h3 id="exit_codes">5. Exit codes</h3>
+    <h3 id="exit_codes">4. Exit codes</h3>
     <p>
         Exit codes in the kernel are one byte long (<code>unsigned char</code>), meaning a maximum of 256 error codes, and indicate if the function has executed correctly. When an error occurs a function will return a non-zero exit code which indicates the type of error.
         Although every module may have its own exit codes, the kernel provides some global exit codes. <br>
@@ -164,7 +145,7 @@
         <br>The first sixteen error codes (0 - 15) are reserved for global use. Modules shouldn't use the values of these exit codes to indicate a different 'state' than described in <i>table 5.0</i>.<br><br>
         Not all functions return exit codes, in fact initialization functions are the the most likely to return exit codes. It is possible that non-initialization functions will return an exit code.<br><br>
         
-        Module specific exit codes can be found at their <a href="#funclist">function listing</a>.
+        Module specific exit codes can be found in their <a href="#funclist">function listing</a>.
         <br><br>
        
        <table style="width: 100%">
@@ -195,20 +176,6 @@
     </table>
 
     </p>
-
-    <h3 id="init_funcs">6. Initialization functions</h3>
-    <p>
-        Most modules are started by an initialization function, used to set-up its working environment and internal variables. 
-        In order for the modules to be 'independent' from the main kernel files, there are some conventions (here we go again). YAY!
-        <br><br>
-        Most of these conventions are specifically written down for the creator, because he messed up the previous attempt (aka Vireo I). However, every module should abide to them.
-        <br><br>
-
-        Initialization functions are called by the kernel because it thinks it will need them. The initialization function should then set-up everything it needs. Meaning: internal variables, its working environment, necessarry hardware, etc. However, it's not necessary to keep everything in the init function. It is expected, however, that any additional functions used by the init function (not intended to be used by other modules) to be static and defined inside the source file ('*.c'). The init function should always return an exit code.
-        
-        <br><br>
-    </p>
-
 
     <h3 id="funclist">A0 - Function listing</h3>
     <p>
@@ -282,6 +249,7 @@
             </tr>
          
         </table>
+        <i>This module has no additional exit codes.</i>
         <br><br>
         
         <strong><i>Basic screen functions - basic_screen</i></strong>
@@ -363,7 +331,7 @@
                 </tr>
                 <tr>
                     <td><code>trace()</code><br><br>
-                        <strong>Not available yet!</strong> Prints text to the screen, and provides the option to
+                        Prints text to the screen, and provides the option to
                         show integers on the screen.
                     </td>
     
