@@ -57,7 +57,7 @@ void paging_init(void)
     #ifndef QUIET_KERNEL
     print((char *) "[PAGING] Hello paging world! :)\n\n");
     #endif
-
+    /* TODO: allocate enough for the page dir and just enough page tables (to save memory, otherwise we need to allocate 4MiB, which is a bit much) */
     trace("[PAGING] physical address of virtual address 0x8b000: 0x%x\n", paging_vptr_to_pptr(0x800000));
 }
 
