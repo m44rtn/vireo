@@ -14,7 +14,6 @@
 
         h1, h2 {
             text-align: center;
-            /* font-style: italic;*/
             margin: 10px;
         }
         
@@ -179,13 +178,13 @@
 
     <h3 id="funclist">A0 - Function listing</h3>
     <p>
-        In every module (aka source code file) of the kernel, there are two kinds of functions: static (internal) and public functions. Static functions are not available to other modules and are inaccessible to them, they are not documented in the reference manual. Documentation for the static functions can be found in the code where necessary, as code comments.
-        <br><br>Public functions are available to every module in the kernel, and are made to be as error free as possible. 
+        In every module (aka source code file) of the kernel, there are two kinds of functions: static (internal) and public functions. Static functions are not available to other modules and are inaccessible to them, they are not documented in this reference manual. Documentation for the static functions can be found in the code where necessary, as code comments.
+        <br><br>Public functions are available to every module in the kernel.
 
         <br><br><br>
 
         <strong><i>Global functions - global_functions</i></strong>
-        <br><i>global_functions</i> is a module which contains a few basic functions, which makes some tasks just that tiny bit easier. Pun intended.
+        <br><i>global_functions</i> is a module which contains a few basic functions.
         <br><br><strong>Note:</strong> functions in this module DO NOT have a file name prefix (e.g. global_functions_[function name]).
         
         <br><br>
@@ -221,13 +220,11 @@
 
         <br><br>
         <strong><i>Utillity functions - util</i></strong>
-        <br><i>util</i> is a module that contains small functions to do whatever. I thought I'd written
-        this part already, but it seems not. So, here we go...
-
-        TODO
+        <br><i>util</i> is a module that contains small functions.
+        <br><br><strong>Note:</strong> functions in this module DO NOT have a file name prefix (e.g. util_[function name]).
 
         <table style="width: 100%">
-            <caption>Table A0.1 - screen_basic module functions</caption>
+            <caption>Table A0.1 - util module functions</caption>
             <colgroup>
                 <col width="33%">
                 <col width="30%">
@@ -237,15 +234,48 @@
             <th>Input (var name, description)</th>
             <th>Returns, type/size</th>
             <tr>
-                <td><code>screen_basic_init()</code><br><br>
-                    Initializes the internal variables for the module, enables the cursor and clears the screen.
+                <td><code>strlen()</code><br><br>
+                    Returns the length of a string (null byte excluded).
                 </td>
 
+                <td>- <code>str</code>, the string for which to count the length</td>
+
+                <td>- Length of the string (uint32_t)
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <code>hexstr()</code><br><br>
+                    Converts an integer to a string with the value in hexadecimal format.
+                </td>
+                <td>- <code>value</code>, the integer to be converted</td>
+                <td>- A new string containing the result</td>
+            </tr>
+
+            <tr>
+                <td><code>intstr()</code><br><br>
+                Converts an integer to a string with the value in base ten.</td>
+
+                <td>- <code>value</code>, the integer to be converted</td>
+                <td>- A new string containing the result</td>
+            </tr>
+
+            <tr>
+                <td><code>digit_count()</code><br><br>
+                Returns the amount of digits in an integer.</td>
+                <td>- <code>value</code></td>
+                <td>- The amount of digits in the value</td>
+            </tr>
+
+            <tr>
+                <td><code>memset()</code><br><br>
+                Sets the value in a region of memory</td>
+                <td>- <code>start</code>, the start location of the region (as <code>char *</code>)<br>
+                    - <code>size</code>, the length of the region<br>
+                    - <code>val</code>, the memory locations within the region get this value
+                </td>
                 <td>N/A</td>
-
-                <td>Exit code, BYTE:<br>
-                    &nbsp; &nbsp; - EXIT_CODE_GLOBAL_SUCCESS, if successful
-                </td>
             </tr>
          
         </table>
@@ -392,7 +422,7 @@
         after sart-up.
 
         <table style="width: 100%">
-            <caption>Table A0.4 - screen_basic module functions</caption>
+            <caption>Table A0.4 - gdt module functions</caption>
             <colgroup>
                 <col width="33%">
                 <col width="30%">
@@ -422,10 +452,56 @@
         <i>This module has no additional exit codes.</i>
 
         <br><br>
+
         <strong><i>IDT functions - idt</i></strong>
         <br><i>idt</i> is the module that handles everything in the IDT. It's responisble for setting up a basic IDT
         after sart-up and for adding new handlers to that IDT. 
         
+        <table style="width: 100%">
+            <caption>Table A0.5 - idt module functions</caption>
+            <colgroup>
+                <col width="33%">
+                <col width="30%">
+                <col width="36%">
+            </colgroup>
+            <th>Function & description</th>
+            <th>Input (var name, description)</th>
+            <th>Returns, type/size</th>
+            <tr>
+                <td><code>IDT_setup()</code><br><br>
+                    Initializes the IDT with some basic handlers.
+                </td>
+
+                <td>N/A
+                </td>
+
+                <td>N/A
+                </td>
+            </tr>
+
+            <tr>
+                <td><code>IDT_add_handler()</code><br><br>
+                Adds a new interrupt handler to the IDT</td>
+
+                <td>- <code>index</code>, the entry in the IDT where the new handler should be<br>
+                - <code>handler</code> the pointer to the handler (as uint32_t)</td>
+
+                <td>
+                    N/A
+                </td>
+            </tr>
+
+            <tr>
+                <td><code>IDT_reset()</code><br><br>
+                Resets the <code>lidt</code> register with the updated IDT</td>
+
+                <td>N/A</td>
+                <td>N/A</td>
+            </tr>
+            
+        </table>
+        <br>
+        <i>This module has no additional exit codes.</i>
         <br><br>
     </p>
 
