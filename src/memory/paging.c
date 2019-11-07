@@ -38,6 +38,9 @@ void paging_init(void)
 
     for(i = 0; i < 1024; i++)
         page_directory[i] = (uint32_t ) 0x02;
+
+    page_directory[1023] = (uint32_t) (&page_directory[0]);
+
     for(i = 0; i < 1024; i++)
         page_table[i] = (uint32_t ) ((i * 0x1000) | 3);
 
@@ -54,4 +57,25 @@ void paging_init(void)
     #ifndef QUIET_KERNEL
     print((char *) "[PAGING] Hello paging world! :)\n\n");
     #endif
+
+    trace("[PAGING] physical address of virtual address 0x8b000: 0x%x\n", paging_vptr_to_pptr(0x800000));
+}
+
+void *paging_vptr_to_pptr(void *vptr)
+{
+    /* location pdindex: vptr / (1024 * 1024) */
+    uint32_t pdindex = (uint32_t)vptr >> 22;
+
+    /* location ptindex: vptr / 4096 */
+    uint32_t ptindex = (uint32_t) ( ((uint32_t)vptr) >> 12) & 0x03FF;
+
+    /* TODO: change pt and pd to the real adresses when semi-finished */
+    uint32_t *pd = 0x200000;
+    uint32_t *pt = 0x201000;
+    
+    if((pd[pdindex] & 0x01) && (pt[ptindex] & 0x01))
+        return (pt[ptindex] & ~0xFFF) + ((uint32_t)vptr & 0xFFF); 
+
+    /* when we get here, the vptr is probably the pptr (because we didn't page it) */
+    return vptr;
 }
