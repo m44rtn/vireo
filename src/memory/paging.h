@@ -28,5 +28,6 @@ void paging_init(void);
 void *paging_vptr_to_pptr(void *vptr);
 
 extern void ASM_CPU_PAGING_ENABLE(unsigned int *table);
+extern void ASM_CPU_INVLPG(void *paddr);
 
 #endif

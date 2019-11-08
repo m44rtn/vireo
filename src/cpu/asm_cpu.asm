@@ -75,6 +75,23 @@ ASM_CPU_PAGING_ENABLE:
     pop ebp
 ret
 
+global ASM_CPU_INVLPG
+ASM_CPU_INVLPG:
+; invalidates a page
+; input:
+;   - physical address where the page table points to
+; output
+;   - N/A
+    push ebp
+    mov ebp, esp
+
+    mov eax, [ebp + 8]
+    invlpg eax
+
+    mov esp, ebp
+    pop ebp
+ret
+
 global ASM_CHECK_CPUID
 ASM_CHECK_CPUID:
 ; check if CPUID is supported
