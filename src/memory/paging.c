@@ -68,7 +68,8 @@ void *paging_vptr_to_pptr(void *vptr)
     if((pd[pdindex] & 0x01) && (pt[ptindex] & 0x01))
         return (void *) ((pt[ptindex] & ((uint32_t)~0xFFF)) + ((uint32_t)vptr & 0xFFF)); 
 
-    /* when we get here, the vptr is probably the pptr (because we didn't page it, else you'll probably hopefully get a PAGE_FAULT?) */
+    /* when we get here, the vptr is probably the pptr (because we didn't page it, 
+    else you'll probably hopefully get a PAGE_FAULT?) */
     return vptr;
 }
 
@@ -92,7 +93,7 @@ static void paging_create_tables(void)
     page_dir = memory_paging_tables_loc();
     available_mem = (page_dir[0] * 1000);
 
-    /* here's some math; first up: the amount of page tables requiered to map all of the memory available */
+    /* here's some math; first up: the amount of page tables required to map all of the memory available */
     page_tables = (available_mem / 4096);
     page_tables = (page_tables % 1024) ? (page_tables / 1024) + 1 : page_tables / 1024;
 
