@@ -26,6 +26,6 @@ SOFTWARE.
 
 /* this is always the build number for next compilation. If you'd like to know the build number of the current
    binary you can do [number below] - 1 */
-#define BUILD 368
+#define BUILD 416
 
 #endif

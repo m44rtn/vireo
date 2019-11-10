@@ -91,9 +91,9 @@ void IDT_add_handler(uint8_t index, uint32_t handler)
     IDT[index].type_attr    = 0x8E;
 }
 
-void IDT_reset()
+void IDT_reset(void)
 {
-    ASM_IDT_SUBMIT(&IDT_desc);   
+    ASM_IDT_SUBMIT((uint32_t *) &IDT_desc);   
 }
 
 static void IDT_default_list(void)

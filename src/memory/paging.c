@@ -30,35 +30,27 @@ SOFTWARE.
 #include "../screen/screen_basic.h"
 #endif
 
+#define PAGING_TABLE_TYPE_DIR 0
+#define PAGING_TABLE_TYPE_TAB 1
+
+uint32_t *page_dir = NULL;
+
+static void paging_create_tables(void);
+static void paging_prepare_table(uint32_t *table, uint8_t type);
+
 void paging_init(void)
 {
-    uint32_t i;
-    uint32_t *page_directory = (uint32_t *) 0x200000;
-    uint32_t *page_table     = (uint32_t *) 0x201000;
+    /* current should be enough to get v86 to work 
+    TODO: list of todo things:
+        - paging_umap()*/  
 
-    for(i = 0; i < 1024; i++)
-        page_directory[i] = (uint32_t ) 0x02;
-
-    page_directory[1023] = (uint32_t) (&page_directory[0]);
-
-    for(i = 0; i < 1024; i++)
-        page_table[i] = (uint32_t ) ((i * 0x1000) | 3);
-
-    page_directory[0] = (uint32_t) &page_table[0] | 3;
-
-    /* these are temporary so they won't get casts */
-    #ifndef QUIET_KERNEL
-    trace("[PAGING] &page_table -> 0x%x\n", page_table);
-    trace("[PAGING] page_directory -> 0x%x\n", page_directory[0]);
-    #endif
+    paging_create_tables();
     
-    ASM_CPU_PAGING_ENABLE(&page_directory[0]);
+    ASM_CPU_PAGING_ENABLE(page_dir);
 
     #ifndef QUIET_KERNEL
     print((char *) "[PAGING] Hello paging world! :)\n\n");
     #endif
-    /* TODO: allocate enough for the page dir and just enough page tables (to save memory, otherwise we need to allocate 4MiB, which is a bit much) */
-    trace("[PAGING] physical address of virtual address 0x8b000: 0x%x\n", paging_vptr_to_pptr(0x800000));
 }
 
 void *paging_vptr_to_pptr(void *vptr)
@@ -67,15 +59,74 @@ void *paging_vptr_to_pptr(void *vptr)
     uint32_t pdindex = (uint32_t)vptr >> 22;
 
     /* location ptindex: vptr / 4096 */
-    uint32_t ptindex = (uint32_t) ( ((uint32_t)vptr) >> 12) & 0x03FF;
+    uint32_t ptindex = (uint32_t) (((uint32_t)vptr) >> 12) & 0x03FF;
 
-    /* TODO: change pt and pd to the real adresses when semi-finished */
-    uint32_t *pd = 0x200000;
-    uint32_t *pt = 0x201000;
+    uint32_t *pd = page_dir;
+    uint32_t *pt = (uint32_t *) (pd[pdindex] & 0xFFFFF000);
     
     if((pd[pdindex] & 0x01) && (pt[ptindex] & 0x01))
-        return (pt[ptindex] & ~0xFFF) + ((uint32_t)vptr & 0xFFF); 
+        return (void *) ((pt[ptindex] & ((uint32_t)~0xFFF)) + ((uint32_t)vptr & 0xFFF)); 
 
-    /* when we get here, the vptr is probably the pptr (because we didn't page it) */
+    /* when we get here, the vptr is probably the pptr (because we didn't page it, else PAGE_FAULT) */
     return vptr;
+}
+
+void paging_map(void *pptr, void *vptr)
+{
+    uint32_t pdindex = (uint32_t)vptr >> 22;
+    uint32_t ptindex = (uint32_t) (((uint32_t)vptr) >> 12) & 0x03FF;
+
+    uint32_t *pd = page_dir;
+    uint32_t *pt = (uint32_t *) (pd[pdindex] & 0xFFFFF000);
+
+    ASM_CPU_INVLPG((uint32_t *)pptr);
+    pt[ptindex] = (uint32_t) (((uint32_t)pptr) << 12)  | 0x03;
+}
+
+static void paging_create_tables(void)
+{
+    uint32_t available_mem, page_tables, amount_mem;
+    uint32_t i, table_loc; /* for-loop */
+
+    page_dir = memory_paging_tables_loc();
+    available_mem = (page_dir[0] * 1000);
+
+    /* here's some math; first up: the amount of page tables requiered to map all of the memory available */
+    page_tables = (available_mem / 4096);
+    page_tables = (page_tables % 1024) ? (page_tables / 1024) + 1 : page_tables / 1024;
+
+    /* next: how much memory is needed for them */
+    amount_mem = (1024 + (page_tables * 1024)) * sizeof(uint32_t);
+    
+    paging_prepare_table(page_dir, PAGING_TABLE_TYPE_DIR);
+    
+    /* put the tables where we need them */
+    for(i = 1; i <= page_tables; ++i)
+    {
+        table_loc = (uint32_t) ((i * 0x1000) + ((uint32_t) page_dir));
+        page_dir[i - 1] = (uint32_t) table_loc | 0x03;
+
+        paging_prepare_table((uint32_t *) table_loc, PAGING_TABLE_TYPE_TAB);      
+    }
+
+    /* TODO: remember where the tables end (amount_mem), and maybe even report it to the memory module */
+}
+
+
+static void paging_prepare_table(uint32_t *table, uint8_t type)
+{
+    uint32_t i;
+    static uint32_t previous_end = 0;
+    
+    if (type == PAGING_TABLE_TYPE_DIR)
+        for(i = 0; i < 1024; ++i)
+            table[i] = (uint32_t) 0x02;
+    else
+    {
+        for(i = 0; i < 1024; ++i)
+            table[i] = (uint32_t ) ((previous_end + i * 0x1000) | 3);
+
+        previous_end = table[1023];
+    }
+
 }

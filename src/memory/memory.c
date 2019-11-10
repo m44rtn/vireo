@@ -61,6 +61,10 @@ typedef struct
     uint32_t size;
 } MEMORY_TABLE;
 
+/* I'm sorry for this ugly define line here */
+#define MEMORY_VIRTUAL_TABLES  MEMORY_MALLOC_MEMSTRT + (sizeof(MEMORY_TABLE) * MEMORY_TABLE_LENGTH)
+/* ---- */
+
 extern void start(void);
 extern void STACK_TOP(void);
 
@@ -106,6 +110,17 @@ uint8_t memory_init(void)
     memset((char *) &memory_table, sizeof(MEMORY_TABLE)*128, 0);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+void *memory_paging_tables_loc(void)
+{
+    uint32_t *tables = (uint32_t *) MEMORY_VIRTUAL_TABLES;
+    
+    /* this puts the total available memory at the location of the tables allocation, which 
+    save space in memory and this file (I'm too lazy to make a struct for this) */
+    tables[0] = memory_info_t.available_memory;
+
+    return (void *) &tables[0];
 }
 
 /* FIXME: virtual not implemented */

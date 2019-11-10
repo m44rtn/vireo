@@ -86,7 +86,8 @@ ASM_CPU_INVLPG:
     mov ebp, esp
 
     mov eax, [ebp + 8]
-    invlpg eax
+    mov [eax], eax
+    invlpg [eax]
 
     mov esp, ebp
     pop ebp
