@@ -68,7 +68,7 @@ void *paging_vptr_to_pptr(void *vptr)
     if((pd[pdindex] & 0x01) && (pt[ptindex] & 0x01))
         return (void *) ((pt[ptindex] & ((uint32_t)~0xFFF)) + ((uint32_t)vptr & 0xFFF)); 
 
-    /* when we get here, the vptr is probably the pptr (because we didn't page it, else PAGE_FAULT) */
+    /* when we get here, the vptr is probably the pptr (because we didn't page it, else you'll probably hopefully get a PAGE_FAULT?) */
     return vptr;
 }
 
