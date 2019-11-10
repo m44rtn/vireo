@@ -42,7 +42,8 @@ void paging_init(void)
 {
     /* current should be enough to get v86 to work 
     TODO: list of todo things:
-        - paging_umap()*/  
+        - paging_umap()
+        - store pages on disk */  
 
     paging_create_tables();
     
