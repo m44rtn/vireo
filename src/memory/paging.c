@@ -52,6 +52,7 @@ void paging_init(void)
     #ifndef QUIET_KERNEL
     print((char *) "[PAGING] Hello paging world! :)\n\n");
     #endif
+
 }
 
 void *paging_vptr_to_pptr(void *vptr)

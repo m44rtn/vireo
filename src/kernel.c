@@ -44,6 +44,8 @@ SOFTWARE.
 #include "memory/memory.h"
 #include "memory/paging.h"
 
+#include "hardware/pci.h"
+
 void init_env(void);
 void main(void);
 
@@ -71,6 +73,8 @@ void init_env(void)
     CPU_init();
     
     exit_code = memory_init();
+
+    paging_init();
 }
 
 void main(void)
@@ -83,14 +87,12 @@ void main(void)
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) 
         while(1);
     
-    /* announce ourselves */
+    init_env();
+    pci_init();
+
     #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
     trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
     #endif
-    
-    init_env();
-
-    paging_init();
             
     while(1);
 }

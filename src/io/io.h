@@ -25,7 +25,9 @@ SOFTWARE.
 #define __SYS_H__
 
 extern void ASM_OUTB(unsigned int port, unsigned int data);
+extern void ASM_OUTL(unsigned int port, unsigned int data);
 extern unsigned short ASM_INB(unsigned short port);
+extern unsigned int ASM_INL(unsigned short port);
 extern void ASM_IOWAIT(void);
 
 #endif

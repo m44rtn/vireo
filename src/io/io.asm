@@ -23,7 +23,6 @@ bits 32
 
 section .text
 global ASM_OUTB
-
 ASM_OUTB:
 ; throws data to a port
 ;   input:
@@ -40,6 +39,28 @@ mov eax, [ebp + 12]
 mov edx, [ebp + 8]
 
 out dx, al
+
+mov esp, ebp
+pop ebp
+
+ret
+
+global ASM_OUTL
+ASM_OUTL:
+; throws data to a port
+;   input:
+;       - port (first), WORD
+;       - data (second), DWORD
+;   output:
+;       - N/A
+
+push ebp
+mov ebp, esp
+
+mov eax, [ebp + 12]
+mov edx, [ebp + 8] 
+
+out dx, eax
 
 mov esp, ebp
 pop ebp
@@ -65,6 +86,30 @@ xor eax, eax
 in al, dx
 
 mov [ebp + 8], ax
+
+mov esp, ebp
+pop ebp
+
+ret
+
+global ASM_INL
+ASM_INL:
+; throws data to you from a port when you ask it to
+;   input:
+;       - port, WORD
+;   output:
+;       - data, DWORD
+
+push ebp
+mov ebp, esp
+
+mov dx, [ebp + 8]
+
+xor eax, eax
+
+in eax, dx
+
+mov [ebp + 8], eax
 
 mov esp, ebp
 pop ebp
