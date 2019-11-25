@@ -25,7 +25,6 @@ SOFTWARE.
 
 #include "../include/types.h"
 
-
 unsigned int strlen(char *str)
 {
     uint32_t i = 0;
@@ -35,23 +34,25 @@ unsigned int strlen(char *str)
     return i;
 }
 
-/* FIXME: malloc */
-char* hexstr(unsigned int value)
+/* digit_amount: amount of digits to show, if 0 (or the value is bigger) the normal 
+ amount of digits is used. meaning enough to show the actual value.*/
+char* hexstr(unsigned int value, uint8_t digit_amount)
 {
 	unsigned int tempval = value;
 	char* outputstr = (char *) 0xFFFF; /*"00000000";*/
-	
+	uint32_t digits = (!digit_amount || digit_amount < hex_digit_count(value))? hex_digit_count(value) : digit_amount;
+
 	char chrIndex;
 	const char* hexDig = "0123456789ABCDEF";
-	
+
 	int8_t loopcntr;
-	for(loopcntr = 7; loopcntr >= 0; loopcntr--){
+	for(loopcntr = (int8_t) (digits - 1); loopcntr >= 0; loopcntr--){
 		chrIndex = tempval & 0x0000000F;
 		outputstr[loopcntr] = (char) hexDig[0 + chrIndex];
 		tempval = tempval >> 4;
 	}
 
-	outputstr[8] = '\0';
+	outputstr[digits] = '\0';
 	
 	return outputstr;
 }
@@ -88,6 +89,18 @@ unsigned int digit_count(uint32_t value)
 	else if(value >= 1000000000) return 10;
 
 	return 1;
+}
+
+unsigned int hex_digit_count(uint32_t value)
+{
+	if(value >= 0x100 && value <= 0xFFF) return 3;
+	else if(value >= 0x01000 && value <= 0x0FFFF) return 4;
+	else if(value >= 0x10000 && value <= 0xFFFFF) return 5;
+	else if(value >= 0x100000 && value <= 0xFFFFFF) return 6;
+	else if(value >= 0x1000000 && value <= 0xFFFFFFF) return 7;
+	else if(value >= 0x10000000 && value <= 0xFFFFFFFF) return 8;
+
+	return 2;
 }
 
 void memset(char *start, size_t size, char val)

@@ -25,9 +25,10 @@ SOFTWARE.
 #define __UTIL_H__
 
 unsigned int strlen(char *str);
-char* hexstr(unsigned int value);
+char* hexstr(unsigned int value, unsigned char digit_amount);
 char *intstr(unsigned int value);
 unsigned int digit_count(unsigned int value);
+unsigned int hex_digit_count(unsigned int value);
 
 void memset(char *start, unsigned int size, char val);
 

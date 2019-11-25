@@ -46,6 +46,7 @@ typedef struct SCREENDATA
 } SCREENDATA;
 
 static SCREENDATA SCRscreenData;
+uint8_t hexdigits = 0;
 
 /* Static function defines */
 static void screen_basic_print_warnings(void);
@@ -144,7 +145,12 @@ void screen_basic_set_screen_color(unsigned char color)
 {
     SCRscreenData.chScreenColor = color;
 }
-    
+
+void screen_set_hexdigits(uint8_t value)
+{
+	hexdigits = value;
+}
+
 void trace(char* str, unsigned int val)
 {
 	unsigned int i;  
@@ -156,7 +162,7 @@ void trace(char* str, unsigned int val)
 
 			 switch(str[i+1]){
 				 case 'x':
-					print(hexstr(val));
+					print(hexstr(val, hexdigits));
 					i++;
 					break;
 				 case 'i':

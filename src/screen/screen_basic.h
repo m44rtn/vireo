@@ -30,12 +30,17 @@ SOFTWARE.
 /* SCREEN DATA FLAGS */
 #define SCREEN_BASIC_CURSOR_ENABLED                   1
 
+/* amount of hexadecimal digits in trace */
+#define SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT         0
+
 unsigned char screen_basic_init(void);
 
 void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end);
 void screen_basic_disable_cursor(void);
 unsigned char screen_basic_move_cursor(unsigned short x, unsigned short y);
 unsigned short screen_basic_get_cursor_position(void);
+
+void screen_set_hexdigits(unsigned char value);
 
 void print(char* text);
 void trace(char* text, unsigned int val);

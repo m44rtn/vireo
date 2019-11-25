@@ -21,11 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __REPORTING_H__
+#define __REPORTING_H__
 
-/* this is always the build number for next compilation. If you'd like to know the build number of the current
-   binary you can do [number below] - 1 */
-#define BUILD 499
+void reporting_print_warning(const char *warning);
+void reporting_print_error(const char *error);
 
 #endif

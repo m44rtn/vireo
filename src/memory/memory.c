@@ -34,6 +34,7 @@ SOFTWARE.
 #endif
 
 #include "../util/util.h"
+#include "../util/reporting.h"
 
 #define MEMORY_MMAP_TYPE_VIREO 1
 #define MEMORY_MMAP_TYPE_RESV  2
@@ -220,10 +221,15 @@ static void memory_update_table(uint8_t index, uint32_t loc, uint8_t blocks)
 
 static void memory_create_temp_mmap(void)
 {
+
     /* where Vireo lives, sort of */
     temp_memory_map[0].type = MEMORY_MMAP_TYPE_VIREO;
     temp_memory_map[0].loc_start = (uint32_t) (((uint32_t)start) - 0x0C);
     temp_memory_map[0].loc_end   = (uint32_t) STACK_TOP;
+
+    if((uint32_t) (STACK_TOP) >= MEMORY_MALLOC_MEMSTRT)
+        reporting_print_warning("Kernel flows through MALLOC memory");
+    
 
     /* and here is the grub memory info */
     temp_memory_map[1].type = MEMORY_MMAP_TYPE_RESV;
