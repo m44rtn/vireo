@@ -26,5 +26,6 @@ SOFTWARE.
 
 void pci_init(void);
 unsigned char pciGetInterruptLine(unsigned char bus, unsigned char device, unsigned char func);
+unsigned int *pciGetDevices(unsigned char class, unsigned char subclass);
 
 #endif

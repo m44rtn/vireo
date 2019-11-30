@@ -27,11 +27,17 @@ SOFTWARE.
 
 #include "../io/io.h"
 
+#include "../memory/memory.h"
+
+#ifndef QUIET_KERNEL
 #include "../screen/screen_basic.h"
+#endif
+
+#define PCI_DEVLIST_LENGTH          256
 
 /* I know there is a potential for more than 256 devices, but who cares
 just to be nice though, I'll mark it as TODO */
-uint32_t PCI_DEV_LIST[256];
+uint32_t PCI_DEV_LIST[PCI_DEVLIST_LENGTH];
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg);
 
@@ -76,6 +82,44 @@ void pci_init(void)
     #endif
 }
 
+uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
+{
+    uint8_t class_fromlist, bus, device, func, answer;
+    uint32_t *devicelist = malloc(512 * sizeof(uint32_t));
+
+    uint8_t i = 0, j = 1;
+    for(; i < PCI_DEVLIST_LENGTH - 1; ++i)
+    {
+        class_fromlist = (uint8_t) (PCI_DEV_LIST[i] & 0xFF);
+        if(class_fromlist == class)
+        {
+            bus    = (uint8_t) ((PCI_DEV_LIST[i] >> 24) & 0xFF);
+            device = (uint8_t) ((PCI_DEV_LIST[i] >> 16) & 0xFF);
+            func   = (uint8_t) ((PCI_DEV_LIST[i] >> 8)  & 0xFF);   
+
+            answer = ((pciConfigRead(bus, device, func, 0x02) >> 16) & 0xFF);
+
+            if(answer == subclass)
+            {
+                devicelist[j] = (uint32_t) (PCI_DEV_LIST[i] & (uint32_t)~0xFF);
+                ++j;
+            }
+        }
+    }
+
+    /* store useful information in the first entry like the length of the array (maybe more in the future) */
+    devicelist[0] = (uint32_t) j;
+
+    return devicelist;
+}
+
+uint8_t pciGetInterruptLine(uint8_t bus, uint8_t device, uint8_t func)
+{
+	uint32_t thing = pciConfigRead(bus, device, func, 0x0F);
+	uint8_t interruptline = (uint8_t) thing;
+	return interruptline;
+}
+
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg){
 	
 	/*just so it looks nice*/
@@ -92,11 +136,4 @@ static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_
 	tmmp = ASM_INL(0x0cfc);
 	
 	return tmmp;
-}
-
-uint8_t pciGetInterruptLine(uint8_t bus, uint8_t device, uint8_t func)
-{
-	uint32_t thing = pciConfigRead(bus, device, func, 0x0F);
-	uint8_t interruptline = (uint8_t) thing;
-	return interruptline;
 }
