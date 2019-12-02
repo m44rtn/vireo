@@ -24,7 +24,7 @@ WARNINGS := -Wall -Wextra -pedantic -Wshadow \
 	    -Wredundant-decls -Wnested-externs -Winline \
 	    -Wno-long-long -Wconversion -Wstrict-prototypes
 
-CCFLAGS := -nostdlib -ffreestanding -g -O2 -std=c89 $(WARNINGS)
+CCFLAGS := -nostdlib -ffreestanding -g -O2 -std=c99 $(WARNINGS) #normally c89
 ASFLAGS := -w all -f elf32 #--fatal-warnings
 
 CC := i686-elf-gcc

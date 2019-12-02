@@ -46,6 +46,8 @@ SOFTWARE.
 
 #include "hardware/pci.h"
 
+#include "dbg/dbg.h"
+
 void init_env(void);
 void main(void);
 
@@ -93,6 +95,8 @@ void main(void)
     #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
     trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
     #endif
+
+    dbg_assert(0);
             
     while(1);
 }

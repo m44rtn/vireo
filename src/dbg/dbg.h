@@ -21,22 +21,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "reporting.h"
-
-#include "../include/types.h"
+#ifndef __DBG_H__
+#define __DBG_H__
 
 #include "../screen/screen_basic.h"
 
-void reporting_print_warning(const char *warning)
-{
-    screen_basic_set_screen_color(0x0E);
-    trace((char *) "[WARNING] %s\n\n", (uint32_t) warning);
-    screen_basic_set_screen_color(0x07);
-}
+#ifndef NDEBUG
+#define dbg_assert(expression)                                          \
+    if(expression)                                                      \
+        return;                                                         \
+                                                                        \
+    print((char *) "Vireo:");                                           \
+    screen_basic_set_screen_color(0x03);                                \
+    trace((char *) "%s:", (unsigned int) __FILE__);                     \
+    screen_basic_set_screen_color(0x07);                                \
+    trace((char *) "%i: Assertion Failed", (unsigned int) __LINE__);    \
+                                                                        \
+    while(1);                               
+#else
+#define dbg_assert(ignore) (void) 0
+#endif
 
-void reporting_print_error(const char *error)
-{
-    screen_basic_set_screen_color(0x04);
-    trace((char *) "[ERROR] %s\n\n", (uint32_t) error);
-    screen_basic_set_screen_color(0x07);
-}
+#endif

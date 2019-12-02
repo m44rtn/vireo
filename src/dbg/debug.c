@@ -21,11 +21,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#include "debug.h"
 
-/* this is always the build number for next compilation. If you'd like to know the build number of the current
-   binary you can do [number below] - 1 */
-#define BUILD 515
+#include "../include/types.h"
 
-#endif
+#include "../screen/screen_basic.h"
+
+void debug_print_warning(const char *warning)
+{
+    screen_basic_set_screen_color(0x0E);
+    trace((char *) "[WARNING] %s\n\n", (uint32_t) warning);
+    screen_basic_set_screen_color(0x07);
+}
+
+void debug_print_error(const char *error)
+{
+    screen_basic_set_screen_color(0x04);
+    trace((char *) "[ERROR] %s\n\n", (uint32_t) error);
+    screen_basic_set_screen_color(0x07);
+}

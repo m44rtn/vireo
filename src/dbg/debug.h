@@ -21,10 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __REPORTING_H__
-#define __REPORTING_H__
+#ifndef __DEBUG_H__
+#define __DEBUG_H__
 
-void reporting_print_warning(const char *warning);
-void reporting_print_error(const char *error);
+void debug_print_warning(const char *warning);
+void debug_print_error(const char *error);
 
 #endif

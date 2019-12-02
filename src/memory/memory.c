@@ -34,7 +34,7 @@ SOFTWARE.
 #endif
 
 #include "../util/util.h"
-#include "../util/reporting.h"
+#include "../dbg/debug.h"
 
 #define MEMORY_MMAP_TYPE_VIREO 1
 #define MEMORY_MMAP_TYPE_RESV  2
@@ -227,8 +227,8 @@ static void memory_create_temp_mmap(void)
     temp_memory_map[0].loc_start = (uint32_t) (((uint32_t)start) - 0x0C);
     temp_memory_map[0].loc_end   = (uint32_t) STACK_TOP;
 
-    if((uint32_t) (STACK_TOP) >= MEMORY_MALLOC_MEMSTRT)
-        reporting_print_warning("Kernel flows through MALLOC memory");
+    /* kernel flows through malloc memory */
+    dbg_assert((uint32_t) (STACK_TOP) >= MEMORY_MALLOC_MEMSTRT);
     
 
     /* and here is the grub memory info */
