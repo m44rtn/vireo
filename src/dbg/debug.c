@@ -40,3 +40,4 @@ void debug_print_error(const char *error)
     trace((char *) "[ERROR] %s\n\n", (uint32_t) error);
     screen_basic_set_screen_color(0x07);
 }
+

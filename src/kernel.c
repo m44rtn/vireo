@@ -96,7 +96,7 @@ void main(void)
     trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
     #endif
 
-    dbg_assert(0);
+    dbg_assert(3 > 2);
             
     while(1);
 }

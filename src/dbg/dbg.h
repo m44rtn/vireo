@@ -25,11 +25,12 @@ SOFTWARE.
 #define __DBG_H__
 
 #include "../screen/screen_basic.h"
+#include "debug.h"
 
 #ifndef NDEBUG
 #define dbg_assert(expression)                                          \
-    if(expression)                                                      \
-        return;                                                         \
+    if(!expression)                                                     \
+    {                                                                   \
                                                                         \
     print((char *) "Vireo:");                                           \
     screen_basic_set_screen_color(0x03);                                \
@@ -37,7 +38,8 @@ SOFTWARE.
     screen_basic_set_screen_color(0x07);                                \
     trace((char *) "%i: Assertion Failed", (unsigned int) __LINE__);    \
                                                                         \
-    while(1);                               
+    while(1);                                                           \
+    }                                                     
 #else
 #define dbg_assert(ignore) (void) 0
 #endif
