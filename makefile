@@ -1,4 +1,4 @@
-PROJDIRS := core
+PROJDIRS := src
 OBJDIR   := bin
 
 
