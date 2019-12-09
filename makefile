@@ -13,8 +13,8 @@ OCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.o")
 OBJFILES := $(foreach thing,$(SRCFILES),$(thing:%.c=%.o)) #$(patsubst %.c, %.o, $(SRCFILES))
 ASOBJFILES := $(foreach thing,$(ASMFILES),$(thing:%.asm=%.o))
 
-LDOBJFILES := $(filter-out src/kernel.o, $(OBJFILES))
-LDASOBJFILES := $(filter-out src/boot.o, $(ASOBJFILES))
+LDOBJFILES := $(filter-out core/kernel.o, $(OBJFILES))
+LDASOBJFILES := $(filter-out core/boot.o, $(ASOBJFILES))
 
 ALLFILES := $(SRCFILES) $(HDRFILES) $(ASMFILES)
 
@@ -36,10 +36,10 @@ todo:
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
 all: clean $(OBJFILES) $(ASOBJFILES)
-	@$(CC)  -T linker.ld -o bin/kernel.sys src/boot.o src/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
+	@$(CC)  -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
-	@xenops --file src/include/kernel_info.h --quiet
+	@xenops --file core/include/kernel_info.h --quiet
 
 %.o: %.c
 	@$(CC) $(CCFLAGS) -c $< -o $@
