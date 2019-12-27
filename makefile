@@ -57,6 +57,9 @@ iso:
 
 
 run:
-	virtualbox --startvm "Bird OS" --debug-command-line --start-running
+	vboxmanage startvm "BirdOS" -E VBOX_GUI_DBG_ENABLED=true
+
+run-old:
+	virtualbox --startvm "BirdOS" --debug-command-line --start-running
 
 
