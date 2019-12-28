@@ -21,20 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __GLOBAL_FLAGS_H__
-#define __GLOBAL_FLAGS_H__
+/* This 'module' will handle drivers and such */
+#include "driver.h"
 
-/* GLOBAL_FLAGS definitions */
-#define GLOBAL_FLAG_QUIET   1
+#include "../include/types.h"
+#include "pci.h"
 
-/*typedef struct SYSTEM_INFO
+void driver_init(void)
 {
-    unsigned int GLOBAL_FLAGS;
-} SYSTEM_INFO;
 
-SYSTEM_INFO SystemInfo;*/
-
-
-unsigned char flag_check(unsigned int flag, unsigned int to_check); 
-
-#endif
+}

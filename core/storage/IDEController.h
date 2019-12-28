@@ -21,16 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "../include/global_flags.h"
-#include "../include/global_exit_codes.h"
+#ifndef __IDECONTROLLER_H__
+#define __IDECONTROLLER_H__
 
-/* Note: functions in this file DO NOT have a filename prefix (e.g. global_functions_...) */
-
-/* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when
-         the flag(s) is/are not enabled.
-*/
-unsigned char flag_check(unsigned int flag, unsigned int to_check)
+struct DRIVER
 {
-    if((flag & to_check) == to_check) return 0;
-    return 1;
-}
+    unsigned int sign1;
+    char sign2[8];
+    unsigned int interface;
+} __attribute__((packed));
+
+void hello_world(void);
+
+
+#endif

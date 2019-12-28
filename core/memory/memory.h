@@ -28,6 +28,7 @@ unsigned char memory_init(void);
 void vmalloc(void);
 void *malloc(unsigned int size);
 void demalloc(void *ptr);
-void *memory_paging_tables_loc(void);
+unsigned int memory_getAvailable();
+unsigned int *memsrch(void *match, unsigned int matchsize, unsigned int start, unsigned int end);
 
 #endif

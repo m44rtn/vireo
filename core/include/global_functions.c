@@ -21,20 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __GLOBAL_FLAGS_H__
-#define __GLOBAL_FLAGS_H__
+#include "../include/global_flags.h"
+#include "../include/global_exit_codes.h"
 
-/* GLOBAL_FLAGS definitions */
-#define GLOBAL_FLAG_QUIET   1
+/* Note: functions in this file DO NOT have a filename prefix (e.g. global_functions_...) */
 
-/*typedef struct SYSTEM_INFO
+/* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when
+         the flag(s) is/are not enabled.
+*/
+unsigned char flag_check(unsigned int flag, unsigned int to_check)
 {
-    unsigned int GLOBAL_FLAGS;
-} SYSTEM_INFO;
-
-SYSTEM_INFO SystemInfo;*/
-
-
-unsigned char flag_check(unsigned int flag, unsigned int to_check); 
-
-#endif
+    if((flag & to_check) == to_check) return EXIT_CODE_GLOBAL_SUCCESS;
+    return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+}

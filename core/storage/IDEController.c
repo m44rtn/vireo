@@ -21,20 +21,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __GLOBAL_FLAGS_H__
-#define __GLOBAL_FLAGS_H__
+#include "IDEController.h"
 
-/* GLOBAL_FLAGS definitions */
-#define GLOBAL_FLAG_QUIET   1
+#include "../include/types.h"
+#include "../screen/screen_basic.h"
 
-/*typedef struct SYSTEM_INFO
+
+
+struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (uint32_t) hello_world};
+
+/*const uint16_t sign1 = (const uint16_t) 0xB14D05; /* 'BirdOS' 
+const char *sign2 = "VIREODRV";
+const uint32_t interface = (uint32_t) hello_world;*/
+
+void hello_world(void)
 {
-    unsigned int GLOBAL_FLAGS;
-} SYSTEM_INFO;
-
-SYSTEM_INFO SystemInfo;*/
-
-
-unsigned char flag_check(unsigned int flag, unsigned int to_check); 
-
-#endif
+    print("[IDE] hello world!\n");
+}

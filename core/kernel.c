@@ -24,6 +24,7 @@ SOFTWARE.
 #include "kernel.h"
 
 #include "include/kernel_info.h"
+#include "include/asm_functions.h"
 #include "include/global_exit_codes.h"
 #include "include/global_flags.h"
 #include "include/types.h"
@@ -35,6 +36,7 @@ SOFTWARE.
 #include "screen/screen_basic.h"
 
 #include "util/util.h"
+
 
 #include "cpu/gdt.h"
 #include "cpu/interrupts/IDT.h"
@@ -48,8 +50,19 @@ SOFTWARE.
 
 #include "dbg/dbg.h"
 
+
+/* remove */
+#include "storage/IDEController.h"
+
 void init_env(void);
 void main(void);
+
+typedef struct 
+{
+    uint32_t sign1;
+    char *sign2;
+} __attribute__((packed)) tester;
+
 
 /* initializes 'the environment' */
 void init_env(void)
@@ -77,26 +90,33 @@ void init_env(void)
     exit_code = memory_init();
 
     paging_init();
+
+    pci_init();
 }
 
 void main(void)
 {
     unsigned int exit_code = 0;
-    SystemInfo.GLOBAL_FLAGS = 0;  
-
+    struct DRIVER test = {(uint32_t) 0xB14D05, "VIREODRV", (uint32_t) hello_world};
+    
     exit_code = screen_basic_init();
    
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) 
         while(1);
     
     init_env();
-    pci_init();
+    
+    uint32_t *place = memsrch((void *) &test, 12, 0x10000, 0x3e4dbff);
+
+    trace("interface: 0x%x\n", (uint32_t) hello_world);
+    trace("place: 0x%x\n", place);
+    trace("functionloc: 0x%x\n", (uint32_t)place | 12);
+
+    ASM_CALL_FUNC(*(uint32_t *)((uint32_t)place | 12));
 
     #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
     trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
     #endif
-
-    dbg_assert(3 > 2);
             
     while(1);
 }

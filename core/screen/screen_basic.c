@@ -83,7 +83,9 @@ unsigned char screen_basic_init(void)
 	if(check == EXIT_CODE_GLOBAL_SUCCESS) SCRscreenData.SCREEN_FLAGS |= SCREEN_BASIC_CURSOR_ENABLED;
 
 	/* flag_check() returns 1 when the flag is not enabled. */
-	if(flag_check(SystemInfo.GLOBAL_FLAGS, GLOBAL_FLAG_QUIET)) screen_basic_print_warnings();
+	#ifndef QUIET_KERNEL
+		screen_basic_print_warnings();
+	#endif
 
 	return EXIT_CODE_GLOBAL_SUCCESS;
 }
@@ -209,13 +211,14 @@ void screen_basic_clear_screen(void){
 /*
  * 'Private' part
  */
-
+#ifndef QUIER_KERNEL
 static void screen_basic_print_warnings(void)
 {
 	/* This may become a function with lots of if-else checks */
 
-	if(flag_check(SCRscreenData.SCREEN_FLAGS, SCREEN_BASIC_CURSOR_ENABLED)) print( ((char*) "[WARNING] Cursor not enabled\n"));
+	print( ((char*) "[WARNING] Cursor not enabled\n"));
 }
+#endif
 
 static void screen_basic_char_put_on_screen(char c){
 	unsigned char* vidmem = (unsigned char*) 0xb8000;

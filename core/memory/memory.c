@@ -52,7 +52,7 @@ typedef struct
 
 typedef struct
 {
-    uint32_t available_memory; /* in bytes */
+    uint32_t available_memory; /* in kibibytes */
     uint32_t *usable_memory;   /* is an array */
 } MEMORY_INFO;
 
@@ -205,6 +205,39 @@ void demalloc(void *ptr)
 
     memset(ptr, size, 0);
 
+}
+
+uint32_t memory_getAvailable()
+{
+    return memory_info_t.available_memory;
+}
+
+uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
+{
+    uint32_t i, j = 0;
+    uint8_t *buffer = (uint8_t *) start;
+    uint8_t *mtch = (uint8_t *) match;
+    uint32_t check;
+
+    for(i = 0; i < (end - start); ++i)
+    {
+        /* is value equal? is it the location of the match? */
+        check = mtch[j] == buffer[i] && 
+                j < matchsize && 
+                (buffer + i) != match;
+
+        if(check)
+            ++j;
+        else if(mtch[j] != buffer[i] )
+            j = 0;
+        else
+            break;
+    }
+
+    if((buffer + i) == end)
+        return NULL;
+
+    return (buffer + i - matchsize);
 }
 
 static void memory_update_table(uint8_t index, uint32_t loc, uint8_t blocks)
