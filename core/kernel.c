@@ -52,7 +52,7 @@ SOFTWARE.
 
 
 /* remove */
-#include "storage/IDEController.h"
+#include "hardware/driver.h"
 
 void init_env(void);
 void main(void);
@@ -72,7 +72,9 @@ void init_env(void)
     GDT_FLAGS flags;
     uint8_t exit_code;
 
-    loader_detect();
+    exit_code = loader_detect();
+    if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED) 
+        debug_print_warning((char *) "Support for current bootloader not implemented");
 
     /* setup GDT structures */
     access.dataisWritable   = true;
@@ -97,7 +99,6 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
-    struct DRIVER test = {(uint32_t) 0xB14D05, "VIREODRV", (uint32_t) hello_world};
     
     exit_code = screen_basic_init();
    
@@ -106,16 +107,16 @@ void main(void)
     
     init_env();
     
-    uint32_t *place = memsrch((void *) &test, 12, 0x10000, 0x3e4dbff);
+   /* uint32_t *place = memsrch((void *) &test, 12, 0x10000, 0x3e4dbff);
 
     trace("interface: 0x%x\n", (uint32_t) hello_world);
     trace("place: 0x%x\n", place);
     trace("functionloc: 0x%x\n", (uint32_t)place | 12);
 
-    ASM_CALL_FUNC(*(uint32_t *)((uint32_t)place | 12));
+    ASM_CALL_FUNC(*(uint32_t *)((uint32_t)place | 12));*/
 
     #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
-    trace((char *) "[VERSION] Vireo II build %i\n\n", BUILD);
+    trace((char *) "[KERNEL] Vireo II build %i\n\n", BUILD);
     #endif
             
     while(1);

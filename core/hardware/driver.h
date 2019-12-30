@@ -24,6 +24,16 @@ SOFTWARE.
 #ifndef __DRIVER_H__
 #define __DRIVER_H__
 
-void driver_init(void);
+/* information and indentifier struct for drivers 
+        take a look in the refman for some of the values */
+struct DRIVER
+{
+    unsigned int sign1;
+    char sign2[8];
+    unsigned int type;
+    unsigned int interface;
+} __attribute__((packed));
+
+void driver_search_pciAll(void);
 
 #endif

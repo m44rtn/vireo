@@ -25,16 +25,21 @@ SOFTWARE.
 
 #include "../include/types.h"
 #include "../screen/screen_basic.h"
+#include "../hardware/driver.h"
 
+/* the indentifier for drivers + information about our driver */
+struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (uint32_t) IDEControllerInit};
 
+uint32_t device_list[4];
+uint8_t registered_devices = 0; /* amount of devices registered, isn't the nicest solution */
 
-struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (uint32_t) hello_world};
 
 /*const uint16_t sign1 = (const uint16_t) 0xB14D05; /* 'BirdOS' 
 const char *sign2 = "VIREODRV";
 const uint32_t interface = (uint32_t) hello_world;*/
 
-void hello_world(void)
+void IDEControllerInit(uint32_t device)
 {
-    print("[IDE] hello world!\n");
+    if(registered_devices < 3)
+        device_list[registered_devices] = device;
 }

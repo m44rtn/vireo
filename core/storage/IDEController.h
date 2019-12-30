@@ -24,14 +24,7 @@ SOFTWARE.
 #ifndef __IDECONTROLLER_H__
 #define __IDECONTROLLER_H__
 
-struct DRIVER
-{
-    unsigned int sign1;
-    char sign2[8];
-    unsigned int interface;
-} __attribute__((packed));
-
-void hello_world(void);
+void IDEControllerInit(unsigned int device);
 
 
 #endif

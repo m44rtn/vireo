@@ -36,7 +36,7 @@ typedef struct
     /* TODO: add more stuff here */
 } LOADER_INFO;
 
-void loader_detect(void);
+unsigned char loader_detect(void);
 
 unsigned char loader_get_type(void);
 LOADER_INFO loader_get_infoStruct(void);

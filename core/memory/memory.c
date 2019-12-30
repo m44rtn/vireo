@@ -89,9 +89,9 @@ uint8_t memory_init(void)
 
     /* If the loader type is unknown, we won't get an info struct.
        TODO: implement int 15h ax=0xe820
-       FIXME: remove general fail exit code after implementing int 15h */
+       FIXME: remove not implemented exit code after implementing int 15h */
     if(loader_type == LOADER_TYPE_UNKNOWN)
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+        return EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
 
     infoStruct = loader_get_infoStruct();
     

@@ -26,6 +26,7 @@ SOFTWARE.
 #include "multiboot.h"
 
 #include "../include/types.h"
+#include "../include/global_exit_codes.h"
 
 #ifndef QUIET_KERNEL
 #include "../screen/screen_basic.h"
@@ -43,11 +44,15 @@ static uint8_t loader_type = LOADER_TYPE_UNKNOWN;
 
 LOADER_INFO loader_info;
 
-void loader_detect(void)
+uint8_t loader_detect(void)
 {
     /* there'll be more supported loaders in the future so that's why we have this here */
     if(MAGICNUMBER == LOADER_MAGICNUMBER_MULTIBOOT)
-        loader_multiboot_compliant();    
+        loader_multiboot_compliant();  
+    else 
+        return EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
+
+    return EXIT_CODE_GLOBAL_SUCCESS; 
 }
 
 uint8_t loader_get_type(void)

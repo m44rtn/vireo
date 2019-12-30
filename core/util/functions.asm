@@ -38,6 +38,8 @@ mov ebp, esp
 
 ; port is first, data second
 mov edi, [ebp + 8]
+
+push 0xB14D05
 call edi
 
 mov esp, ebp
