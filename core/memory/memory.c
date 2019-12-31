@@ -39,7 +39,8 @@ SOFTWARE.
 #define MEMORY_MMAP_TYPE_VIREO 1
 #define MEMORY_MMAP_TYPE_RESV  2
 
-#define MEMORY_MALLOC_MEMSTRT  0x200000
+#define MEMORY_KERNELSTRT         0x100000
+#define MEMORY_MALLOC_MEMSTRT     0x200000
 
 #define MEMORY_TABLE_LENGTH    128 
 
@@ -210,6 +211,11 @@ void demalloc(void *ptr)
 uint32_t memory_getAvailable()
 {
     return memory_info_t.available_memory;
+}
+
+const uint32_t *memory_getKernelStart()
+{
+    return (const uint32_t) MEMORY_KERNELSTRT;
 }
 
 uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)

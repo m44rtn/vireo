@@ -37,7 +37,7 @@ SOFTWARE.
 
 /* I know there is a potential for more than 256 devices, but who cares
 just to be nice though, I'll mark it as TODO */
-uint32_t PCI_DEV_LIST[PCI_DEVLIST_LENGTH];
+static uint32_t PCI_DEV_LIST[PCI_DEVLIST_LENGTH];
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg);
 
@@ -113,11 +113,37 @@ uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
     return devicelist;
 }
 
+uint32_t *pciGetAllDevices(void)
+{
+    uint8_t i;
+    uint32_t *devicelist = malloc(256 * sizeof(uint32_t));
+    
+    for(i = 0; i < 256; ++i)
+        devicelist[i] = PCI_DEV_LIST[i];
+    return devicelist;
+}
+
 uint8_t pciGetInterruptLine(uint8_t bus, uint8_t device, uint8_t func)
 {
 	uint32_t thing = pciConfigRead(bus, device, func, 0x0F);
 	uint8_t interruptline = (uint8_t) thing;
 	return interruptline;
+}
+
+uint32_t pciGetInfo(uint32_t device)
+{
+    uint32_t info, answer;
+
+    uint8_t bus     = (uint8_t) ((device >> 24) & 0xFF);
+    uint8_t device  = (uint8_t) ((device >> 16) & 0xFF);
+    uint8_t func    = (uint8_t) ((device >> 8)  & 0xFF);
+
+    /* get the subclass */
+    answer = ((pciConfigRead(bus, device, func, 0x02) >> 16) & 0xFF);
+    
+    info = ((device & 0xFF) << 8) | (answer & 0xFF);
+
+    return info;
 }
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg){

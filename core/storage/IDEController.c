@@ -42,4 +42,6 @@ void IDEControllerInit(uint32_t device)
 {
     if(registered_devices < 3)
         device_list[registered_devices] = device;
+
+    trace("[IDE_DRIVER] Kernel registered device: 0x%x\n", device);
 }

@@ -24,10 +24,41 @@ SOFTWARE.
 /* This 'module' will handle drivers and such */
 #include "driver.h"
 
-#include "../include/types.h"
 #include "pci.h"
+
+#include "../include/types.h"
+
+#include "../memory/memory.h"
+
+#define DRIVER_STRUCT_HEXSIGN   0xB14D05
+#define DRIVER_STRUCT_CHARSIGN  "VIREODRV"
+
+#define DRIVER_TYPE_PCI         0x01 << 24;
+
+struct DRIVER_SEARCH
+{
+    unsigned int sign1;
+    char sign2[8];
+    unsigned int type;
+} __attribute__((packed));
 
 void driver_init(void)
 {
+    driver_search_pciAll();
+}
 
+static void driver_search_pciAll(void)
+{
+    uint8_t i;
+    uint32_t info, driver_type;
+    uint32_t *devicelist = pciGetAllDevices();
+    
+    /* search for internal drivers */
+    for(i = 0; i < 256; ++i)
+    {
+        info = pciGetInfo(devicelist[i]);
+        driver_type = info | DRIVER_TYPE_PCI;
+        struct DRIVER_SEARCH drv = {DRIVER_STRUCT_HEXSIGN, DRIVER_STRUCT_CHARSIGN, driver_type};
+        memsrch((void *) drv, sizeof(struct DRIVER_SEARCH), /* get start kernel from memory.c */, /*end is malloc start */);
+    }
 }
