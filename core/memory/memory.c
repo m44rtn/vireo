@@ -208,14 +208,19 @@ void demalloc(void *ptr)
 
 }
 
-uint32_t memory_getAvailable()
+uint32_t memory_getAvailable(void)
 {
     return memory_info_t.available_memory;
 }
 
-const uint32_t *memory_getKernelStart()
+uint32_t memory_getKernelStart(void)
 {
-    return (const uint32_t) MEMORY_KERNELSTRT;
+    return (uint32_t) MEMORY_KERNELSTRT;
+}
+
+uint32_t memory_getMallocStart(void)
+{
+    return (uint32_t) MEMORY_MALLOC_MEMSTRT;
 }
 
 uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
@@ -227,10 +232,12 @@ uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
 
     for(i = 0; i < (end - start); ++i)
     {
-        /* is value equal? is it the location of the match? */
-        check = mtch[j] == buffer[i] && 
-                j < matchsize && 
-                (buffer + i) != match;
+        if((buffer + i) == match)
+            continue;
+
+        /* is value equal? */
+        check = (mtch[j] == buffer[i]) && 
+                (j < matchsize);
 
         if(check)
             ++j;
@@ -240,10 +247,12 @@ uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
             break;
     }
 
-    if((buffer + i) == end)
+    if( (uint32_t)(buffer + i) == end)
         return NULL;
 
-    return (buffer + i - matchsize);
+    trace("buffer + i: 0x%x\n", buffer +i );
+
+    return (uint32_t *) (buffer + i - matchsize);
 }
 
 static void memory_update_table(uint8_t index, uint32_t loc, uint8_t blocks)

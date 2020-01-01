@@ -30,10 +30,13 @@ SOFTWARE.
 
 #include "../memory/memory.h"
 
+#ifndef QUIET_KERNEL
+    #include "../screen/screen_basic.h"
+#endif
+
 #define DRIVER_STRUCT_HEXSIGN   0xB14D05
 #define DRIVER_STRUCT_CHARSIGN  "VIREODRV"
 
-#define DRIVER_TYPE_PCI         0x01 << 24;
 
 struct DRIVER_SEARCH
 {
@@ -41,6 +44,9 @@ struct DRIVER_SEARCH
     char sign2[8];
     unsigned int type;
 } __attribute__((packed));
+
+static void driver_search_pciAll(void);
+
 
 void driver_init(void)
 {
@@ -50,15 +56,34 @@ void driver_init(void)
 static void driver_search_pciAll(void)
 {
     uint8_t i;
-    uint32_t info, driver_type;
+    uint32_t info, driver_type, *driver_loc;
+    struct DRIVER_SEARCH drv = {DRIVER_STRUCT_HEXSIGN, "VIREODRV", 0};
     uint32_t *devicelist = pciGetAllDevices();
     
+    trace("&drv: 0x%x\n", &drv);
+    trace("&start: 0x%x\n", memory_getKernelStart());
+    trace("&end: 0x%x\n", memory_getMallocStart());
+    trace("matchsize = %i\n", sizeof(struct DRIVER_SEARCH));
+
     /* search for internal drivers */
-    for(i = 0; i < 256; ++i)
+    for(i = 0; i < 255; ++i)
     {
+        if(devicelist[i] == 0)
+            break;
+
         info = pciGetInfo(devicelist[i]);
         driver_type = info | DRIVER_TYPE_PCI;
-        struct DRIVER_SEARCH drv = {DRIVER_STRUCT_HEXSIGN, DRIVER_STRUCT_CHARSIGN, driver_type};
-        memsrch((void *) drv, sizeof(struct DRIVER_SEARCH), /* get start kernel from memory.c */, /*end is malloc start */);
+        trace("driver_type: %x\n", driver_type);
+
+        drv.type = driver_type;
+
+        driver_loc = memsrch((void *) &drv, sizeof(struct DRIVER_SEARCH), memory_getKernelStart(), memory_getMallocStart());
+
+        trace("[DRIVER] found driver for device %x ", devicelist[i]);
+        trace("at 0x%x\n", driver_loc);
+
     }
+
+    demalloc(devicelist);
 }
+

@@ -34,6 +34,8 @@ struct DRIVER
     unsigned int interface;
 } __attribute__((packed));
 
-void driver_search_pciAll(void);
+#define DRIVER_TYPE_PCI         0x01 << 24
+
+void driver_init(void);
 
 #endif

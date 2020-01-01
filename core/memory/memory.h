@@ -25,10 +25,14 @@ SOFTWARE.
 #define __MEMORY_H__
 
 unsigned char memory_init(void);
+void *memory_paging_tables_loc(void);
 void vmalloc(void);
 void *malloc(unsigned int size);
 void demalloc(void *ptr);
-unsigned int memory_getAvailable();
+unsigned int memory_getAvailable(void);
+unsigned int memory_getKernelStart(void);
+unsigned int memory_getMallocStart(void);
+
 unsigned int *memsrch(void *match, unsigned int matchsize, unsigned int start, unsigned int end);
 
 #endif

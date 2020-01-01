@@ -91,7 +91,7 @@ static void paging_create_tables(void)
     uint32_t available_mem, page_tables, amount_mem;
     uint32_t i, table_loc; /* for-loop */
 
-    page_dir = memory_paging_tables_loc();
+    page_dir = (uint32_t *) memory_paging_tables_loc();
     available_mem = (page_dir[0] * 1000);
 
     /* here's some math; first up: the amount of page tables required to map all of the memory available */

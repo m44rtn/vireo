@@ -72,6 +72,8 @@ void pci_init(void)
                 #endif
                 
                 PCI_DEV_LIST[i] = (uint32_t) ((bus & 0xFF << 24) | (device << 16) | (func << 8) | (class & 0xFF));
+
+                ++i;
             }
         }
     }
@@ -118,8 +120,10 @@ uint32_t *pciGetAllDevices(void)
     uint8_t i;
     uint32_t *devicelist = malloc(256 * sizeof(uint32_t));
     
-    for(i = 0; i < 256; ++i)
+    for(i = 0; i < 255; ++i)
         devicelist[i] = PCI_DEV_LIST[i];
+  
+        
     return devicelist;
 }
 
@@ -135,11 +139,11 @@ uint32_t pciGetInfo(uint32_t device)
     uint32_t info, answer;
 
     uint8_t bus     = (uint8_t) ((device >> 24) & 0xFF);
-    uint8_t device  = (uint8_t) ((device >> 16) & 0xFF);
+    uint8_t dev     = (uint8_t) ((device >> 16) & 0xFF);
     uint8_t func    = (uint8_t) ((device >> 8)  & 0xFF);
 
     /* get the subclass */
-    answer = ((pciConfigRead(bus, device, func, 0x02) >> 16) & 0xFF);
+    answer = ((pciConfigRead(bus, dev, func, 0x02) >> 16) & 0xFF);
     
     info = ((device & 0xFF) << 8) | (answer & 0xFF);
 
