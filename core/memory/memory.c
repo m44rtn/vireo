@@ -241,7 +241,7 @@ uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
 
         if(check)
             ++j;
-        else if(mtch[j] != buffer[i] )
+        else if(mtch[j] != buffer[i] && j < matchsize)
             j = 0;
         else
             break;
