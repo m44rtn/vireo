@@ -35,8 +35,8 @@ SOFTWARE.
 
 #define PCI_DEVLIST_LENGTH          256
 
-/* I know there is a potential for more than 256 devices, but who cares
-just to be nice though, I'll mark it as TODO */
+/* PCI does support more than 256 devices, but Vireo doesn't (unless you change the define of course)
+    - 1 KiB*/
 static uint32_t PCI_DEV_LIST[PCI_DEVLIST_LENGTH];
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg);
@@ -72,7 +72,6 @@ void pci_init(void)
                 #endif
                 
                 PCI_DEV_LIST[i] = (uint32_t) ((bus & 0xFF << 24) | (device << 16) | (func << 8) | (class & 0xFF));
-
                 ++i;
             }
         }
@@ -145,9 +144,25 @@ uint32_t pciGetInfo(uint32_t device)
     /* get the subclass */
     answer = ((pciConfigRead(bus, dev, func, 0x02) >> 16) & 0xFF);
     
+    /* class and subclass */
     info = ((device & 0xFF) << 8) | (answer & 0xFF);
 
     return info;
+}
+
+/* gets register 0 (deviceID and vendorID) */
+uint32_t pciGetReg0(uint32_t device)
+{
+    uint32_t answer;
+
+    uint8_t bus     = (uint8_t) ((device >> 24) & 0xFF);
+    uint8_t dev     = (uint8_t) ((device >> 16) & 0xFF);
+    uint8_t func    = (uint8_t) ((device >> 8)  & 0xFF);
+
+    /* get the subclass */
+    answer = pciConfigRead(bus, dev, func, 0x00);
+
+    return answer;
 }
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg){

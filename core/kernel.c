@@ -94,6 +94,8 @@ void init_env(void)
     paging_init();
 
     pci_init();
+
+    driver_init();
 }
 
 void main(void)
@@ -114,8 +116,6 @@ void main(void)
     trace("functionloc: 0x%x\n", (uint32_t)place | 12);
 
     ASM_CALL_FUNC(*(uint32_t *)((uint32_t)place | 12));*/
-
-    driver_init();
 
     #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
     trace((char *) "[KERNEL] Vireo II build %i\n\n", BUILD);

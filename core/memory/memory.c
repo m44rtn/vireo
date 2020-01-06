@@ -235,11 +235,7 @@ uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
         if((buffer + i) == match)
             continue;
 
-        /* is value equal? */
-        check = (mtch[j] == buffer[i]) && 
-                (j < matchsize);
-
-        if(check)
+        if((mtch[j] == buffer[i]) && (j < matchsize))
             ++j;
         else if(mtch[j] != buffer[i] && j < matchsize)
             j = 0;
@@ -249,8 +245,6 @@ uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
 
     if( (uint32_t)(buffer + i) == end)
         return NULL;
-
-    trace("buffer + i: 0x%x\n", buffer +i );
 
     return (uint32_t *) (buffer + i - matchsize);
 }

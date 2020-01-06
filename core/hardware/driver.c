@@ -37,6 +37,7 @@ SOFTWARE.
 #define DRIVER_STRUCT_HEXSIGN   0xB14D05
 #define DRIVER_STRUCT_CHARSIGN  "VIREODRV"
 
+#define DRIVER_MAX_SUPPORTED    64
 
 struct DRIVER_SEARCH
 {
@@ -45,12 +46,25 @@ struct DRIVER_SEARCH
     unsigned int type;
 } __attribute__((packed));
 
-static void driver_search_pciAll(void);
+typedef struct
+{
+    uint32_t device;
+    uint32_t *driver;
+} DRIVER_LIST;
 
+/* with 64 drivers this list is 512 bytes */
+DRIVER_LIST drv_list[DRIVER_MAX_SUPPORTED];
+uint8_t cur_devices = 0;
+
+static void driver_search_pciAll(void);
 
 void driver_init(void)
 {
+    uint8_t i;
+
     driver_search_pciAll();
+
+    print("\n");
 }
 
 static void driver_search_pciAll(void)
@@ -59,11 +73,7 @@ static void driver_search_pciAll(void)
     uint32_t info, driver_type, *driver_loc;
     struct DRIVER_SEARCH drv = {DRIVER_STRUCT_HEXSIGN, "VIREODRV", 0};
     uint32_t *devicelist = pciGetAllDevices();
-    
-    trace("&drv: 0x%x\n", &drv);
-    trace("&start: 0x%x\n", memory_getKernelStart());
-    trace("&end: 0x%x\n", memory_getMallocStart());
-    trace("matchsize = %i\n", sizeof(struct DRIVER_SEARCH));
+    uint32_t *driverlist, *drvdevlist;
 
     /* search for internal drivers */
     for(i = 0; i < 255; ++i)
@@ -73,14 +83,22 @@ static void driver_search_pciAll(void)
 
         info = pciGetInfo(devicelist[i]);
         driver_type = info | DRIVER_TYPE_PCI;
-        trace("driver_type: %x\n", driver_type);
 
         drv.type = driver_type;
-
         driver_loc = memsrch((void *) &drv, sizeof(struct DRIVER_SEARCH), memory_getKernelStart(), memory_getMallocStart());
 
-        trace("[DRIVER] found driver for device %x ", devicelist[i]);
-        trace("at 0x%x\n", driver_loc);
+        if(driver_loc)
+        {
+            drv_list[cur_devices].device = devicelist[i];
+            drv_list[cur_devices].driver = driver_loc;
+            
+            #ifndef QUIET_KERNEL
+            trace("[DRIVER SUBSYSTEM] Found driver for device %x @ ", pciGetReg0(drv_list[cur_devices].device));
+            trace("0x%x\n", drv_list[cur_devices].driver);
+            #endif
+
+            ++cur_devices;    
+        }
 
     }
 

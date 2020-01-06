@@ -30,5 +30,6 @@ unsigned int *pciGetDevices(unsigned char class, unsigned char subclass);
 unsigned int *pciGetAllDevices(void);
 
 unsigned int pciGetInfo(unsigned int device);
+unsigned int pciGetReg0(unsigned int device);
 
 #endif
