@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __IDECONTROLLER_H__
 #define __IDECONTROLLER_H__
 
-void IDEControllerInit(unsigned int device);
+void IDEController_handler(unsigned int *data);
 
 
 #endif

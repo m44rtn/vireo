@@ -30,17 +30,20 @@ SOFTWARE.
 #define IDEController_PCI_CLASS_SUBCLASS    0x101
 
 /* the indentifier for drivers + information about our driver */
-struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI),(uint32_t) IDEControllerInit};
+struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI),(uint32_t) IDEController_handler};
 
 uint32_t device_list[4];
 uint8_t registered_devices = 0; /* amount of devices registered, isn't the nicest solution */
 
+static void IDEControllerInit(unsigned int device);
 
-/*const uint16_t sign1 = (const uint16_t) 0xB14D05; /* 'BirdOS' 
-const char *sign2 = "VIREODRV";
-const uint32_t interface = (uint32_t) hello_world;*/
 
-void IDEControllerInit(uint32_t device)
+void IDEController_handler(uint32_t *data)
+{
+    trace("[IDE_DRIVER] passed argument: %s\n", data);
+}
+
+static void IDEControllerInit(uint32_t device)
 {
     if(registered_devices < 3)
         device_list[registered_devices] = device;

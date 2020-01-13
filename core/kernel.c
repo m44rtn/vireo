@@ -101,6 +101,7 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
+    char *hi = "ALLE LEUTE FALLEN UM";
     
     exit_code = screen_basic_init();
    
@@ -109,13 +110,7 @@ void main(void)
     
     init_env();
     
-   /* uint32_t *place = memsrch((void *) &test, 12, 0x10000, 0x3e4dbff);
-
-    trace("interface: 0x%x\n", (uint32_t) hello_world);
-    trace("place: 0x%x\n", place);
-    trace("functionloc: 0x%x\n", (uint32_t)place | 12);
-
-    ASM_CALL_FUNC(*(uint32_t *)((uint32_t)place | 12));*/
+    driver_exec(DRIVER_CODE_IDECONTROLLER, (uint32_t *) hi);
 
     #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
     trace((char *) "[KERNEL] Vireo II build %i\n\n", BUILD);

@@ -29,17 +29,26 @@ global ASM_CALL_FUNC
 ASM_CALL_FUNC:
 ;   calls with a pointer
 ;   input:
-;       - pointer
+;       - function pointer
+;       - data struct pointer
 ;   output:
 ;       - N/A
 
 push ebp
 mov ebp, esp
 
-; port is first, data second
+; function pointer
 mov edi, [ebp + 8]
 
-push 0xB14D05
+; data struct pointer
+mov esi, [ebp + 12]
+
+cmp esi, 0
+je .exec
+
+push esi
+
+.exec:
 call edi
 
 mov esp, ebp

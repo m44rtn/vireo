@@ -228,7 +228,6 @@ uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
     uint32_t i, j = 0;
     uint8_t *buffer = (uint8_t *) start;
     uint8_t *mtch = (uint8_t *) match;
-    uint32_t check;
 
     for(i = 0; i < (end - start); ++i)
     {

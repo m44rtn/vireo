@@ -219,11 +219,11 @@
         the kernel will ignore the driver. The next part is the type and it states what kind of devices the driver is for, this is further explained below table 5.1. Last but not least, the interface. The value of <code>interface</code> 
         is assumed to be the pointer to the main handler function of the driver. This handler function is expected to be the only function to handle the communications with and requests from the kernel.
 
-        <table style="width: 12%">
+        <table style="width: 20%">
             <caption>Table 5.1 - Driver signature values</caption>
             <colgroup>
-                <col width="6%">
-                <col width="6%">
+                <col width="10%">
+                <col width="10%">
             </colgroup>
             <th>Name</th>
             <th>Value</th>
@@ -235,11 +235,33 @@
                 <td><code>sign2</code></td>
                 <td>"VIREODRV" (without quotes)</td>
             </tr>
-            
         </table>
         
         //TODO type stuff
-        
+        <br>
+        <b>How the driver type works</b>
+        <br>
+        The driver type in the DRIVER struct works different for every device type. Currently, the kernel supports
+        only PCI devices. This will change over time though. The information in the lower part (bits 0 through 23) of the type is 
+        completely dependent on the value in bits 24 through 31. Bits 24 through 31 will be referred to as <code>driver_type</code>.
+        <br><br>
+
+        <table style="width: 20%">
+            <caption>Table 5.2 - Possible values in <code>driver_type</code></caption>
+            <colgroup>
+                <col width="10%">
+                <col width="10%">
+            </colgroup>
+            <th>Value</th>
+            <th>Description</th>
+            <tr>
+                <td>1</td>
+                <td>The driver is for PCI devices</td>
+            </tr>
+        </table>
+
+        <br>
+        PCI device drivers currently only store the supported device subclass (at bit 0) and class (at bit 8).
         <br>
         <br>
 
