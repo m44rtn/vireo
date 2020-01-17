@@ -33,17 +33,24 @@ SOFTWARE.
 #include "../screen/screen_basic.h"
 #endif
 
-#define PCI_DEVLIST_LENGTH          256
+#define PCI_DEVLIST_LENGTH          64
 
-/* PCI does support more than 256 devices, but Vireo doesn't (unless you change the define of course)
-    - 1 KiB*/
-static uint32_t PCI_DEV_LIST[PCI_DEVLIST_LENGTH];
+typedef struct
+{
+    uint32_t device;
+    uint32_t Reg0;
+} PCI_DEV;
+
+
+/* PCI does support more than 64 devices, but Vireo doesn't (unless you change the define of course)
+    - 512 bytes */
+static PCI_DEV PCI_DEV_LIST[PCI_DEVLIST_LENGTH];
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg);
 
 void pci_init(void)
 {	
-    uint8_t i = 0;
+    uint32_t i = 0;
     uint16_t bus, device, func, class;
     uint16_t vendorid, deviceid;
     uint32_t val;
@@ -67,11 +74,12 @@ void pci_init(void)
 
                 #ifndef QUIET_KERNEL
                 screen_set_hexdigits(4);
-                trace((char *) "[PCI] found device %x:", deviceid);
+                trace((char *) "[PCI] Found device %x:", deviceid);
                 trace((char *) "%x\n", vendorid);
                 #endif
                 
-                PCI_DEV_LIST[i] = (uint32_t) ((bus & 0xFF << 24) | (device << 16) | (func << 8) | (class & 0xFF));
+                PCI_DEV_LIST[i].device = (uint32_t) ((bus & 0xFF << 24) | (device << 16) | (func << 8) | (class & 0xFF));
+                PCI_DEV_LIST[i].Reg0   = (deviceid << 16) | vendorid;
                 ++i;
             }
         }
@@ -88,21 +96,21 @@ uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
     uint8_t class_fromlist, bus, device, func, answer;
     uint32_t *devicelist = malloc(512 * sizeof(uint32_t));
 
-    uint8_t i = 0, j = 1;
+    uint32_t i = 0, j = 1;
     for(; i < PCI_DEVLIST_LENGTH - 1; ++i)
     {
-        class_fromlist = (uint8_t) (PCI_DEV_LIST[i] & 0xFF);
+        class_fromlist = (uint8_t) (PCI_DEV_LIST[i].device & 0xFF);
         if(class_fromlist == class)
         {
-            bus    = (uint8_t) ((PCI_DEV_LIST[i] >> 24) & 0xFF);
-            device = (uint8_t) ((PCI_DEV_LIST[i] >> 16) & 0xFF);
-            func   = (uint8_t) ((PCI_DEV_LIST[i] >> 8)  & 0xFF);   
+            bus    = (uint8_t) ((PCI_DEV_LIST[i].device >> 24) & 0xFF);
+            device = (uint8_t) ((PCI_DEV_LIST[i].device >> 16) & 0xFF);
+            func   = (uint8_t) ((PCI_DEV_LIST[i].device >> 8)  & 0xFF);   
 
             answer = ((pciConfigRead(bus, device, func, 0x02) >> 16) & 0xFF);
 
             if(answer == subclass)
             {
-                devicelist[j] = (uint32_t) (PCI_DEV_LIST[i] & (uint32_t)~0xFF);
+                devicelist[j] = (uint32_t) (PCI_DEV_LIST[i].device & (uint32_t)~0xFF);
                 ++j;
             }
         }
@@ -116,11 +124,11 @@ uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
 
 uint32_t *pciGetAllDevices(void)
 {
-    uint8_t i;
+    uint32_t i;
     uint32_t *devicelist = malloc(256 * sizeof(uint32_t));
     
-    for(i = 0; i < 255; ++i)
-        devicelist[i] = PCI_DEV_LIST[i];
+    for(i = 0; i < PCI_DEVLIST_LENGTH; ++i)
+        devicelist[i] = PCI_DEV_LIST[i].device;
   
         
     return devicelist;
@@ -153,16 +161,28 @@ uint32_t pciGetInfo(uint32_t device)
 /* gets register 0 (deviceID and vendorID) */
 uint32_t pciGetReg0(uint32_t device)
 {
-    uint32_t answer;
+    uint32_t answer, i;
 
-    uint8_t bus     = (uint8_t) ((device >> 24) & 0xFF);
-    uint8_t dev     = (uint8_t) ((device >> 16) & 0xFF);
-    uint8_t func    = (uint8_t) ((device >> 8)  & 0xFF);
+    for(i = 0; i < PCI_DEVLIST_LENGTH; ++i)
+    {
+        if(PCI_DEV_LIST[i].device == device)
+            break;
+    }
 
-    /* get the subclass */
-    answer = pciConfigRead(bus, dev, func, 0x00);
+    return PCI_DEV_LIST[i].Reg0;
+}
 
-    return answer;
+uint32_t pciGetDeviceByReg0(uint32_t Reg0)
+{
+    uint32_t i;
+
+    for(i = 0; i < PCI_DEVLIST_LENGTH; ++i)
+    {
+        if(PCI_DEV_LIST[i].Reg0 == Reg0)
+            break;
+    }
+
+    return PCI_DEV_LIST[i].device;
 }
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg){

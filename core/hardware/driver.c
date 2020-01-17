@@ -79,6 +79,9 @@ void driver_exec(uint32_t type, uint32_t *data)
         if(drv_list[i].type == type)
             break;
     
+    if(i >= DRIVER_MAX_SUPPORTED)
+        return;
+
     ASM_CALL_FUNC(drv_list[i].driver, data);
 }
 

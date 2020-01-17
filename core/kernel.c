@@ -110,9 +110,9 @@ void main(void)
     
     init_env();
     
-    driver_exec(DRIVER_CODE_IDECONTROLLER, (uint32_t *) hi);
+    driver_exec(pciGetInfo(pciGetDeviceByReg0(0x71118086)) | DRIVER_TYPE_PCI, (uint32_t *) hi);
 
-    #ifndef QUIET_KERNEL /* you can put this define in types.h and it'll have effect on all the modules */
+    #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
     trace((char *) "[KERNEL] Vireo II build %i\n\n", BUILD);
     #endif
             

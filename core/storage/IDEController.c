@@ -30,7 +30,7 @@ SOFTWARE.
 #define IDEController_PCI_CLASS_SUBCLASS    0x101
 
 /* the indentifier for drivers + information about our driver */
-struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI),(uint32_t) IDEController_handler};
+struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI),(uint32_t *) IDEController_handler};
 
 uint32_t device_list[4];
 uint8_t registered_devices = 0; /* amount of devices registered, isn't the nicest solution */
