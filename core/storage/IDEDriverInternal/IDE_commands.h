@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,32 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "IDEController.h"
-
-#include "../include/types.h"
-#include "../screen/screen_basic.h"
-#include "../hardware/driver.h"
-
-#define IDEController_PCI_CLASS_SUBCLASS    0x101
-
-/* the indentifier for drivers + information about our driver */
-struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI),(uint32_t *) IDEController_handler};
-
-uint32_t device_list[4];
-uint8_t registered_devices = 0; /* amount of devices registered, isn't the nicest solution */
-
-static void IDEControllerInit(unsigned int device);
+#ifndef __IDE_COMMANDS_H__
+#define __IDE_COMMANDS_H__
 
 
-void IDEController_handler(uint32_t *data)
-{
-    trace("[IDE_DRIVER] passed argument: %s\n", data);
-}
+#define IDE_COMMAND_INIT    0x00
+/*
+    Paramaters for the INIT command to the IDE driver are the following:
+        parameter1: internal PCI device ID (bus, device, function, class)
+        parameter2, parameter3, parameter4: Reserved -- zero or IDE driver specific
+*/
 
-static void IDEControllerInit(uint32_t device)
-{
-    if(registered_devices < 3)
-        device_list[registered_devices] = device;
+#define IDE_COMMAND_READ    0x01
+/* */
 
-    trace("[IDE_DRIVER] Kernel registered device: 0x%x\n", device);
-}
+
+#endif
