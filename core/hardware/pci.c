@@ -110,7 +110,7 @@ uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
 
             if(answer == subclass)
             {
-                devicelist[j] = (uint32_t) (PCI_DEV_LIST[i].device & (uint32_t)~0xFF);
+                devicelist[j] = (uint32_t) (PCI_DEV_LIST[i].device);
                 ++j;
             }
         }
@@ -118,7 +118,6 @@ uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
 
     /* store useful information in the first entry like the length of the array (maybe more in the future) */
     devicelist[0] = (uint32_t) j;
-
     return devicelist;
 }
 

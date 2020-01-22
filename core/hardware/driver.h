@@ -31,17 +31,17 @@ struct DRIVER
     unsigned int sign1;
     char sign2[8];
     unsigned int type;
-    unsigned int *interface;
+    unsigned int interface;
 } __attribute__ ((packed));
 
-struct DRIVER_PACKET
+typedef struct 
 {
-    uint16_t command;
-    uint32_t parameter1;
-    uint32_t parameter2;
-    uint32_t parameter3;
-    uint32_t parameter4;
-} __attribute__ ((packed));
+    unsigned short command;
+    unsigned int parameter1;
+    unsigned int parameter2;
+    unsigned int parameter3;
+    unsigned int parameter4;
+} __attribute__ ((packed)) DRIVER_PACKET;
 
 #define DRIVER_TYPE_PCI             0x01 << 24
 

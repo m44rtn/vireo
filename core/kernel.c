@@ -50,9 +50,10 @@ SOFTWARE.
 
 #include "dbg/dbg.h"
 
-
-/* remove */
 #include "hardware/driver.h"
+
+/* TODO: remove */
+#include "storage/IDE_commands.h"
 
 void init_env(void);
 void main(void);
@@ -101,7 +102,10 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
-    char *hi = "ALLE LEUTE FALLEN UM";
+    unsigned int *thingy;
+
+    DRIVER_PACKET bleep = {IDE_COMMAND_INIT, 0, 0xFF, 0xFF, 0xFF};
+    
     
     exit_code = screen_basic_init();
    
@@ -109,8 +113,13 @@ void main(void)
         while(1);
     
     init_env();
+
+    thingy = pciGetDevices(0x01, 0x01);
+    bleep.parameter1 = (uint32_t) thingy[1];
     
-    driver_exec(pciGetInfo(pciGetDeviceByReg0(0x71118086)) | DRIVER_TYPE_PCI, (uint32_t *) hi);
+    driver_exec(pciGetInfo(pciGetDeviceByReg0(0x71118086)) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
+
+    demalloc(thingy);
 
     #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
     trace((char *) "[KERNEL] Vireo II build %i\n\n", BUILD);
