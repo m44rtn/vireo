@@ -79,7 +79,7 @@ void pci_init(void)
                 #endif
                 
                 PCI_DEV_LIST[i].device = (uint32_t) ((bus & 0xFF << 24) | (device << 16) | (func << 8) | (class & 0xFF));
-                PCI_DEV_LIST[i].Reg0   = (deviceid << 16) | vendorid;
+                PCI_DEV_LIST[i].Reg0   = (uint32_t) (deviceid << 16) | vendorid;
                 ++i;
             }
         }
@@ -160,7 +160,7 @@ uint32_t pciGetInfo(uint32_t device)
 /* gets register 0 (deviceID and vendorID) */
 uint32_t pciGetReg0(uint32_t device)
 {
-    uint32_t answer, i;
+    uint32_t i;
 
     for(i = 0; i < PCI_DEVLIST_LENGTH; ++i)
     {

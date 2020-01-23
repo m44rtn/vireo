@@ -37,10 +37,8 @@ SOFTWARE.
 
 #include "util/util.h"
 
-
 #include "cpu/gdt.h"
 #include "cpu/interrupts/IDT.h"
-#include "cpu/pic.h"
 #include "cpu/cpu.h"
 
 #include "memory/memory.h"
@@ -50,6 +48,7 @@ SOFTWARE.
 
 #include "dbg/dbg.h"
 
+#include "hardware/pic.h"
 #include "hardware/driver.h"
 
 /* TODO: remove */

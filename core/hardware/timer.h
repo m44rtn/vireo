@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#ifndef __TIMER_H__
+#define __TIMER_H__
 
-unsigned int strlen(char *str);
-char* hexstr(unsigned int value, unsigned char digit_amount);
-char *intstr(unsigned int value);
-unsigned int digit_count(unsigned int value);
-unsigned int hex_digit_count(unsigned int value);
+unsigned int timer_getCurrentTick(void);
+void timer_incTicks(void);
 
-void memset(char *start, unsigned int size, char val);
-
-void sleep(unsigned int timeIn_ms);
+extern void PITInit(void);
 
 #endif

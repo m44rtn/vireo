@@ -27,7 +27,9 @@ SOFTWARE.
 
 #include "../../include/types.h"
 
-#include "../../screen/screen_basic.h"
+#ifndef QUIET_KERNEL
+    #include "../../screen/screen_basic.h"
+#endif
 
 #include "../../hardware/driver.h"
 
@@ -36,6 +38,8 @@ SOFTWARE.
 #include "../../io/io.h"
 
 #include "../../dbg/dbg.h"
+
+#include "../../util/util.h"
 
 #define IDEController_PCI_CLASS_SUBCLASS    0x101
 
@@ -55,10 +59,8 @@ SOFTWARE.
 
 #define IDE_DRIVER_MAX_DRIVES   4
 
+#define IDE_DRIVER_TYPE_PATA    0x00
 #define IDE_DRIVER_TYPE_PATAPI  0x01
-#define IDE_DRIVER_TYPE_SATAPI  0x02
-#define IDE_DRIVER_TYPE_PATA    0x03
-#define IDE_DRIVER_TYPE_SATA    0x04
 #define IDE_DRIVER_TYPE_UNKNOWN 0xFF
 
 
@@ -68,19 +70,17 @@ typedef struct
     /* there'll be more here, probably */
 } DRIVE_INFO;
 
-DRIVE_INFO drive_info_t[IDE_DRIVER_MAX_DRIVES];
 
 static void IDEDriverInit(unsigned int device);
-static void IDE_software_reset(uint32_t port);
-static void IDE_wait(void);
-static uint32_t IDE_getDriveType(uint32_t port);
+static void IDE_software_reset(uint16_t port);
+static uint8_t IDE_getDriveType(uint32_t port);
 
 
-
+DRIVE_INFO drive_info_t[IDE_DRIVER_MAX_DRIVES];
 uint32_t PCI_controller;
 
 /* the indentifier for drivers + information about our driver */
-struct DRIVER drv = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
+struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
 
 
 void IDEController_handler(uint32_t *data)
@@ -108,10 +108,13 @@ static void IDEDriverInit(uint32_t device)
     /* technically, you should first enumerate the PCI bus but it's not reliable and 
     most controllers support the standard IO ports at boot up anyway. */
     uint8_t drive, slavebit;
-    uint16_t port, type;
-    uint32_t hi, lo;
+    uint16_t port;
 
+    #ifndef QUIET_KERNEL
+    print((char *) "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mark I\n");
     trace((char *) "[IDE_DRIVER] Kernel reported PCI controller %x\n", device);
+    #endif
+
     PCI_controller = device;
     
     IDE_software_reset(ATA_PORT_PRIMARY_CONTROL);
@@ -121,55 +124,47 @@ static void IDEDriverInit(uint32_t device)
     for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
     {
         port = (drive > 1) ? ATA_SECONDARY_DATA : ATA_PRIMARY_DATA;
-        slavebit = (drive > 1) ? drive - 2 : drive;
+        slavebit = (drive > 1) ? (uint8_t) (drive - 2) : drive;
 
-        ASM_OUTB(port | ATA_PORT_SELECT, 0xA0 | drive << 4);
+        ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
 
         /* TODO: 
             - cleanup 
             - ATAPI READ
             - ATA READ/WRITE?*/
-        IDE_wait();
-
-        lo =  ASM_INB(port | ATA_PORT_LBAMID);
-        hi = ASM_INB(port | ATA_PORT_LBAHI);
+        sleep(1);
 
         drive_info_t[drive].type = IDE_getDriveType(port);
 
-        trace("[IDE_DRIVER] found drive type: %x\n", type);
+        trace("[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
     }
     
-    print((char *) "\n");
+    #ifndef QUIET_KERNEL
+        print((char *) "\n");
+    #endif
 }
 
 
-static void IDE_software_reset(uint32_t port){
-    uint8_t value = ASM_INB(port);
+static void IDE_software_reset(uint16_t port){
+    uint8_t value = (uint8_t) ASM_INB(port);
     ASM_OUTB(port, (value | 0x04));
   
-    IDE_wait();
+    sleep(1);
 
-    ASM_OUTB(port, 0);
+    /* unset the reset bit */
+    value = (uint8_t) ASM_INB(port);
+    ASM_OUTB(port, (value & 0xFFFB));
 }
 
-static void IDE_wait(void)
-{
-    /* wait at least 400ns (this is way more because of how ASM_INB works) */
-    ASM_INB(ATA_PORT_PRIMARY_CONTROL);
-    ASM_INB(ATA_PORT_PRIMARY_CONTROL);
-    ASM_INB(ATA_PORT_PRIMARY_CONTROL);
-    ASM_INB(ATA_PORT_PRIMARY_CONTROL);
-}
-
-static uint32_t IDE_getDriveType(uint32_t port)
+static uint8_t IDE_getDriveType(uint32_t port)
 {
     /* expects the ATA_PORT command to be already send to the port */
-    uint16_t lo =  ASM_INB(port | ATA_PORT_LBAMID);
-    uint16_t hi = ASM_INB(port | ATA_PORT_LBAHI);
 
-    if(hi == 0xEB && lo == 0x14) return IDE_DRIVER_TYPE_PATAPI;
-    else if(hi == 0x96 && lo == 0x69) return IDE_DRIVER_TYPE_SATAPI;
-    else if(hi == 0 && lo == 0) return IDE_DRIVER_TYPE_PATA;
-    else if(hi == 0xC3 && lo == 0x3C) return IDE_DRIVER_TYPE_SATA;
-    else return IDE_DRIVER_TYPE_UNKNOWN;
+    /* use IDENTIFY */    
+    uint16_t lo = ASM_INB((uint16_t) (port | ATA_PORT_LBAMID));
+    uint16_t hi = ASM_INB((uint16_t) (port | ATA_PORT_LBAHI));
+
+    if(hi == 0xEB && lo == 0x14) return (uint8_t) IDE_DRIVER_TYPE_PATAPI;
+    else if(hi == 0 && lo == 0) return (uint8_t) IDE_DRIVER_TYPE_PATA;
+    else return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
 }

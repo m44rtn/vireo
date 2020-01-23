@@ -27,6 +27,8 @@ SOFTWARE.
 
 #include "../io/io.h"
 
+#include "timer.h"
+
 #define PIC_MASTER_CMNDSTAT     0x20
 #define PIC_MASTER_IMRDATA      0x21
 
@@ -75,6 +77,9 @@ void PIC_controller_setup(void)
     ASM_OUTB(PIC_MASTER_CMNDSTAT, 0x00);
     ASM_IOWAIT();
     ASM_OUTB(PIC_SLAVE_CMNDSTAT,  0x00);
+
+    /* then we configure the PIT */
+    PITInit();
 }
 
 void PIC_mask(unsigned char IRQ)

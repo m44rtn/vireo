@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,17 +21,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __UTIL_H__
-#define __UTIL_H__
+#include "timer.h"
 
-unsigned int strlen(char *str);
-char* hexstr(unsigned int value, unsigned char digit_amount);
-char *intstr(unsigned int value);
-unsigned int digit_count(unsigned int value);
-unsigned int hex_digit_count(unsigned int value);
+#include "../include/types.h"
 
-void memset(char *start, unsigned int size, char val);
+static uint32_t ticks = 0;
 
-void sleep(unsigned int timeIn_ms);
+uint32_t timer_getCurrentTick(void)
+{
+    return ticks;
+}
 
-#endif
+void timer_incTicks(void)
+{
+    if(ticks == 0xFFFFFFFF) 
+        ticks = 0;
+    else
+        ++ticks;
+}

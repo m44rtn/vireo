@@ -25,6 +25,8 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#include "../hardware/timer.h"
+
 unsigned int strlen(char *str)
 {
     uint32_t i = 0;
@@ -107,4 +109,18 @@ void memset(char *start, size_t size, char val)
 {
 	while(size--)
 		start[size] = val;
+}
+
+void sleep(uint32_t timeIn_ms)
+{
+	uint32_t current, wait_for;
+	current = timer_getCurrentTick();
+	wait_for	 = current + timeIn_ms;
+
+	/* should *in theory* stop you from possibly having a 7 week sleep when the computer is already on for 7 weeks. 
+	   if not, I'm sorry, but also: many thanks for using Vireo for that long! :) */
+	if(current + timeIn_ms >= 0xFFFFFFFF)
+		wait_for = timeIn_ms - (0xFFFFFFFF - current);
+
+	while( (current = timer_getCurrentTick()) != wait_for);
 }

@@ -23,7 +23,8 @@ SOFTWARE.
 
 #include "isr.h"
 
-#include "../pic.h"
+#include "../../hardware/pic.h"
+#include "../../hardware/timer.h"
 
 #include "../../include/types.h"
 
@@ -48,6 +49,7 @@ void ISR_0E_handler(void)
 
 void ISR_20_HANDLER(void)
 {
+    timer_incTicks();
     PIC_EOI(0);
 }
 
