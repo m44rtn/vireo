@@ -35,6 +35,8 @@ SOFTWARE.
 
 #include "../../io/io.h"
 
+#include "../../dbg/dbg.h"
+
 #define IDEController_PCI_CLASS_SUBCLASS    0x101
 
 #define ATA_PRIMARY_DATA      0x1F0
@@ -60,10 +62,19 @@ SOFTWARE.
 #define IDE_DRIVER_TYPE_UNKNOWN 0xFF
 
 
+typedef struct
+{
+    uint8_t type;
+    /* there'll be more here, probably */
+} DRIVE_INFO;
+
+DRIVE_INFO drive_info_t[IDE_DRIVER_MAX_DRIVES];
+
 static void IDEDriverInit(unsigned int device);
 static void IDE_software_reset(uint32_t port);
 static void IDE_wait(void);
 static uint32_t IDE_getDriveType(uint32_t port);
+
 
 
 uint32_t PCI_controller;
@@ -80,6 +91,13 @@ void IDEController_handler(uint32_t *data)
     {
         case IDE_COMMAND_INIT:
             IDEDriverInit(drv->parameter1);
+        break;
+
+        case IDE_COMMAND_READ:
+        break;
+
+        default:
+            dbg_assert(0);
         break;
     }
 }
@@ -116,7 +134,8 @@ static void IDEDriverInit(uint32_t device)
         lo =  ASM_INB(port | ATA_PORT_LBAMID);
         hi = ASM_INB(port | ATA_PORT_LBAHI);
 
-        type = IDE_getDriveType(port);
+        drive_info_t[drive].type = IDE_getDriveType(port);
+
         trace("[IDE_DRIVER] found drive type: %x\n", type);
     }
     
