@@ -55,7 +55,10 @@ SOFTWARE.
 #define ATA_PORT_LBAMID     0x04
 #define ATA_PORT_LBAHI      0x05
 #define ATA_PORT_SELECT     0x06
-#define ATA_PORT_COMSTAT    0x07 //command and status port
+#define ATA_PORT_COMSTAT    0x07
+
+#define ATAPI_IDENTIFY   0xA1
+#define ATA_IDENTIFY     0xEC
 
 #define IDE_DRIVER_MAX_DRIVES   4
 
@@ -73,7 +76,7 @@ typedef struct
 
 static void IDEDriverInit(unsigned int device);
 static void IDE_software_reset(uint16_t port);
-static uint8_t IDE_getDriveType(uint32_t port);
+static uint8_t IDE_getDriveType(uint32_t port, uint8_t slavebit);
 
 
 DRIVE_INFO drive_info_t[IDE_DRIVER_MAX_DRIVES];
@@ -107,7 +110,7 @@ static void IDEDriverInit(uint32_t device)
 {
     /* technically, you should first enumerate the PCI bus but it's not reliable and 
     most controllers support the standard IO ports at boot up anyway. */
-    uint8_t drive, slavebit;
+    uint8_t drive, slavebit, type;
     uint16_t port;
 
     #ifndef QUIET_KERNEL
@@ -120,21 +123,22 @@ static void IDEDriverInit(uint32_t device)
     IDE_software_reset(ATA_PORT_PRIMARY_CONTROL);
     IDE_software_reset(ATA_PORT_SECONDARY_CONTROL);
 
+    /* disable IRQs */
+    /*ASM_OUTB(ATA_PRIMARY_DATA, 2);
+    ASM_OUTB(ATA_SECONDARY_DATA, 2);*/
+
     /* get the drive types */
     for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
     {
         port = (drive > 1) ? ATA_SECONDARY_DATA : ATA_PRIMARY_DATA;
         slavebit = (drive > 1) ? (uint8_t) (drive - 2) : drive;
 
-        ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
-
         /* TODO: 
             - cleanup 
             - ATAPI READ
             - ATA READ/WRITE?*/
-        sleep(1);
-
-        drive_info_t[drive].type = IDE_getDriveType(port);
+                
+        drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
 
         trace("[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
     }
@@ -156,15 +160,64 @@ static void IDE_software_reset(uint16_t port){
     ASM_OUTB(port, (value & 0xFFFB));
 }
 
-static uint8_t IDE_getDriveType(uint32_t port)
+static uint8_t IDE_getDriveType(uint32_t port, uint8_t slavebit)
 {
-    /* expects the ATA_PORT command to be already send to the port */
+    /* use IDENTIFY */ 
+    uint16_t status = 0;
+    uint16_t *buffer;
+    uint16_t lo, hi;
+    uint8_t err;
+    uint8_t type = IDE_DRIVER_TYPE_UNKNOWN;
 
-    /* use IDENTIFY */    
-    uint16_t lo = ASM_INB((uint16_t) (port | ATA_PORT_LBAMID));
-    uint16_t hi = ASM_INB((uint16_t) (port | ATA_PORT_LBAHI));
+    ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
+    sleep(1);
 
-    if(hi == 0xEB && lo == 0x14) return (uint8_t) IDE_DRIVER_TYPE_PATAPI;
-    else if(hi == 0 && lo == 0) return (uint8_t) IDE_DRIVER_TYPE_PATA;
-    else return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
+    /*ASM_OUTB(port | ATA_PORT_LBAHI, 0);
+    ASM_OUTB(port | ATA_PORT_LBALOW, 0);
+    ASM_OUTB(port | ATA_PORT_LBAMID, 0);
+
+    /* send the IDENTIFY command - causes general protection fault*/
+    /*ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATA_IDENTIFY);
+    /*sleep(1);*/
+    
+    if(!ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT)))
+        return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
+    
+    /* wait until BSY clears */
+    while(ASM_INB((uint32_t) (port | ATA_PORT_COMSTAT)) & 0x80);
+    
+    /* wait for DRQ and/or ERR sets*/
+   while(status = ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT)))
+    {
+        if(status & 0x01)
+        {
+            err = (uint8_t) 1;
+            break;
+        }
+        if(status & 0x08) break;
+    }
+
+    /* check one last time for ERR */
+   if(err)
+    {
+        lo = ASM_INB((uint16_t) (port | ATA_PORT_LBAMID));
+        hi = ASM_INB((uint16_t) (port | ATA_PORT_LBAHI));
+
+        if(hi == 0xEB && lo == 0x14) return IDE_DRIVER_TYPE_PATAPI;
+        else if(hi == 0x96 && lo == 0x69) return IDE_DRIVER_TYPE_PATAPI;
+        else if(!(hi == 0 && lo == 0)) return IDE_DRIVER_TYPE_UNKNOWN;
+
+        ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATAPI_IDENTIFY);
+    }
+        
+
+    buffer = malloc(256 * sizeof(uint16_t));
+    trace("buffer: 0x%x\n", buffer);
+    
+    ASM_INSW((uint32_t) port, 256, buffer);
+    
+    demalloc(buffer);
+
+    return (uint8_t) IDE_DRIVER_TYPE_PATA;
+    
 }

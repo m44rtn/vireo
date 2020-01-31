@@ -28,6 +28,7 @@ CCFLAGS := -nostdlib -ffreestanding -g -O2 -std=c89 $(WARNINGS)
 ASFLAGS := -w all -f elf32 #--fatal-warnings
 
 CC := i686-elf-gcc
+LD := i686-elf-ld
 AC := nasm
 
 .PHONY: all clean todo run assembly iso
@@ -36,7 +37,7 @@ todo:
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
 all: clean $(OBJFILES) $(ASOBJFILES)
-	@$(CC)  -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
+	@$(CC) -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
 	@xenops --file core/include/kernel_info.h --quiet
@@ -55,6 +56,8 @@ iso:
 	cp bin/kernel.sys grub/boot/kernel.sys
 	grub-mkrescue -o birdos.iso grub/
 
+map:
+	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES)
 
 run:
 	vboxmanage startvm "BirdOS" -E VBOX_GUI_DBG_ENABLED=true

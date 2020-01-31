@@ -57,7 +57,9 @@ ASM_OUTL:
 push ebp
 mov ebp, esp
 
+; data
 mov eax, [ebp + 12]
+; port
 mov edx, [ebp + 8] 
 
 out dx, eax
@@ -115,6 +117,31 @@ mov esp, ebp
 pop ebp
 
 ret
+
+global ASM_INSW
+ASM_INSW:
+; gets as much data from a port as you would like
+;   input:
+;       - port, WORD
+;       - amount of words, DWORD
+;       - buffer
+;   output:
+;       - N/A
+
+push ebp
+mov ebp, esp
+
+mov edi, DWORD [ebp + 16] ; buffer
+mov ecx, DWORD [ebp + 12] ; words
+mov edx, DWORD [ebp + 8]  ; port
+
+rep insw
+
+mov esp, ebp
+pop ebp
+
+ret
+
 
 global ASM_IOWAIT
 ASM_IOWAIT:
