@@ -23,6 +23,7 @@ bits 32
 
 section .text
 global ASM_OUTB
+extern trace
 ASM_OUTB:
 ; throws data to a port
 ;   input:

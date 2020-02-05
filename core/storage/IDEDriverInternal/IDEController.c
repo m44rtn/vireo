@@ -148,7 +148,6 @@ static void IDEDriverInit(uint32_t device)
     #endif
 }
 
-
 static void IDE_software_reset(uint16_t port){
     uint8_t value = (uint8_t) ASM_INB(port);
     ASM_OUTB(port, (value | 0x04));
@@ -166,58 +165,52 @@ static uint8_t IDE_getDriveType(uint32_t port, uint8_t slavebit)
     uint16_t status = 0;
     uint16_t *buffer;
     uint16_t lo, hi;
-    uint8_t err;
-    uint8_t type = IDE_DRIVER_TYPE_UNKNOWN;
+    uint8_t type = IDE_DRIVER_TYPE_PATA;
 
     ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
-    sleep(1);
 
-    /*ASM_OUTB(port | ATA_PORT_LBAHI, 0);
-    ASM_OUTB(port | ATA_PORT_LBALOW, 0);
-    ASM_OUTB(port | ATA_PORT_LBAMID, 0);
+    /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
+       this is not documented anywhere on wiki.osdev.org, so this may be virtualbox specific.
+       to avoid the #GP we first check if we're dealing with a PATAPI or PATA device */
 
-    /* send the IDENTIFY command - causes general protection fault*/
-    /*ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATA_IDENTIFY);
-    /*sleep(1);*/
+    lo = ASM_INB((uint16_t) (port | ATA_PORT_LBAMID)) & 0xFF;
+    hi = ASM_INB((uint16_t) (port | ATA_PORT_LBAHI)) & 0xFF;
     
+    if(hi == 0xEB && lo == 0x14) 
+        type = IDE_DRIVER_TYPE_PATAPI;
+
+    else if(hi == 0x96 && lo == 0x69) 
+        type = IDE_DRIVER_TYPE_PATAPI;
+
+    else if(!(hi == 0 && lo == 0)) 
+        return IDE_DRIVER_TYPE_UNKNOWN; 
+        
+
+    /* send the IDENTIFY command */
+    if(type == IDE_DRIVER_TYPE_PATA) ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATA_IDENTIFY);
+    else if(type == IDE_DRIVER_TYPE_PATAPI) ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATAPI_IDENTIFY);
+
+    /* if status = 0 then there's no such device */
     if(!ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT)))
         return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
     
     /* wait until BSY clears */
-    while(ASM_INB((uint32_t) (port | ATA_PORT_COMSTAT)) & 0x80);
+    while(ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT)) & 0x80);
     
     /* wait for DRQ and/or ERR sets*/
-   while(status = ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT)))
+   while(1)
     {
-        if(status & 0x01)
-        {
-            err = (uint8_t) 1;
-            break;
-        }
+        status = ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT));
+        if(status & 0x01) break;
         if(status & 0x08) break;
     }
-
-    /* check one last time for ERR */
-   if(err)
-    {
-        lo = ASM_INB((uint16_t) (port | ATA_PORT_LBAMID));
-        hi = ASM_INB((uint16_t) (port | ATA_PORT_LBAHI));
-
-        if(hi == 0xEB && lo == 0x14) return IDE_DRIVER_TYPE_PATAPI;
-        else if(hi == 0x96 && lo == 0x69) return IDE_DRIVER_TYPE_PATAPI;
-        else if(!(hi == 0 && lo == 0)) return IDE_DRIVER_TYPE_UNKNOWN;
-
-        ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATAPI_IDENTIFY);
-    }
-        
-
+ 
+    /* right now we discard the info returned by the device, though it may be useful to not discard this in the futute */
     buffer = malloc(256 * sizeof(uint16_t));
-    trace("buffer: 0x%x\n", buffer);
     
-    ASM_INSW((uint32_t) port, 256, buffer);
+    ASM_INSW((uint32_t) port, 255, (uint32_t) buffer);
     
     demalloc(buffer);
 
-    return (uint8_t) IDE_DRIVER_TYPE_PATA;
-    
+    return type;
 }

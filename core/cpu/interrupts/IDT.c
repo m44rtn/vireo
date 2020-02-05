@@ -106,12 +106,12 @@ static void IDT_default_list(void)
     IDT_add_handler(0x05, (uint32_t) ISR_05);
     IDT_add_handler(0x06, (uint32_t) ISR_06);
     IDT_add_handler(0x07, (uint32_t) ISR_07);
-    /*IDT_add_handler(0x08, (uint32_t) ISR_08);*/
+    IDT_add_handler(0x08, (uint32_t) ISR_08);
     IDT_add_handler(0x09, (uint32_t) ISR_09);
     IDT_add_handler(0x0A, (uint32_t) ISR_0A);
     IDT_add_handler(0x0B, (uint32_t) ISR_0B);
     IDT_add_handler(0x0C, (uint32_t) ISR_0C);
-    /*IDT_add_handler(0x0D, (uint32_t) ISR_0D);*/
+    IDT_add_handler(0x0D, (uint32_t) ISR_0D);
     IDT_add_handler(0x0E, (uint32_t) ISR_0E);
     
     IDT_add_handler(0x20, (uint32_t) ISR_20);   
