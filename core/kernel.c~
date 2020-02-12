@@ -117,8 +117,8 @@ void main(void)
     thingy = pciGetDevices(0x01, 0x01);
     bleep.parameter1 = (uint32_t) thingy[1];
     
-   /* devicelist = pciGetDevices(0x01, 0x01);*/
-    driver_exec(pciGetInfo(pciGetDeviceByReg0(0x71118086)/*devicelist[1]*/) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
+    devicelist = pciGetDevices(0x01, 0x01);
+    driver_exec(pciGetInfo(devicelist[1]) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
 
     demalloc(thingy);
 
