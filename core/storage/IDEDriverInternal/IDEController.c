@@ -124,8 +124,8 @@ static void IDEDriverInit(uint32_t device)
     IDE_software_reset(ATA_PORT_SECONDARY_CONTROL);
 
     /* disable IRQs */
-    /*ASM_OUTB(ATA_PRIMARY_DATA, 2);
-    ASM_OUTB(ATA_SECONDARY_DATA, 2);*/
+    ASM_OUTB(ATA_PRIMARY_DATA, 2);
+    ASM_OUTB(ATA_SECONDARY_DATA, 2);
 
     /* get the drive types */
     for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
@@ -195,22 +195,22 @@ static uint8_t IDE_getDriveType(uint32_t port, uint8_t slavebit)
         return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
     
     /* wait until BSY clears */
-    while(ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT)) & 0x80);
-    
+    while(ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT)) & 0x80); 
+        
     /* wait for DRQ and/or ERR sets*/
-   while(1)
+    while(1)
     {
         status = ASM_INB((uint16_t) (port | ATA_PORT_COMSTAT));
         if(status & 0x01) break;
         if(status & 0x08) break;
     }
  
-    /* right now we discard the info returned by the device, though it may be useful to not discard this in the futute */
+    /* right now we discard the info returned by the device, though it may be useful to not discard this in the future */
     buffer = malloc(256 * sizeof(uint16_t));
     
     ASM_INSW((uint32_t) port, 255, (uint32_t) buffer);
     
-    demalloc(buffer);
+    demalloc(buffer); 
 
     return type;
 }

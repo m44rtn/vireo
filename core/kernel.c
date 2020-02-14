@@ -102,7 +102,7 @@ void main(void)
 {
     unsigned int exit_code = 0;
     unsigned int *thingy;
-    unsigned int *devicelist;
+    unsigned int *devicelist, device;
 
     DRIVER_PACKET bleep = {IDE_COMMAND_INIT, 0, 0xFF, 0xFF, 0xFF};
     
@@ -117,8 +117,11 @@ void main(void)
     thingy = pciGetDevices(0x01, 0x01);
     bleep.parameter1 = (uint32_t) thingy[1];
     
-   /* devicelist = pciGetDevices(0x01, 0x01);*/
-    driver_exec(pciGetInfo(pciGetDeviceByReg0(0x71118086)/*devicelist[1]*/) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
+    devicelist = pciGetDevices(0x01, 0x01);
+    device = devicelist[1];
+    demalloc(devicelist);
+
+    driver_exec(pciGetInfo(pciGetDeviceByReg0(0x24CB8086)) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
 
     demalloc(thingy);
 
