@@ -121,7 +121,7 @@ void main(void)
     device = devicelist[1];
     demalloc(devicelist);
 
-    driver_exec(pciGetInfo(pciGetDeviceByReg0(0x24CB8086)) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
+    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
 
     demalloc(thingy);
 

@@ -168,6 +168,7 @@ static uint8_t IDE_getDriveType(uint32_t port, uint8_t slavebit)
     uint8_t type = IDE_DRIVER_TYPE_PATA;
 
     ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
+    sleep(1);
 
     /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
        this is not documented anywhere on wiki.osdev.org, so this may be virtualbox specific.
