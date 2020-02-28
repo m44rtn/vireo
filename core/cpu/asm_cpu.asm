@@ -1,3 +1,45 @@
+;MIT license
+;Copyright (c) 2020 Maarten Vermeulen
+
+;Permission is hereby granted, free of charge, to any person obtaining a copy
+;of this software and associated documentation files (the "Software"), to deal
+;in the Software without restriction, including without limitation the rights
+;to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+;copies of the Software, and to permit persons to whom the Software is
+;furnished to do so, subject to the following conditions:
+;
+;The above copyright notice and this permission notice shall be included in all
+;copies or substantial portions of the Software.
+;
+;THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+;AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+;OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+;SOFTWARE.
+
+
+; CPU_SAVE_STATE: these are the defines for the struct (you can find it in the C code somewhere)
+%define CPU_SAVE_STATE_EAX      (esi + 28)
+%define CPU_SAVE_STATE_ECX      (esi + 24)
+%define CPU_SAVE_STATE_EDX      (esi + 20)
+%define CPU_SAVE_STATE_EBX      (esi + 16)
+%define CPU_SAVE_STATE_ESP      (esi + 12)
+%define CPU_SAVE_STATE_EBP      (esi + 08)
+%define CPU_SAVE_STATE_ESI      (esi + 04)
+%define CPU_SAVE_STATE_EDI      (esi + 00)
+
+; CPU SAVE STATE: these are the defines for the stack, it looks nicer
+%define CPU_SAVE_STATE_STACK_EAX      (ebp + 40)
+%define CPU_SAVE_STATE_STACK_ECX      (ebp + 36)
+%define CPU_SAVE_STATE_STACK_EDX      (ebp + 32)
+%define CPU_SAVE_STATE_STACK_EBX      (ebp + 28)
+%define CPU_SAVE_STATE_STACK_ESP      (ebp + 24)
+%define CPU_SAVE_STATE_STACK_EBP      (ebp + 20)
+%define CPU_SAVE_STATE_STACK_ESI      (ebp + 16)
+%define CPU_SAVE_STATE_STACK_EDI      (ebp + 12)
+
 bits 32
 
 ;for lack of a better name
@@ -94,6 +136,52 @@ ASM_CPU_INVLPG:
     pop ebp
 ret
 
+
+global ASM_CPU_SAVE_STATE
+ASM_CPU_SAVE_STATE:
+; saves the current state of the cpu. it uses 
+; pushad (so that has to be done already before calling this function)
+; input:
+;   - pushad
+;   - pointer to struct to store the values
+; output:
+;   - N/A
+    push ebp
+    mov ebp, esp
+
+    mov esi, [ebp + 8]
+
+    mov eax, [CPU_SAVE_STATE_STACK_EDI]
+    mov [CPU_SAVE_STATE_EDI], eax
+
+    mov eax, [CPU_SAVE_STATE_STACK_ESI]
+    mov [CPU_SAVE_STATE_ESI], eax
+
+    mov eax, [CPU_SAVE_STATE_STACK_EBP]
+    mov [CPU_SAVE_STATE_EBP], eax
+
+    mov eax, [CPU_SAVE_STATE_STACK_ESP]
+    mov [CPU_SAVE_STATE_ESP], eax
+
+    mov eax, [CPU_SAVE_STATE_STACK_EBX]
+    mov [CPU_SAVE_STATE_EBX], eax
+    
+    mov eax, [CPU_SAVE_STATE_STACK_EDX]
+    mov [CPU_SAVE_STATE_EDX], eax
+
+    mov eax, [CPU_SAVE_STATE_STACK_ECX]
+    mov [CPU_SAVE_STATE_ECX], eax
+
+    mov eax, [CPU_SAVE_STATE_STACK_EAX]
+    mov [CPU_SAVE_STATE_EAX], eax
+
+    ; TODO: eip
+
+    mov esp, ebp
+    pop ebp
+ret
+
+
 global ASM_CHECK_CPUID
 ASM_CHECK_CPUID:
 ; check if CPUID is supported
@@ -177,7 +265,7 @@ ASM_CPU_GETNAME:
 
 ret
 
-
+; for the cpuid functions
 global CPUID_AVAILABLE
 CPUID_AVAILABLE db 0
 
@@ -191,4 +279,3 @@ CPUID_CPUNAME times 48 db 0
 
 global CPUID_SUPPORTED_FUNCTIONS
 CPUID_SUPPORTED_FUNCTIONS dd 0
-

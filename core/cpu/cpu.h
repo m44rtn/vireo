@@ -24,11 +24,28 @@ SOFTWARE.
 #ifndef __CPU_H__
 #define __CPU_H__
 
+typedef struct
+{
+    unsigned int edi;
+    unsigned int esi;
+    unsigned int ebp;
+    unsigned int esp;
+    unsigned int ebx;
+    unsigned int edx;
+    unsigned int ecx;
+    unsigned int eax;
+
+    /* TODO: eip */ 
+} __attribute__((packed)) CPU_STATE;
+
 void CPU_init(void);
+CPU_STATE CPU_get_state(void);
 
 extern void ASM_CHECK_CPUID(void);
 extern void ASM_CPU_GETVENDOR(void);
 extern void ASM_CPU_GETNAME(void);
 extern void ASM_CPU_GETFREQ(void);
+
+extern void ASM_CPU_SAVE_STATE(void);
 
 #endif

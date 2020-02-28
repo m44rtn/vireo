@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "isr.h"
+#ifndef __PANIC_H__
+#define __PANIC_H__
 
-#include "../../hardware/pic.h"
-#include "../../hardware/timer.h"
+#define PANIC_TYPE_EXCEPTION    "exception"
 
-#include "../../include/types.h"
+void panic(const char *type, const char *error);
 
-#include "../../screen/screen_basic.h"
-
-#include "../../io/io.h"
-
-#include "../../kernel/panic.h"
-
-void ISR_00_HANDLER(void)
-{
-    print((char *) "DIVISION_BY_ZERO\n");
-}
-
-void ISR_06_HANDLER(void)
-{
-    print((char *) "INVALID_OPCODE\n");
-}
-
-void ISR_0D_HANDLER(void)
-{
-    panic(PANIC_TYPE_EXCEPTION, "GENERAL_PROTECTION_FAULT");
-}
-
-void ISR_0E_handler(void)
-{
-    print((char *) "PAGE_FAULT\n");
-}
-
-void ISR_20_HANDLER(void)
-{
-    timer_incTicks();
-    PIC_EOI(0);
-}
-
-void ISR_21_HANDLER(void)
-{
-    uint16_t character = ASM_INB(0x60);
-    
-
-    PIC_EOI(1);
-}
+#endif

@@ -96,6 +96,7 @@ void init_env(void)
     pci_init();
 
     driver_init();
+
 }
 
 void main(void)

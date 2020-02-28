@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,49 +21,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "isr.h"
+#include "panic.h"
 
-#include "../../hardware/pic.h"
-#include "../../hardware/timer.h"
+#include "../cpu/cpu.h"
 
-#include "../../include/types.h"
+#include "../screen/screen_basic.h"
 
-#include "../../screen/screen_basic.h"
 
-#include "../../io/io.h"
-
-#include "../../kernel/panic.h"
-
-void ISR_00_HANDLER(void)
+void panic(const char *type, const char *error)
 {
-    print((char *) "DIVISION_BY_ZERO\n");
-}
+    CPU_STATE cpustate = CPU_get_state();
+    screen_set_hexdigits(8);
 
-void ISR_06_HANDLER(void)
-{
-    print((char *) "INVALID_OPCODE\n");
-}
+    print((char *)"--- kernel panic ---\n");
+    trace((char *)"Fatal %s: ", type);
+    trace((char *)"%s\n", error);
 
-void ISR_0D_HANDLER(void)
-{
-    panic(PANIC_TYPE_EXCEPTION, "GENERAL_PROTECTION_FAULT");
-}
+    print((char *)"Register dump:\n\t");
+    trace((char *)"eax=0x%x ", cpustate.eax);
+    trace((char *)"ecx=0x%x ", cpustate.ecx);
+    trace((char *)"edx=0x%x\n\t", cpustate.edx);
 
-void ISR_0E_handler(void)
-{
-    print((char *) "PAGE_FAULT\n");
-}
+    trace((char *)"ebx=0x%x ", cpustate.ebx);
+    trace((char *)"esp=0x%x ", cpustate.esp);
+    trace((char *)"ebp=0x%x\n\t", cpustate.ebp);
 
-void ISR_20_HANDLER(void)
-{
-    timer_incTicks();
-    PIC_EOI(0);
-}
+    trace((char *)"esi=0x%x ", cpustate.esi);
+    trace((char *)"edi=0x%x\n\n", cpustate.edi);
 
-void ISR_21_HANDLER(void)
-{
-    uint16_t character = ASM_INB(0x60);
-    
+    /* TODO: eip unimplemented */
+    trace((char *)"\teip=%s\n", (unsigned int) "Unimp.");
 
-    PIC_EOI(1);
+    print((char *)"--- end kernel panic ---\n");
+
+    screen_basic_disable_cursor();
+    screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
+
+    while(1);
 }

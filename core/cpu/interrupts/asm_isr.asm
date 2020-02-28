@@ -1,9 +1,14 @@
 bits 32
 
+extern ASM_CPU_SAVE_STATE
+extern state
+
 global ISR_00
 extern ISR_00_HANDLER
 ISR_00:
 pusha
+    push state
+    call ASM_CPU_SAVE_STATE
     cld
     call ISR_00_HANDLER
     jmp $ 
@@ -97,9 +102,14 @@ popa
 iret
 
 global ISR_0D
+extern ISR_0D_HANDLER
 ISR_0D:
 pusha
-    jmp $ 
+    push state
+    call ASM_CPU_SAVE_STATE
+    cld
+    call ISR_0D_HANDLER
+    jmp $
 popa
 iret
 

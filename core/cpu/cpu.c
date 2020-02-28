@@ -33,6 +33,8 @@ extern const uint8_t CPUID_AVAILABLE;
 extern const char *CPUID_VENDOR_STRING;
 extern const char *CPUID_CPUNAME_STRING;
 
+CPU_STATE state;
+
 void CPU_init(void)
 {
     ASM_CHECK_CPUID();
@@ -52,5 +54,10 @@ void CPU_init(void)
     trace((char *) "[CPU] %s\n\n", (unsigned int) CPUID_CPUNAME_STRING);
     #endif
 
-
 }
+
+CPU_STATE CPU_get_state(void)
+{
+    return state;
+}
+
