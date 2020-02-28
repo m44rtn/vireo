@@ -104,6 +104,8 @@ iret
 global ISR_0D
 extern ISR_0D_HANDLER
 ISR_0D:
+; general protection fault
+pop DWORD [ignore]
 pusha
     push state
     call ASM_CPU_SAVE_STATE
@@ -142,3 +144,5 @@ popa
 iret
 
 
+; for ignoring values without tampering with the registers
+ignore dd 0x0

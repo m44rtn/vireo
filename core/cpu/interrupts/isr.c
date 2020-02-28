@@ -64,6 +64,5 @@ void ISR_21_HANDLER(void)
 {
     uint16_t character = ASM_INB(0x60);
     
-
     PIC_EOI(1);
 }

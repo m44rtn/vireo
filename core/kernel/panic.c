@@ -27,6 +27,8 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
+#include "../include/kernel_info.h"
+
 
 void panic(const char *type, const char *error)
 {
@@ -36,6 +38,10 @@ void panic(const char *type, const char *error)
     print((char *)"--- kernel panic ---\n");
     trace((char *)"Fatal %s: ", type);
     trace((char *)"%s\n", error);
+    
+    /* kernel version string */
+    trace((char *)"Kernel version string: %s", "Vireo II build ");
+    trace((char *)"%i\n\n", BUILD);
 
     print((char *)"Register dump:\n\t");
     trace((char *)"eax=0x%x ", cpustate.eax);
@@ -49,8 +55,7 @@ void panic(const char *type, const char *error)
     trace((char *)"esi=0x%x ", cpustate.esi);
     trace((char *)"edi=0x%x\n\n", cpustate.edi);
 
-    /* TODO: eip unimplemented */
-    trace((char *)"\teip=%s\n", (unsigned int) "Unimp.");
+    trace((char *)"\teip=0x%x\n", (unsigned int) cpustate.eip);
 
     print((char *)"--- end kernel panic ---\n");
 

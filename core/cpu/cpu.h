@@ -35,6 +35,8 @@ typedef struct
     unsigned int ecx;
     unsigned int eax;
 
+    unsigned int eip;
+
     /* TODO: eip */ 
 } __attribute__((packed)) CPU_STATE;
 

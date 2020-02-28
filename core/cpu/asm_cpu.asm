@@ -21,6 +21,7 @@
 
 
 ; CPU_SAVE_STATE: these are the defines for the struct (you can find it in the C code somewhere)
+%define CPU_SAVE_STATE_EIP      (esi + 32)
 %define CPU_SAVE_STATE_EAX      (esi + 28)
 %define CPU_SAVE_STATE_ECX      (esi + 24)
 %define CPU_SAVE_STATE_EDX      (esi + 20)
@@ -31,6 +32,7 @@
 %define CPU_SAVE_STATE_EDI      (esi + 00)
 
 ; CPU SAVE STATE: these are the defines for the stack, it looks nicer
+%define CPU_SAVE_STATE_STACK_EIP      (ebp + 44)
 %define CPU_SAVE_STATE_STACK_EAX      (ebp + 40)
 %define CPU_SAVE_STATE_STACK_ECX      (ebp + 36)
 %define CPU_SAVE_STATE_STACK_EDX      (ebp + 32)
@@ -139,8 +141,14 @@ ret
 
 global ASM_CPU_SAVE_STATE
 ASM_CPU_SAVE_STATE:
-; saves the current state of the cpu. it uses 
+; saves the current state of the cpu. it uses
 ; pushad (so that has to be done already before calling this function)
+; and the struct defined in cpu.h and cpu.c
+; 
+; also, NOTE: if you use this for exceptions, and they push an error code on
+; the stack, the error code MUST first be popped before using this function.
+; otherwise the error code gets stored in the cpu struct as eip.
+;
 ; input:
 ;   - pushad
 ;   - pointer to struct to store the values
@@ -175,7 +183,8 @@ ASM_CPU_SAVE_STATE:
     mov eax, [CPU_SAVE_STATE_STACK_EAX]
     mov [CPU_SAVE_STATE_EAX], eax
 
-    ; TODO: eip
+    mov eax, [CPU_SAVE_STATE_STACK_EIP]
+    mov [CPU_SAVE_STATE_EIP], eax
 
     mov esp, ebp
     pop ebp
