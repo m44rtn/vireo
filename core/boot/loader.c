@@ -26,7 +26,7 @@ SOFTWARE.
 #include "multiboot.h"
 
 #include "../include/types.h"
-#include "../include/global_exit_codes.h"
+#include "../include/exit_code.h"
 
 #ifndef QUIET_KERNEL
 #include "../screen/screen_basic.h"

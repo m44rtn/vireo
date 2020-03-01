@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __GLOBAL_FLAGS_H__
-#define __GLOBAL_FLAGS_H__
+#include "info.h"
 
-/* GLOBAL_FLAGS definitions */
-#define GLOBAL_FLAG_QUIET   1
+#include "../screen/screen_basic.h"
 
-/*typedef struct SYSTEM_INFO
+void info_print_version(void)
 {
-    unsigned int GLOBAL_FLAGS;
-} SYSTEM_INFO;
-
-SYSTEM_INFO SystemInfo;*/
-
-
-unsigned char flag_check(unsigned int flag, unsigned int to_check); 
-
-#endif
+    trace((char *) "Vireo II build %i\n", BUILD);
+}

@@ -24,7 +24,7 @@ SOFTWARE.
 #include "memory.h"
 
 #include "../include/types.h"
-#include "../include/global_exit_codes.h"
+#include "../include/exit_code.h"
 
 #include "../boot/loader.h"
 #include "../boot/multiboot.h"

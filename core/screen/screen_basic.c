@@ -25,8 +25,7 @@ SOFTWARE.
 
 #include "../io/io.h"
 #include "../include/types.h"
-#include "../include/global_exit_codes.h"
-#include "../include/global_flags.h"
+#include "../include/exit_code.h"
 
 #include "../util/util.h"
 
@@ -82,7 +81,6 @@ unsigned char screen_basic_init(void)
 
 	if(check == EXIT_CODE_GLOBAL_SUCCESS) SCRscreenData.SCREEN_FLAGS |= SCREEN_BASIC_CURSOR_ENABLED;
 
-	/* flag_check() returns 1 when the flag is not enabled. */
 	#ifndef QUIET_KERNEL
 		screen_basic_print_warnings();
 	#endif

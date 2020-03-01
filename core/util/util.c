@@ -24,6 +24,7 @@ SOFTWARE.
 #include "util.h"
 
 #include "../include/types.h"
+#include "../include/exit_code.h"
 
 #include "../hardware/timer.h"
 
@@ -123,4 +124,13 @@ void sleep(uint32_t timeIn_ms)
 		wait_for = timeIn_ms - (0xFFFFFFFF - current);
 
 	while( (current = timer_getCurrentTick()) != wait_for);
+}
+
+/* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when
+         the flag(s) is/are not enabled.
+*/
+unsigned char flag_check(unsigned int flag, unsigned int to_check)
+{
+    if((flag & to_check) == to_check) return EXIT_CODE_GLOBAL_SUCCESS;
+    return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 }

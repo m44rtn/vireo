@@ -22,13 +22,13 @@ SOFTWARE.
 */
 
 #include "panic.h"
+#include "info.h"
+
+#include "../include/types.h"
 
 #include "../cpu/cpu.h"
 
 #include "../screen/screen_basic.h"
-
-#include "../include/kernel_info.h"
-
 
 void panic(const char *type, const char *error)
 {
@@ -36,14 +36,14 @@ void panic(const char *type, const char *error)
     screen_set_hexdigits(8);
 
     print((char *)"--- kernel panic ---\n");
-    trace((char *)"Fatal %s: ", type);
-    trace((char *)"%s\n", error);
+    trace((char *)"Fatal %s: ", (uint32_t) type);
+    trace((char *)"%s\n", (uint32_t) error);
     
     /* kernel version string */
-    trace((char *)"Kernel version string: %s", "Vireo II build ");
-    trace((char *)"%i\n\n", BUILD);
+    print((char *)"Kernel version string: ");
+    info_print_version();
 
-    print((char *)"Register dump:\n\t");
+    print((char *)"\nRegister dump:\n\t");
     trace((char *)"eax=0x%x ", cpustate.eax);
     trace((char *)"ecx=0x%x ", cpustate.ecx);
     trace((char *)"edx=0x%x\n\t", cpustate.edx);

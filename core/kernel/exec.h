@@ -24,6 +24,6 @@ SOFTWARE.
 #ifndef __ASM_FUNCTIONS_H__
 #define __ASM_FUNCTIONS_H__
 
-extern void ASM_CALL_FUNC(unsigned int *ptr, unsigned int *data);
+extern void EXEC_CALL_FUNC(unsigned int *ptr, unsigned int *data);
 
 #endif

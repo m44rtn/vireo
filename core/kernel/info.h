@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,16 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "../include/global_flags.h"
-#include "../include/global_exit_codes.h"
+#ifndef __KERNEL_INFO_H__
+#define __KERNEL_INFO_H__
 
-/* Note: functions in this file DO NOT have a filename prefix (e.g. global_functions_...) */
+/* this is always the build number for next build. 
+current binary build = [BUILD] - 1 */
+#define BUILD 960
 
-/* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when
-         the flag(s) is/are not enabled.
-*/
-unsigned char flag_check(unsigned int flag, unsigned int to_check)
-{
-    if((flag & to_check) == to_check) return EXIT_CODE_GLOBAL_SUCCESS;
-    return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-}
+void info_print_version(void);
+
+#endif

@@ -110,7 +110,7 @@ static void IDEDriverInit(uint32_t device)
 {
     /* technically, you should first enumerate the PCI bus but it's not reliable and 
     most controllers support the standard IO ports at boot up anyway. */
-    uint8_t drive, slavebit, type;
+    uint8_t drive, slavebit;
     uint16_t port;
 
     #ifndef QUIET_KERNEL
@@ -140,7 +140,7 @@ static void IDEDriverInit(uint32_t device)
                 
         drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
 
-        trace("[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
+        trace((char *) "[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
     }
     
     #ifndef QUIET_KERNEL

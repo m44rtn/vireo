@@ -23,10 +23,7 @@ SOFTWARE.
 
 #include "kernel.h"
 
-#include "include/kernel_info.h"
-#include "include/asm_functions.h"
-#include "include/global_exit_codes.h"
-#include "include/global_flags.h"
+#include "include/exit_code.h"
 #include "include/types.h"
 
 #include "boot/loader.h"
@@ -50,6 +47,10 @@ SOFTWARE.
 
 #include "hardware/pic.h"
 #include "hardware/driver.h"
+
+#include "kernel/exec.h"
+#include "kernel/panic.h"
+#include "kernel/info.h"
 
 /* TODO: remove */
 #include "storage/IDE_commands.h"
@@ -127,7 +128,9 @@ void main(void)
     demalloc(thingy);
 
     #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
-    trace((char *) "[KERNEL] Vireo II build %i\n\n", BUILD);
+    print((char*) "[KERNEL] ");
+    info_print_version();
+    print((char*)"\n");
     #endif
             
     while(1);

@@ -33,5 +33,6 @@ unsigned int hex_digit_count(unsigned int value);
 void memset(char *start, unsigned int size, char val);
 
 void sleep(unsigned int timeIn_ms);
+unsigned char flag_check(unsigned int flag, unsigned int to_check); 
 
 #endif

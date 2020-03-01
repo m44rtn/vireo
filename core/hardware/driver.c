@@ -27,7 +27,7 @@ SOFTWARE.
 #include "pci.h"
 
 #include "../include/types.h"
-#include "../include/asm_functions.h"
+#include "../kernel/exec.h"
 
 #include "../memory/memory.h"
 
@@ -82,7 +82,7 @@ void driver_exec(uint32_t type, uint32_t *data)
     if(i >= DRIVER_MAX_SUPPORTED)
         return;
 
-    ASM_CALL_FUNC(drv_list[i].driver, data);
+    EXEC_CALL_FUNC(drv_list[i].driver, data);
 }
 
 static void driver_search_pciAll(void)

@@ -64,5 +64,9 @@ void ISR_21_HANDLER(void)
 {
     uint16_t character = ASM_INB(0x60);
     
+    /* to get rid of compiler warnings :)
+      this'll be changed to something useful later on */
+    if(character) { /* do something */ }
+
     PIC_EOI(1);
 }

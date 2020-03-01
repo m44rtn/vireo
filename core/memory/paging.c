@@ -88,7 +88,7 @@ void paging_map(void *pptr, void *vptr)
 
 static void paging_create_tables(void)
 {
-    uint32_t available_mem, page_tables, amount_mem;
+    uint32_t available_mem, page_tables;
     uint32_t i, table_loc; /* for-loop */
 
     page_dir = (uint32_t *) memory_paging_tables_loc();
@@ -98,8 +98,11 @@ static void paging_create_tables(void)
     page_tables = (available_mem / 4096);
     page_tables = (page_tables % 1024) ? (page_tables / 1024) + 1 : page_tables / 1024;
 
-    /* next: how much memory is needed for them */
-    amount_mem = (1024 + (page_tables * 1024)) * sizeof(uint32_t);
+    /* next: how much memory is needed for them.
+    not used currently, but it might be smart to report this to the memory
+    module someday.
+    
+    amount_mem = (1024 + (page_tables * 1024)) * sizeof(uint32_t); */
     
     paging_prepare_table(page_dir, PAGING_TABLE_TYPE_DIR);
     

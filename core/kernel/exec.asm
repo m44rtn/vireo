@@ -21,12 +21,12 @@
 
 bits 32
 
-; c header used for the functions in this file is include/asm_functions.h
+; c header used for the functions in this file is kernel/exec.h
 
 section .text
-global ASM_CALL_FUNC
+global EXEC_CALL_FUNC
 
-ASM_CALL_FUNC:
+EXEC_CALL_FUNC:
 ;   calls with a pointer
 ;   input:
 ;       - function pointer

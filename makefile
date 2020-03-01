@@ -40,7 +40,7 @@ all: clean $(OBJFILES) $(ASOBJFILES)
 	@$(CC) -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
-	@xenops -f core/include/kernel_info.h -q
+	@xenops -f core/kernel/info.h -q
 
 %.o: %.c
 	@$(CC) $(CCFLAGS) -c $< -o $@
