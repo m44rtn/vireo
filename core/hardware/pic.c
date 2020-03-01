@@ -93,7 +93,7 @@ void PIC_mask(unsigned char IRQ)
         port = PIC_SLAVE_IMRDATA;
     }
 
-    mask = (uint8_t) ((ASM_INB(port)) | (1 << IRQ));
+    mask = (uint8_t) ((ASM_INB(port)) | (uint32_t)(1 << IRQ));
     ASM_OUTB(port, mask);
 }
 
@@ -108,7 +108,7 @@ void PIC_umask(unsigned char IRQ)
         port = PIC_SLAVE_IMRDATA;
     }
 
-    mask = (uint8_t) (ASM_INB(port) & ~(1 << IRQ));
+    mask = (uint8_t) (ASM_INB(port) & (uint32_t)~(1 << IRQ));
     ASM_OUTB(port, mask);
 }
 
@@ -129,5 +129,5 @@ uint16_t PIC_read_ISR(void)
     ASM_OUTB(PIC_MASTER_CMNDSTAT, PIC_READ_ISR);
     ASM_OUTB(PIC_SLAVE_CMNDSTAT,  PIC_READ_ISR);
 
-    return (uint16_t) (ASM_INB(PIC_SLAVE_CMNDSTAT) << 8) | ASM_INB(PIC_MASTER_CMNDSTAT);    
+    return (uint16_t) ((uint16_t)ASM_INB(PIC_SLAVE_CMNDSTAT) << 8) | (uint16_t)ASM_INB(PIC_MASTER_CMNDSTAT);    
 }

@@ -42,6 +42,8 @@ mov DWORD [BOOTLOADER_STRUCT_ADDR], ebx
 
 ; Set up the stack
 mov esp, STACK_TOP
+mov ebp, STACK_END
+
 
 ; push the location of the GRUB loader information onto the stack
 push ebx

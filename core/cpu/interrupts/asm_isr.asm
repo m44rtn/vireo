@@ -118,7 +118,10 @@ iret
 global ISR_0E
 extern ISR_0E_handler
 ISR_0E:
+pop DWORD [ignore]
 pusha
+    push state
+    call ASM_CPU_SAVE_STATE
     cld
     call ISR_0E_handler
     jmp $ 

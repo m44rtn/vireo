@@ -133,7 +133,7 @@ unsigned short screen_basic_get_cursor_position(void)
 	uint16_t position = 0;
 
 	ASM_OUTB(0x3D4, 0x0F);
-	position |= ASM_INB(0x3D5);
+	position |= (uint16_t) ASM_INB(0x3D5);
 
 	ASM_OUTB(0x3D4, 0x0E);
 	position |= (uint16_t) (ASM_INB(0x3D5) <<  8);

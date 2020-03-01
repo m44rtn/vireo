@@ -82,16 +82,18 @@ ASM_INB:
 push ebp
 mov ebp, esp
 
-mov dx, [ebp + 8]
+mov eax, 0
 
-xor eax, eax
+mov edx, [ebp + 8]
 
 in al, dx
 
-mov [ebp + 8], ax
+mov [ebp + 8], eax
 
 mov esp, ebp
 pop ebp
+
+
 
 ret
 

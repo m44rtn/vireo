@@ -51,7 +51,7 @@ void ISR_0D_HANDLER(void)
 
 void ISR_0E_handler(void)
 {
-    print((char *) "PAGE_FAULT\n");
+    panic(PANIC_TYPE_EXCEPTION, "PAGE_FAULT");
 }
 
 void ISR_20_HANDLER(void)
@@ -62,7 +62,7 @@ void ISR_20_HANDLER(void)
 
 void ISR_21_HANDLER(void)
 {
-    uint16_t character = ASM_INB(0x60);
+    uint16_t character = (uint16_t) ASM_INB(0x60);
     
     /* to get rid of compiler warnings :)
       this'll be changed to something useful later on */
