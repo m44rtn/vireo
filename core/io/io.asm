@@ -88,8 +88,6 @@ mov edx, [ebp + 8]
 
 in al, dx
 
-mov [ebp + 8], eax
-
 mov esp, ebp
 pop ebp
 

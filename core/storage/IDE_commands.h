@@ -29,7 +29,8 @@ SOFTWARE.
 /*
     Paramaters for the INIT command to the IDE driver are the following:
         parameter1: internal PCI device ID (bus, device, function, class)
-        parameter2, parameter3, parameter4: Reserved -- zero or IDE driver specific
+        parameter2, parameter3, parameter4, parameter5, parameter6:
+            - bar0, bar1, bar2, bar3 and bar4 respectively
 */
 
 #define IDE_COMMAND_READ    0x01

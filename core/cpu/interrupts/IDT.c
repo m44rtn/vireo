@@ -66,7 +66,7 @@ static void IDT_default_list(void);
         - TIMER     (does little at this moment)
         - KEYBOARD (directly prints to screen and doesn't store)
         
-    It will hang at all of the exceptions for now, but will display a message
+    Some exceptions hang, some panic and others will display a message
          */
         
 void IDT_setup(void)

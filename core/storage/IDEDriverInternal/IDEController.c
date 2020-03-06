@@ -25,12 +25,14 @@ SOFTWARE.
 
 #include "../IDE_commands.h"
 
+#include "../../include/exit_code.h"
 #include "../../include/types.h"
 
 #ifndef QUIET_KERNEL
     #include "../../screen/screen_basic.h"
 #endif
 
+#include "../../hardware/pci.h"
 #include "../../hardware/driver.h"
 
 #include "../../memory/memory.h"
@@ -43,11 +45,9 @@ SOFTWARE.
 
 #define IDEController_PCI_CLASS_SUBCLASS    0x101
 
-#define ATA_PRIMARY_DATA      0x1F0
-#define ATA_SECONDARY_DATA    0x170
-
-#define ATA_PORT_PRIMARY_CONTROL    0x3F6
-#define ATA_PORT_SECONDARY_CONTROL  0x376
+/* defines for ata_info_t */
+#define ATA_INFO_PRIMARY    0x00
+#define ATA_INFO_SECONDARY  0x01
 
 #define ATA_PORT_FEATURES   0x01
 #define ATA_PORT_SCTRCNT    0x02
@@ -56,6 +56,19 @@ SOFTWARE.
 #define ATA_PORT_LBAHI      0x05
 #define ATA_PORT_SELECT     0x06
 #define ATA_PORT_COMSTAT    0x07
+
+#define ATA_STAT_ERR    0x01
+#define ATA_STAT_DRQ    0x08
+#define ATA_STAT_DF     0x20
+#define ATA_STAT_BUSY   0x80
+
+#define ATAPI_COMMAND_READ 0xA8
+
+#define ATA_COMMAND_READ    0x20
+#define ATA_COMMAND_WRITE   0x30
+
+#define ATA_COMMAND_DMAREAD 0xC8
+#define ATA_COMMAND_DMAWRITE 0xCA
 
 #define ATAPI_IDENTIFY   0xA1
 #define ATA_IDENTIFY     0xEC
@@ -73,13 +86,21 @@ typedef struct
     /* there'll be more here, probably */
 } DRIVE_INFO;
 
+typedef struct IDEController
+{
+    uint16_t base_port;
+    uint16_t ctrl_port;
+} ATA_INFO;
 
-static void IDEDriverInit(unsigned int device);
+
 static void IDE_software_reset(uint16_t port);
 static void IDE_wait(uint16_t port);
+static uint8_t IDE_polling(uint16_t port);
+static void IDEDriverInit(unsigned int device);
+static void IDE_enumerate(void);
 static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit);
 
-
+ATA_INFO ata_info_t[2];
 DRIVE_INFO drive_info_t[IDE_DRIVER_MAX_DRIVES];
 uint32_t PCI_controller;
 
@@ -106,51 +127,6 @@ void IDEController_handler(uint32_t *data)
     }
 }
 
-
-static void IDEDriverInit(uint32_t device)
-{
-    /* technically, you should first enumerate the PCI bus but it's not reliable and 
-    most controllers support the standard IO ports at boot up anyway. */
-    uint8_t drive, slavebit;
-    uint16_t port;
-
-    #ifndef QUIET_KERNEL
-    print((char *) "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mark I\n");
-    trace((char *) "[IDE_DRIVER] Kernel reported PCI controller %x\n", device);
-    #endif
-
-    PCI_controller = device;
-    
-    IDE_software_reset(ATA_PORT_PRIMARY_CONTROL);
-    IDE_software_reset(ATA_PORT_SECONDARY_CONTROL);
-
-    /* disable IRQs */
-    ASM_OUTB(ATA_PRIMARY_DATA, 2);
-    ASM_OUTB(ATA_SECONDARY_DATA, 2);
-
-    /* get the drive types */
-    for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
-    {
-        port = (drive > 1) ? ATA_SECONDARY_DATA : ATA_PRIMARY_DATA;
-        slavebit = (drive > 1) ? (uint8_t) (drive - 2) : drive;
-
-        /* TODO: 
-            - cleanup 
-            - ATAPI READ
-            - ATA READ/WRITE?*/
-                
-        drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
-
-        trace((char *) "[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
-    }
-    
-    /*sleep(10000);*/
-
-    #ifndef QUIET_KERNEL
-        print((char *) "\n");
-    #endif
-}
-
 static void IDE_software_reset(uint16_t port){
     uint8_t value = (uint8_t) ASM_INB(port);
     ASM_OUTB(port, (value | 0x04));
@@ -166,14 +142,113 @@ static void IDE_wait(uint16_t port)
 {
     
     if(port == 0x170) 
-        port = ATA_PORT_SECONDARY_CONTROL;
+        port = ata_info_t[ATA_INFO_SECONDARY].ctrl_port;
     else
-        port = ATA_PORT_PRIMARY_CONTROL;
+        port = ata_info_t[ATA_INFO_PRIMARY].ctrl_port;
     
     ASM_INB(port);
     ASM_INB(port);
     ASM_INB(port);
     ASM_INB(port);
+}
+
+static uint8_t IDE_polling(uint16_t port)
+{
+    uint8_t status;
+
+    IDE_wait(port);
+
+    while(ASM_INB((uint16_t) port | ATA_PORT_COMSTAT) & ATA_STAT_BUSY);
+
+    status = (uint8_t) (ASM_INB((uint16_t) port | ATA_PORT_COMSTAT) & 0xFF);
+
+    /* Error and Device Fault should be unset, DRQ set */
+    if (status & ATA_STAT_ERR) 
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    if (status & ATA_STAT_DF)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    if (!(status & ATA_STAT_DRQ))
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+    return 0;
+}
+
+static void IDEDriverInit(uint32_t device)
+{
+    /* technically, you should first enumerate the PCI bus but it's not reliable and 
+    most controllers support the standard IO ports at boot up anyway. */
+    uint8_t drive, slavebit;
+    uint16_t port, port1, port2;
+    
+    #ifndef QUIET_KERNEL
+    print((char *) "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mk. I\n");
+    trace((char *) "[IDE_DRIVER] Kernel reported PCI controller %x\n", device);
+    #endif
+
+    PCI_controller = device & (uint32_t)~(DRIVER_TYPE_PCI);
+
+    /* get the ports for both primary and secondary */
+    IDE_enumerate();
+    port1 = ata_info_t[ATA_INFO_PRIMARY].base_port;
+    port2 = ata_info_t[ATA_INFO_SECONDARY].base_port;
+
+    IDE_software_reset(ata_info_t[ATA_INFO_PRIMARY].ctrl_port);
+    IDE_software_reset(ata_info_t[ATA_INFO_SECONDARY].ctrl_port);
+
+    /* disable IRQs */
+    ASM_OUTB((uint32_t) ata_info_t[ATA_INFO_PRIMARY].base_port, 2);
+    ASM_OUTB((uint32_t) ata_info_t[ATA_INFO_SECONDARY].base_port, 2);
+
+    /* get the drive types */
+    for(drive = 0; drive < 4; ++drive)
+    {
+        port = (drive > 1) ? port2 : port1;
+        
+        slavebit = (drive % 2) ? (uint8_t) 1 : 0;
+
+        /* TODO: 
+            - cleanup 
+            - ATAPI READ
+            - ATA READ/WRITE?*/
+        
+        trace("port: %x\n", port);
+        trace("drive: %x\n", drive);
+        trace("slavebit: %x\n", slavebit);
+        drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
+
+        trace((char *) "[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
+    }
+    
+    #ifndef QUIET_KERNEL
+        print((char *) "\n");
+    #endif
+}
+
+static void IDE_enumerate(void)
+{
+    uint32_t bar;
+
+    /* get the primary ports... */
+    bar = pciGetBar(PCI_controller, PCI_BAR0) & 0xFFFFFFFC;
+    ata_info_t[ATA_INFO_PRIMARY].base_port = (uint16_t) (bar + 0x1F0U*(!bar));
+    
+    bar = pciGetBar(PCI_controller, PCI_BAR1) & 0xFFFFFFFC;
+    ata_info_t[ATA_INFO_PRIMARY].ctrl_port = (uint16_t) (bar + 0x3F6U*(!bar)); 
+
+    /* ...and the secondary */
+    bar = pciGetBar(PCI_controller, PCI_BAR2) & 0xFFFFFFFC;
+    ata_info_t[ATA_INFO_SECONDARY].base_port = (uint16_t) (bar + 0x170U*(!bar));
+    
+    bar = pciGetBar(PCI_controller, PCI_BAR3) & 0xFFFFFFFC;
+    ata_info_t[ATA_INFO_SECONDARY].ctrl_port = (uint16_t) (bar + 0x376U*(!bar));
+
+    #ifndef QUIET_KERNEL
+    trace((char *) "[IDE_DRIVER] port %x\n", ata_info_t[ATA_INFO_PRIMARY].base_port);
+    trace((char *) "[IDE_DRIVER] port %x\n", ata_info_t[ATA_INFO_SECONDARY].base_port);
+    trace((char *) "[IDE_DRIVER] port %x\n", ata_info_t[ATA_INFO_PRIMARY].ctrl_port);
+    trace((char *) "[IDE_DRIVER] port %x\n", ata_info_t[ATA_INFO_SECONDARY].ctrl_port);
+    #endif
+
 }
 
 static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
@@ -185,7 +260,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     uint8_t type = IDE_DRIVER_TYPE_PATA;
 
     ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
-    sleep(1);
+    
     /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
        this is not documented anywhere on wiki.osdev.org, so this may be virtualbox specific.
        to avoid the #GP we first check if we're dealing with a PATAPI or PATA device */

@@ -123,7 +123,7 @@ void sleep(uint32_t timeIn_ms)
 	if(current + timeIn_ms >= 0xFFFFFFFF)
 		wait_for = timeIn_ms - (0xFFFFFFFF - current);
 
-	while( (current = timer_getCurrentTick()) != wait_for);
+	while((current = timer_getCurrentTick()) != wait_for);
 }
 
 /* returns success (0 = zero) when the flag(s) is/are enabled and fail (1 = one) when

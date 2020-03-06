@@ -24,6 +24,7 @@ SOFTWARE.
 #include "pci.h"
 
 #include "../include/types.h"
+#include "../include/exit_code.h"
 
 #include "../io/io.h"
 
@@ -182,6 +183,18 @@ uint32_t pciGetDeviceByReg0(uint32_t Reg0)
     }
 
     return PCI_DEV_LIST[i].device;
+}
+
+uint32_t pciGetBar(uint32_t device, uint8_t bar)
+{
+    uint8_t bus     = (uint8_t) ((device >> 24) & 0xFF);
+    uint8_t dev     = (uint8_t) ((device >> 16) & 0xFF);
+    uint8_t func    = (uint8_t) ((device >> 8)  & 0xFF);
+
+    if(bar < PCI_BAR0 || bar > PCI_BAR5)
+        return 0;
+    
+    return pciConfigRead(bus, dev, func, bar);
 }
 
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg){

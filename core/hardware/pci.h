@@ -24,6 +24,13 @@ SOFTWARE.
 #ifndef __PCI_H__
 #define __PCI_H__
 
+#define PCI_BAR0    0x04
+#define PCI_BAR1    0x05
+#define PCI_BAR2    0x06
+#define PCI_BAR3    0x07
+#define PCI_BAR4    0x08
+#define PCI_BAR5    0x09
+
 void pci_init(void);
 unsigned char pciGetInterruptLine(unsigned char bus, unsigned char device, unsigned char func);
 unsigned int *pciGetDevices(unsigned char class, unsigned char subclass);
@@ -32,5 +39,7 @@ unsigned int *pciGetAllDevices(void);
 unsigned int pciGetInfo(unsigned int device);
 unsigned int pciGetReg0(unsigned int device);
 unsigned int pciGetDeviceByReg0(unsigned int Reg0);
+
+unsigned int pciGetBar(unsigned int device, unsigned char bar);
 
 #endif
