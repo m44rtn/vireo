@@ -34,7 +34,7 @@ SOFTWARE.
 */
 
 #define IDE_COMMAND_READ    0x01
-/* */
+/* TODO */
 
 
 #endif

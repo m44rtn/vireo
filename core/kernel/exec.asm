@@ -34,14 +34,14 @@ EXEC_CALL_FUNC:
 ;   output:
 ;       - N/A
 
-;push ebp
-;mov ebp, esp
+push ebp
+mov ebp, esp
 
 ; function pointer
-mov edi, [esp + 4]
+mov edi, [ebp + 8]
 
 ; data struct pointer
-mov esi, [esp + 8]
+mov esi, [ebp + 12]
 
 cmp esi, 0
 je .exec
@@ -51,7 +51,7 @@ push esi
 .exec:
 call edi
 
-;mov esp, ebp
-;pop ebp
+mov esp, ebp
+pop ebp
 
 ret
