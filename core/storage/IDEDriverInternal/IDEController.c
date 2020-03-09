@@ -196,10 +196,9 @@ static void IDEDriverInit(uint32_t device)
     ASM_OUTB((uint32_t) p_base_port, 2);
 
     /* get the drive types */
-    for(drive = 0; drive < 4; ++drive)
+    for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
     {
-        /*port = (drive > 1) ? s_base_port : p_base_port;*/
-        port = p_base_port;
+        port = (drive > 1) ? s_base_port : p_base_port;
         
         slavebit = (drive % 2) ? (uint8_t) 1 : 0;
 
@@ -224,17 +223,17 @@ static void IDE_enumerate(void)
 
     /* get the primary ports... */
     bar = pciGetBar(PCI_controller, PCI_BAR0) & 0xFFFFFFFC;
-    p_base_port = (uint16_t) (bar + 0x1F0U*(!bar));
+    p_base_port = (uint16_t) (bar + 0x1F0U*(!bar)) & 0xFFFFU;
     
     bar = pciGetBar(PCI_controller, PCI_BAR1) & 0xFFFFFFFC;
-    p_ctrl_port = (uint16_t) (bar + 0x3F6U*(!bar)); 
+    p_ctrl_port = (uint16_t) (bar + 0x3F6U*(!bar)) & 0xFFFFU; 
 
     /* ...and the secondary */
     bar = pciGetBar(PCI_controller, PCI_BAR2) & 0xFFFFFFFC;
-    s_base_port = (uint16_t) (bar + 0x170U*(!bar));
+    s_base_port = (uint16_t) (bar + 0x170U*(!bar)) & 0xFFFFU;
     
     bar = pciGetBar(PCI_controller, PCI_BAR3) & 0xFFFFFFFC;
-    s_ctrl_port = (uint16_t) (bar + 0x376U*(!bar));
+    s_ctrl_port = (uint16_t) (bar + 0x376U*(!bar)) & 0xFFFFU;
 
     #ifndef QUIET_KERNEL
     trace((char *) "[IDE_DRIVER] Primary base port: %x\n", p_base_port);
@@ -242,7 +241,6 @@ static void IDE_enumerate(void)
     trace((char *) "[IDE_DRIVER] Primary control port: %x\n", p_ctrl_port);
     trace((char *) "[IDE_DRIVER] Secondary control port: %x\n", s_ctrl_port);
     #endif
-    sleep(100);
 
 }
 
@@ -253,6 +251,8 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     uint16_t *buffer;
     uint16_t lo, hi;
     uint8_t type = IDE_DRIVER_TYPE_PATA;
+
+    uint16_t port_comstat = port | ATA_PORT_COMSTAT;
 
     ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
     sleep(1);
@@ -275,20 +275,20 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
         
 
     /* send the IDENTIFY command */
-    if(type == IDE_DRIVER_TYPE_PATA) ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATA_IDENTIFY);
-    else if(type == IDE_DRIVER_TYPE_PATAPI) ASM_OUTB((uint32_t) (port | ATA_PORT_COMSTAT), ATAPI_IDENTIFY);
+    if(type == IDE_DRIVER_TYPE_PATA) ASM_OUTB((uint32_t) port_comstat, ATA_IDENTIFY);
+    else if(type == IDE_DRIVER_TYPE_PATAPI) ASM_OUTB((uint32_t) port_comstat, ATAPI_IDENTIFY);
     
     /* if status = 0 then there's no such device */
-    if(!ASM_INB( (port | ATA_PORT_COMSTAT)))
+    if(!ASM_INB(port_comstat))
         return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
     
     /* wait until BSY clears */
-    while(ASM_INB( (port | ATA_PORT_COMSTAT)) & 0x80); 
+    while(ASM_INB(port_comstat) & 0x80); 
         
     /* wait for DRQ and/or ERR sets*/
     while(1)
     {
-        status = (uint16_t) ASM_INB( (port | ATA_PORT_COMSTAT));
+        status = (uint16_t) ASM_INB(port_comstat);
         if(status & 0x01) break;
         if(status & 0x08) break;
     }
@@ -298,7 +298,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     
     ASM_INSW((uint32_t) port, 255, (uint32_t) buffer);
     
-    demalloc(buffer); 
+    demalloc(buffer);
 
     return type;
 }

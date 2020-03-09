@@ -25,6 +25,7 @@ SOFTWARE.
 #define __ISR_H__
 
 void ISR_00_HANDLER(void);
+void ISR_05_HANDLER(void);
 void ISR_06_HANDLER(void);
 void ISR_0D_HANDLER(void);
 void ISR_0E_handler(void);

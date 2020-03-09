@@ -36,7 +36,12 @@ SOFTWARE.
 
 void ISR_00_HANDLER(void)
 {
-    print((char *) "DIVISION_BY_ZERO\n");
+    panic(PANIC_TYPE_EXCEPTION, "DIVIDE_BY_ZERO");
+}
+
+void ISR_05_HANDLER(void)
+{
+    panic(PANIC_TYPE_EXCEPTION, "BOUND_RANGE_EXCEEDED");
 }
 
 void ISR_06_HANDLER(void)

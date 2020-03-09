@@ -37,21 +37,13 @@ EXEC_CALL_FUNC:
 push ebp
 mov ebp, esp
 
-; function pointer
 mov edi, [ebp + 8]
-
-; data struct pointer
 mov esi, [ebp + 12]
 
-cmp esi, 0
-je .exec
-
 push esi
-
-.exec:
 call edi
 
 mov esp, ebp
 pop ebp
 
-ret
+ret 12

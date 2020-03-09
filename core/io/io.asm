@@ -32,17 +32,23 @@ ASM_OUTB:
 ;   output:
 ;       - N/A
 
+push eax
+push edx
+
 push ebp
 mov ebp, esp
 
 ; port is first, data second
-mov eax, [ebp + 12]
-mov edx, [ebp + 8]
+mov eax, [ebp + 20]
+mov edx, [ebp + 16]
 
 out dx, al
 
 mov esp, ebp
 pop ebp
+
+pop edx
+pop eax
 
 ret
 
@@ -129,19 +135,32 @@ ASM_INSW:
 ;   output:
 ;       - N/A
 
+; to preserve these we push them on the stack
+; without doing this, the IDE driver would do weird stuff
+; thsi solves issue #19: https://github.com/m44rtn/vireo-kernel/issues/19
+push edi
+push ecx
+push edx
+
 push ebp
 mov ebp, esp
 
-mov edi, DWORD [ebp + 16] ; buffer
-mov ecx, DWORD [ebp + 12] ; words
-mov edx, DWORD [ebp + 8]  ; port
+mov edi, DWORD [ebp + 28] ; buffer
+mov ecx, DWORD [ebp + 24] ; words
+mov edx, DWORD [ebp + 20]  ; port
 
+cld
 rep insw
 
 mov esp, ebp
 pop ebp
 
+pop edx
+pop ecx
+pop edi
+
 ret
+
 
 
 global ASM_IOWAIT
