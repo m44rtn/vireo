@@ -32,4 +32,13 @@ extern unsigned int ASM_INL(unsigned short port);
 extern void ASM_INSW(unsigned int port, unsigned int numWords, unsigned int buffer);
 extern void ASM_IOWAIT(void);
 
+unsigned char inb(unsigned short _port);
+unsigned short inw(unsigned short _port);
+void outb (unsigned short _port, unsigned char _data);
+void outw (unsigned short _port, unsigned short _data);
+void outl (unsigned short _port, unsigned int _data);
+long inl (unsigned short _port);
+void outsw(unsigned short port, unsigned short *data, unsigned int size);
+void insw(unsigned short port, unsigned short *buffer, unsigned int size);
+
 #endif

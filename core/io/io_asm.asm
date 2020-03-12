@@ -35,17 +35,17 @@ ASM_OUTB:
 push eax
 push edx
 
-push ebp
-mov ebp, esp
+;push ebp
+;mov ebp, esp
 
 ; port is first, data second
-mov eax, [ebp + 20]
-mov edx, [ebp + 16]
+mov eax, [esp + 16]
+mov edx, [esp + 12]
 
 out dx, al
 
-mov esp, ebp
-pop ebp
+;mov esp, ebp
+;pop ebp
 
 pop edx
 pop eax
@@ -85,19 +85,20 @@ ASM_INB:
 ;   output:
 ;       - data, WORD
 
-push ebp
-mov ebp, esp
+push edx
+
+;push ebp
+;mov ebp, esp
 
 mov eax, 0
-
-mov edx, [ebp + 8]
+mov edx, [esp + 8]
 
 in al, dx
 
-mov esp, ebp
-pop ebp
+;mov esp, ebp
+;pop ebp
 
-
+pop edx
 
 ret
 

@@ -90,9 +90,13 @@ typedef struct
 static void IDE_software_reset(uint16_t port);
 static void IDE_wait(uint16_t port);
 static uint8_t IDE_polling(uint16_t port);
+static uint16_t IDE_getPort(uint8_t drive);
+
 static void IDEDriverInit(unsigned int device);
 static void IDE_enumerate(void);
 static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit);
+
+static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
 
 DRIVE_INFO drive_info_t[IDE_DRIVER_MAX_DRIVES];
 uint32_t PCI_controller;
@@ -117,6 +121,7 @@ void IDEController_handler(uint32_t *data)
         break;
 
         case IDE_COMMAND_READ:
+            IDE_readPIO28((uint8_t) drv->parameter1, drv->parameter2, (uint8_t) drv->parameter3, (uint16_t *) drv->parameter4);
         break;
 
         default:
@@ -126,28 +131,28 @@ void IDEController_handler(uint32_t *data)
 }
 
 static void IDE_software_reset(uint16_t port){
-    uint8_t value = (uint8_t) ASM_INB(port);
-    ASM_OUTB(port, (value | 0x04));
+    uint8_t value = (uint8_t) inb(port);
+    outb(port, (value | 0x04));
   
     IDE_wait(port);
 
     /* unset the reset bit */
-    value = (uint8_t) ASM_INB(port);
-    ASM_OUTB(port, (value & 0xFFFB));
+    value = (uint8_t) inb(port);
+    outb(port, (value & 0xFFFB));
 }
 
 static void IDE_wait(uint16_t port)
 {
     
-    if(port < 0x1F0) 
+    if(port != p_base_port) 
         port = s_ctrl_port;
     else
         port = p_ctrl_port;
     
-    ASM_INB(port);
-    ASM_INB(port);
-    ASM_INB(port);
-    ASM_INB(port);
+    inb(port);
+    inb(port);
+    inb(port);
+    inb(port);
 }
 
 static uint8_t IDE_polling(uint16_t port)
@@ -156,9 +161,9 @@ static uint8_t IDE_polling(uint16_t port)
 
     IDE_wait(port);
 
-    while(ASM_INB((uint16_t) port | ATA_PORT_COMSTAT) & ATA_STAT_BUSY);
+    while(inb((uint16_t) port | ATA_PORT_COMSTAT) & ATA_STAT_BUSY);
 
-    status = (uint8_t) (ASM_INB((uint16_t) port | ATA_PORT_COMSTAT) & 0xFF);
+    status = (uint8_t) (inb((uint16_t) port | ATA_PORT_COMSTAT) & 0xFF);
 
     /* Error and Device Fault should be unset, DRQ set */
     if (status & ATA_STAT_ERR) 
@@ -170,6 +175,11 @@ static uint8_t IDE_polling(uint16_t port)
 
     return 0;
 }
+
+static uint16_t IDE_getPort(uint8_t drive)
+{
+    return (drive > 1) ? s_base_port : p_base_port;
+} 
 
 static void IDEDriverInit(uint32_t device)
 {
@@ -192,8 +202,8 @@ static void IDEDriverInit(uint32_t device)
     IDE_software_reset(s_ctrl_port);
 
     /* disable IRQs */
-    ASM_OUTB((uint32_t) p_base_port, 2);
-    ASM_OUTB((uint32_t) p_base_port, 2);
+    outb((uint32_t) p_base_port, 2);
+    outb((uint32_t) p_base_port, 2);
 
     /* get the drive types */
     for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
@@ -254,15 +264,15 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
 
     uint16_t port_comstat = port | ATA_PORT_COMSTAT;
 
-    ASM_OUTB((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
-    sleep(1);
+    outb((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
+    
 
     /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
        this is not documented anywhere on wiki.osdev.org, so this may be virtualbox specific.
        to avoid the #GP we first check if we're dealing with a PATAPI or PATA device */
-
-    lo = ASM_INB( (port | ATA_PORT_LBAMID)) & 0xFF;
-    hi = ASM_INB( (port | ATA_PORT_LBAHI)) & 0xFF;
+    
+    lo = inb( (port | ATA_PORT_LBAMID)) & 0xFF;
+    hi = inb( (port | ATA_PORT_LBAHI)) & 0xFF;
     
     if(hi == 0xEB && lo == 0x14) 
         type = IDE_DRIVER_TYPE_PATAPI;
@@ -275,20 +285,21 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
         
 
     /* send the IDENTIFY command */
-    if(type == IDE_DRIVER_TYPE_PATA) ASM_OUTB((uint32_t) port_comstat, ATA_IDENTIFY);
-    else if(type == IDE_DRIVER_TYPE_PATAPI) ASM_OUTB((uint32_t) port_comstat, ATAPI_IDENTIFY);
+    if(type == IDE_DRIVER_TYPE_PATA) outb((uint32_t) port_comstat, ATA_IDENTIFY);
+    else if(type == IDE_DRIVER_TYPE_PATAPI) 
+        return type;
     
     /* if status = 0 then there's no such device */
-    if(!ASM_INB(port_comstat))
+    if(!inb(port_comstat))
         return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
     
     /* wait until BSY clears */
-    while(ASM_INB(port_comstat) & 0x80); 
+    while(inb(port_comstat) & 0x80); 
         
     /* wait for DRQ and/or ERR sets*/
     while(1)
     {
-        status = (uint16_t) ASM_INB(port_comstat);
+        status = (uint16_t) inb(port_comstat);
         if(status & 0x01) break;
         if(status & 0x08) break;
     }
@@ -296,9 +307,46 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     /* right now we discard the info returned by the device, though it may be useful to not discard this in the future */
     buffer = malloc(256 * sizeof(uint16_t));
     
-    ASM_INSW((uint32_t) port, 255, (uint32_t) buffer);
+    insw((uint32_t) port, 255, (uint32_t) buffer);
     
     demalloc(buffer);
 
     return type;
+}
+
+static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
+{
+    uint8_t i;
+    uint16_t port = IDE_getPort(drive);
+
+    start = start & 0x0FFFFFFFU;
+
+    trace("drive: %x\n", drive);
+    trace("start: %x\n", start);
+    trace("sctrwrite: %x\n", sctrwrite);
+    trace("buf: %x\n", buf);
+
+    if(drive > 3)
+        return;
+    if(drive_info_t[drive].type != IDE_DRIVER_TYPE_PATA)
+        return;
+
+    outb(port | ATA_PORT_FEATURES, 0U); /* no DMA */
+    outb(port | ATA_PORT_SCTRCNT, sctrwrite);
+
+    outb(port | ATA_PORT_LBALOW, (uint8_t) start);
+    outb(port | ATA_PORT_LBAMID, (uint8_t) (start >> 8U));
+    outb(port | ATA_PORT_LBAHI, (uint8_t) (start >> 16U));
+
+    outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_READ);
+    IDE_wait(port);
+
+    if(IDE_polling(port))
+            print("HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
+
+    for(i = 0; i < sctrwrite; ++i)
+    {
+        insw((uint32_t) port, 255, (uint32_t) buf);
+        while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
+    }
 }

@@ -103,8 +103,8 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
-    unsigned int *thingy;
     unsigned int *devicelist, device;
+    uint32_t *buf;
 
     DRIVER_PACKET bleep = {IDE_COMMAND_INIT, 0, 0xFF, 0xFF, 0xFF};
     
@@ -116,16 +116,27 @@ void main(void)
     
     init_env();
 
-    thingy = pciGetDevices(0x01, 0x01);
-    bleep.parameter1 = (uint32_t) thingy[1];
     
     devicelist = pciGetDevices(0x01, 0x01);
     device = devicelist[1];
     demalloc(devicelist);
 
+    bleep.parameter1 = (uint32_t) device;
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
 
-    demalloc(thingy);
+    buf = malloc(512);
+
+    bleep.command = IDE_COMMAND_READ;
+    bleep.parameter1 = 1;
+    bleep.parameter2 = 0;
+    bleep.parameter3 = 1;
+    bleep.parameter4 = (uint32_t) buf;
+    trace("buf: %x\n", buf);
+    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
+
+    if((buf[127] & 0xFFFF) == 0xAA55)
+        trace("Test succeeded -- boot signature: %x", buf[127]);
+
 
     #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");

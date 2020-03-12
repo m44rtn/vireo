@@ -115,8 +115,8 @@ void memset(char *start, size_t size, char val)
 void sleep(uint32_t timeIn_ms)
 {
 	uint32_t current, wait_for;
-	current = timer_getCurrentTick();
-	wait_for	 = current + timeIn_ms;
+	current 	= timer_getCurrentTick();
+	wait_for	= current + timeIn_ms;
 
 	/* should *in theory* stop you from possibly having a 7 week sleep when the computer is already on for 7 weeks. 
 	   if not, I'm sorry, but also: many thanks for using Vireo for that long! :) */
