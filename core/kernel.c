@@ -105,8 +105,9 @@ void main(void)
     unsigned int exit_code = 0;
     unsigned int *devicelist, device;
     uint32_t *buf;
+    uint16_t *buffy;
 
-    DRIVER_PACKET bleep = {IDE_COMMAND_INIT, 0, 0xFF, 0xFF, 0xFF};
+    uint32_t *bleep;
     
     
     exit_code = screen_basic_init();
@@ -121,21 +122,32 @@ void main(void)
     device = devicelist[1];
     demalloc(devicelist);
 
-    bleep.parameter1 = (uint32_t) device;
-    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
+    bleep = malloc(512);
+    bleep[0] = IDE_COMMAND_INIT;
+    bleep[1] = (uint32_t) device;
 
-    buf = malloc(512);
+    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
 
-    bleep.command = IDE_COMMAND_READ;
-    bleep.parameter1 = 1;
-    bleep.parameter2 = 0;
-    bleep.parameter3 = 1;
-    bleep.parameter4 = (uint32_t) buf;
-    trace("buf: %x\n", buf);
-    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, (uint32_t *) &bleep);
+    buffy = malloc(512);
+    memset((char*)bleep, sizeof(DRIVER_PACKET), (char) 0);
+    
+    bleep[0] = IDE_COMMAND_READ;
+    bleep[1] = 1;
+    bleep[2] = 63;
+    bleep[3] = 1;
+    bleep[4] = (uint32_t) buffy;
 
-    if((buf[127] & 0xFFFF) == 0xAA55)
-        trace("Test succeeded -- boot signature: %x", buf[127]);
+    devicelist = pciGetDevices(0x01, 0x01);
+    device = devicelist[1];
+    demalloc(devicelist);
+
+    trace( (char*)"bleep.command = %x\n", bleep[0]);
+    trace( (char*)"device: %x\n", device);
+     trace( (char*)"buffy: 0x%x\n", (uint32_t) buffy);
+    
+    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
+    
+    trace( (char*)"boot signature: %x\n", &buffy[255]);
 
 
     #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */

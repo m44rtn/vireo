@@ -38,7 +38,7 @@ void outb (unsigned short _port, unsigned char _data);
 void outw (unsigned short _port, unsigned short _data);
 void outl (unsigned short _port, unsigned int _data);
 long inl (unsigned short _port);
-void outsw(unsigned short port, unsigned short *data, unsigned int size);
-void insw(unsigned short port, unsigned short *buffer, unsigned int size);
+void outsw(unsigned short port, unsigned int size, unsigned short *data);
+void insw(unsigned short port, unsigned int size, unsigned short *buffer);
 
 #endif

@@ -82,7 +82,7 @@ void driver_exec(uint32_t type, uint32_t *data)
     if(i >= DRIVER_MAX_SUPPORTED)
         return;
 
-    EXEC_CALL_FUNC(drv_list[i].driver, data);
+    EXEC_CALL_FUNC(drv_list[i].driver, (uint32_t *) data);
 }
 
 static void driver_search_pciAll(void)

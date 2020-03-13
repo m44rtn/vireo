@@ -65,7 +65,7 @@ long inl(uint16_t _port)
 	return rv;
 }
 
-void outsw(uint16_t port, uint16_t *data, uint32_t size)
+void outsw(uint16_t port, uint32_t size, uint16_t *data)
 {
 	uint32_t i;
 
@@ -76,7 +76,7 @@ void outsw(uint16_t port, uint16_t *data, uint32_t size)
 	
 }
 
-void insw(uint16_t port, uint16_t *buffer, uint32_t size)
+void insw(uint16_t port, uint32_t size, uint16_t *buffer)
 {
 	uint32_t i;
 

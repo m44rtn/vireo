@@ -36,7 +36,7 @@ struct DRIVER
 
 typedef struct 
 {
-    unsigned short command;
+    unsigned int command;
     unsigned int parameter1;
     unsigned int parameter2;
     unsigned int parameter3;

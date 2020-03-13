@@ -89,7 +89,7 @@ typedef struct
 
 static void IDE_software_reset(uint16_t port);
 static void IDE_wait(uint16_t port);
-static uint8_t IDE_polling(uint16_t port);
+static uint8_t IDE_polling(uint16_t port, bool errTest);
 static uint16_t IDE_getPort(uint8_t drive);
 
 static void IDEDriverInit(unsigned int device);
@@ -110,18 +110,19 @@ uint16_t s_ctrl_port;
 struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
 
 
-void IDEController_handler(uint32_t *data)
+void IDEController_handler(uint32_t *drv)
 {
-    DRIVER_PACKET *drv = (DRIVER_PACKET *) data;
+    trace( (char*)"command=%x\n", drv[0]);
+    
 
-    switch(drv->command)
+    switch(drv[0])
     {
         case IDE_COMMAND_INIT:
-            IDEDriverInit(drv->parameter1);
+            IDEDriverInit(drv[1]);
         break;
 
         case IDE_COMMAND_READ:
-            IDE_readPIO28((uint8_t) drv->parameter1, drv->parameter2, (uint8_t) drv->parameter3, (uint16_t *) drv->parameter4);
+            IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
 
         default:
@@ -138,7 +139,7 @@ static void IDE_software_reset(uint16_t port){
 
     /* unset the reset bit */
     value = (uint8_t) inb(port);
-    outb(port, (value & 0xFFFB));
+    outb(port, ((uint8_t)(value & 0xFFFBU)));
 }
 
 static void IDE_wait(uint16_t port)
@@ -155,7 +156,7 @@ static void IDE_wait(uint16_t port)
     inb(port);
 }
 
-static uint8_t IDE_polling(uint16_t port)
+static uint8_t IDE_polling(uint16_t port, bool errTest)
 {
     uint8_t status;
 
@@ -166,12 +167,15 @@ static uint8_t IDE_polling(uint16_t port)
     status = (uint8_t) (inb((uint16_t) port | ATA_PORT_COMSTAT) & 0xFF);
 
     /* Error and Device Fault should be unset, DRQ set */
-    if (status & ATA_STAT_ERR) 
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-    if (status & ATA_STAT_DF)
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-    if (!(status & ATA_STAT_DRQ))
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    if(errTest)
+    {
+        if (status & ATA_STAT_ERR) 
+            return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+        if (status & ATA_STAT_DF)
+            return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+        if (!(status & ATA_STAT_DRQ))
+            return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    }
 
     return 0;
 }
@@ -180,6 +184,11 @@ static uint16_t IDE_getPort(uint8_t drive)
 {
     return (drive > 1) ? s_base_port : p_base_port;
 } 
+
+static uint8_t IDE_getSlavebit(uint8_t drive)
+{
+    return (drive % 2) ? (uint8_t) 1 : 0;
+}
 
 static void IDEDriverInit(uint32_t device)
 {
@@ -208,9 +217,8 @@ static void IDEDriverInit(uint32_t device)
     /* get the drive types */
     for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
     {
-        port = (drive > 1) ? s_base_port : p_base_port;
-        
-        slavebit = (drive % 2) ? (uint8_t) 1 : 0;
+        port = IDE_getPort(drive);
+        slavebit = IDE_getSlavebit(drive);
 
         /* TODO: 
             - cleanup 
@@ -218,7 +226,6 @@ static void IDEDriverInit(uint32_t device)
             - ATA READ/WRITE?*/
         
         drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
-
         trace((char *) "[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
     }
     
@@ -264,7 +271,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
 
     uint16_t port_comstat = port | ATA_PORT_COMSTAT;
 
-    outb((uint32_t) (port | ATA_PORT_SELECT), (uint32_t) (0xA0 | slavebit << 4));
+    outb((uint32_t) (port | ATA_PORT_SELECT), ((uint8_t)0xA0U) | (uint8_t)((slavebit) << 4U));
     
 
     /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
@@ -307,7 +314,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     /* right now we discard the info returned by the device, though it may be useful to not discard this in the future */
     buffer = malloc(256 * sizeof(uint16_t));
     
-    insw((uint32_t) port, 255, (uint32_t) buffer);
+    insw(port, 255, buffer);
     
     demalloc(buffer);
 
@@ -316,37 +323,39 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
 
 static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
-    uint8_t i;
+    uint8_t i = 0;
     uint16_t port = IDE_getPort(drive);
+    uint8_t slavebit = IDE_getSlavebit(drive);
 
-    start = start & 0x0FFFFFFFU;
-
-    trace("drive: %x\n", drive);
-    trace("start: %x\n", start);
-    trace("sctrwrite: %x\n", sctrwrite);
-    trace("buf: %x\n", buf);
+    trace( (char*)"drive: %x\n", drive);
+    trace( (char*)"start: %x\n", start);
+    trace( (char*)"sctrwrite: %x\n", sctrwrite);
+    trace( (char*)"buf: %x\n", (uint32_t) buf);
 
     if(drive > 3)
         return;
     if(drive_info_t[drive].type != IDE_DRIVER_TYPE_PATA)
         return;
 
+    outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
+
     outb(port | ATA_PORT_FEATURES, 0U); /* no DMA */
     outb(port | ATA_PORT_SCTRCNT, sctrwrite);
+
+    start = start & 0x0FFFFFFFU;
 
     outb(port | ATA_PORT_LBALOW, (uint8_t) start);
     outb(port | ATA_PORT_LBAMID, (uint8_t) (start >> 8U));
     outb(port | ATA_PORT_LBAHI, (uint8_t) (start >> 16U));
 
     outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_READ);
-    IDE_wait(port);
-
-    if(IDE_polling(port))
-            print("HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
+    
+    if(IDE_polling(port, false))
+            print( (char*)"HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
 
     for(i = 0; i < sctrwrite; ++i)
     {
-        insw((uint32_t) port, 255, (uint32_t) buf);
+        ASM_INSW((uint32_t) port, 256, (uint32_t) buf);
         while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
     }
 }
