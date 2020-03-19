@@ -134,3 +134,14 @@ unsigned char flag_check(unsigned int flag, unsigned int to_check)
     if((flag & to_check) == to_check) return EXIT_CODE_GLOBAL_SUCCESS;
     return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 }
+
+unsigned char strchr(char *str, char ch)
+{
+	uint32_t i = 0;
+
+	while(str[++i] != '\0')
+		if(str[i] == ch) 
+			return EXIT_CODE_GLOBAL_SUCCESS;
+
+	return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+}

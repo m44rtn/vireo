@@ -306,7 +306,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     if(type == IDE_DRIVER_TYPE_PATA) outb((uint32_t) port_comstat, ATA_IDENTIFY);
     else if(type == IDE_DRIVER_TYPE_PATAPI) 
         return type;
-    
+        
     /* if status = 0 then there's no such device */
     if(!inb(port_comstat))
         return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;

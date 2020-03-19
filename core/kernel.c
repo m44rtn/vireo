@@ -147,8 +147,7 @@ void main(void)
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
 
     trace( (char*)"boot signature: %x\n", (buffy[255]) );
-
-
+    
     #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
     info_print_version();
