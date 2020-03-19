@@ -37,11 +37,8 @@ EXEC_CALL_FUNC:
 push ebp
 mov ebp, esp
 
-mov edi, [ebp + 8]
-mov esi, [ebp + 12]
-
-push esi
-call edi
+push DWORD [ebp + 12]
+call DWORD [ebp + 8]
 
 mov esp, ebp
 pop ebp

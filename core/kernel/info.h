@@ -26,7 +26,7 @@ SOFTWARE.
 
 /* this is always the build number for next build. 
 current binary build = [BUILD] - 1 */
-#define BUILD 1335
+#define BUILD 1358
 
 void info_print_version(void);
 

@@ -355,7 +355,7 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
 
     for(i = 0; i < sctrwrite; ++i)
     {
-        ASM_INSW((uint32_t) port, 256, (uint32_t) buf);
+        insw(port, 256, buf);
         while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
     }
 }
