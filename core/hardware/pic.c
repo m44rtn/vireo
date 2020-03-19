@@ -45,38 +45,38 @@ void PIC_controller_setup(void)
     IOWAIT() is there for older hardware
     */
 
-    ASM_OUTB(PIC_MASTER_CMNDSTAT, 0x11);
+    outb(PIC_MASTER_CMNDSTAT, 0x11);
     ASM_IOWAIT();
-    ASM_OUTB(PIC_SLAVE_CMNDSTAT,  0x11);
+    outb(PIC_SLAVE_CMNDSTAT,  0x11);
     
     ASM_IOWAIT();
 
-    ASM_OUTB(PIC_MASTER_IMRDATA, 0x20);
+    outb(PIC_MASTER_IMRDATA, 0x20);
     ASM_IOWAIT();
-    ASM_OUTB(PIC_SLAVE_IMRDATA,  0x28);
+    outb(PIC_SLAVE_IMRDATA,  0x28);
 
     ASM_IOWAIT();
 
-    ASM_OUTB(PIC_MASTER_IMRDATA, 0x04);
+    outb(PIC_MASTER_IMRDATA, 0x04);
     ASM_IOWAIT();
-    ASM_OUTB(PIC_SLAVE_IMRDATA,  0x02);
+    outb(PIC_SLAVE_IMRDATA,  0x02);
 
     ASM_IOWAIT();
 
-    ASM_OUTB(PIC_MASTER_IMRDATA, 0x01);
+    outb(PIC_MASTER_IMRDATA, 0x01);
     ASM_IOWAIT();
-    ASM_OUTB(PIC_SLAVE_IMRDATA,  0x01);
+    outb(PIC_SLAVE_IMRDATA,  0x01);
 
     ASM_IOWAIT();
-    ASM_OUTB(PIC_MASTER_IMRDATA, 0x00);
+    outb(PIC_MASTER_IMRDATA, 0x00);
     ASM_IOWAIT();
-    ASM_OUTB(PIC_SLAVE_IMRDATA,  0x00);
+    outb(PIC_SLAVE_IMRDATA,  0x00);
 
     /* unmask all */
     ASM_IOWAIT();
-    ASM_OUTB(PIC_MASTER_CMNDSTAT, 0x00);
+    outb(PIC_MASTER_CMNDSTAT, 0x00);
     ASM_IOWAIT();
-    ASM_OUTB(PIC_SLAVE_CMNDSTAT,  0x00);
+    outb(PIC_SLAVE_CMNDSTAT,  0x00);
 
     /* then we configure the PIT */
     PITInit();
@@ -93,8 +93,8 @@ void PIC_mask(unsigned char IRQ)
         port = PIC_SLAVE_IMRDATA;
     }
 
-    mask = (uint8_t) ((ASM_INB(port)) | (uint32_t)(1 << IRQ));
-    ASM_OUTB(port, mask);
+    mask = (uint8_t) ((inb(port)) | (uint32_t)(1 << IRQ));
+    outb(port, mask);
 }
 
 void PIC_umask(unsigned char IRQ)
@@ -108,26 +108,26 @@ void PIC_umask(unsigned char IRQ)
         port = PIC_SLAVE_IMRDATA;
     }
 
-    mask = (uint8_t) (ASM_INB(port) & (uint32_t)~(1 << IRQ));
-    ASM_OUTB(port, mask);
+    mask = (uint8_t) (inb(port) & (uint32_t)~(1 << IRQ));
+    outb(port, mask);
 }
 
 void PIC_EOI(unsigned char IRQ)
 {
     uint16_t port = PIC_MASTER_CMNDSTAT;
-    ASM_OUTB(port, 0x20);
+    outb(port, 0x20);
 
     if(IRQ > 7)
     {
         port = PIC_SLAVE_CMNDSTAT;
-        ASM_OUTB(port, 0x20);
+        outb(port, 0x20);
     }
 }
 
 uint16_t PIC_read_ISR(void)
 {
-    ASM_OUTB(PIC_MASTER_CMNDSTAT, PIC_READ_ISR);
-    ASM_OUTB(PIC_SLAVE_CMNDSTAT,  PIC_READ_ISR);
+    outb(PIC_MASTER_CMNDSTAT, PIC_READ_ISR);
+    outb(PIC_SLAVE_CMNDSTAT,  PIC_READ_ISR);
 
-    return (uint16_t) ((uint16_t)ASM_INB(PIC_SLAVE_CMNDSTAT) << 8) | (uint16_t)ASM_INB(PIC_MASTER_CMNDSTAT);    
+    return (uint16_t)((inb(PIC_SLAVE_CMNDSTAT) << 8U) | inb(PIC_MASTER_CMNDSTAT));    
 }

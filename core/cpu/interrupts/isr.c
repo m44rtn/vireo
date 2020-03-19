@@ -67,7 +67,7 @@ void ISR_20_HANDLER(void)
 
 void ISR_21_HANDLER(void)
 {
-    uint16_t character = (uint16_t) ASM_INB(0x60);
+    uint16_t character = (uint16_t) inb(0x60);
     
     /* to get rid of compiler warnings :)
       this'll be changed to something useful later on */

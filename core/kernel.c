@@ -104,7 +104,6 @@ void main(void)
 {
     unsigned int exit_code = 0;
     unsigned int *devicelist, device;
-    uint32_t buf;
     uint16_t *buffy;
 
     uint32_t *bleep;

@@ -209,8 +209,8 @@ static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_
 	/* create config adress */
 	uint32_t address = (uint32_t) ((lbus << 16) | (ldevice << 11) | (lfunc << 8)  | (lreg << 2) | (uint32_t) 0x80000000);
 	
-	ASM_OUTL(0x0cf8, address);
-	tmmp = ASM_INL(0x0cfc);
+	outl(0x0cf8, address);
+	tmmp = (uint32_t) inl(0x0cfc);
 	
 	return tmmp;
 }

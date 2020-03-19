@@ -91,19 +91,19 @@ unsigned char screen_basic_init(void)
 void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end)
 {
 	
-	ASM_OUTB(0x3D4, 0x0A);
-	ASM_OUTB(0x3D5, (uint8_t) (ASM_INB(0x3D5) & ((unsigned int) 0xC0)) | (cursor_start & ((unsigned int) 0x0f)));
+	outb(0x3D4, 0x0A);
+	outb(0x3D5, (uint8_t) ((inb(0x3D5U) & 0xC0U) | (cursor_start & 0x0FU)));
 
-	ASM_OUTB(0x3D4, 0x0B);
-	ASM_OUTB(0x3D5, (uint8_t) (ASM_INB(0x3D5) & ((unsigned int)0xE0)) | (cursor_end & ((unsigned int) 0x0f)));
+	outb(0x3D4, 0x0B);
+	outb(0x3D5, (uint8_t) ((inb(0x3D5U) & 0xE0U) | (cursor_end & 0x0FU)));
 
 
 }
 
 void screen_basic_disable_cursor(void)
 {
-	ASM_OUTB(0x3D4, 0x0A);
-	ASM_OUTB(0x3D5, 0x20);
+	outb(0x3D4, 0x0A);
+	outb(0x3D5, 0x20);
 }
 
 uint8_t screen_basic_move_cursor(unsigned short x, unsigned short y)
@@ -115,11 +115,11 @@ uint8_t screen_basic_move_cursor(unsigned short x, unsigned short y)
 	if(x >= SCREEN_BASIC_WIDTH) x = SCREEN_BASIC_WIDTH - 1;
 	if(y >= SCREEN_BASIC_HEIGHT) y = SCREEN_BASIC_HEIGHT - 1;
 
-	ASM_OUTB(0x3D4, 0x0E);
-	ASM_OUTB(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
 
-	ASM_OUTB(0x3D4, 0x0F);
-	ASM_OUTB(0x3D5, (uint8_t) (position & 0xFF));
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (uint8_t) (position & 0xFF));
 	
 	verify_pos = screen_basic_get_cursor_position();
 
@@ -132,11 +132,11 @@ unsigned short screen_basic_get_cursor_position(void)
 {
 	uint16_t position = 0;
 
-	ASM_OUTB(0x3D4, 0x0F);
-	position |= (uint16_t) ASM_INB(0x3D5);
+	outb(0x3D4, 0x0F);
+	position |= (uint16_t) inb(0x3D5);
 
-	ASM_OUTB(0x3D4, 0x0E);
-	position |= (uint16_t) (ASM_INB(0x3D5) <<  8);
+	outb(0x3D4, 0x0E);
+	position |= (uint16_t) (inb(0x3D5) <<  8);
 
 	return position;
 }
@@ -252,11 +252,11 @@ static void screen_basic_move_cursor_internal(void)
 {
 	uint16_t position = (uint16_t) (SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX);
 
-	ASM_OUTB(0x3D4, 0x0E);
-	ASM_OUTB(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (uint8_t) ((position >> 8) & 0xFF));
 
-	ASM_OUTB(0x3D4, 0x0F);
-	ASM_OUTB(0x3D5, (uint8_t) (position & 0xFF));
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (uint8_t) (position & 0xFF));
 }
 
 static void screen_basic_linecheck(void)
