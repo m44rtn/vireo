@@ -106,6 +106,11 @@ uint16_t p_ctrl_port;
 uint16_t s_base_port;
 uint16_t s_ctrl_port;
 
+/* some flag values:
+        - bit 0: if set, init executed succesfully
+        */    
+uint16_t flags = 0;
+
 /* the indentifier for drivers + information about our driver */
 struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
 
@@ -114,6 +119,10 @@ void IDEController_handler(uint32_t *drv)
 {
     trace( (char*)"command=%x\n", drv[0]);
     
+    /* To make sure that we don't do anything stupid, we check if INIT is either called or previously
+        executed */
+    if(drv[0] != IDE_COMMAND_INIT && flag_check(flags, 1U))
+        return;
 
     switch(drv[0])
     {
@@ -232,6 +241,8 @@ static void IDEDriverInit(uint32_t device)
     #ifndef QUIET_KERNEL
         print((char *) "\n");
     #endif
+
+    flags = flags | 1U;
 }
 
 static void IDE_enumerate(void)
