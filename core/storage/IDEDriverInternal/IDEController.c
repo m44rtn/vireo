@@ -28,6 +28,9 @@ SOFTWARE.
 #include "../../include/exit_code.h"
 #include "../../include/types.h"
 
+#include "../../cpu/interrupts/IDT.h"
+#include "../../hardware/pic.h"
+
 #ifndef QUIET_KERNEL
     #include "../../screen/screen_basic.h"
 #endif
@@ -79,6 +82,10 @@ SOFTWARE.
 #define IDE_DRIVER_TYPE_PATAPI  0x01
 #define IDE_DRIVER_TYPE_UNKNOWN 0xFF
 
+/* Flags stuff */
+#define IDE_FLAG_INIT_RAN   1 /* used by init to say it did ran and did it's thing */
+#define IDE_FLAG_IRQ        1 << 2
+
 
 typedef struct
 {
@@ -88,9 +95,11 @@ typedef struct
 
 
 static void IDE_software_reset(uint16_t port);
-static void IDE_wait(uint16_t port);
+static void IDE_wait(void);
 static uint8_t IDE_polling(uint16_t port, bool errTest);
 static uint16_t IDE_getPort(uint8_t drive);
+
+static void IDE_IRQ(void);
 
 static void IDEDriverInit(unsigned int device);
 static void IDE_enumerate(void);
@@ -117,8 +126,6 @@ struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_C
 
 void IDEController_handler(uint32_t *drv)
 {
-    trace( (char*)"command=%x\n", drv[0]);
-    
     /* To make sure that we don't do anything stupid, we check if INIT is either called or previously
         executed */
     if(drv[0] != IDE_COMMAND_INIT && flag_check(flags, 1U))
@@ -131,7 +138,10 @@ void IDEController_handler(uint32_t *drv)
         break;
 
         case IDE_COMMAND_READ:
-            IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+            if(drive_info_t[drv[1]].type == IDE_DRIVER_TYPE_PATA)
+                IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+            else if(drive_info_t[drv[1]].type == IDE_DRIVER_TYPE_PATAPI)
+                IDE_readPIO28_atapi((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
 
         default:
@@ -144,32 +154,26 @@ static void IDE_software_reset(uint16_t port){
     uint8_t value = (uint8_t) inb(port);
     outb(port, (value | 0x04));
   
-    IDE_wait(port);
+    sleep(5);
 
     /* unset the reset bit */
     value = (uint8_t) inb(port);
     outb(port, ((uint8_t)(value & 0xFFFBU)));
 }
 
-static void IDE_wait(uint16_t port)
+static void IDE_wait(void)
 {
-    
-    if(port != p_base_port) 
-        port = s_ctrl_port;
-    else
-        port = p_ctrl_port;
-    
-    inb(port);
-    inb(port);
-    inb(port);
-    inb(port);
+    inb(p_ctrl_port);
+    inb(p_ctrl_port);
+    inb(p_ctrl_port);
+    inb(p_ctrl_port);
 }
 
 static uint8_t IDE_polling(uint16_t port, bool errTest)
 {
     uint8_t status;
 
-    IDE_wait(port);
+    IDE_wait();
 
     while(inb((uint16_t) port | ATA_PORT_COMSTAT) & ATA_STAT_BUSY);
 
@@ -199,6 +203,12 @@ static uint8_t IDE_getSlavebit(uint8_t drive)
     return (drive % 2) ? (uint8_t) 1 : 0;
 }
 
+static void IDE_IRQ(void)
+{
+    print("[IDE_DRIVER] IRQ fired!\n");
+    PIC_EOI(0x15);
+}
+
 static void IDEDriverInit(uint32_t device)
 {
     /* technically, you should first enumerate the PCI bus but it's not reliable and 
@@ -220,8 +230,8 @@ static void IDEDriverInit(uint32_t device)
     IDE_software_reset(s_ctrl_port);
 
     /* disable IRQs */
-    outb((uint32_t) p_base_port, 2);
-    outb((uint32_t) p_base_port, 2);
+    outb((uint32_t) p_ctrl_port, 2);
+    outb((uint32_t) s_ctrl_port, 2);
 
     /* get the drive types */
     for(drive = 0; drive < IDE_DRIVER_MAX_DRIVES; ++drive)
@@ -235,14 +245,21 @@ static void IDEDriverInit(uint32_t device)
             - ATA READ/WRITE?*/
         
         drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
-        trace((char *) "[IDE_DRIVER] found drive type: %x\n", drive_info_t[drive].type);
     }
-    
+
+    outb((uint32_t) p_ctrl_port, 0);
+    outb((uint32_t) s_ctrl_port, 0);
+
+    /* register our IRQ handler */
+    IDT_add_handler(0x34, (uint32_t) IDE_IRQ);
+    IDT_add_handler(0x35, (uint32_t) IDE_IRQ);
+
+    flags = flags | 1U;
+
     #ifndef QUIET_KERNEL
         print((char *) "\n");
     #endif
 
-    flags = flags | 1U;
 }
 
 static void IDE_enumerate(void)
@@ -286,7 +303,6 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     
 
     /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
-       this is not documented anywhere on wiki.osdev.org, so this may be virtualbox specific.
        to avoid the #GP we first check if we're dealing with a PATAPI or PATA device */
     
     lo = inb( (port | ATA_PORT_LBAMID)) & 0xFF;
@@ -338,11 +354,6 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
 
-    trace( (char*)"drive: %x\n", drive);
-    trace( (char*)"start: %x\n", start);
-    trace( (char*)"sctrwrite: %x\n", sctrwrite);
-    trace( (char*)"buf: %x\n", (uint32_t) buf);
-
     if(drive > 3)
         return;
     if(drive_info_t[drive].type != IDE_DRIVER_TYPE_PATA)
@@ -362,11 +373,16 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
     outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_READ);
     
     if(IDE_polling(port, false))
-            print( (char*)"HELLOOOOOOOOOOOOOOOOOOOOOOOOOOOO\n");
+            return;
 
     for(i = 0; i < sctrwrite; ++i)
     {
         insw(port, 256, buf);
         while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
     }
+}
+
+static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
+{
+    dbg_assert(0);
 }

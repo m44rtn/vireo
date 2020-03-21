@@ -63,6 +63,14 @@ static void driver_search_pciAll(void);
 /* TODO:
         - add functionality to add and remove new/old drivers */
 
+/* A driver command packet is an array of five uint32_t's. 
+    The packet is as follows:
+
+    0: command
+    1-4: parameter1 - parameter4
+    */
+
+
 void driver_init(void)
 {
     driver_search_pciAll();

@@ -89,6 +89,8 @@ void IDT_add_handler(uint8_t index, uint32_t handler)
 
     /* present, DPL = 00, s = 0 and gatetype = 0xE */
     IDT[index].type_attr    = 0x8E;
+
+    IDT_reset();
 }
 
 void IDT_reset(void)

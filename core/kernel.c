@@ -139,14 +139,9 @@ void main(void)
     devicelist = pciGetDevices(0x01, 0x01);
     device = devicelist[1];
     demalloc(devicelist);
-
-    trace( (char*)"bleep.command = %x\n", bleep[0]);
-    trace( (char*)"device: %x\n", device);
-     trace( (char*)"buffy: 0x%x\n", (uint32_t) buffy);
     
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
 
-    trace( (char*)"boot signature: %x\n", (buffy[255]) );
     
     #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
