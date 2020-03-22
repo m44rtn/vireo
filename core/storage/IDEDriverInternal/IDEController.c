@@ -101,6 +101,8 @@ static void IDE_software_reset(uint16_t port);
 static void IDE_wait(void);
 static uint8_t IDE_polling(uint16_t port, bool errTest);
 static uint16_t IDE_getPort(uint8_t drive);
+static uint8_t IDE_getSlavebit(uint8_t drive);
+static void IDEClearFlagBit(uint16_t flag_bit);
 
 static void IDE_IRQ(void);
 
@@ -210,9 +212,17 @@ static uint8_t IDE_getSlavebit(uint8_t drive)
     return (drive % 2) ? (uint8_t) 1 : 0;
 }
 
+static void IDEClearFlagBit(uint16_t flag_bit)
+{
+    flags = flags & (uint16_t)~(flag_bit);
+}
+
 static void IDE_IRQ(void)
 {
     print((char *)"[IDE_DRIVER] IRQ fired!\n");
+
+    flags = flags | IDE_FLAG_IRQ;
+
     PIC_EOI(0x15);
 }
 
@@ -394,19 +404,8 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
 
 static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
-    uint8_t read_command[12] = {ATAPI_COMMAND_READ, 
-                                0, 
-                                (start >> 0x18),
-                                (start >> 0x10),
-                                (start >> 0x08),
-                                start,
-                                0,
-                                0,
-                                0,
-                                sctrwrite,
-                                0,
-                                0};
-    uint16_t byteCount = sctrwrite * 2048;
+    uint8_t read_command[12] = {ATAPI_COMMAND_READ,0,0,0,0,0,0,0,0,0,0};
+    uint16_t byteCount = (uint16_t) (sctrwrite * 2048U);
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
     uint8_t i;
@@ -423,7 +422,30 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
     outb(port | ATA_PORT_LBAMID, (uint8_t) (2048 & 0xFF));
     outb(port | ATA_PORT_LBAHI, (uint8_t) (2048 >> 8U));
 
+    outb(port | ATA_PORT_COMSTAT, ATAPI_COMMAND_PACKET);
+    
+    if(IDE_polling(port, true))
+        return;
 
+    read_command[2] = (uint8_t) (start >> 0x18);
+    read_command[3] = (uint8_t) (start >> 0x10);
+    read_command[4] = (uint8_t) (start >> 0x08);
+    read_command[5] = (uint8_t) (start >> 0x00);
+    read_command[9] = (uint8_t) sctrwrite;
 
-    dbg_assert(0);
+    print("we get here\n");
+    outsw(port, 6, (uint16_t *) &read_command);
+    print("we got past that\n");
+    
+    while(!(flags & IDE_FLAG_IRQ));
+    IDEClearFlagBit(IDE_FLAG_IRQ);
+
+    print("we've reached insw!\n");
+    insw(port, byteCount / 2U, buf);
+    print("and we got passed that\n");
+
+    while(!(flags & IDE_FLAG_IRQ));
+    IDEClearFlagBit(IDE_FLAG_IRQ);
+    
+    /*dbg_assert(0);*/
 }

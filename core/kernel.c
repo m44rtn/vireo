@@ -131,8 +131,8 @@ void main(void)
     memset((char*)bleep, sizeof(4 * sizeof(uint32_t)), (char) 0);
     
     bleep[0] = IDE_COMMAND_READ;
-    bleep[1] = 1;
-    bleep[2] = 63;
+    bleep[1] = 2;
+    bleep[2] = 0;
     bleep[3] = 1;
     bleep[4] = (uint32_t) buffy;
 
