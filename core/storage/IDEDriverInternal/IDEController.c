@@ -70,6 +70,9 @@ SOFTWARE.
 #define ATA_COMMAND_READ    0x20
 #define ATA_COMMAND_WRITE   0x30
 
+#define ATAPI_COMMAND_PACKET 0xA0
+#define ATAPI_COMMAND_READ  0xA8
+
 #define ATA_COMMAND_DMAREAD 0xC8
 #define ATA_COMMAND_DMAWRITE 0xCA
 
@@ -102,10 +105,14 @@ static uint16_t IDE_getPort(uint8_t drive);
 static void IDE_IRQ(void);
 
 static void IDEDriverInit(unsigned int device);
+#ifndef QUIET_KERNEL
+    static void IDEPrintWelcome(void);
+#endif
 static void IDE_enumerate(void);
 static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit);
 
 static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
+static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
 
 DRIVE_INFO drive_info_t[IDE_DRIVER_MAX_DRIVES];
 uint32_t PCI_controller;
@@ -205,7 +212,7 @@ static uint8_t IDE_getSlavebit(uint8_t drive)
 
 static void IDE_IRQ(void)
 {
-    print("[IDE_DRIVER] IRQ fired!\n");
+    print((char *)"[IDE_DRIVER] IRQ fired!\n");
     PIC_EOI(0x15);
 }
 
@@ -215,11 +222,6 @@ static void IDEDriverInit(uint32_t device)
     most controllers support the standard IO ports at boot up anyway. */
     uint8_t drive, slavebit;
     uint16_t port;
-    
-    #ifndef QUIET_KERNEL
-    print((char *) "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mk. I\n");
-    trace((char *) "[IDE_DRIVER] Kernel reported PCI controller %x\n", device);
-    #endif
 
     PCI_controller = device & (uint32_t)~(DRIVER_TYPE_PCI);
 
@@ -257,10 +259,25 @@ static void IDEDriverInit(uint32_t device)
     flags = flags | 1U;
 
     #ifndef QUIET_KERNEL
-        print((char *) "\n");
+        IDEPrintWelcome();
     #endif
 
 }
+#ifndef QUIET_KERNEL
+    static void IDEPrintWelcome(void)
+    {
+        print((char *) "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mk. I\n");
+        trace((char *) "[IDE_DRIVER] Kernel reported PCI controller %x\n", PCI_controller);
+
+        trace((char *) "[IDE_DRIVER] Primary base port: %x\n", p_base_port);
+        trace((char *) "[IDE_DRIVER] Secondary base port: %x\n", s_base_port);
+        trace((char *) "[IDE_DRIVER] Primary control port: %x\n", p_ctrl_port);
+        trace((char *) "[IDE_DRIVER] Secondary control port: %x\n", s_ctrl_port);
+
+        print((char *) "\n");
+    
+    }
+#endif
 
 static void IDE_enumerate(void)
 {
@@ -279,13 +296,6 @@ static void IDE_enumerate(void)
     
     bar = pciGetBar(PCI_controller, PCI_BAR3) & 0xFFFFFFFC;
     s_ctrl_port = (uint16_t) (bar + 0x376U*(!bar)) & 0xFFFFU;
-
-    #ifndef QUIET_KERNEL
-    trace((char *) "[IDE_DRIVER] Primary base port: %x\n", p_base_port);
-    trace((char *) "[IDE_DRIVER] Secondary base port: %x\n", s_base_port);
-    trace((char *) "[IDE_DRIVER] Primary control port: %x\n", p_ctrl_port);
-    trace((char *) "[IDE_DRIVER] Secondary control port: %x\n", s_ctrl_port);
-    #endif
 
 }
 
@@ -384,5 +394,36 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
 
 static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
+    uint8_t read_command[12] = {ATAPI_COMMAND_READ, 
+                                0, 
+                                (start >> 0x18),
+                                (start >> 0x10),
+                                (start >> 0x08),
+                                start,
+                                0,
+                                0,
+                                0,
+                                sctrwrite,
+                                0,
+                                0};
+    uint16_t byteCount = sctrwrite * 2048;
+    uint16_t port = IDE_getPort(drive);
+    uint8_t slavebit = IDE_getSlavebit(drive);
+    uint8_t i;
+
+    if(drive > 3)
+        return;
+    if(drive_info_t[drive].type != IDE_DRIVER_TYPE_PATAPI)
+        return;
+
+    outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
+    IDE_wait();
+
+    outb(port | ATA_PORT_FEATURES, 0U); /* no DMA */
+    outb(port | ATA_PORT_LBAMID, (uint8_t) (2048 & 0xFF));
+    outb(port | ATA_PORT_LBAHI, (uint8_t) (2048 >> 8U));
+
+
+
     dbg_assert(0);
 }
