@@ -58,7 +58,7 @@ SOFTWARE.
 void init_env(void);
 void main(void);
 
-typedef struct 
+typedef struct
 {
     uint32_t sign1;
     char *sign2;
@@ -68,36 +68,36 @@ typedef struct
 /* initializes 'the environment' */
 void init_env(void)
 {
-     /* GDT structures */
+    /* GDT structures */
     GDT_ACCESS access;
     GDT_FLAGS flags;
     uint8_t exit_code;
-
+    
     exit_code = loader_detect();
-    if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED) 
+    if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED)
         debug_print_warning((char *) "Support for current bootloader not implemented");
-
+    
     /* setup GDT structures */
     access.dataisWritable   = true;
     access.codeisReadable   = true;
-
+    
     flags.Align4k           = true;
     flags.use16             = false;
     
     GDT_setup(access, flags);
     PIC_controller_setup();
-
+    
     IDT_setup();
     CPU_init();
     
     exit_code = memory_init();
-
+    
     paging_init();
-
+    
     pci_init();
-
+    
     driver_init();
-
+    
 }
 
 void main(void)
@@ -105,28 +105,28 @@ void main(void)
     unsigned int exit_code = 0;
     unsigned int *devicelist, device;
     uint16_t *buffy;
-
+    
     uint32_t *bleep;
     
     
     exit_code = screen_basic_init();
-   
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS) 
+    
+    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS)
         while(1);
     
     init_env();
-
+    
     
     devicelist = pciGetDevices(0x01, 0x01);
     device = devicelist[1];
     demalloc(devicelist);
-
+    
     bleep = malloc(512);
     bleep[0] = IDE_COMMAND_INIT;
     bleep[1] = (uint32_t) device;
-
+    
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
-
+    
     buffy = malloc(512);
     memset((char*)bleep, sizeof(4 * sizeof(uint32_t)), (char) 0);
     
@@ -135,19 +135,19 @@ void main(void)
     bleep[2] = 0;
     bleep[3] = 1;
     bleep[4] = (uint32_t) buffy;
-
+    
     devicelist = pciGetDevices(0x01, 0x01);
     device = devicelist[1];
     demalloc(devicelist);
     
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
-
     
-    #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
+    
+#ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
     info_print_version();
     print((char*)"\n");
-    #endif
-            
+#endif
+    
     while(1);
 }
