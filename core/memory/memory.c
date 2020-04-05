@@ -182,7 +182,7 @@ void *malloc(size_t size)
 
 }
 
-void demalloc(void *ptr)
+void free(void *ptr)
 {
     uint8_t i;
 

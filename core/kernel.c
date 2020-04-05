@@ -72,6 +72,7 @@ void init_env(void)
     GDT_ACCESS access;
     GDT_FLAGS flags;
     uint8_t exit_code;
+    uint32_t *bleep; /* for the driver inits and such */
     
     exit_code = loader_detect();
     if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED)
@@ -98,28 +99,11 @@ void init_env(void)
     
     driver_init();
     
-}
-
-void main(void)
-{
-    unsigned int exit_code = 0;
-    unsigned int *devicelist, device;
-    uint16_t *buffy;
-    
-    uint32_t *bleep;
-    
-    
-    exit_code = screen_basic_init();
-    
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS)
-        while(1);
-    
-    init_env();
-    
-    
+    /* the kernel should actually detect anything that has a driver and init them,
+but until that's implemented this'll live here*/
     devicelist = pciGetDevices(0x01, 0x01);
     device = devicelist[1];
-    demalloc(devicelist);
+    free(devicelist);
     
     bleep = malloc(512);
     bleep[0] = IDE_COMMAND_INIT;
@@ -127,21 +111,19 @@ void main(void)
     
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
     
-    buffy = malloc(512);
-    memset((char*)bleep, sizeof(4 * sizeof(uint32_t)), (char) 0);
+}
+
+void main(void)
+{
+    unsigned int exit_code = 0;
+    unsigned int *devicelist, device;
     
-    bleep[0] = IDE_COMMAND_READ;
-    bleep[1] = 2;
-    bleep[2] = 0;
-    bleep[3] = 1;
-    bleep[4] = (uint32_t) buffy;
+    exit_code = screen_basic_init();
     
-    devicelist = pciGetDevices(0x01, 0x01);
-    device = devicelist[1];
-    demalloc(devicelist);
+    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS)
+        while(1);
     
-    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, bleep);
-    
+    init_env();
     
 #ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");

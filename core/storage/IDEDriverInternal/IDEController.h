@@ -24,6 +24,9 @@ SOFTWARE.
 #ifndef __IDECONTROLLER_H__
 #define __IDECONTROLLER_H__
 
+
 void IDEController_handler(unsigned int *drv);
+
+extern void ASM_IDE_IRQ(void);
 
 #endif

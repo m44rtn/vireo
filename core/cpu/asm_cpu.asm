@@ -72,7 +72,7 @@ ASM_GDT_SUBMIT:
     mov es, ax
     mov fs, ax
     mov gs, ax
-    mov ss, ax   
+    mov ss, ax
 
     mov esp, ebp
     pop ebp
@@ -88,7 +88,8 @@ ASM_IDT_SUBMIT:
 
     push ebp
     mov ebp, esp
-
+	
+	cli
     mov edx, [ebp + 8]
     lidt [edx]
     sti
@@ -144,7 +145,7 @@ ASM_CPU_SAVE_STATE:
 ; saves the current state of the cpu. it uses
 ; pushad (so that has to be done already before calling this function)
 ; and the struct defined in cpu.h and cpu.c
-; 
+;
 ; also, NOTE: if you use this for exceptions, and they push an error code on
 ; the stack, the error code MUST first be popped before using this function.
 ; otherwise the error code gets stored in the cpu struct as eip.
@@ -201,9 +202,9 @@ ASM_CHECK_CPUID:
 
     pushfd
      
-    mov eax, DWORD [esp]   
+    mov eax, DWORD [esp]
 
-    popfd   
+    popfd
 
     and eax, 0x200000
     cmp eax, 0x200000
@@ -229,10 +230,10 @@ ASM_CPU_GETVENDOR:
 
     mov DWORD [CPUID_VENDOR + 0x00], ebx
     mov DWORD [CPUID_VENDOR + 0x04], edx
-    mov DWORD [CPUID_VENDOR + 0x08], ecx 
+    mov DWORD [CPUID_VENDOR + 0x08], ecx
 
-    mov eax, CPUID_VENDOR  
-    mov DWORD [CPUID_VENDOR_STRING], eax 
+    mov eax, CPUID_VENDOR
+    mov DWORD [CPUID_VENDOR_STRING], eax
 
 ret
 
@@ -251,7 +252,7 @@ ASM_CPU_GETNAME:
     mov DWORD [CPUID_CPUNAME + 0x00], eax
     mov DWORD [CPUID_CPUNAME + 0x04], ebx
     mov DWORD [CPUID_CPUNAME + 0x08], ecx
-    mov DWORD [CPUID_CPUNAME + 0x0C], edx  
+    mov DWORD [CPUID_CPUNAME + 0x0C], edx
 
     mov eax, 0x80000003
     cpuid
@@ -259,7 +260,7 @@ ASM_CPU_GETNAME:
     mov DWORD [CPUID_CPUNAME + 0x10], eax
     mov DWORD [CPUID_CPUNAME + 0x14], ebx
     mov DWORD [CPUID_CPUNAME + 0x18], ecx
-    mov DWORD [CPUID_CPUNAME + 0x1C], edx  
+    mov DWORD [CPUID_CPUNAME + 0x1C], edx
 
     mov eax, 0x80000004
     cpuid
@@ -267,7 +268,7 @@ ASM_CPU_GETNAME:
     mov DWORD [CPUID_CPUNAME + 0x20], eax
     mov DWORD [CPUID_CPUNAME + 0x24], ebx
     mov DWORD [CPUID_CPUNAME + 0x28], ecx
-    mov DWORD [CPUID_CPUNAME + 0x2C], edx  
+    mov DWORD [CPUID_CPUNAME + 0x2C], edx
 
     mov eax, CPUID_CPUNAME
     mov DWORD [CPUID_CPUNAME_STRING], eax

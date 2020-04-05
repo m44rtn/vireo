@@ -128,6 +128,6 @@ static void driver_search_pciAll(void)
         }
 
     }
-    demalloc(devicelist);
+    free(devicelist);
 }
 

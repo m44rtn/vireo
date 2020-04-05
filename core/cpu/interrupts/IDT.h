@@ -26,7 +26,6 @@ SOFTWARE.
 
 void IDT_setup(void);
 void IDT_add_handler(unsigned char index, unsigned int handler);
-void IDT_reset(void);
 
 /* extern assembly functions */
 extern void ASM_IDT_SUBMIT(unsigned int *IDT);

@@ -33,12 +33,19 @@ SOFTWARE.
 */
 
 #define IDE_COMMAND_READ    0x01
-/* 
+/*
 	parameter1: drive
 	parameter2: starting sector
 	parameter3: # sectors to read
 	parameter4: buffer to read to
 */
 
+#define IDE_COMMAND_WRITE    0x02
+/*
+	parameter1: drive
+	parameter2: starting sector
+	parameter3: # sectors to write
+	parameter4: buffer with the data to be written
+*/
 
 #endif

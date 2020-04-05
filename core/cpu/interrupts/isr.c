@@ -72,6 +72,8 @@ void ISR_21_HANDLER(void)
     /* to get rid of compiler warnings :)
       this'll be changed to something useful later on */
     if(character) { /* do something */ }
-
+    
+    print(character);
+    
     PIC_EOI(1);
 }

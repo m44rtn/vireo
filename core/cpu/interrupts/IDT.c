@@ -43,8 +43,8 @@ typedef struct IDT_DESCRIPTOR
 IDT_DESCRIPTOR IDT_desc;
 IDT_ENTRY IDT[256];
 
+static void IDT_reset(void);
 static void IDT_default_list(void);
-
 
 /* creates a basic IDT with the following stuff:
         - DIVISON_BY_ZERO
@@ -68,34 +68,32 @@ static void IDT_default_list(void);
         
     Some exceptions hang, some panic and others will display a message
          */
-        
+
 void IDT_setup(void)
 {
     IDT_default_list();
-
+    
     IDT_desc.size    = (sizeof(IDT_ENTRY) * 256) - 1;
     IDT_desc.address = (uint32_t) &IDT;
     
-    ASM_IDT_SUBMIT((uint32_t *) &IDT_desc);    
+    ASM_IDT_SUBMIT((uint32_t *) &IDT_desc);
 }
 
 void IDT_add_handler(uint8_t index, uint32_t handler)
 {
     IDT[index].offset_low   =  ((uint16_t) handler & 0xFFFF);
     IDT[index].offset_hi    =  ((uint16_t)(handler >> 16)) & 0xFFFF;
-
+    
     IDT[index].selector     = 0x08;
     IDT[index].always_zero  = 0;
-
+    
     /* present, DPL = 00, s = 0 and gatetype = 0xE */
     IDT[index].type_attr    = 0x8E;
-
-    IDT_reset();
 }
 
-void IDT_reset(void)
+static void IDT_reset(void)
 {
-    ASM_IDT_SUBMIT((uint32_t *) &IDT_desc);   
+    ASM_IDT_SUBMIT((uint32_t *) &IDT_desc);
 }
 
 static void IDT_default_list(void)
@@ -116,6 +114,7 @@ static void IDT_default_list(void)
     IDT_add_handler(0x0D, (uint32_t) ISR_0D);
     IDT_add_handler(0x0E, (uint32_t) ISR_0E);
     
-    IDT_add_handler(0x20, (uint32_t) ISR_20);   
-    IDT_add_handler(0x21, (uint32_t) ISR_21);    
+    IDT_add_handler(0x20, (uint32_t) ISR_20);
+    IDT_add_handler(0x21, (uint32_t) ISR_21);
 }
+

@@ -28,7 +28,7 @@ unsigned char memory_init(void);
 void *memory_paging_tables_loc(void);
 void vmalloc(void);
 void *malloc(unsigned int size);
-void demalloc(void *ptr);
+void free(void *ptr);
 unsigned int memory_getAvailable(void);
 unsigned int memory_getKernelStart(void);
 unsigned int memory_getMallocStart(void);
