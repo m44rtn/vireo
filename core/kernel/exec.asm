@@ -43,4 +43,4 @@ call DWORD [ebp + 8]
 mov esp, ebp
 pop ebp
 
-ret 12
+ret

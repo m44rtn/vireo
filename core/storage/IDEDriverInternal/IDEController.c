@@ -96,6 +96,7 @@ typedef struct
     /* there'll be more here, probably */
 } DRIVE_INFO;
 
+/* defined here, because it *should* be private to the driver */
 void IDE_IRQ(void);
 
 static void IDE_software_reset(uint16_t port);
@@ -135,8 +136,8 @@ struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_C
 
 void IDEController_handler(uint32_t *drv)
 {
-    /* To make sure that we don't do anything stupid, we check if INIT is either called or previously
-        executed */
+    /* To make sure that we don't do anything stupid, we check if INIT is either being called NOW
+or has executed succesfully in the past */
     if(drv[0] != IDE_COMMAND_INIT && flag_check(flags, 1U))
         return;
     
@@ -160,6 +161,15 @@ void IDEController_handler(uint32_t *drv)
         IDE_writePIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
     }
+}
+
+void IDE_IRQ(void)
+{
+    print((char *)"[IDE_DRIVER] IRQ fired!\n");
+    
+    flags = flags | IDE_FLAG_IRQ;
+    
+    PIC_EOI(0x15);
 }
 
 static void IDE_software_reset(uint16_t port){
@@ -220,27 +230,16 @@ static void IDEClearFlagBit(uint16_t flag_bit)
     flags = flags & (uint16_t)~(flag_bit);
 }
 
-void IDE_IRQ(void)
-{
-    print((char *)"[IDE_DRIVER] IRQ fired!\n");
-    
-    flags = flags | IDE_FLAG_IRQ;
-    
-    PIC_EOI(0x15);
-}
-
 static void IDEDriverInit(uint32_t device)
 {
     uint8_t drive, slavebit;
     uint16_t port;
-    uint32_t controller_thing;
-    uint8_t max_drives;
     
     PCI_controller = device & (uint32_t)~(DRIVER_TYPE_PCI);
     
     /* maybe this will work around issue #16 someday */
-    max_drives = (pciGetReg0(PCI_controller) == 0x24CB8086) ?
-        IDE_DRIVER_MAX_DRIVES / 2 : IDE_DRIVER_MAX_DRIVES;
+    if (pciGetReg0(PCI_controller) == 0x24CB8086)
+        return;
     
     /* get the ports for both primary and secondary */
     IDE_enumerate();
@@ -258,11 +257,7 @@ static void IDEDriverInit(uint32_t device)
         port = IDE_getPort(drive);
         slavebit = IDE_getSlavebit(drive);
         
-        /* TODO:
-            - ATA READ/WRITE?*/
-        
-        drive_info_t[drive].type = (drive > max_drives) ?
-            IDE_DRIVER_TYPE_UNKNOWN :  IDE_getDriveType(port, slavebit);
+        drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
     }
     
     outb((uint32_t) p_ctrl_port, 0);
@@ -450,7 +445,6 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
     uint16_t byteCount = (uint16_t) (sctrwrite * 2048U);
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
-    uint8_t i = 0;
     
     if(drive > 3)
         return;
@@ -472,6 +466,7 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
     read_command[5] = (uint8_t) (start >> 0x00);
     read_command[9] = (uint8_t) sctrwrite;
     
+    /* errors after sending this command */
     outsw(port, 6, (uint16_t *) &read_command);
     
     while(!(flags & IDE_FLAG_IRQ));
@@ -482,4 +477,3 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
     while(!(flags & IDE_FLAG_IRQ));
     IDEClearFlagBit(IDE_FLAG_IRQ);
 }
-
