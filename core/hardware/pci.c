@@ -30,7 +30,7 @@ SOFTWARE.
 
 #include "../memory/memory.h"
 
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
 #include "../screen/screen_basic.h"
 #endif
 
@@ -73,7 +73,7 @@ void pci_init(void)
 
                 class = (uint16_t) (val >> 8);
 
-                #ifndef QUIET_KERNEL
+                #ifndef NO_DEBUG_INFO
                 screen_set_hexdigits(4);
                 trace((char *) "[PCI] Found device %x:", deviceid);
                 trace((char *) "%x\n", vendorid);
@@ -86,7 +86,7 @@ void pci_init(void)
         }
     }
 
-    #ifndef QUIET_KERNEL
+    #ifndef NO_DEBUG_INFO
     screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
     print((char *) "[PCI] OK\n\n");
     #endif

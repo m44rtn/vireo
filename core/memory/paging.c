@@ -26,7 +26,7 @@ SOFTWARE.
 
 #include "../include/types.h"
 
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
 #include "../screen/screen_basic.h"
 #endif
 
@@ -49,7 +49,7 @@ void paging_init(void)
     
     ASM_CPU_PAGING_ENABLE(page_dir);
 
-    #ifndef QUIET_KERNEL
+    #ifndef NO_DEBUG_INFO
     print((char *) "[PAGING] Hello paging world! :)\n\n");
     #endif
 

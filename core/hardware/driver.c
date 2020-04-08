@@ -31,7 +31,7 @@ SOFTWARE.
 
 #include "../memory/memory.h"
 
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
     #include "../screen/screen_basic.h"
 #endif
 
@@ -75,7 +75,9 @@ void driver_init(void)
 {
     driver_search_pciAll();
 
+#ifndef NO_DEBUG_INFO
     print((char *) "\n");
+#endif
 }
 
 void driver_exec(uint32_t type, uint32_t *data)
@@ -119,7 +121,7 @@ static void driver_search_pciAll(void)
             /* store the address of the driver's handler */
             drv_list[cur_devices].driver = (uint32_t *) *( (uint32_t*) ((uint32_t)driver_loc + sizeof(struct DRIVER_SEARCH))); /* I'm sorry */
             
-            #ifndef QUIET_KERNEL
+            #ifndef NO_DEBUG_INFO
             trace((char *) "[DRIVER SUBSYSTEM] Found driver for device %x @ ", pciGetReg0(drv_list[cur_devices].device));
             trace((char *) "0x%x\n", (uint32_t) drv_list[cur_devices].driver);
             #endif

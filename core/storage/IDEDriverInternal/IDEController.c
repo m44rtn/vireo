@@ -31,7 +31,7 @@ SOFTWARE.
 #include "../../cpu/interrupts/IDT.h"
 #include "../../hardware/pic.h"
 
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
 #include "../../screen/screen_basic.h"
 #endif
 
@@ -47,6 +47,8 @@ SOFTWARE.
 #include "../../util/util.h"
 
 #define IDEController_PCI_CLASS_SUBCLASS    0x101
+
+#define IDE_DRIVER_VERSION_STRING "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mk. I\n"
 
 /* defines for ata_info_t */
 #define ATA_INFO_PRIMARY    0x00
@@ -107,7 +109,7 @@ static uint8_t IDE_getSlavebit(uint8_t drive);
 static void IDEClearFlagBit(uint16_t flag_bit);
 
 static void IDEDriverInit(unsigned int device);
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
 static void IDEPrintWelcome(void);
 #endif
 static void IDE_enumerate(void);
@@ -269,15 +271,15 @@ static void IDEDriverInit(uint32_t device)
     
     flags = flags | 1U;
     
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
     IDEPrintWelcome();
 #endif
     
 }
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
 static void IDEPrintWelcome(void)
 {
-    print((char *) "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mk. I\n");
+    print((char *) IDE_DRIVER_VERSION_STRING);
     trace((char *) "[IDE_DRIVER] Kernel reported PCI controller %x\n", PCI_controller);
     
     trace((char *) "[IDE_DRIVER] Primary base port: %x\n", p_base_port);

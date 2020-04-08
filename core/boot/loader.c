@@ -28,7 +28,7 @@ SOFTWARE.
 #include "../include/types.h"
 #include "../include/exit_code.h"
 
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
 #include "../screen/screen_basic.h"
 #endif
 
@@ -72,16 +72,16 @@ uint32_t *loader_get_multiboot_info_location(void)
 
 static void loader_multiboot_compliant(void)
 {
+#ifndef NO_DEBUG_INFO
     multiboot_info_t *info = (multiboot_info_t *) BOOTLOADER_STRUCT_ADDR;
+
     char *bootloader_name = (char *) info->boot_loader_name;
 
-    #ifndef QUIET_KERNEL
     print((char *) "[LOADER] Reports multiboot compliant\n");
     trace((char *) "[LOADER] Loaded by %s\n\n", (unsigned int) bootloader_name);
-    #endif
+#endif
 
     loader_type   = LOADER_TYPE_MULTIBOOT;
-    
     loader_multiboot_convertInfoStruct();
 }
 

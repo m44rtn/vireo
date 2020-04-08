@@ -27,7 +27,7 @@ SOFTWARE.
 #define NULL 0
 
 /* if you want quiet start-up: */
-/*#define QUIET_KERNEL*/
+/*#define NO_DEBUG_INFO*/
 
 /* if you don't want assertions (dbg.h): */
 /*#define NDEBUG*/

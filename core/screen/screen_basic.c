@@ -81,7 +81,7 @@ unsigned char screen_basic_init(void)
 
 	if(check == EXIT_CODE_GLOBAL_SUCCESS) SCRscreenData.SCREEN_FLAGS |= SCREEN_BASIC_CURSOR_ENABLED;
 
-	#ifndef QUIET_KERNEL
+	#ifndef NO_DEBUG_INFO
 		screen_basic_print_warnings();
 	#endif
 

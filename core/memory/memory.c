@@ -29,7 +29,7 @@ SOFTWARE.
 #include "../boot/loader.h"
 #include "../boot/multiboot.h"
 
-#ifndef QUIET_KERNEL
+#ifndef NO_DEBUG_INFO
 #include "../screen/screen_basic.h"
 #endif
 
@@ -99,7 +99,7 @@ uint8_t memory_init(void)
     /* GRUB returns KB's but I like KiB's more */
     memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory * 1.024);
     
-    #ifndef QUIET_KERNEL
+    #ifndef NO_DEBUG_INFO
     trace((char *)"[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
     trace((char *)"[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
     trace((char *)"[MEMORY] Memory map length: %i bytes\n\n", infoStruct.mmap_length);

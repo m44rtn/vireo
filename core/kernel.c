@@ -123,7 +123,7 @@ void main(void)
     
     init_env();
         
-#ifndef QUIET_KERNEL /* you can define QUIET_KERNEL in types.h and it'll make all modules quiet */
+#ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
     info_print_version();
     print((char*)"\n");
