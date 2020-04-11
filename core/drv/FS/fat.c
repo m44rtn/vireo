@@ -21,31 +21,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __IDE_COMMANDS_H__
-#define __IDE_COMMANDS_H__
+#include "fat.h"
 
+#include "../../include/types.h"
 
-#define IDE_COMMAND_INIT    0x00
-/*
-    Paramaters for the INIT command to the IDE driver are the following:
-        parameter1: internal PCI device ID (bus, device, function, class)
-        parameter2, parameter3, parameter4
-*/
+#include "../../hardware/driver.h"
 
-#define IDE_COMMAND_READ    0x01
-/*
-	parameter1: drive
-	parameter2: starting sector
-	parameter3: # sectors to read
-	parameter4: buffer to read to
-*/
+#define FAT_FS_ID
 
-#define IDE_COMMAND_WRITE    0x02
-/*
-	parameter1: drive
-	parameter2: starting sector
-	parameter3: # sectors to write
-	parameter4: buffer with the data to be written
-*/
+/* the indentifier for drivers + information about our driver */
+struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FAT_FS_ID | DRIVER_TYPE_FS), (uint32_t) (IDEController_handler)};
 
-#endif
+void FAT_HANDLER(uint32_t *drv)
+{
+  switch(drv[0])
+  {
+    case DRV_COMMAND_INIT:
+      FAT_init(drv[0]);
+    break;
+  }
+}
+
+static void FAT_init(uint32_t drive)
+{
+  /* todo:
+    - save drive to info list
+    - detect fat type
+    - save fat type to info list
+    - get all necessarry info about the fs
+    - print hello -- ifndef NO_DEBUG_INFO of course 
+  */
+}

@@ -21,13 +21,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __IDE_COMMANDS_H__
+#define __IDE_COMMANDS_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 1492
 
-void info_print_version(void);
+/*#define IDE_COMMAND_INIT    0x00
+---- (not defined since COMMANDS.H already defines INIT)
+    Paramaters for the INIT command to the IDE driver are the following:
+        parameter1: internal PCI device ID (bus, device, function, class)
+        parameter2, parameter3, parameter4
+*/
+
+
+/* commands 0x00 - 0x0f are reserved for global things so that's why we use 0x10 here */
+
+#define IDE_COMMAND_READ    0x10
+/*
+	parameter1: drive
+	parameter2: starting sector
+	parameter3: # sectors to read
+	parameter4: buffer to read to
+*/
+
+#define IDE_COMMAND_WRITE    0x11
+/*
+	parameter1: drive
+	parameter2: starting sector
+	parameter3: # sectors to write
+	parameter4: buffer with the data to be written
+*/
 
 #endif

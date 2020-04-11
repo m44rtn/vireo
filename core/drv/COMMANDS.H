@@ -21,13 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __COMMANDS_H__
+#define __COMMANDS_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 1492
-
-void info_print_version(void);
+#define   DRV_COMMAND_INIT    0x00
+/* I guess we'll just reserve until 0x0F */
 
 #endif

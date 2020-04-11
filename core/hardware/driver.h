@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __DRIVER_H__
 #define __DRIVER_H__
 
-/* information and indentifier struct for drivers 
+/* information and indentifier struct for drivers
         take a look in the refman for some of the values */
 struct DRIVER
 {
@@ -35,6 +35,7 @@ struct DRIVER
 } __attribute__ ((packed));
 
 #define DRIVER_TYPE_PCI             0x01 << 24
+#define DRIVER_TYPE_FS              0x02 << 24
 
 #define DRIVER_CODE_IDECONTROLLER   DRIVER_TYPE_PCI | 0x0101 /* PCI class 0x01 and subclass 0x01 are for IDE controllers */
 

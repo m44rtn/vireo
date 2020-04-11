@@ -53,7 +53,7 @@ SOFTWARE.
 #include "kernel/info.h"
 
 /* TODO: remove */
-#include "storage/IDE_commands.h"
+#include "drv/IDE_commands.h"
 
 void init_env(void);
 void main(void);
@@ -76,7 +76,7 @@ void init_env(void)
     
     exit_code = loader_detect();
     if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED)
-        debug_print_warning((char *) "Support for current bootloader not implemented");
+        debug_print_warning((char *) "WARNING: Support for current bootloader not implemented");
     
     /* setup GDT structures */
     access.dataisWritable   = true;

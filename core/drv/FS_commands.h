@@ -21,13 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __FAT_COMMANDS_H__
+#define __FAT_COMMANDS_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 1492
+/*#define   FAT_COMMAND_INIT    0x00
+---- (not defined since COMMANDS.H already defines INIT)
+drv[1] (parameter1) --> drive */
 
-void info_print_version(void);
+/* the kernel reserves 0x0F commands as global, so we have to start from 0x10 */
 
 #endif
