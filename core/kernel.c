@@ -106,7 +106,7 @@ void init_env(void)
     device = devicelist[1];
     free(devicelist);
     
-    drvcmd = malloc(5 * sizeof(uint32_t *));
+    drvcmd = malloc(DRIVER_COMMAND_PACKET_LEN * sizeof(uint32_t *));
     drvcmd[0] = DRV_COMMAND_INIT;
     drvcmd[1] = (uint32_t) device;
     
@@ -126,7 +126,7 @@ void main(void)
     
     init_env();
     
-    enumerateMBRs();
+    MBR_enumerate();
     
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");

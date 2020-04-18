@@ -39,6 +39,9 @@ struct DRIVER
 
 #define DRIVER_CODE_IDECONTROLLER   DRIVER_TYPE_PCI | 0x0101 /* PCI class 0x01 and subclass 0x01 are for IDE controllers */
 
+/* in DWORDS */
+#define DRIVER_COMMAND_PACKET_LEN   5
+
 void driver_init(void);
 void driver_exec(unsigned int type, unsigned int *data);
 
