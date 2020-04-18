@@ -53,6 +53,7 @@ SOFTWARE.
 #include "kernel/info.h"
 
 /* TODO: remove */
+#include "drv/COMMANDS.H"
 #include "drv/IDE_commands.h"
 
 void init_env(void);
@@ -106,15 +107,17 @@ void init_env(void)
     free(devicelist);
     
     drvcmd = malloc(5 * sizeof(uint32_t *));
-    drvcmd[0] = IDE_COMMAND_INIT;
+    drvcmd[0] = DRV_COMMAND_INIT;
     drvcmd[1] = (uint32_t) device;
     
-    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd); 
+    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd);
+    free(drvcmd);
 }
 
 void main(void)
 {
     unsigned int exit_code = 0;
+    uint32_t drv[5];
     
     exit_code = screen_basic_init();
     
@@ -122,7 +125,9 @@ void main(void)
         while(1);
     
     init_env();
-        
+    
+    enumerateMBRs();
+    
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
     info_print_version();

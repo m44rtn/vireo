@@ -27,28 +27,29 @@ SOFTWARE.
 
 #include "../../hardware/driver.h"
 
-#define FAT_FS_ID
+/*#define FAT_FS_ID
 
 /* the indentifier for drivers + information about our driver */
-struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FAT_FS_ID | DRIVER_TYPE_FS), (uint32_t) (IDEController_handler)};
+/*struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FAT_FS_ID | DRIVER_TYPE_FS), (uint32_t) (IDEController_handler)};
 
 void FAT_HANDLER(uint32_t *drv)
 {
   switch(drv[0])
   {
     case DRV_COMMAND_INIT:
-      FAT_init(drv[0]);
+      FAT_init(drv[1], drv[2]);
     break;
   }
 }
 
-static void FAT_init(uint32_t drive)
+static void FAT_init(uint32_t drive, uint32_t partition)
 {
   /* todo:
     - save drive to info list
     - detect fat type
     - save fat type to info list
     - get all necessarry info about the fs
-    - print hello -- ifndef NO_DEBUG_INFO of course 
-  */
+    - print hello -- ifndef NO_DEBUG_INFO of course
+  
 }
+*/

@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,12 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __EXIT_CODE_H__
-#define __EXIT_CODE_H__
+#ifndef MBR_H
+#define MBR_H
 
-#define EXIT_CODE_GLOBAL_SUCCESS            0
-#define EXIT_CODE_GLOBAL_GENERAL_FAIL       1
-#define EXIT_CODE_GLOBAL_NOT_IMPLEMENTED    2
-/* 13 extra codes reserved for global */
+void enumerateMBRs();
 
 #endif
