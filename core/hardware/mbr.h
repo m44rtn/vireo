@@ -24,6 +24,6 @@ SOFTWARE.
 #ifndef MBR_H
 #define MBR_H
 
-void MBR_enumerate();
+void MBR_enumerate(void);
 
 #endif

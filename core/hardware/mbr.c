@@ -28,10 +28,15 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#include "../memory/memory.h"
+
+#include "../util/util.h"
+
 #include "../drv/IDE_commands.h"
 
-/* remove */
+#ifndef NO_DEBUG_INFO
 #include "../screen/screen_basic.h"
+#endif
 
 #define NUM_DRIVES    IDE_DRIVER_MAX_DRIVES /*TODO: + floppy's + ... */
 
@@ -53,70 +58,102 @@ typedef struct
 } __attribute__((packed)) MBR;
 
 MBR DISKS[NUM_DRIVES];
+uint8_t nDisks;
+
+#ifndef NO_DEBUG_INFO
+static void MBR_printAll(void);
+#endif
 
 static uint8_t MBR_getIDEDrives(uint8_t *drives);
 static void IDE_readMBR(uint8_t disk, uint32_t *drv, uint32_t controller, uint8_t *buf);
 
 /* enumerates the MBRs of all present (only IDE for now)  disks in the system */
-void MBR_enumerate()
+void MBR_enumerate(void)
 {
     uint32_t *drv, *devicelist, *mbr_entry, IDE_ctrl;
     uint8_t *drives, *mbr, disks;
     uint8_t i, j;
-    
+
     drv = malloc(DRIVER_COMMAND_PACKET_LEN*sizeof(uint32_t) + IDE_DRIVER_MAX_DRIVES*sizeof(uint32_t));
     drives = (uint8_t *)(((uint32_t)drv) + sizeof(uint32_t)*DRIVER_COMMAND_PACKET_LEN);
-    
+
     devicelist = pciGetDevices(0x01, 0x01);
     IDE_ctrl = devicelist[1];
     free(devicelist);
-    
-    /* TODO:
-- enumerate MBR and put info in MBR.mbr_entry_t[]
-    - clean-up
-*/
-    
+
     drv[0] = IDE_COMMAND_REPORTDRIVES;
     drv[1] = (uint32_t) (drives);
     driver_exec(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv);
-    
-    disks = MBR_getIDEDrives(drives);
-    
+
+    nDisks = disks = MBR_getIDEDrives(drives);
+
+    if(nDisks < 1)
+      return;
+
     mbr = (uint8_t *) malloc(512);
-    
+
     /* this is IDE only, when floppy's are introduced this should be moved
 to a seperate function */
     for(i = 0; i < disks; ++i)
     {
-        IDE_readMBR(i, drv, IDE_ctrl, mbr);
-        
-        for(j = 0; j < 4; ++i)
+        IDE_readMBR(DISKS[i].disk, drv, IDE_ctrl, mbr);
+
+        for(j = 0; j < 4; ++j)
         {
             mbr_entry = (uint32_t *) &mbr[MBR_PARTENTRY_START + j*MBR_PARTENTRY_SIZE];
-            DISKS[i].mbr_entry_t[j].active = (uint8_t) (mbr_entry[0] >> 24U);
-            DISKS[i].mbr_entry_t[j].type = (uint8_t) (mbr_entry[1] >> 24U);
+
+            DISKS[i].mbr_entry_t[j].active = (uint8_t) (mbr_entry[0] & 0xFFU);
+            DISKS[i].mbr_entry_t[j].type = (uint8_t) (mbr_entry[1] & 0xFFU);
             DISKS[i].mbr_entry_t[j].start_LBA = mbr_entry[2];
             DISKS[i].mbr_entry_t[j].n_sectors = mbr_entry[3];
-            
-            trace("lba: %x\n", DISKS[i].mbr_entry_t[j].start_LBA);
         }
     }
-    
-    free(malloc);
-    
+
+    free(mbr);
+    free(drv);
+
+    #ifndef NO_DEBUG_INFO
+    MBR_printAll();
+    #endif
 }
+
+#ifndef NO_DEBUG_INFO
+static void MBR_printAll(void)
+{
+  uint8_t i, j;
+  for(i = 0; i < nDisks; ++i)
+  {
+    for(j = 0; j < 4; ++j)
+    {
+      if(!DISKS[i].mbr_entry_t[j].start_LBA)
+        continue;
+
+      trace((char *)"[PARTITIONS] HD%i ", DISKS[i].disk);
+      trace((char *)"p%i: ", j);
+      trace((char *)"lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
+      trace((char *)"active: %x, ", DISKS[i].mbr_entry_t[j].active);
+      trace((char *)"sectors: %i, ", DISKS[i].mbr_entry_t[j].n_sectors);
+      trace((char *)"type: %x\n", DISKS[i].mbr_entry_t[j].type);
+    }
+  }
+
+  print((char *)"\n");
+}
+#endif
+
 
 static uint8_t MBR_getIDEDrives(uint8_t *drives)
 {
     uint8_t i = 0, disks = 0;
     for(; i < IDE_DRIVER_MAX_DRIVES; ++i)
         if(drives[i] == IDE_DRIVER_TYPE_PATA) DISKS[disks++].disk = i;
-    
+
     return disks;
 }
 
 static void IDE_readMBR(uint8_t disk, uint32_t *drv, uint32_t controller, uint8_t *buf)
 {
+    memset((char *) drv,DRIVER_COMMAND_PACKET_LEN*sizeof(uint32_t), 0);
     drv[0] = IDE_COMMAND_READ;
     drv[1] = (uint32_t) disk;
     drv[2] = 0U; /* sector 0 for mbr */

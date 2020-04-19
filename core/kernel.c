@@ -47,6 +47,7 @@ SOFTWARE.
 
 #include "hardware/pic.h"
 #include "hardware/driver.h"
+#include "hardware/mbr.h"
 
 #include "kernel/exec.h"
 #include "kernel/panic.h"
@@ -74,42 +75,42 @@ void init_env(void)
     GDT_FLAGS flags;
     uint8_t exit_code;
     uint32_t *drvcmd, *devicelist, device; /* for the driver inits and such */
-    
+
     exit_code = loader_detect();
     if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED)
         debug_print_warning((char *) "WARNING: Support for current bootloader not implemented");
-    
+
     /* setup GDT structures */
     access.dataisWritable   = true;
     access.codeisReadable   = true;
-    
+
     flags.Align4k           = true;
     flags.use16             = false;
-    
+
     GDT_setup(access, flags);
     PIC_controller_setup();
-    
+
     IDT_setup();
     CPU_init();
-    
+
     exit_code = memory_init();
-    
+
     paging_init();
-    
+
     pci_init();
-    
+
     driver_init();
-    
+
     /* the kernel should actually detect anything that has a driver and init them,
     but until that's implemented this'll live here */
     devicelist = pciGetDevices(0x01, 0x01);
     device = devicelist[1];
     free(devicelist);
-    
+
     drvcmd = malloc(DRIVER_COMMAND_PACKET_LEN * sizeof(uint32_t *));
     drvcmd[0] = DRV_COMMAND_INIT;
     drvcmd[1] = (uint32_t) device;
-    
+
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd);
     free(drvcmd);
 }
@@ -117,22 +118,21 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
-    uint32_t drv[5];
-    
+
     exit_code = screen_basic_init();
-    
+
     if(exit_code != EXIT_CODE_GLOBAL_SUCCESS)
         while(1);
-    
+
     init_env();
-    
+
     MBR_enumerate();
-    
+
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
     info_print_version();
     print((char*)"\n");
 #endif
-    
+
     while(1);
 }
