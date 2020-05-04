@@ -95,6 +95,7 @@ void driver_exec(uint32_t type, uint32_t *data)
     EXEC_CALL_FUNC(drv_list[i].driver, (uint32_t *) data);
 }
 
+/* FYI: not all only internal drivers */
 static void driver_search_pciAll(void)
 {
     uint8_t i;

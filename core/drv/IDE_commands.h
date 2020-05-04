@@ -65,22 +65,10 @@ the array uses the defines listed below (1) to indicate what drive type was foun
 parameter1: pointer to array to store the map in
 
 (1):
-IDE_DRIVER_TYPE_PATA
-IDE_DRIVER_TYPE_PATAPI
-IDE_DRIVER_TYPE_UNKNOWN
+DRIVE_TYPE_IDE_PATA
+DRIVE_TYPE_IDE_PATAPI
+DRIVE_TYPE_UNKNOWN
 */
-
-#ifndef IDE_DRIVER_TYPE_PATA
-#define IDE_DRIVER_TYPE_PATA    0x00
-#endif
-
-#ifndef IDE_DRIVER_TYPE_PATAPI
-#define IDE_DRIVER_TYPE_PATAPI  0x01
-#endif
-
-#ifndef IDE_DRIVER_TYPE_UNKNOWN
-#define IDE_DRIVER_TYPE_UNKNOWN 0xFF
-#endif
 
 #ifndef IDE_DRIVER_MAX_DRIVES
 #define IDE_DRIVER_MAX_DRIVES   4

@@ -29,6 +29,7 @@ SOFTWARE.
 #include "boot/loader.h"
 
 #include "io/io.h"
+#include "io/diskio.h"
 
 #include "screen/screen_basic.h"
 
@@ -42,13 +43,12 @@ SOFTWARE.
 #include "memory/paging.h"
 
 #include "hardware/pci.h"
+#include "hardware/pic.h"
+#include "hardware/driver.h"
 
 #include "dbg/dbg.h"
 
-#include "hardware/pic.h"
-#include "hardware/driver.h"
-#include "hardware/mbr.h"
-
+#include "kernel/mbr.h"
 #include "kernel/exec.h"
 #include "kernel/panic.h"
 #include "kernel/info.h"
@@ -113,6 +113,9 @@ void init_env(void)
 
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd);
     free(drvcmd);
+
+    /* after all disk drivers have been initialized this one should be called */
+    diskio_init();
 }
 
 void main(void)

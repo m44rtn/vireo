@@ -21,13 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __FS_TYPES_H__
+#define __FS_TYPES_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 1554
+/* this file defines internal IDs for filesystems, which DO NOT correspond
+to (for example) MBR type values */
 
-void info_print_version(void);
+#define FS_TYPE_FAT 0x01
 
 #endif

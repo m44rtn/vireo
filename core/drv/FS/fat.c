@@ -27,29 +27,37 @@ SOFTWARE.
 
 #include "../../hardware/driver.h"
 
-/*#define FAT_FS_ID
+#include "../COMMANDS.H"
+#include "../FS_TYPES.H"
+
+#define FAT_FS_ID32 0x0B
+
+static void FAT_init(uint32_t drive, uint32_t partition, uint32_t Ptype, uint32_t Dtype);
+void FAT_HANDLER(uint32_t *drv);
 
 /* the indentifier for drivers + information about our driver */
-/*struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FAT_FS_ID | DRIVER_TYPE_FS), (uint32_t) (IDEController_handler)};
+struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT | DRIVER_TYPE_FS), (uint32_t) (FAT_HANDLER)};
+
+/* FAT12 and 16 COMING SOON */
 
 void FAT_HANDLER(uint32_t *drv)
 {
-  switch(drv[0])
-  {
-    case DRV_COMMAND_INIT:
-      FAT_init(drv[1], drv[2]);
-    break;
-  }
+    switch(drv[0])
+    {
+        case DRV_COMMAND_INIT:
+        FAT_init(drv[1], drv[2], drv[3], drv[4]);
+        break;
+    }
 }
 
-static void FAT_init(uint32_t drive, uint32_t partition)
+static void FAT_init(uint32_t drive, uint32_t partition, uint32_t Ptype, uint32_t Dtype)
 {
-  /* todo:
-    - save drive to info list
-    - detect fat type
-    - save fat type to info list
-    - get all necessarry info about the fs
-    - print hello -- ifndef NO_DEBUG_INFO of course
-  
+
+    /* todo:
+      - save drive to info list (don't forget to check if we've already saved it)
+      - detect fat type
+      - save fat type to info list
+      - get all necessarry info about the fs
+      - print hello -- ifndef NO_DEBUG_INFO of course */
+
 }
-*/

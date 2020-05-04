@@ -152,7 +152,7 @@ uint32_t pciGetInfo(uint32_t device)
     /* get the subclass */
     answer = ((pciConfigRead(bus, dev, func, 0x02) >> 16) & 0xFF);
     
-    /* class and subclass */
+    /* class and subclass (respectively) */
     info = ((device & 0xFF) << 8) | (answer & 0xFF);
 
     return info;

@@ -23,10 +23,13 @@ SOFTWARE.
 
 #include "mbr.h"
 
-#include "driver.h"
-#include "pci.h"
+#include "../hardware/driver.h"
+#include "../hardware/pci.h"
+
+#include "../io/diskio.h"
 
 #include "../include/types.h"
+#include "../include/drivetypes.h"
 
 #include "../memory/memory.h"
 
@@ -65,27 +68,16 @@ static void MBR_printAll(void);
 #endif
 
 static uint8_t MBR_getIDEDrives(uint8_t *drives);
-static void IDE_readMBR(uint8_t disk, uint32_t *drv, uint32_t controller, uint8_t *buf);
 
 /* enumerates the MBRs of all present (only IDE for now)  disks in the system */
 void MBR_enumerate(void)
 {
-    uint32_t *drv, *devicelist, *mbr_entry, IDE_ctrl;
+    uint32_t *mbr_entry;
     uint8_t *drives, *mbr, disks;
     uint8_t i, j;
 
-    drv = malloc(DRIVER_COMMAND_PACKET_LEN*sizeof(uint32_t) + IDE_DRIVER_MAX_DRIVES*sizeof(uint32_t));
-    drives = (uint8_t *)(((uint32_t)drv) + sizeof(uint32_t)*DRIVER_COMMAND_PACKET_LEN);
 
-    devicelist = pciGetDevices(0x01, 0x01);
-    IDE_ctrl = devicelist[1];
-    free(devicelist);
-
-    drv[0] = IDE_COMMAND_REPORTDRIVES;
-    drv[1] = (uint32_t) (drives);
-    driver_exec(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv);
-
-    nDisks = disks = MBR_getIDEDrives(drives);
+    nDisks = disks = MBR_getIDEDrives(diskio_reportDrives());
 
     if(nDisks < 1)
       return;
@@ -96,7 +88,8 @@ void MBR_enumerate(void)
 to a seperate function */
     for(i = 0; i < disks; ++i)
     {
-        IDE_readMBR(DISKS[i].disk, drv, IDE_ctrl, mbr);
+        
+        READ(DISKS[i].disk, 0U, 1U, mbr);
 
         for(j = 0; j < 4; ++j)
         {
@@ -110,7 +103,6 @@ to a seperate function */
     }
 
     free(mbr);
-    free(drv);
 
     #ifndef NO_DEBUG_INFO
     MBR_printAll();
@@ -146,18 +138,7 @@ static uint8_t MBR_getIDEDrives(uint8_t *drives)
 {
     uint8_t i = 0, disks = 0;
     for(; i < IDE_DRIVER_MAX_DRIVES; ++i)
-        if(drives[i] == IDE_DRIVER_TYPE_PATA) DISKS[disks++].disk = i;
+        if(drives[i] == DRIVE_TYPE_IDE_PATA) DISKS[disks++].disk = i;
 
     return disks;
-}
-
-static void IDE_readMBR(uint8_t disk, uint32_t *drv, uint32_t controller, uint8_t *buf)
-{
-    memset((char *) drv,DRIVER_COMMAND_PACKET_LEN*sizeof(uint32_t), 0);
-    drv[0] = IDE_COMMAND_READ;
-    drv[1] = (uint32_t) disk;
-    drv[2] = 0U; /* sector 0 for mbr */
-    drv[3] = 1U; /* one sector read */
-    drv[4] = (uint32_t) buf;
-    driver_exec(pciGetInfo(controller) | DRIVER_TYPE_PCI, drv);
 }

@@ -21,13 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __DISKIO_H__
+#define __DISKIO_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 1554
+void diskio_init(void);
+unsigned char *diskio_reportDrives(void);
+void READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf);
+void WRITE(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf);
 
-void info_print_version(void);
 
 #endif

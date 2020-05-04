@@ -28,6 +28,7 @@ SOFTWARE.
 
 #include "../../include/exit_code.h"
 #include "../../include/types.h"
+#include "../../include/drivetypes.h"
 
 #include "../../cpu/interrupts/IDT.h"
 #include "../../hardware/pic.h"
@@ -84,9 +85,6 @@ SOFTWARE.
 
 #define IDE_DRIVER_MAX_DRIVES   4
 
-#define IDE_DRIVER_TYPE_PATA    0x00
-#define IDE_DRIVER_TYPE_PATAPI  0x01
-#define IDE_DRIVER_TYPE_UNKNOWN 0xFF
 
 /* Flags stuff */
 #define IDE_FLAG_INIT_RAN   1 /* used by init to say it did ran and did it's thing */
@@ -136,7 +134,7 @@ uint16_t s_ctrl_port;
 uint16_t flags = 0;
 
 /* the indentifier for drivers + information about our driver */
-struct DRIVER driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
+struct DRIVER IDE_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
 
 
 void IDEController_handler(uint32_t *drv)
@@ -153,14 +151,14 @@ or has executed succesfully in the past */
         break;
 
         case IDE_COMMAND_READ:
-        if(drive_info_t[drv[1]].type != IDE_DRIVER_TYPE_PATA)
+        if(drive_info_t[drv[1]].type != DRIVE_TYPE_IDE_PATA)
             break;
 
         IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
 
         case IDE_COMMAND_WRITE:
-        if(drive_info_t[drv[1]].type != IDE_DRIVER_TYPE_PATA)
+        if(drive_info_t[drv[1]].type != DRIVE_TYPE_IDE_PATA)
             break;
 
         IDE_writePIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
@@ -324,7 +322,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     uint16_t status = 0;
     uint16_t *buffer;
     uint16_t lo, hi;
-    uint8_t type = IDE_DRIVER_TYPE_PATA;
+    uint8_t type = DRIVE_TYPE_IDE_PATA;
 
     uint16_t port_comstat = port | ATA_PORT_COMSTAT;
 
@@ -338,23 +336,23 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     hi = inb( (port | ATA_PORT_LBAHI)) & 0xFF;
 
     if(hi == 0xEB && lo == 0x14)
-        type = IDE_DRIVER_TYPE_PATAPI;
+        type = DRIVE_TYPE_IDE_PATAPI;
 
     else if(hi == 0x96 && lo == 0x69)
-        type = IDE_DRIVER_TYPE_PATAPI;
+        type = DRIVE_TYPE_IDE_PATAPI;
 
     else if(!(hi == 0 && lo == 0))
-        return IDE_DRIVER_TYPE_UNKNOWN;
+        return DRIVE_TYPE_UNKNOWN;
 
 
     /* send the IDENTIFY command */
-    if(type == IDE_DRIVER_TYPE_PATA) outb((uint32_t) port_comstat, ATA_IDENTIFY);
-    else if(type == IDE_DRIVER_TYPE_PATAPI)
+    if(type == DRIVE_TYPE_IDE_PATA) outb((uint32_t) port_comstat, ATA_IDENTIFY);
+    else if(type == DRIVE_TYPE_IDE_PATAPI)
         return type;
 
     /* if status = 0 then there's no such device */
     if(!inb(port_comstat))
-        return (uint8_t) IDE_DRIVER_TYPE_UNKNOWN;
+        return (uint8_t) DRIVE_TYPE_UNKNOWN;
 
     /* wait until BSY clears */
     while(inb(port_comstat) & 0x80);
@@ -385,7 +383,7 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
 
     if(drive > 3)
         return;
-    if(drive_info_t[drive].type != IDE_DRIVER_TYPE_PATA)
+    if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATA)
         return;
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
@@ -419,7 +417,7 @@ static void IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uin
 
     if(drive > 3)
         return;
-    if(drive_info_t[drive].type != IDE_DRIVER_TYPE_PATA)
+    if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATA)
         return;
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
@@ -457,7 +455,7 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
 
     if(drive > 3)
         return;
-    if(drive_info_t[drive].type != IDE_DRIVER_TYPE_PATAPI)
+    if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATAPI)
         return;
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
@@ -490,7 +488,7 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
 static void IDE_reportDrives(uint8_t *drive_list)
 {
     uint32_t i = 0;
-    
+
     for(; i < IDE_DRIVER_MAX_DRIVES; ++i)
         drive_list[i] = drive_info_t[i].type;
 }
