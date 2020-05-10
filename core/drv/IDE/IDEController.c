@@ -380,8 +380,6 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
     uint8_t i = 0;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
-    
-    print("I have trouble reading drives!\n");
 
     if(drive > 3)
         return;
