@@ -28,6 +28,8 @@ SOFTWARE.
 
 #include "../hardware/timer.h"
 
+char utilPool[32];
+
 unsigned int strlen(char *str)
 {
     uint32_t i = 0;
@@ -42,16 +44,18 @@ unsigned int strlen(char *str)
 char* hexstr(unsigned int value, uint8_t digit_amount)
 {
 	unsigned int tempval = value;
-	char* outputstr = (char *) 0xFFFF; /*"00000000";*/
+	char str[9];
+	char *outputstr = &utilPool;
+	int8_t i;
 	uint32_t digits = (!digit_amount || digit_amount < hex_digit_count(value))? hex_digit_count(value) : digit_amount;
 
 	char chrIndex;
 	const char* hexDig = "0123456789ABCDEF";
 
-	int8_t loopcntr;
-	for(loopcntr = (int8_t) (digits - 1); loopcntr >= 0; loopcntr--){
+	for(i = (int8_t) (digits - 1); i >= 0; i--){
 		chrIndex = tempval & 0x0000000F;
-		outputstr[loopcntr] = (char) hexDig[0 + chrIndex];
+		
+		outputstr[i] = hexDig[chrIndex];
 		tempval = tempval >> 4;
 	}
 
@@ -60,17 +64,17 @@ char* hexstr(unsigned int value, uint8_t digit_amount)
 	return outputstr;
 }
 
-/* FIXME: malloc */
 char *intstr(uint32_t value) 
 {          
-    char *ReturnString = (char *) 0xFFFF;
-	int strloc = (int) digit_count(value);
+    /*char *ReturnString = (char *) 0xFFFF;*/
+	char *ReturnString = &utilPool;
+	int i = (int) digit_count(value);
 	uint32_t NullChar = digit_count(value);
 	
 
-	for(strloc = strloc - 1; strloc >= 0; strloc--)
+	for(i = i - 1; i >= 0; i--)
 	{
-		ReturnString[strloc] = (char) (value % 10 + '0');
+		ReturnString[i] = (char) (value % 10 + '0');
 		value = value / 10;
 	}	
 
@@ -144,4 +148,12 @@ unsigned char strchr(char *str, char ch)
 			return EXIT_CODE_GLOBAL_SUCCESS;
 
 	return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+}
+
+void memcpy(char *destination, char *source, size_t size)
+{
+	uint32_t i;
+	
+	for(i = 0; i < size; ++i)
+		*(destination + i) = *(source + i);
 }
