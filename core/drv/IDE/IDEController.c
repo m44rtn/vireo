@@ -28,7 +28,7 @@ SOFTWARE.
 
 #include "../../include/exit_code.h"
 #include "../../include/types.h"
-#include "../../include/drivetypes.h"
+#include "../../include/diskstuff.h"
 
 #include "../../cpu/interrupts/IDT.h"
 #include "../../hardware/pic.h"
@@ -83,9 +83,6 @@ SOFTWARE.
 #define ATAPI_IDENTIFY   0xA1
 #define ATA_IDENTIFY     0xEC
 
-#define IDE_DRIVER_MAX_DRIVES   4
-
-
 /* Flags stuff */
 #define IDE_FLAG_INIT_RAN   1 /* used by init to say it did ran and did it's thing */
 #define IDE_FLAG_IRQ        1 << 2
@@ -130,6 +127,7 @@ uint16_t s_ctrl_port;
 
 /* some flag values:
         - bit 0: if set, init executed succesfully
+        - bit 1: IRQ fired
         */
 uint16_t flags = 0;
 
@@ -151,10 +149,10 @@ or has executed succesfully in the past */
         break;
 
         case IDE_COMMAND_READ:
-        if(drive_info_t[drv[1]].type != DRIVE_TYPE_IDE_PATA)
-            break;
-
-        IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+        if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATA)
+            IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+        if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATAPI)
+            IDE_readPIO28_atapi((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
 
         case IDE_COMMAND_WRITE:
@@ -172,11 +170,10 @@ or has executed succesfully in the past */
 
 void IDE_IRQ(void)
 {
-    print((char *)"[IDE_DRIVER] IRQ fired!\n");
-
+    print((char*)"IDE IRQ\n");
     flags = flags | IDE_FLAG_IRQ;
 
-    PIC_EOI(0x15);
+    PIC_EOI(0x0F);
 }
 
 static void IDE_software_reset(uint16_t port){
@@ -244,15 +241,20 @@ static void IDEDriverInit(uint32_t device)
 
     PCI_controller = device & (uint32_t)~(DRIVER_TYPE_PCI);
 
-    /* maybe this will work around issue #16 someday */
+    /* maybe this will work around issue #16 someday 
     if (pciGetReg0(PCI_controller) == 0x24CB8086)
-        return;
+        return; */
 
     /* get the ports for both primary and secondary */
     IDE_enumerate();
+    
 
     IDE_software_reset(p_ctrl_port);
     IDE_software_reset(s_ctrl_port);
+
+    /* register our IRQ handler */
+    IDT_add_handler(0x2E, (uint32_t) ASM_IDE_IRQ);
+    IDT_add_handler(0x2F, (uint32_t) ASM_IDE_IRQ);
 
     /* disable IRQs */
     outb((uint32_t) p_ctrl_port, 2);
@@ -265,15 +267,13 @@ static void IDEDriverInit(uint32_t device)
         slavebit = IDE_getSlavebit(drive);
 
         drive_info_t[drive].type = IDE_getDriveType(port, slavebit);
+        trace("drive type: 0x%x\n", drive_info_t[drive].type);
     }
 
     outb((uint32_t) p_ctrl_port, 0);
     outb((uint32_t) s_ctrl_port, 0);
 
-    /* register our IRQ handler */
-    IDT_add_handler(0x34, (uint32_t) ASM_IDE_IRQ);
-    IDT_add_handler(0x35, (uint32_t) ASM_IDE_IRQ);
-
+    /* set the flag 'INIT ran successfully' */
     flags = flags | 1U;
 
 #ifndef NO_DEBUG_INFO
@@ -330,7 +330,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
 
 
     /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
-       to avoid the #GP we first check if we're dealing with a PATAPI or PATA device */
+       to avoid the #GP we first check if we're dealing with a PATAPI device */
 
     lo = inb( (port | ATA_PORT_LBAMID)) & 0xFF;
     hi = inb( (port | ATA_PORT_LBAHI)) & 0xFF;
@@ -345,7 +345,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
         return DRIVE_TYPE_UNKNOWN;
 
 
-    /* send the IDENTIFY command */
+    /* send the IDENTIFY command in case of PATA (not connected is also hi == lo == 0) */
     if(type == DRIVE_TYPE_IDE_PATA) outb((uint32_t) port_comstat, ATA_IDENTIFY);
     else if(type == DRIVE_TYPE_IDE_PATAPI)
         return type;
@@ -380,6 +380,8 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
     uint8_t i = 0;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
+    
+    print("I have trouble reading drives!\n");
 
     if(drive > 3)
         return;
@@ -445,18 +447,21 @@ static void IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uin
     outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_WRITE);
 }
 
-/* this doesn't work, maybe I'm just forgetting something? */
 static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
     uint8_t read_command[12] = {ATAPI_COMMAND_READ,0,0,0,0,0,0,0,0,0,0};
-    uint16_t byteCount = (uint16_t) (sctrwrite * 2048U);
+    uint16_t byteCount = (uint16_t) 2048U;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
+    uint8_t status, size;
+    uint32_t i;
 
     if(drive > 3)
         return;
     if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATAPI)
         return;
+
+    IDEClearFlagBit(IDE_FLAG_IRQ);
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
     IDE_wait();
@@ -466,22 +471,36 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
     outb(port | ATA_PORT_LBAHI, (uint8_t) (2048 >> 8U));
 
     outb(port | ATA_PORT_COMSTAT, ATAPI_COMMAND_PACKET);
+  
+    while(inb(port | ATA_PORT_COMSTAT) & 0x80) __asm__ __volatile__("pause");
+    while(!(status = inb(port | ATA_PORT_COMSTAT) & 0x08) && !(status & 0x1)) 
+        __asm__ __volatile__("pause");
 
+    /* error */
+    if(status & 0x01)
+        return;
+    
     read_command[2] = (uint8_t) (start >> 0x18);
     read_command[3] = (uint8_t) (start >> 0x10);
     read_command[4] = (uint8_t) (start >> 0x08);
     read_command[5] = (uint8_t) (start >> 0x00);
     read_command[9] = (uint8_t) sctrwrite;
 
-    /* errors after sending this command */
     outsw(port, 6, (uint16_t *) &read_command);
-
-    while(!(flags & IDE_FLAG_IRQ));
+    
+    while(!(flags & IDE_FLAG_IRQ))
+        __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
 
-    insw(port, byteCount / 2U, buf);
+    size = (inb(port | ATA_PORT_LBAHI)<<8) | inb(port | ATA_PORT_LBAMID);
+    dbg_assert(size == byteCount);
 
-    while(!(flags & IDE_FLAG_IRQ));
+    for(i = 0; i < sctrwrite; ++i)
+        insw(port, byteCount / 2U, buf+(byteCount*i));
+
+    /* wait for second IRQ or timeout */
+    while(!(flags & IDE_FLAG_IRQ) && ((++i) != 10000))
+        __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
 }
 

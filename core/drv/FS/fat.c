@@ -24,15 +24,82 @@ SOFTWARE.
 #include "fat.h"
 
 #include "../../include/types.h"
+#include "../../include/diskstuff.h"
 
 #include "../../hardware/driver.h"
+
+#include "../../kernel/mbr.h"
 
 #include "../COMMANDS.H"
 #include "../FS_TYPES.H"
 
 #define FAT_FS_ID32 0x0B
 
-static void FAT_init(uint32_t drive, uint32_t partition, uint32_t Ptype, uint32_t Dtype);
+typedef struct {
+    char bootstuff[3];
+    uint8_t OEM[8];
+    uint16_t bSector;
+    uint8_t SectClust;
+    uint16_t resvSect;
+    uint8_t nFAT;
+    uint16_t nDirEnt;
+    uint16_t nSect;
+    uint8_t MDT; /*media descriptor type*/
+    uint16_t sectFAT;
+    uint16_t SectTrack;
+    uint16_t HeadsTrack;
+    uint32_t HiddenSect;
+    uint32_t lnSect;
+} __attribute__((packed)) BPB;
+
+typedef struct{
+    BPB bpb;
+    uint32_t sectFAT32;
+    uint16_t flags;
+    uint16_t FATver;
+    uint32_t clustLocRootdir;
+    uint16_t FSinfo;
+    uint16_t sectBootbackup;
+    uint8_t resv[12];
+    uint8_t driveNum;
+    uint8_t NT;
+    uint8_t Sign;
+    uint32_t volID;
+    uint8_t volName[11];
+    uint8_t SysID[8];
+    uint8_t bootcode[420];
+    uint16_t bootSign;
+} __attribute__((packed)) FAT32_EBPB;
+
+typedef struct{
+    char name[8];
+    char ext[3]; 
+    uint8_t attrib;
+    uint8_t uAttrib; 
+
+    char undelete;
+    uint16_t cTime; 
+    uint16_t cDate; 
+    uint16_t aDate; 
+    uint16_t clHi; 
+
+    uint16_t mTime; 
+    uint16_t mDate; 
+    uint16_t clLo;
+    uint32_t fSize; 
+} __attribute__ ((packed)) FAT32_DIR;
+
+typedef struct{
+    uint8_t drive;
+    uint8_t FStype;
+
+    uint32_t lbaFAT;
+} __attribute__((packed)) FS_INFO;
+
+/* 108 bytes */
+FS_INFO partition_info_t[DISKSTUFF_MAX_DRIVES*18]; /* maximum partitions: 4 per IDE drive + two floppy disks = 18*/
+
+static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype);
 void FAT_HANDLER(uint32_t *drv);
 
 /* the indentifier for drivers + information about our driver */
@@ -45,14 +112,21 @@ void FAT_HANDLER(uint32_t *drv)
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
-        FAT_init(drv[1], drv[2], drv[3], drv[4]);
+        FAT_init(drv[1], drv[2], drv[3]);
         break;
     }
 }
 
-static void FAT_init(uint32_t drive, uint32_t partition, uint32_t Ptype, uint32_t Dtype)
+static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype)
 {
+    uint32_t startLBA = MBR_getStartLBA((uint8_t) drive, (uint8_t) partition);
 
+    /* is the partition defined already? */
+    if(partition_info_t[drive].FStype)
+        return;
+
+    partition_info_t[partition].drive = (uint8_t) drive;
+    partition_info_t[drive].FStype    = (uint8_t) FStype;
     /* todo:
       - save drive to info list (don't forget to check if we've already saved it)
       - detect fat type

@@ -24,7 +24,7 @@ SOFTWARE.
 #include "diskio.h"
 
 #include "../include/types.h"
-#include "../include/drivetypes.h"
+#include "../include/diskstuff.h"
 
 #include "../hardware/driver.h"
 #include "../hardware/pci.h"
@@ -82,7 +82,8 @@ uint8_t *diskio_reportDrives(void)
 void READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf)
 {
     uint32_t *drv = malloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
-    uint32_t command = (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATA) ?
+    uint8_t disk_type = disk_info_t[drive].disktype;
+    uint32_t command = (disk_type == DRIVE_TYPE_IDE_PATA || disk_type == DRIVE_TYPE_IDE_PATAPI ) ?
             IDE_COMMAND_READ : NULL; /* TODO: make NULL floppy command */
 
     drv[0] = command;

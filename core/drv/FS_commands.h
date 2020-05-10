@@ -28,8 +28,7 @@ SOFTWARE.
 ---- (not defined since COMMANDS.H already defines INIT)
 drv[1] (parameter1) --> drive
 drv[2] (parameter2) --> starting LBA of the partition
-drv[3] (paramter3) --> FS type (I know it's FAT but is it FAT12, 16 or 32?)
-drv[4] (paramter4) --> Drive type, uses the types defined by the system */
+drv[3] (paramter3) --> FS type (I know it's FAT but is it FAT12, 16 or 32?) */
 
 /* the kernel reserves 0x0F commands as global, so we have to start from 0x10 */
 

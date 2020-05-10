@@ -24,9 +24,6 @@ SOFTWARE.
 #ifndef __FS_TYPES_H__
 #define __FS_TYPES_H__
 
-/* this file defines internal IDs for filesystems, which DO NOT correspond
-to (for example) MBR type values */
-
-#define FS_TYPE_FAT 0x01
+#define FS_TYPE_FAT 0x0B
 
 #endif

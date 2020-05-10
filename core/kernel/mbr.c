@@ -29,7 +29,7 @@ SOFTWARE.
 #include "../io/diskio.h"
 
 #include "../include/types.h"
-#include "../include/drivetypes.h"
+#include "../include/diskstuff.h"
 
 #include "../memory/memory.h"
 
@@ -40,8 +40,6 @@ SOFTWARE.
 #ifndef NO_DEBUG_INFO
 #include "../screen/screen_basic.h"
 #endif
-
-#define NUM_DRIVES    IDE_DRIVER_MAX_DRIVES /*TODO: + floppy's + ... */
 
 #define MBR_PARTENTRY_START 0x1BE
 #define MBR_PARTENTRY_SIZE  16
@@ -60,7 +58,7 @@ typedef struct
     MBR_ENTRY_INFO mbr_entry_t[4];
 } __attribute__((packed)) MBR;
 
-MBR DISKS[NUM_DRIVES];
+MBR DISKS[DISKSTUFF_MAX_DRIVES];
 uint8_t nDisks;
 
 #ifndef NO_DEBUG_INFO
@@ -107,6 +105,11 @@ to a seperate function */
     #ifndef NO_DEBUG_INFO
     MBR_printAll();
     #endif
+}
+
+uint32_t MBR_getStartLBA(uint8_t disk, uint8_t partition)
+{
+  return DISKS[disk].mbr_entry_t[partition].start_LBA;
 }
 
 #ifndef NO_DEBUG_INFO

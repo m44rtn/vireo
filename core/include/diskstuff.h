@@ -28,4 +28,7 @@ SOFTWARE.
 #define DRIVE_TYPE_IDE_PATAPI  0x01
 #define DRIVE_TYPE_UNKNOWN     0xFF
 
+#define IDE_DRIVER_MAX_DRIVES   4
+#define DISKSTUFF_MAX_DRIVES    IDE_DRIVER_MAX_DRIVES /*TODO: + floppy's + ... */
+
 #endif

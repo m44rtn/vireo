@@ -116,11 +116,14 @@ void init_env(void)
 
     /* after all disk drivers have been initialized this one should be called */
     diskio_init();
+
+    MBR_enumerate();
 }
 
 void main(void)
 {
     unsigned int exit_code = 0;
+    uint16_t *buf;
 
     exit_code = screen_basic_init();
 
@@ -129,7 +132,10 @@ void main(void)
 
     init_env();
 
-    MBR_enumerate();
+    buf = malloc(2048);
+
+    READ(2, 0, 1, buf);
+    trace("buffer: 0x%x\n", buf);
 
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");

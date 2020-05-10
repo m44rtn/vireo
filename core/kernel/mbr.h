@@ -25,5 +25,6 @@ SOFTWARE.
 #define MBR_H
 
 void MBR_enumerate(void);
+unsigned int MBR_getStartLBA(unsigned char disk, unsigned char partition);
 
 #endif

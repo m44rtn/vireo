@@ -68,7 +68,7 @@ long inl(uint16_t _port)
 void outsw(uint16_t port, uint32_t size, uint16_t *data)
 {
 	uint32_t i;
-
+	
 	for(i = 0; i < size; ++i)
 	{
 		__asm__ __volatile__ ("outw %1, %0" :: "dN" (port), "a" (data[i]));
