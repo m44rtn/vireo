@@ -25,7 +25,9 @@ SOFTWARE.
 #define __PANIC_H__
 
 #define PANIC_TYPE_EXCEPTION    "exception"
+#define PANIC_TYPE_INIT_ERROR   "init_condition"
 
 void panic(const char *type, const char *error);
+void easy_panic(const char *type, const char *error);
 
 #endif

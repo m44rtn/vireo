@@ -31,5 +31,15 @@ drv[2] (parameter2) --> starting LBA of the partition
 drv[3] (paramter3) --> FS type (I know it's FAT but is it FAT12, 16 or 32?) */
 
 /* the kernel reserves 0x0F commands as global, so we have to start from 0x10 */
+#define FS_COMMAND_READ 0x10
+/*
+drv[1] (parameter1) --> path
+drv[2] (parameter2) --> (returns) pointer to a buffer (driver will return its stuff in this buffer*)
+drv[4] (parameter4) --> (returns) error code
+
+ * = the software calling this function should know itself if it's asking for a file or a directory.
+      A directory will be of type FAT32_DIR and a file will be of type FILE.
+
+*/
 
 #endif

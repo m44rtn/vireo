@@ -30,13 +30,29 @@ SOFTWARE.
 
 char utilPool[32];
 
+static size_t __strxspn(const char *s, const char *map, int parity);
+
 unsigned int strlen(char *str)
 {
     uint32_t i = 0;
     while(str[i])
-        i++;
+        ++i;
 
     return i;
+}
+
+unsigned char strcmp(char *str1, char *str2)
+{
+	uint32_t i = 0;
+
+	while(str1[i] && str2[i])
+	{
+		if(str1[i] != str2[i])
+			return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+		++i;
+	}
+
+	return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
 /* digit_amount: amount of digits to show, if 0 (or the value is bigger) the normal 
@@ -44,12 +60,11 @@ unsigned int strlen(char *str)
 char* hexstr(unsigned int value, uint8_t digit_amount)
 {
 	unsigned int tempval = value;
-	char str[9];
-	char *outputstr = &utilPool;
+	char *outputstr = (char *) &utilPool;
 	int8_t i;
 	uint32_t digits = (!digit_amount || digit_amount < hex_digit_count(value))? hex_digit_count(value) : digit_amount;
 
-	char chrIndex;
+	uint8_t chrIndex;
 	const char* hexDig = "0123456789ABCDEF";
 
 	for(i = (int8_t) (digits - 1); i >= 0; i--){
@@ -66,8 +81,7 @@ char* hexstr(unsigned int value, uint8_t digit_amount)
 
 char *intstr(uint32_t value) 
 {          
-    /*char *ReturnString = (char *) 0xFFFF;*/
-	char *ReturnString = &utilPool;
+	char *ReturnString = (char *) &utilPool;
 	int i = (int) digit_count(value);
 	uint32_t NullChar = digit_count(value);
 	
@@ -81,6 +95,13 @@ char *intstr(uint32_t value)
 	ReturnString[NullChar] = '\0';
 
 	return ReturnString;
+}
+
+uint8_t strdigit_toInt(const char digit)
+{
+	uint8_t retDigit = (digit < '0' || digit > '9') ? EXIT_CODE_GLOBAL_UNSUPPORTED : digit - '0';
+			
+	return retDigit;
 }
 
 unsigned int digit_count(uint32_t value)
@@ -157,3 +178,63 @@ void memcpy(char *destination, char *source, size_t size)
 	for(i = 0; i < size; ++i)
 		*(destination + i) = *(source + i);
 }
+
+
+/* LIB C stuff */
+char *strtok(char *s, const char *delim)
+{
+	static char *holder;
+
+	if (s)
+		holder = s;
+
+	do {
+		s = strsep(&holder, delim);
+	} while (s && !*s);
+
+	return s;
+}
+
+char *strsep(char **stringp, const char *delim)
+{
+	char *s = *stringp;
+	char *e;
+
+	if (!s)
+		return NULL;
+
+	e = strpbrk(s, delim);
+	if (e)
+		*e++ = '\0';
+
+	*stringp = e;
+	return s;
+}
+
+char *strpbrk(const char *s, const char *accept)
+{
+	const char *ss = (const char*) (s + __strxspn(s, accept, 1));
+
+	return *ss ? (char *)ss : NULL;
+}
+
+static size_t __strxspn(const char *s, const char *map, int parity)
+{
+	char matchmap[UCHAR_MAX + 1];
+	size_t n = 0;
+
+	/* Create bitmap */
+	memset(matchmap, sizeof matchmap, 0);
+	while (*map)
+		matchmap[(unsigned char)*map++] = 1;
+
+	/* Make sure the null character never matches */
+	matchmap[0] = parity;
+
+	/* Calculate span length */
+	while (matchmap[(unsigned char)*s++] ^ parity)
+		n++;
+
+	return n;
+}
+/* END LIB C stuff */

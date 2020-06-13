@@ -25,8 +25,11 @@ SOFTWARE.
 #define __UTIL_H__
 
 unsigned int strlen(char *str);
+unsigned char strcmp(char *str1, char *str2);
 char* hexstr(unsigned int value, unsigned char digit_amount);
 char *intstr(unsigned int value);
+unsigned char strdigit_toInt(const char digit);
+
 unsigned int digit_count(unsigned int value);
 unsigned int hex_digit_count(unsigned int value);
 
@@ -36,5 +39,9 @@ void sleep(unsigned int timeIn_ms);
 unsigned char flag_check(unsigned int flag, unsigned int to_check); 
 unsigned char strchr(char *str, char ch);
 void memcpy(char *destination, char *source, unsigned int size);
+
+char *strtok(char *s, const char *delim);
+char *strsep(char **stringp, const char *delim);
+char *strpbrk(const char *s, const char *accept);
 
 #endif

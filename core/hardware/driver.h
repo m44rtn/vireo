@@ -44,5 +44,6 @@ struct DRIVER
 
 void driver_init(void);
 void driver_exec(unsigned int type, unsigned int *data);
+void driver_addInternalDriver(unsigned int identifier);
 
 #endif

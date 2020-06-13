@@ -37,7 +37,6 @@ typedef struct
 
     unsigned int eip;
 
-    /* TODO: eip */ 
 } __attribute__((packed)) CPU_STATE;
 
 void CPU_init(void);

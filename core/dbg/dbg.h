@@ -29,7 +29,7 @@ SOFTWARE.
 
 #ifndef NDEBUG
 #define dbg_assert(expression)                                          \
-    if(!expression)                                                     \
+    if(!(expression))                                                     \
     {                                                                   \
                                                                         \
     print((char *) "Vireo:");                                           \

@@ -46,7 +46,7 @@ void ISR_05_HANDLER(void)
 
 void ISR_06_HANDLER(void)
 {
-    print((char *) "INVALID_OPCODE\n");
+    panic(PANIC_TYPE_EXCEPTION, "GENERAL_PROTECTION_FAULT");
 }
 
 void ISR_0D_HANDLER(void)

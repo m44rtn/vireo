@@ -54,9 +54,6 @@ static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(void);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
 
-/* TODO: code comment & document */
-/* TODO: exit codes? */
-
 /*
  * 'Public' part
  */

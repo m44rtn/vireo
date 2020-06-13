@@ -94,7 +94,12 @@ typedef struct
     /* there'll be more here, probably */
 } DRIVE_INFO;
 
-/* defined here, because it *should* be private to the driver */
+/* functions defined here, because it *should* be private to the driver */
+
+void IDEController_handler(uint32_t *drv);
+
+extern void ASM_IDE_IRQ(void);
+
 void IDE_IRQ(void);
 
 static void IDE_software_reset(uint16_t port);
@@ -111,9 +116,9 @@ static void IDEPrintWelcome(void);
 static void IDE_enumerate(void);
 static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit);
 
-static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
-static void IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
-static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
+static uint8_t IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
+static uint8_t IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
+static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf);
 
 static void IDE_reportDrives(uint8_t *drive_list);
 
@@ -137,6 +142,8 @@ struct DRIVER IDE_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_P
 
 void IDEController_handler(uint32_t *drv)
 {
+    uint8_t error = 0;
+
     /* To make sure that we don't do anything stupid, we check if INIT is either being called NOW
 or has executed succesfully in the past */
     if(drv[0] != DRV_COMMAND_INIT && flag_check(flags, 1U))
@@ -150,14 +157,18 @@ or has executed succesfully in the past */
 
         case IDE_COMMAND_READ:
         if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATA)
-            IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+            error = IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATAPI)
-            IDE_readPIO28_atapi((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+            error = IDE_readPIO28_atapi((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+                
         break;
 
         case IDE_COMMAND_WRITE:
         if(drive_info_t[drv[1]].type != DRIVE_TYPE_IDE_PATA)
+        {
+            error = EXIT_CODE_GLOBAL_GENERAL_FAIL;
             break;
+        }
 
         IDE_writePIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
@@ -165,6 +176,12 @@ or has executed succesfully in the past */
         case IDE_COMMAND_REPORTDRIVES:
         IDE_reportDrives((uint8_t *) *(&drv[1]));
         break;
+    }
+
+    if(error)
+    {
+        drv[4] = NULL;
+        drv[1] = error;
     }
 }
 
@@ -366,25 +383,25 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     }
 
     /* right now we discard the info returned by the device, though it may be useful to not discard this in the future */
-    buffer = malloc(256 * sizeof(uint16_t));
+    buffer = kmalloc(256 * sizeof(uint16_t));
 
     insw(port, 255, buffer);
 
-    free(buffer);
+    kfree(buffer);
 
     return type;
 }
 
-static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
+static uint8_t IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
     uint8_t i = 0;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
 
     if(drive > 3)
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
     if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATA)
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
 
@@ -400,25 +417,27 @@ static void IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint
     outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_READ);
 
     if(IDE_polling(port, false))
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
 
     for(i = 0; i < sctrwrite; ++i)
     {
         insw(port, 256, buf);
         while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
     }
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-static void IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
+static uint8_t IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
     uint8_t i = 0;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
 
     if(drive > 3)
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
     if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATA)
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
 
@@ -443,21 +462,23 @@ static void IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, uin
     }
 
     outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_WRITE);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
+static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
     uint8_t read_command[12] = {ATAPI_COMMAND_READ,0,0,0,0,0,0,0,0,0,0};
     uint16_t byteCount = (uint16_t) 2048U;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
-    uint8_t status, size;
-    uint32_t i;
+    uint8_t status;
+    uint32_t size, i;
 
     if(drive > 3)
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
     if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATAPI)
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
 
     IDEClearFlagBit(IDE_FLAG_IRQ);
 
@@ -476,7 +497,7 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
 
     /* error */
     if(status & 0x01)
-        return;
+        return EXIT_CODE_IDE_ERROR_READING_DRIVE;
     
     read_command[2] = (uint8_t) (start >> 0x18);
     read_command[3] = (uint8_t) (start >> 0x10);
@@ -490,7 +511,7 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
 
-    size = (inb(port | ATA_PORT_LBAHI)<<8) | inb(port | ATA_PORT_LBAMID);
+    size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
     dbg_assert(size == byteCount);
 
     for(i = 0; i < sctrwrite; ++i)
@@ -500,6 +521,8 @@ static void IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite
     while(!(flags & IDE_FLAG_IRQ) && ((++i) != 10000))
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
 static void IDE_reportDrives(uint8_t *drive_list)

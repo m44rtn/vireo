@@ -24,9 +24,6 @@ SOFTWARE.
 #ifndef __IDECONTROLLER_H__
 #define __IDECONTROLLER_H__
 
-
-void IDEController_handler(unsigned int *drv);
-
-extern void ASM_IDE_IRQ(void);
+#define EXIT_CODE_IDE_ERROR_READING_DRIVE   0x10
 
 #endif

@@ -24,9 +24,11 @@ SOFTWARE.
 #ifndef __EXIT_CODE_H__
 #define __EXIT_CODE_H__
 
-#define EXIT_CODE_GLOBAL_SUCCESS            0
-#define EXIT_CODE_GLOBAL_GENERAL_FAIL       1
-#define EXIT_CODE_GLOBAL_NOT_IMPLEMENTED    2
-/* 13 extra codes reserved for global */
+#define EXIT_CODE_GLOBAL_SUCCESS            0x00
+#define EXIT_CODE_GLOBAL_GENERAL_FAIL       0x01
+#define EXIT_CODE_GLOBAL_NOT_IMPLEMENTED    0x02
+
+#define EXIT_CODE_GLOBAL_UNSUPPORTED        0x0A
+/* 0x00 - 0x0F are reserved for global exit_codes used by the kernel*/
 
 #endif

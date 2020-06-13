@@ -24,5 +24,10 @@ SOFTWARE.
 #ifndef __FAT_H__
 #define __FAT_H__
 
+#define EXIT_CODE_FAT_UNSUPPORTED_DRIVE 0x10
+#define EXIT_CODE_FAT_UNKNOWN_DIR       0x11
+
+/* a 32-bit exit code (unlike the normal exit codes which are bytes) */
+#define EXIT_CODE32_FAT_FAIL 0xFFFFFFFF
 
 #endif

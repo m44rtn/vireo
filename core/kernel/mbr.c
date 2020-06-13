@@ -72,7 +72,7 @@ void MBR_enumerate(void)
 {
     uint32_t *mbr_entry;
     uint8_t *drives, *mbr, disks;
-    uint8_t i, j;
+    uint8_t i, j, error;
 
 
     nDisks = disks = MBR_getIDEDrives(diskio_reportDrives());
@@ -80,14 +80,17 @@ void MBR_enumerate(void)
     if(nDisks < 1)
       return;
 
-    mbr = (uint8_t *) malloc(512);
+    mbr = (uint8_t *) kmalloc(512);
 
     /* this is IDE only, when floppy's are introduced this should be moved
 to a seperate function */
     for(i = 0; i < disks; ++i)
     {
         
-        READ(DISKS[i].disk, 0U, 1U, mbr);
+        error = READ(DISKS[i].disk, 0U, 1U, mbr);
+        
+        if(error)
+          return;
 
         for(j = 0; j < 4; ++j)
         {
@@ -100,7 +103,7 @@ to a seperate function */
         }
     }
 
-    free(mbr);
+    kfree(mbr);
 
     #ifndef NO_DEBUG_INFO
     MBR_printAll();
@@ -123,7 +126,7 @@ static void MBR_printAll(void)
       if(!DISKS[i].mbr_entry_t[j].start_LBA)
         continue;
 
-      trace((char *)"[PARTITIONS] HD%i ", DISKS[i].disk);
+      trace((char *)"[PARTITIONS] HD%i", DISKS[i].disk);
       trace((char *)"p%i: ", j);
       trace((char *)"lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
       trace((char *)"active: %x, ", DISKS[i].mbr_entry_t[j].active);

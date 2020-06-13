@@ -30,6 +30,7 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
+/* panic with CPU state */
 void panic(const char *type, const char *error)
 {
     CPU_STATE cpustate = CPU_get_state();
@@ -56,6 +57,25 @@ void panic(const char *type, const char *error)
     trace((char *)"edi=0x%x\n\n", cpustate.edi);
 
     trace((char *)"\teip=0x%x\n", (unsigned int) cpustate.eip);
+
+    print((char *)"--- end kernel panic ---\n");
+
+    screen_basic_disable_cursor();
+    screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
+
+    while(1);
+}
+
+/* panic without cpu state --> mainly used for non-cpu-exceptions */
+void easy_panic(const char *type, const char *error)
+{
+    print((char *)"--- kernel panic ---\n");
+    trace((char *)"Fatal %s: ", (uint32_t) type);
+    trace((char *)"%s\n", (uint32_t) error);
+    
+    /* kernel version string */
+    print((char *)"Kernel version string: ");
+    info_print_version();
 
     print((char *)"--- end kernel panic ---\n");
 

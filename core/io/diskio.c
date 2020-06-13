@@ -25,6 +25,7 @@ SOFTWARE.
 
 #include "../include/types.h"
 #include "../include/diskstuff.h"
+#include "../include/exit_code.h"
 
 #include "../hardware/driver.h"
 #include "../hardware/pci.h"
@@ -47,12 +48,12 @@ void diskio_init(void)
 {
     uint8_t i;
     uint32_t *devicelist, IDE_ctrl;
-    uint32_t *drv = malloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
+    uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint8_t *drives = (uint8_t *)((uint32_t)drv) + sizeof(uint32_t)*DRIVER_COMMAND_PACKET_LEN;
 
     devicelist = pciGetDevices(0x01, 0x01);
     IDE_ctrl = devicelist[1];
-    free(devicelist);
+    kfree(devicelist);
 
     drv[0] = IDE_COMMAND_REPORTDRIVES;
     drv[1] = (uint32_t) (drives);
@@ -65,13 +66,13 @@ void diskio_init(void)
         disk_info_t[i].controller_info = (uint16_t) pciGetInfo(IDE_ctrl);
     }
 
-    free(drv);
+    kfree(drv);
 }
 
 uint8_t *diskio_reportDrives(void)
 {
     uint32_t i = 0;
-    uint8_t *drive_list = (uint8_t *) malloc(DISKIO_MAX_DRIVES*sizeof(uint32_t));
+    uint8_t *drive_list = (uint8_t *) kmalloc(DISKIO_MAX_DRIVES*sizeof(uint32_t));
 
     for(; i < IDE_DRIVER_MAX_DRIVES; ++i)
         drive_list[i] = disk_info_t[i].disktype;
@@ -79,12 +80,15 @@ uint8_t *diskio_reportDrives(void)
     return drive_list;
 }
 
-void READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf)
+uint8_t READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf)
 {
-    uint32_t *drv = malloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
+    uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint8_t disk_type = disk_info_t[drive].disktype;
     uint32_t command = (disk_type == DRIVE_TYPE_IDE_PATA || disk_type == DRIVE_TYPE_IDE_PATAPI ) ?
             IDE_COMMAND_READ : NULL; /* TODO: make NULL floppy command */
+
+    if(drive > DISKIO_MAX_DRIVES)
+        return;
 
     drv[0] = command;
     drv[1] = (uint32_t) (drive);
@@ -94,12 +98,17 @@ void READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned
 
     driver_exec((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
 
-    free(drv);
+    if(drv[4] == NULL)
+        return (uint8_t) drv[1];
+
+    kfree(drv);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-void WRITE(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf)
+uint8_t WRITE(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf)
 {
-    uint32_t *drv = malloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
+    uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint32_t command = (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATA) ?
             IDE_COMMAND_WRITE : NULL; /* TODO: make NULL floppy command */
 
@@ -111,5 +120,10 @@ void WRITE(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsign
 
     driver_exec((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
 
-    free(drv);
+    if(drv[4] == NULL)
+        return (uint8_t) drv[1];
+
+    kfree(drv);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }

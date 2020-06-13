@@ -48,8 +48,6 @@ mov ebp, STACK_END
 ; push the location of the GRUB loader information onto the stack
 push ebx
 
-; TODO: Paging init here
-
 call main
 
 HALT:

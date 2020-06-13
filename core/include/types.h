@@ -32,6 +32,8 @@ SOFTWARE.
 /* if you don't want assertions (dbg.h): */
 /*#define NDEBUG*/
 
+#define UCHAR_MAX 255
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef signed short int16_t;

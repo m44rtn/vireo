@@ -171,14 +171,28 @@
         <tr>
             <td>EXIT_CODE_GLOBAL_NOT_IMPLEMENTED</td>
             <td>2</td>
-            <td>Means the function is not yet implemented</td>
+            <td>Means the function (or part of) is not yet implemented</td>
         </tr>
         <tr>
             <td><i>&lt;reserved&gt;</i></td>
-            <td>3 - 15</td>
+            <td>3 - 9</td>
+            <td>Reserved for future use</td>
+        </tr>
+        <tr>
+            <td>EXIT_CODE_GLOBAL_UNSUPPORTED</td>
+            <td>10</td>
+            <td>Means the function has stumbled on something that is not supported</td>
+        </tr>
+        <tr>
+            <td><i>&lt;reserved&gt;</i></td>
+            <td>11-15</td>
             <td>Reserved for future use</td>
         </tr>
     </table>
+
+    <i>EXIT_CODE_GLOBAL_UNSUPPORTED</i> is used to indicate that something is unsupported. This could be anything. An example of this would be for the function 
+    <code>uint8_t strdigit_toInt(char digit)</code>, where the variable digit is not a string-like digit (1-9) but instead is a letter (A-Z, a-z). Thus, it's not able
+    to convert the string like digit to an integer (i.e. the value provided is not supported by the function).
 
     </p>
 
@@ -198,7 +212,11 @@
             <th>Description</th>
             <tr>
                 <td>IDEController (<code >IDEController.c</code> and <code>IDEController.h</code>)</td>
-                <td>This module handles IDE devices on boot-up and is used to load additional drivers and may load a driver that will take over the functions of this driver after boot-up</td>
+                <td>This module handles IDE devices (harddrives and cdrom drives)</td>
+            </tr>
+            <tr>
+                <td>FAT Filesystem (<code >FAT.c</code> and <code>FAT.h</code>)</td>
+                <td>This module handles the FAT filesystem</td>
             </tr>
         </table>
 

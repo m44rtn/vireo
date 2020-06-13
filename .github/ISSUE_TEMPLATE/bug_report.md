@@ -27,7 +27,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Machine information:**
 If applicable and not a virtual machine.
-CPU: [e.g. Pentium P4]
+CPU: [e.g. Pentium 4]
 Memory: [e.g. 256 MB]
 
 **Additional context**

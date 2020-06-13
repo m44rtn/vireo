@@ -59,6 +59,9 @@ global ISR_06
 extern ISR_06_HANDLER
 ISR_06:
 pushad
+    pushad
+    push state
+    call ASM_CPU_SAVE_STATE
     cld
     call ISR_06_HANDLER
 popad

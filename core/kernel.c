@@ -56,6 +56,9 @@ SOFTWARE.
 /* TODO: remove */
 #include "drv/COMMANDS.H"
 #include "drv/IDE_commands.h"
+#include "drv/FS_commands.h"
+
+#include "drv/FS/fat.h"
 
 void init_env(void);
 void main(void);
@@ -94,7 +97,7 @@ void init_env(void)
     CPU_init();
 
     exit_code = memory_init();
-
+    
     paging_init();
 
     pci_init();
@@ -105,14 +108,14 @@ void init_env(void)
     but until that's implemented this'll live here */
     devicelist = pciGetDevices(0x01, 0x01);
     device = devicelist[1];
-    free(devicelist);
+    kfree(devicelist);
 
-    drvcmd = malloc(DRIVER_COMMAND_PACKET_LEN * sizeof(uint32_t *));
+    drvcmd = kmalloc(DRIVER_COMMAND_PACKET_LEN * sizeof(uint32_t *));
     drvcmd[0] = DRV_COMMAND_INIT;
     drvcmd[1] = (uint32_t) device;
 
     driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd);
-    free(drvcmd);
+    kfree(drvcmd);
 
     /* after all disk drivers have been initialized this one should be called */
     diskio_init();
@@ -123,6 +126,7 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
+    uint32_t *drv = kmalloc(1);
     uint16_t *buf;
 
     exit_code = screen_basic_init();
@@ -132,10 +136,31 @@ void main(void)
 
     init_env();
 
-    buf = malloc(2048);
+    buf = kmalloc(2048);
 
-    READ(2, 0, 1, buf);
-    trace("buffer: 0x%x\n", buf);
+    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
+    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
+    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
+    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
+    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
+
+    driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
+    drv[0] = DRV_COMMAND_INIT;
+    drv[1] = 0;
+    drv[2] = 0;
+    drv[3] = 0x0B;
+    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+    
+    drv[0] = FS_COMMAND_READ;
+    drv[1] = (uint32_t) "HD0P0/FDOS/../HI.TXT";
+    drv[2] = 0;
+    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+
+    if(drv[4] == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
+        print("[FAT_DRIVER] Drive specification unsupported\n");
+    else
+        print("[FAT_DRIVER] SUCCESS\n");
+    
 
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");

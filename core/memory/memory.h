@@ -26,9 +26,10 @@ SOFTWARE.
 
 unsigned char memory_init(void);
 void *memory_paging_tables_loc(void);
-void vmalloc(void);
-void *malloc(unsigned int size);
-void free(void *ptr);
+void memory_paging_final_report(unsigned int memory_used);
+void *vmalloc(unsigned int size, unsigned char pid, unsigned char readOnly);
+void *kmalloc(unsigned int size);
+void kfree(void *ptr);
 unsigned int memory_getAvailable(void);
 unsigned int memory_getKernelStart(void);
 unsigned int memory_getMallocStart(void);

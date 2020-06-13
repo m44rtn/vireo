@@ -31,6 +31,8 @@ SOFTWARE.
 
 #include "../memory/memory.h"
 
+#include "../dbg/dbg.h"
+
 #ifndef NO_DEBUG_INFO
     #include "../screen/screen_basic.h"
 #endif
@@ -89,13 +91,37 @@ void driver_exec(uint32_t type, uint32_t *data)
         if(drv_list[i].type == type)
             break;
     
-    if(i >= DRIVER_MAX_SUPPORTED)
+    dbg_assert(!(i >= DRIVER_MAX_SUPPORTED));
+    if(i >= DRIVER_MAX_SUPPORTED)     
         return;
+    
 
     EXEC_CALL_FUNC(drv_list[i].driver, (uint32_t *) data);
 }
 
-/* FYI: not all only internal drivers */
+/* identifier: for example (FS_TYPE_FAT | DRIVER_TYPE_FS) 
+ * (upper 8 bits used for driver type, lower 24 bits used for the driver to say what it supports)
+ * FS_TYPE_FAT is the lower 24 bits, which tells the system that it's a FAT driver
+ * DRIVER_TYPE_FS, the upper 8 bits tells the system it's a filesystem driver
+ */ 
+void driver_addInternalDriver(uint32_t identifier) 
+{
+    struct DRIVER_SEARCH drv = {DRIVER_STRUCT_HEXSIGN, "VIREODRV", 0};
+    uint32_t *driver_loc;
+    
+    drv.type = identifier;
+    driver_loc = memsrch((void *) &drv, sizeof(struct DRIVER_SEARCH), memory_getKernelStart(), memory_getMallocStart());
+    
+    dbg_assert((uint32_t)driver_loc);
+    
+    drv_list[cur_devices].device = 0;
+    drv_list[cur_devices].type = identifier;
+    drv_list[cur_devices].driver = (uint32_t *) *( (uint32_t*) ((uint32_t)driver_loc + sizeof(struct DRIVER_SEARCH)));
+
+    ++cur_devices;
+}
+
+/* FYI: not all, only internal drivers */
 static void driver_search_pciAll(void)
 {
     uint8_t i;
@@ -131,6 +157,6 @@ static void driver_search_pciAll(void)
         }
 
     }
-    free(devicelist);
+    kfree(devicelist);
 }
 

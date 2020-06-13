@@ -95,7 +95,7 @@ void pci_init(void)
 uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
 {
     uint8_t class_fromlist, bus, device, func, answer;
-    uint32_t *devicelist = malloc(512 * sizeof(uint32_t));
+    uint32_t *devicelist = kmalloc(512 * sizeof(uint32_t));
 
     uint32_t i = 0, j = 1;
     for(; i < PCI_DEVLIST_LENGTH - 1; ++i)
@@ -125,7 +125,7 @@ uint32_t *pciGetDevices(uint8_t class, uint8_t subclass)
 uint32_t *pciGetAllDevices(void)
 {
     uint32_t i;
-    uint32_t *devicelist = malloc(256 * sizeof(uint32_t));
+    uint32_t *devicelist = kmalloc(256 * sizeof(uint32_t));
     
     for(i = 0; i < PCI_DEVLIST_LENGTH; ++i)
         devicelist[i] = PCI_DEV_LIST[i].device;
