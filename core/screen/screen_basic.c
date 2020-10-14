@@ -29,10 +29,6 @@ SOFTWARE.
 
 #include "../util/util.h"
 
-#define SCREEN_BASIC_WIDTH          (unsigned char) 80
-#define SCREEN_BASIC_HEIGHT         (unsigned char) 25
-#define SCREEN_BASIC_DEPTH          (unsigned char) 2
-
 #define SCREEN_BASIC_DEFAULT_COLOR  0x07
 
 typedef struct SCREENDATA
@@ -53,6 +49,8 @@ static void screen_basic_move_cursor_internal(void);
 static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(void);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
+
+/* TODO: comment some of this stuff */
 
 /*
  * 'Public' part
@@ -197,6 +195,28 @@ void screen_basic_clear_screen(void){
 	screen_basic_move_cursor(SCRscreenData.cursorX, SCRscreenData.cursorY);
 }
 
+
+/* TODO: remove this sometime in the future */
+char screen_basic_getchar(unsigned int x, unsigned int y)
+{
+	unsigned char* vidmem = (unsigned char*) 0xb8000;
+
+	if(x > SCREEN_BASIC_WIDTH || y > SCREEN_BASIC_HEIGHT)
+		return NULL;
+
+	return vidmem[((y * SCREEN_BASIC_WIDTH + x) * SCREEN_BASIC_DEPTH)];
+}
+
+void screen_basic_putchar(unsigned int x, unsigned int y, char c)
+{
+	unsigned char* vidmem = (unsigned char*) 0xb8000;
+
+	if(x > SCREEN_BASIC_WIDTH || y > SCREEN_BASIC_HEIGHT)
+		return;
+
+	vidmem[((y * SCREEN_BASIC_WIDTH + x) * SCREEN_BASIC_DEPTH)] = (unsigned char) c;
+	vidmem[((y * SCREEN_BASIC_WIDTH + x)* SCREEN_BASIC_DEPTH + 1)] = SCRscreenData.chScreenColor;
+}
 
 /*
  * 'Private' part

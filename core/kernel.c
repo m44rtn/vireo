@@ -138,7 +138,7 @@ void main(void)
 
     buf = kmalloc(2048);
 
-    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
+    /*trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
     trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
     trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
     trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
@@ -161,12 +161,14 @@ void main(void)
     else
         print("[FAT_DRIVER] SUCCESS\n");
     
-
+*/
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
     info_print_version();
     print((char*)"\n");
 #endif
+
+    conways_game_of_life();
 
     while(1);
 }

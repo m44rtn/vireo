@@ -30,6 +30,8 @@ SOFTWARE.
 #include "../screen/screen_basic.h"
 #endif
 
+#include "../dbg/dbg.h"
+
 #define PAGING_TABLE_TYPE_DIR 0
 #define PAGING_TABLE_TYPE_TAB 1
 
@@ -84,6 +86,21 @@ void paging_map(void *pptr, void *vptr)
 
     ASM_CPU_INVLPG((uint32_t *)pptr);
     pt[ptindex] = (uint32_t) (((uint32_t)pptr) << 12)  | 0x03;
+}
+
+void paging_page_store_info(PAGE_REQ *req)
+{
+    /* just checking... */
+    dbg_assert((uint32_t)page_dir);
+
+
+    /* okay, nou het is als volgt:
+        - bits 9-11 zijn voor alloct 
+        - store read/write permissions
+        - store user privilige (btw, do supervisor for kernel pages too (somewhere)!!!!!!!)
+        - ennehh... INVLPG
+    */
+
 }
 
 static void paging_create_tables(void)

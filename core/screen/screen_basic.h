@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,11 @@ SOFTWARE.
 #ifndef __SCREEN_BASIC_H__
 #define __SCREEN_BASIC_H__
 
+/* screen dimensions */
+#define SCREEN_BASIC_WIDTH          (unsigned char) 80
+#define SCREEN_BASIC_HEIGHT         (unsigned char) 25
+#define SCREEN_BASIC_DEPTH          (unsigned char) 2
+
 /* EXIT CODES */
 #define SCREEN_BASIC_EXIT_CODE_CURSOR_MOVE_FAIL     16
 
@@ -40,12 +45,15 @@ void screen_basic_disable_cursor(void);
 unsigned char screen_basic_move_cursor(unsigned short x, unsigned short y);
 unsigned short screen_basic_get_cursor_position(void);
 
+void screen_basic_set_screen_color(unsigned char color);
 void screen_set_hexdigits(unsigned char value);
 
 void print(char* text);
 void trace(char* text, unsigned int val);
 void screen_basic_clear_screen(void);
 
-void screen_basic_set_screen_color(unsigned char color);
+char screen_basic_getchar(unsigned int x, unsigned int y);
+void screen_basic_putchar(unsigned int x, unsigned int y, char c);
+
 
 #endif

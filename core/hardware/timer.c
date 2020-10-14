@@ -25,7 +25,7 @@ SOFTWARE.
 
 #include "../include/types.h"
 
-static uint32_t ticks = 0;
+uint32_t ticks = 0;
 
 uint32_t timer_getCurrentTick(void)
 {
@@ -34,8 +34,6 @@ uint32_t timer_getCurrentTick(void)
 
 void timer_incTicks(void)
 {
-    if(ticks == 0xFFFFFFFF) 
+    if(++ticks == 0xFFFFFFFF) 
         ticks = 0;
-    else
-        ++ticks;
 }

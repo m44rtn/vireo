@@ -176,7 +176,7 @@ void memory_paging_final_report(uint32_t memory_used)
     trace("pages: %i\n", pages);
     trace("pages memory end: 0x%x\n", pages*4096U);
     
-    /* reserve kernel memory */
+    /* reserve kernel memory --> user/supervisor */
     /* TODO: DEFINE KERNEL_PID SOMEHWERE */
     for(i = 0; i < pages; ++i)
     {
@@ -195,7 +195,12 @@ TODO: rename 'readOnly' to something else and have it be a few bits of info abou
 FYI: with readOnly I mean 'readOnly but the kernel is allowed to ignore that since it's the ruling, governing, all-knowing dictator of this machine, so why should it honor that. */
 void *vmalloc(size_t size, uint8_t pid, uint8_t readOnly)
 {
-    /* TOD: make this actually use the features given to us by the CPU for paging */
+
+    /* redo this and let paging do most of the heavy lifting
+    because zhis is abominationnnnsnsnsns jah */
+
+
+    /* TODO: make this actually use the features given to us by the CPU for paging */
     uint8_t blocks, available;
     uint32_t i, len;
     void *theSpace;
@@ -224,7 +229,7 @@ void *vmalloc(size_t size, uint8_t pid, uint8_t readOnly)
     if(i >= memory_info_t.vmemory_table_size && available < blocks)
         return NULL;
 
-    /* if we get here we DID find a place to store your stuff, so let's make sure you get it */
+    /* if we DID find a place to store your stuff, let's make sure you get it */
     len = i;    
     theSpace = (void *)((len - blocks + 1) * 4096U);
     
@@ -233,6 +238,8 @@ void *vmalloc(size_t size, uint8_t pid, uint8_t readOnly)
     {
         virtual_memory_t[i].stat = (MEMORY_VMALLOC_STAT_ALLOCT) | (readOnly ? MEMORY_VMALLOC_STAT_READONLY : 0);
         virtual_memory_t[i].pid  = pid;
+
+        /*paging_pageStoreInfo();*/
     }
 
     return theSpace;

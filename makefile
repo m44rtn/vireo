@@ -33,6 +33,10 @@ AC := nasm
 
 .PHONY: all clean todo run assembly iso
 
+iso: all
+	cp bin/kernel.sys grub/boot/kernel.sys
+	grub-mkrescue -o birdos.iso grub/
+
 todo: 
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
@@ -51,10 +55,6 @@ all: clean $(OBJFILES) $(ASOBJFILES)
 clean:
 	-@for file in $(DCLEAN:Makefile=); do rm $$file; done; true
 	-@for file in $(OCLEAN:Makefile=); do rm $$file; done; true
-
-iso:
-	cp bin/kernel.sys grub/boot/kernel.sys
-	grub-mkrescue -o birdos.iso grub/
 
 map:
 	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES)

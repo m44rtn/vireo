@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019 Maarten Vermeulen
+Copyright (c) 2020 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -19,25 +19,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-*/
+ */
 
-#ifndef __PAGING_H__
-#define __PAGING_H__
+#ifndef __CONWAY_H__
+#define __CONWAY_H__
 
+void conways_game_of_life();
 
-typedef struct
-{
-    void *vptr;
-    
-    char *attrib;
-} __attribute__((packed)) PAGE_REQ;
-
-
-void paging_init(void);
-void *paging_vptr_to_pptr(void *vptr);
-void paging_map(void *pptr, void *vptr);
-
-extern void ASM_CPU_PAGING_ENABLE(unsigned int *table);
-extern void ASM_CPU_INVLPG(void *paddr);
-
-#endif
+#endif;

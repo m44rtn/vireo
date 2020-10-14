@@ -21,16 +21,30 @@
 
 bits 32
 
-global PITInit
+%define FREQUENCY 1000
 
+global PITInit
 PITInit:
-;1000 ticks per second?
- mov ax, 1193180 / 1000
+; here we calculate the reload value needed for the wanted frequency
+mov eax, 3579545 
+mov ebx, FREQUENCY
+mov edx, 0
+div ebx
+
+mov ebx, 3
+mov edx, 0
+div ebx
+
+mov ebx, eax
 
  mov al, 00110110b
  out 0x43, al
 
+ 
+ mov eax, ebx
  out 0x40, al
- xchg ah, al
+ rol ax, 8
  out 0x40, al
+
+ rol ax, 8
 ret
