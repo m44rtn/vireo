@@ -14,12 +14,12 @@ A few facts and a warning:
 The kernel is MIT licensed.
 
 ## Goals of Vireo-II
-One of the goals of Vireo-II is to support older ports such as Serial and Parallel. Another goal is to have a flexible OS that can run on most older 32-bit systems (i686+) while also not being a memory hungry pacman.
+One of the goals of Vireo-II is to support older ports such as serial and parallel. Another goal is to have a flexible OS that can run on most older 32-bit systems (i686+) while also not being a memory hungry pacman.
 
 ## Building
 
 ### Tools needed
-To build the Vireo-II kernel you will at least need GNU make, gcc-i686 (cross compiler), NASM,grub-pc and xorriso. Optional tools or programs are Virtualbox (for testing), [Xenops](https://github.com/m44rtn/xenops) (version keeping) and GNU ld-i686 (cross, for debugging using a .map file).
+To build the Vireo-II kernel you will at least need GNU make, gcc-i686 (cross compiler), NASM, grub-pc and xorriso. Optional tools or programs are Virtualbox (for testing), [Xenops](https://github.com/m44rtn/xenops) (version keeping) and GNU ld-i686 (cross, for debugging using a .map file).
 
 ### Makefile commands
 - To build the kernel and create a .iso file simply run `make` with no arguments
