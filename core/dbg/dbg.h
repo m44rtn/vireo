@@ -32,11 +32,11 @@ SOFTWARE.
     if(!(expression))                                                     \
     {                                                                   \
                                                                         \
-    print((char *) "Vireo:");                                           \
+    print( "Vireo:");                                           \
     screen_basic_set_screen_color(0x03);                                \
-    trace((char *) "%s:", (unsigned int) __FILE__);                     \
+    trace( "%s:", (unsigned int) __FILE__);                     \
     screen_basic_set_screen_color(0x07);                                \
-    trace((char *) "%i: Assertion Failed", (unsigned int) __LINE__);    \
+    trace( "%i: Assertion Failed", (unsigned int) __LINE__);    \
                                                                         \
     while(1);                                                           \
     }                                                     

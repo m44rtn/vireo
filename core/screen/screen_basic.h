@@ -48,8 +48,8 @@ unsigned short screen_basic_get_cursor_position(void);
 void screen_basic_set_screen_color(unsigned char color);
 void screen_set_hexdigits(unsigned char value);
 
-void print(char* text);
-void trace(char* text, unsigned int val);
+void print(const char* text);
+void trace(const char* text, unsigned int val);
 void screen_basic_clear_screen(void);
 
 char screen_basic_getchar(unsigned int x, unsigned int y);

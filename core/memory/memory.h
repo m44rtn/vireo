@@ -25,14 +25,13 @@ SOFTWARE.
 #define __MEMORY_H__
 
 unsigned char memory_init(void);
-void *memory_paging_tables_loc(void);
-void memory_paging_final_report(unsigned int memory_used);
-void *vmalloc(unsigned int size, unsigned char pid, unsigned char readOnly);
+unsigned int *memory_paging_tables_loc(void);
 void *kmalloc(unsigned int size);
 void kfree(void *ptr);
 unsigned int memory_getAvailable(void);
 unsigned int memory_getKernelStart(void);
 unsigned int memory_getMallocStart(void);
+unsigned int memory_get_kernel_space_end(void);
 
 unsigned int *memsrch(void *match, unsigned int matchsize, unsigned int start, unsigned int end);
 

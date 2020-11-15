@@ -29,15 +29,14 @@ SOFTWARE.
 
 #include "../util/util.h"
 
-static void conway_fillScreen();
+static void conway_fillScreen(void);
 static uint8_t conway_check_neighbours(uint32_t x, uint32_t y);
 static void conway_shouldIBeAliveOrNotAndMakeItSo(uint32_t x, uint32_t y);
 
-void conways_game_of_life()
+void conways_game_of_life(void)
 {
     uint32_t x, y;
     uint8_t neighbours;
-    char c[2] = {'\0', '\0'};
 
     screen_basic_clear_screen();
 
@@ -66,28 +65,15 @@ void conways_game_of_life()
 
         
     }
-    
-
-    /*print(" XX\n");
-    print(" X \n");
-    print("XXX\n\n\n");
-    
-    conway_shouldIBeAliveOrNotAndMakeItSo(1, 3);
-    trace("neighbours: %i\n", conway_check_neighbours(1, 3));
-
-    c[0] = screen_basic_getchar(2, 0);
-    trace("getchar: %s\n", &c);*/
-
-
 }
 
-static void conway_fillScreen()
+static void conway_fillScreen(void)
 {
     uint32_t x, y;
 
     for(y = 0; y < 25; ++y)
             for(x = 0; x < 80; ++x)
-                if((!y || x % 2 || y % 3) || x % 5 && y % 7) screen_basic_putchar(x, y, 'X'); /* change this! */
+                if((!y || x % 2 || y % 3) || (x % 5 && y % 7)) screen_basic_putchar(x, y, 'X'); /* change this! */
 }
 
 static uint8_t conway_check_neighbours(uint32_t x, uint32_t y)
@@ -105,7 +91,7 @@ static uint8_t conway_check_neighbours(uint32_t x, uint32_t y)
     /*trace("live_cells %i\n", live_cells);*/
     
     /* check our row */
-    if(x-1 >= 0)
+    if(x > 0)
         if(screen_basic_getchar(x-1, y) == 'X') ++live_cells;
     
     if(x+1 <= SCREEN_BASIC_WIDTH)

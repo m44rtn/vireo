@@ -126,11 +126,13 @@ iret
 global ISR_0E
 extern ISR_0E_handler
 ISR_0E:
+; page fault
 pop DWORD [ignore]
 pushad
     push state
     call ASM_CPU_SAVE_STATE
     cld
+    push DWORD [ignore]
     call ISR_0E_handler
     jmp $ 
 popad

@@ -71,7 +71,7 @@ static uint8_t MBR_getIDEDrives(uint8_t *drives);
 void MBR_enumerate(void)
 {
     uint32_t *mbr_entry;
-    uint8_t *drives, *mbr, disks;
+    uint8_t *mbr, disks;
     uint8_t i, j, error;
 
 
@@ -126,16 +126,16 @@ static void MBR_printAll(void)
       if(!DISKS[i].mbr_entry_t[j].start_LBA)
         continue;
 
-      trace((char *)"[PARTITIONS] HD%i", DISKS[i].disk);
-      trace((char *)"p%i: ", j);
-      trace((char *)"lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
-      trace((char *)"active: %x, ", DISKS[i].mbr_entry_t[j].active);
-      trace((char *)"sectors: %i, ", DISKS[i].mbr_entry_t[j].n_sectors);
-      trace((char *)"type: %x\n", DISKS[i].mbr_entry_t[j].type);
+      trace("[PARTITIONS] HD%i", DISKS[i].disk);
+      trace("p%i: ", j);
+      trace("lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
+      trace("active: %x, ", DISKS[i].mbr_entry_t[j].active);
+      trace("sectors: %i, ", DISKS[i].mbr_entry_t[j].n_sectors);
+      trace("type: %x\n", DISKS[i].mbr_entry_t[j].type);
     }
   }
 
-  print((char *)"\n");
+  print("\n");
 }
 #endif
 

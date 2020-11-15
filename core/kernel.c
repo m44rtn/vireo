@@ -126,8 +126,7 @@ void init_env(void)
 void main(void)
 {
     unsigned int exit_code = 0;
-    uint32_t *drv = kmalloc(1);
-    uint16_t *buf;
+    uint32_t *drv = kmalloc(5 * sizeof(uint32_t));
 
     exit_code = screen_basic_init();
 
@@ -136,15 +135,7 @@ void main(void)
 
     init_env();
 
-    buf = kmalloc(2048);
-
-    /*trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
-    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
-    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
-    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
-    trace("wow look at that: 0x%x\n", vmalloc(4096, 0x00, 0x00));
-
-    driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
+    /*driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
     drv[0] = DRV_COMMAND_INIT;
     drv[1] = 0;
     drv[2] = 0;
@@ -159,16 +150,15 @@ void main(void)
     if(drv[4] == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
         print("[FAT_DRIVER] Drive specification unsupported\n");
     else
-        print("[FAT_DRIVER] SUCCESS\n");
+        print("[FAT_DRIVER] SUCCESS\n");*/
     
-*/
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
     info_print_version();
     print((char*)"\n");
 #endif
 
-    conways_game_of_life();
+    /*conways_game_of_life();*/
 
     while(1);
 }

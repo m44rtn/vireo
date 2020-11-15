@@ -88,7 +88,7 @@ uint8_t READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsig
             IDE_COMMAND_READ : NULL; /* TODO: make NULL floppy command */
 
     if(drive > DISKIO_MAX_DRIVES)
-        return;
+        return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
 
     drv[0] = command;
     drv[1] = (uint32_t) (drive);

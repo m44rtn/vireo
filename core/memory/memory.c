@@ -23,8 +23,13 @@ SOFTWARE.
 
 #include "memory.h"
 
+/* TODO: can be removed when the tasking header is finished 
+ we only need this header because of the PIDs */
+#include "paging.h" 
+
 #include "../include/types.h"
 #include "../include/exit_code.h"
+#include "../include/macro.h"
 
 #include "../boot/loader.h"
 #include "../boot/multiboot.h"
@@ -70,16 +75,6 @@ typedef struct
     uint32_t size;
 } MEMORY_TABLE;
 
-
-/* amazing, so if we have 12MB of memory in our system we need 6KB to store all information on all pages */
-typedef struct 
-{
-    uint8_t stat;
-
-    uint8_t pid;
-} __attribute__ ((packed)) VIRTUAL_MEMORY_TABLE;
-
-
 /* I'm sorry for this ugly define line here */
 #define MEMORY_VIRTUAL_TABLES  MEMORY_MALLOC_MEMSTRT + (512U * MEMORY_TABLE_LENGTH)
 /* ---- */
@@ -93,7 +88,6 @@ MEMORY_MAP   temp_memory_map[2];
 /* 1 KiB of information, though I can imagine this being too little.
 This can store 64 KiB of memory this way */
 MEMORY_TABLE memory_t[MEMORY_TABLE_LENGTH]; 
-VIRTUAL_MEMORY_TABLE *virtual_memory_t = NULL;
 
 uint32_t virtual_memory_table_size;
 uint8_t loader_type = 0;
@@ -118,13 +112,13 @@ uint8_t memory_init(void)
 
     infoStruct = loader_get_infoStruct();
     
-    /* GRUB returns KB's but I like KiB's more */
+    /* GRUB returns KB's but I like KiB's more, sorry */
     memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory * 1.024);
     
     #ifndef NO_DEBUG_INFO
-    trace((char *)"[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
-    trace((char *)"[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
-    trace((char *)"[MEMORY] Memory map length: %i bytes\n\n", infoStruct.mmap_length);
+    trace("[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
+    trace("[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
+    trace("[MEMORY] Memory map length: %i bytes\n\n", infoStruct.mmap_length);
     #endif
 
     /* TODO: if exists, read memory map */
@@ -136,118 +130,20 @@ uint8_t memory_init(void)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-void *memory_paging_tables_loc(void)
+uint32_t *memory_paging_tables_loc(void)
 {
-    uint32_t *tables = (uint32_t *) MEMORY_VIRTUAL_TABLES;
+    uint32_t *tables = (uint32_t *) (MEMORY_VIRTUAL_TABLES);
+
+
+    trace("tables: %x\n", tables);
+    trace("tables define: %x\n", MEMORY_VIRTUAL_TABLES);
     
     /* this puts the total available memory at the location of the tables allocation, which 
     save space in memory and this file (I'm too lazy to make a struct for this) */
     tables[0] = memory_info_t.available_memory;
 
-    return (void *) &tables[0];
+    return tables;
 }
-
-void memory_paging_final_report(uint32_t memory_used)
-{
-    uint32_t i = 0;
-    uint32_t pages;
-
-    /* someone took over, oh no! (or just something went horribly wrong while writing the
-    code for this kernel). you can never be too cautious... right? */
-    if(virtual_memory_t != NULL)
-        easy_panic(PANIC_TYPE_INIT_ERROR, "2ND_PAGING_REPORT");
-    
-    virtual_memory_t = MEMORY_VIRTUAL_TABLES + memory_used;
-    virtual_memory_table_size = ((memory_info_t.available_memory * 1000U) / 4096U) * sizeof(VIRTUAL_MEMORY_TABLE);
-
-    /* calculate the end of the kernel memory... */
-    /* TODO: maybe have vmemory_table_size be constant and a function which you can use to initialize it? */
-    memory_info_t.end_of_kernel_memory = (uint32_t *) (((uint32_t) virtual_memory_t) + virtual_memory_table_size); 
-    memory_info_t.vmemory_table_size = ((memory_info_t.available_memory * 1000U) / 4096U);
-
-    trace("CR3 # bytes: %i\n", memory_used);
-    trace("virtual_memory_tables: 0x%x\n", MEMORY_VIRTUAL_TABLES);
-    trace("vmem table_size: %i\n", virtual_memory_table_size);
-    trace("end of kernel memory: 0x%x\n", memory_info_t.end_of_kernel_memory);
-    
-    pages = (((uint32_t)memory_info_t.end_of_kernel_memory) % 512) ? 1 : 0;
-    trace("pages: %i\n", pages);
-    pages = pages + (((uint32_t)memory_info_t.end_of_kernel_memory) / 4096U);
-    trace("pages: %i\n", pages);
-    trace("pages memory end: 0x%x\n", pages*4096U);
-    
-    /* reserve kernel memory --> user/supervisor */
-    /* TODO: DEFINE KERNEL_PID SOMEHWERE */
-    for(i = 0; i < pages; ++i)
-    {
-        virtual_memory_t[i].stat = MEMORY_VMALLOC_STAT_ALLOCT | MEMORY_VMALLOC_STAT_READONLY;
-        virtual_memory_t[i].pid = 0x00; /* kernel pid == 0x00 */
-
-    }
-
-    trace("i: %i\n", i);
-
-    sleep(300);
-}
-
-/* FIXME: virtual not implemented 
-TODO: rename 'readOnly' to something else and have it be a few bits of info about various things :) 
-FYI: with readOnly I mean 'readOnly but the kernel is allowed to ignore that since it's the ruling, governing, all-knowing dictator of this machine, so why should it honor that. */
-void *vmalloc(size_t size, uint8_t pid, uint8_t readOnly)
-{
-
-    /* redo this and let paging do most of the heavy lifting
-    because zhis is abominationnnnsnsnsns jah */
-
-
-    /* TODO: make this actually use the features given to us by the CPU for paging */
-    uint8_t blocks, available;
-    uint32_t i, len;
-    void *theSpace;
-
-    /* when this happens we've got quite a problem... */
-    if (virtual_memory_t == NULL)
-        easy_panic(PANIC_TYPE_INIT_ERROR, "VIRTUAL_MEMORY_NOT_INITIALIZED");
-    
-    /* how many pages do we need? */
-    blocks = (size % 4096U) ? 1U : 0U;
-    blocks = (uint8_t) (blocks + (size / 4096U));
-
-    /* find a place with enough pages free to store our data */
-    for(i = 0; i < memory_info_t.vmemory_table_size; ++i)
-    {
-        if(!(virtual_memory_t[i].stat & MEMORY_VMALLOC_STAT_ALLOCT))
-            available++;
-        else
-            available = 0;
-        
-        if(available == blocks)
-            break;
-    }
-
-    /* low on memory... we can't store your request, unfortunately :/ */
-    if(i >= memory_info_t.vmemory_table_size && available < blocks)
-        return NULL;
-
-    /* if we DID find a place to store your stuff, let's make sure you get it */
-    len = i;    
-    theSpace = (void *)((len - blocks + 1) * 4096U);
-    
-    /* store everything we know about the page */
-    for(i = (len - blocks + 1); i < (len + blocks); ++i)
-    {
-        virtual_memory_t[i].stat = (MEMORY_VMALLOC_STAT_ALLOCT) | (readOnly ? MEMORY_VMALLOC_STAT_READONLY : 0);
-        virtual_memory_t[i].pid  = pid;
-
-        /*paging_pageStoreInfo();*/
-    }
-
-    return theSpace;
-}
-
-/* FIXME: NOT IMPLEMENTED 
-also an argument should be for the size of the data at the pointer, so that it we don't demalloc the *entire* memory pool of the process */
-void vfree(void){}
 
 void *kmalloc(size_t size)
 {
@@ -256,9 +152,7 @@ void *kmalloc(size_t size)
     uint8_t index;
     int8_t mallocd_index;
 
-    uint8_t blocks = (size % 512) ? 1 : 0;
-    blocks = (uint8_t) (blocks + (size / 512));
-    
+    uint8_t blocks = HOW_MANY(size, 512);
 
     /* see if we can find enough 512 blocks to fit our needs; look down below for a *very detailed* explanation
      on why this only allocates 512 byte blocks */
@@ -300,6 +194,8 @@ void *kmalloc(size_t size)
         Well, I hope that the memory allocation this way is easier and more reliable than with Vireo-I */
 
 }
+
+/* TODO: comment from here to end */
 
 void kfree(void *ptr)
 {

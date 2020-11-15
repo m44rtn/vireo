@@ -262,11 +262,11 @@ static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype)
     info->sectclust     = bpb->bpb.SectClust;
     
     #ifndef NO_DEBUG_INFO
-    trace((char *)"[FAT_DRIVER] Volume name: %s\n", (uint32_t) &info->volname);
-    trace((char *)"[FAT_DRIVER] FAT cluster: %i\n", (uint32_t) info->fatsector);
-    trace((char *)"[FAT_DRIVER] RootDir cluster: %i\n", (uint32_t) info->rootcluster);
-    trace((char *)"[FAT_DRIVER] FS_INFO *: 0x%x\n", (uint32_t) info);
-    print((char *)"\n");
+    trace("[FAT_DRIVER] Volume name: %s\n", (uint32_t) &info->volname);
+    trace("[FAT_DRIVER] FAT cluster: %i\n", (uint32_t) info->fatsector);
+    trace("[FAT_DRIVER] RootDir cluster: %i\n", (uint32_t) info->rootcluster);
+    trace("[FAT_DRIVER] FS_INFO *: 0x%x\n", (uint32_t) info);
+    print("\n");
     #endif
 
     info->FStype = (uint8_t) (FStype);

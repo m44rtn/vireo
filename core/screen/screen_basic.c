@@ -141,10 +141,10 @@ void screen_set_hexdigits(uint8_t value)
 	hexdigits = value;
 }
 
-void trace(char* str, unsigned int val)
+void trace(const char* str, unsigned int val)
 {
 	unsigned int i;  
-	unsigned int length = strlen(str);
+	unsigned int length = strlen((char *) str);
 
 	for(i = 0; i < length; i++){ 
 		switch(str[i]){
@@ -176,10 +176,10 @@ void trace(char* str, unsigned int val)
 	}
 }
 
-void print(char* str){
+void print(const char* str){
 	
 	unsigned int i;  
-	unsigned int length = strlen(str);
+	unsigned int length = strlen((char *) str);
 
 	for(i = 0; i < length; i++){ 
 		screen_basic_char_put_on_screen(str[i]);	
@@ -196,7 +196,7 @@ void screen_basic_clear_screen(void){
 }
 
 
-/* TODO: remove this sometime in the future */
+/* TODO: remove screen_basic_getchar() sometime in the future */
 char screen_basic_getchar(unsigned int x, unsigned int y)
 {
 	unsigned char* vidmem = (unsigned char*) 0xb8000;
@@ -204,7 +204,7 @@ char screen_basic_getchar(unsigned int x, unsigned int y)
 	if(x > SCREEN_BASIC_WIDTH || y > SCREEN_BASIC_HEIGHT)
 		return NULL;
 
-	return vidmem[((y * SCREEN_BASIC_WIDTH + x) * SCREEN_BASIC_DEPTH)];
+	return (char) (vidmem[((y * SCREEN_BASIC_WIDTH + x) * SCREEN_BASIC_DEPTH)]);
 }
 
 void screen_basic_putchar(unsigned int x, unsigned int y, char c)

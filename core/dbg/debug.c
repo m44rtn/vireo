@@ -30,14 +30,14 @@ SOFTWARE.
 void debug_print_warning(const char *warning)
 {
     screen_basic_set_screen_color(0x0E);
-    trace((char *) "[WARNING] %s\n\n", (uint32_t) warning);
+    trace( "[WARNING] %s\n\n", (uint32_t) warning);
     screen_basic_set_screen_color(0x07);
 }
 
 void debug_print_error(const char *error)
 {
     screen_basic_set_screen_color(0x04);
-    trace((char *) "[ERROR] %s\n\n", (uint32_t) error);
+    trace( "[ERROR] %s\n\n", (uint32_t) error);
     screen_basic_set_screen_color(0x07);
 }
 

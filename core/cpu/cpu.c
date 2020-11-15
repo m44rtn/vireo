@@ -45,13 +45,13 @@ void CPU_init(void)
     ASM_CPU_GETVENDOR();
 
     #ifndef NO_DEBUG_INFO
-    trace((char *) "[CPU] %s\n", (unsigned int) CPUID_VENDOR_STRING);
+    trace( "[CPU] %s\n", (unsigned int) CPUID_VENDOR_STRING);
     #endif
 
     ASM_CPU_GETNAME();
 
     #ifndef NO_DEBUG_INFO
-    trace((char *) "[CPU] %s\n\n", (unsigned int) CPUID_CPUNAME_STRING);
+    trace( "[CPU] %s\n\n", (unsigned int) CPUID_CPUNAME_STRING);
     #endif
 
 }

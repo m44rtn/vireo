@@ -32,7 +32,7 @@ SOFTWARE.
 
 char utilPool[32];
 
-static size_t __strxspn(const char *s, const char *map, int parity);
+static size_t __strxspn(const char *s, const char *map, char parity);
 
 unsigned int strlen(char *str)
 {
@@ -101,9 +101,14 @@ char *intstr(uint32_t value)
 
 uint8_t strdigit_toInt(const char digit)
 {
-	uint8_t retDigit = (digit < '0' || digit > '9') ? EXIT_CODE_GLOBAL_UNSUPPORTED : digit - '0';
+
+	uint8_t d;
+	if((digit < '0' || digit > '9'))
+		return EXIT_CODE_GLOBAL_UNSUPPORTED;
+
+	d = (uint8_t) (digit - '0');
 			
-	return retDigit;
+	return d;
 }
 
 unsigned int digit_count(uint32_t value)
@@ -220,7 +225,7 @@ char *strpbrk(const char *s, const char *accept)
 	return *ss ? (char *)ss : NULL;
 }
 
-static size_t __strxspn(const char *s, const char *map, int parity)
+static size_t __strxspn(const char *s, const char *map, char parity)
 {
 	char matchmap[UCHAR_MAX + 1];
 	size_t n = 0;

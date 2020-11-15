@@ -1,6 +1,6 @@
 PROJDIRS := core
 OBJDIR   := bin
-
+VM_NAME  := "BirdOS"
 
 SRCFILES = $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
@@ -44,7 +44,7 @@ all: clean $(OBJFILES) $(ASOBJFILES)
 	@$(CC) -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
-	@xenops -f core/kernel/info.h -q
+	-@xenops -f core/kernel/info.h -q
 
 %.o: %.c
 	@$(CC) $(CCFLAGS) -c $< -o $@
@@ -60,9 +60,9 @@ map:
 	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES)
 
 run:
-	vboxmanage startvm "BirdOS" -E VBOX_GUI_DBG_ENABLED=true
+	vboxmanage startvm $(VM_NAME) -E VBOX_GUI_DBG_ENABLED=true
 
 run-old:
-	virtualbox --startvm "BirdOS" --debug-command-line --start-running
+	virtualbox --startvm $(VM_NAME) --debug-command-line --start-running
 
 

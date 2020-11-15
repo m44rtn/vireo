@@ -19,11 +19,13 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
- */
+*/
 
-#ifndef __CONWAY_H__
-#define __CONWAY_H__
+#ifndef __MACRO_H__
+#define __MACRO_H__
 
-void conways_game_of_life(void);
+/* because why not :) */
+
+#define HOW_MANY(var, div) (var / div) + (var % div != 0)
 
 #endif

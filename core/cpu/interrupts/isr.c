@@ -54,9 +54,43 @@ void ISR_0D_HANDLER(void)
     panic(PANIC_TYPE_EXCEPTION, "GENERAL_PROTECTION_FAULT");
 }
 
-void ISR_0E_handler(void)
+void ISR_0E_handler(uint32_t error_code)
 {
-    panic(PANIC_TYPE_EXCEPTION, "PAGE_FAULT");
+    /* only use the bottom three bits */
+    error_code = error_code & 0x07;
+
+    switch(error_code)
+    {
+        /* should I have used defines? maybe */
+
+        /* error code for read or write to a non-present page from supervisor */ 
+        case 0: 
+        case 2:
+            panic(PANIC_TYPE_EXCEPTION, "SUPERVISOR_NON_PRESENT_PAGE");
+        break;
+
+        /* error code for read or write to a page causing a page-fault, supervisor */
+        case 1:
+        case 3:
+            panic(PANIC_TYPE_EXCEPTION, "SUPERVISOR_PAGE_FAULT");
+        break;
+
+        /* error code for read or write a non-present page from user */
+        case 4:
+        case 6:
+            panic(PANIC_TYPE_EXCEPTION, "USER_NON_PRESENT_PAGE");
+        break;
+
+        /* error code for read or write to a page causing a page-fault, user */
+        case 5:
+        case 7:
+            panic(PANIC_TYPE_EXCEPTION, "USER_PAGE_FAULT");
+        break;
+
+        default:
+            panic(PANIC_TYPE_EXCEPTION, "PAGE_FAULT");
+    }
+    
 }
 
 void ISR_20_HANDLER(void)

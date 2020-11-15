@@ -37,6 +37,9 @@ SOFTWARE.
 #include "../../screen/screen_basic.h"
 #endif
 
+/* TODO: remove me */
+#include "../../dbg/dbg.h"
+
 #include "../../hardware/pci.h"
 #include "../../hardware/driver.h"
 
@@ -152,37 +155,38 @@ or has executed succesfully in the past */
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
-        IDEDriverInit(drv[1]);
+            IDEDriverInit(drv[1]);
         break;
 
         case IDE_COMMAND_READ:
-        if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATA)
-            error = IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
-        if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATAPI)
-            error = IDE_readPIO28_atapi((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
-                
+            if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATA)
+                error = IDE_readPIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+            if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATAPI)
+                error = IDE_readPIO28_atapi((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
 
         case IDE_COMMAND_WRITE:
-        if(drive_info_t[drv[1]].type != DRIVE_TYPE_IDE_PATA)
-        {
-            error = EXIT_CODE_GLOBAL_GENERAL_FAIL;
-            break;
-        }
+            if(drive_info_t[drv[1]].type != DRIVE_TYPE_IDE_PATA)
+            {
+                error = EXIT_CODE_GLOBAL_GENERAL_FAIL;
+                break;
+            }
 
-        IDE_writePIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
+            IDE_writePIO28((uint8_t) drv[1], drv[2], (uint8_t) drv[3], (uint16_t *) drv[4]);
         break;
 
         case IDE_COMMAND_REPORTDRIVES:
-        IDE_reportDrives((uint8_t *) *(&drv[1]));
+            IDE_reportDrives((uint8_t *) *(&drv[1]));
         break;
     }
 
-    if(error)
-    {
-        drv[4] = NULL;
-        drv[1] = error;
-    }
+    if(!error)
+        return;
+
+    /* else */    
+    drv[4] = NULL;
+    drv[1] = error;
+    
 }
 
 void IDE_IRQ(void)
@@ -258,9 +262,10 @@ static void IDEDriverInit(uint32_t device)
 
     PCI_controller = device & (uint32_t)~(DRIVER_TYPE_PCI);
 
-    /* maybe this will work around issue #16 someday 
-    if (pciGetReg0(PCI_controller) == 0x24CB8086)
-        return; */
+    /* this is the PCI controller of a real life computer I use
+        for testing. it has problems with this driver, so to remind me 
+        to fix that someday, here an assert() */
+    dbg_assert(!(pciGetReg0(PCI_controller) == 0x24CB8086));
 
     /* get the ports for both primary and secondary */
     IDE_enumerate();
@@ -301,15 +306,15 @@ static void IDEDriverInit(uint32_t device)
 #ifndef NO_DEBUG_INFO
 static void IDEPrintWelcome(void)
 {
-    print((char *) IDE_DRIVER_VERSION_STRING);
-    trace((char *) "[IDE_DRIVER] Kernel reported PCI controller %x\n", PCI_controller);
+    print( IDE_DRIVER_VERSION_STRING);
+    trace( "[IDE_DRIVER] Kernel reported PCI controller %x\n", PCI_controller);
 
-    trace((char *) "[IDE_DRIVER] Primary base port: %x\n", p_base_port);
-    trace((char *) "[IDE_DRIVER] Secondary base port: %x\n", s_base_port);
-    trace((char *) "[IDE_DRIVER] Primary control port: %x\n", p_ctrl_port);
-    trace((char *) "[IDE_DRIVER] Secondary control port: %x\n", s_ctrl_port);
+    trace( "[IDE_DRIVER] Primary base port: %x\n", p_base_port);
+    trace( "[IDE_DRIVER] Secondary base port: %x\n", s_base_port);
+    trace( "[IDE_DRIVER] Primary control port: %x\n", p_ctrl_port);
+    trace( "[IDE_DRIVER] Secondary control port: %x\n", s_ctrl_port);
 
-    print((char *) "\n");
+    print( "\n");
 
 }
 #endif

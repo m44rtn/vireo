@@ -28,7 +28,7 @@ void ISR_00_HANDLER(void);
 void ISR_05_HANDLER(void);
 void ISR_06_HANDLER(void);
 void ISR_0D_HANDLER(void);
-void ISR_0E_handler(void);
+void ISR_0E_handler(unsigned int error_code);
 
 void ISR_20_HANDLER(void);
 void ISR_21_HANDLER(void);

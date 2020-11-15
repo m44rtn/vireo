@@ -24,18 +24,30 @@ SOFTWARE.
 #ifndef __PAGING_H__
 #define __PAGING_H__
 
+#include "../include/types.h"
+
+#define PAGE_REQ_ATTR_READ_WRITE    1U << 0
+#define PAGE_REQ_ATTR_READ_ONLY     !PAGE_REQ_ATTR_READ_WRITE
+#define PAGE_REQ_ATTR_SUPERVISOR    1U << 1
+
+/* todo: move this to tasking when we're there */
+#define PID_KERNEL                  0U
+#define PID_RESV                    0xFFU
 
 typedef struct
 {
-    void *vptr;
-    
-    char *attrib;
+    uint8_t pid;        /* process id */
+    uint8_t attr;       /* paging attributes --> use defines */
+    size_t size;        /* size in bytes to be allocated */
 } __attribute__((packed)) PAGE_REQ;
 
 
 void paging_init(void);
 void *paging_vptr_to_pptr(void *vptr);
-void paging_map(void *pptr, void *vptr);
+void paging_map(void *pptr, void *vptr, PAGE_REQ *req);
+
+void *valloc(PAGE_REQ *req);
+void vfree(void *ptr);
 
 extern void ASM_CPU_PAGING_ENABLE(unsigned int *table);
 extern void ASM_CPU_INVLPG(void *paddr);

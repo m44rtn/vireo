@@ -27,5 +27,5 @@ SOFTWARE.
 
 void info_print_version(void)
 {
-    trace((char *) "Vireo II build %i\n", BUILD);
+    trace( "Vireo II build %i\n", BUILD);
 }
