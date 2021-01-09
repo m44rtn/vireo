@@ -31,6 +31,7 @@ SOFTWARE.
 #include "../../io/diskio.h"
 
 #include "../../memory/memory.h"
+#include "../../memory/paging.h"
 
 #include "../../hardware/driver.h"
 
@@ -48,7 +49,11 @@ SOFTWARE.
 
 #define FAT_FS_ID32 0x0B
 
-#define FAT_MAX_PARTITIONS 8 /* if you want to use more than 8 partitions, then feel free to change this number */
+#define FAT_MAX_PARTITIONS          8 /* if you want to use more than 8 partitions, then feel free to change this number */
+#define FAT_SUPPORTED_DRIVES        2 /* this driver is stupid, please choose another one. */
+#define FAT_PARTITIONS_PER_DRIVE    4 /* I'm really dissapointed in this driver */
+
+#define SECTOR_SIZE     512U /* bytes */
 
 #define FAT_DIR_ATTRIB_READ_ONLY    0x01
 #define FAT_DIR_ATTRIB_HIDDEN       0x02
@@ -57,6 +62,8 @@ SOFTWARE.
 #define FAT_DIR_ATTRIB_DIRECTORY    0x10
 #define FAT_DIR_ATTRIB_ARCHIVE      0x20
 #define FAT_DIR_ATTRIB_LFN          0x3F /* every possible attrib OR'ed */
+
+#define FAT_DRIVER_FLAG_INIT_RAN    1 /* init has ran succesfully before */
 
 
 typedef struct {
@@ -79,7 +86,7 @@ typedef struct {
 typedef struct{
     BPB bpb;
     uint32_t sectFAT32;
-    uint16_t flags;
+    uint16_t fat_flags;
     uint16_t FATver;
     uint32_t clustLocRootdir;
     uint16_t FSinfo;
@@ -128,112 +135,132 @@ typedef struct{
     /* maybe make a seperate FS_INFO for FAT12/16? */
 } __attribute__((packed)) FS_INFO;
 
-
 void FAT_HANDLER(uint32_t *drv);
 
+static void FAT_setup_FS_INFO(void);
 static uint32_t FAT_cluster_LBA(uint32_t cluster);
-static FS_INFO *FAT_getInfo(void);
+static FS_INFO * FAT_getInfo(void);
 static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype);
 static uint8_t FAT_alreadyExists(uint8_t drive, uint8_t partition);
 static uint32_t *FAT32_readFat(uint32_t cluster, uint32_t *nclusters);
 static uint16_t *FAT32_readDir(uint32_t cluster);
-static uint32_t FAT32_getClusterByFileName(FAT32_DIR *dir, char *filename);
+static FAT32_DIR *FAT_find_in_dir(FAT32_DIR *dir, char *filename);
 
-static uint32_t FAT_convertPath(char *path);
-void FAT_convertFilename(char *path, char *dummy);
+static uint8_t FAT_setDrivePartitionActive(const char *id);
+static uint32_t *FAT32_read_file(uint8_t drive, uint8_t partition, char *filename, FAT32_DIR *entry);
+
+static void FAT_convertFilenameToFATCompat(char *path, char *dummy);
+static FAT32_DIR *FAT_convertPath(char *path);
 
 static void test_dir(void);
 
 
-static uint32_t *partition_info_t[FAT_MAX_PARTITIONS];
+static FS_INFO partition_info_t[FAT_MAX_PARTITIONS];
+static uint32_t *partition_info_ptr = NULL;
 static uint8_t partitions = 0;
 static uint8_t currentWorkingPartition, currentWorkingDrive;
 static uint8_t gErrorCode = 0;
-static uint32_t *info_buffer;
+static uint32_t *info_buffer; /* location of BPB in memory */
 
 /* the indentifier for drivers + information about our driver */
 struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT32 | DRIVER_TYPE_FS), (uint32_t) (FAT_HANDLER)};
 
-/* FAT12 and 16 COMING SOON */
+uint16_t fat_flags = 0;
+
+/* FAT12 and 16 come sometime in the future */
 
 void FAT_HANDLER(uint32_t *drv)
 {
-
-    uint32_t cluster;
+    FAT32_DIR *dir_entry;
     uint32_t *ptr;
-    char *dummy;
+    char filename[12];
+    
+    gErrorCode = EXIT_CODE_GLOBAL_SUCCESS;
     
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
-        {
+            currentWorkingDrive = (uint8_t) drv[1];
+            currentWorkingPartition = (uint8_t) drv[2];
+
+            /* FIXME: this driver seems to only support one drive, thanks to this... */
             if(!info_buffer)
-                info_buffer = (uint32_t *) kmalloc(512);
-            FAT_init(drv[1], drv[2], drv[3]);
+                info_buffer = (uint32_t *) kmalloc(SECTOR_SIZE); /* boot sector */
+
+            if(!(fat_flags && FAT_DRIVER_FLAG_INIT_RAN))
+                FAT_setup_FS_INFO();
+
+            FAT_init(currentWorkingDrive, currentWorkingPartition, drv[3]);
         break;
-        }
 
         case FS_COMMAND_READ:
-            cluster = FAT_convertPath((char *)drv[1]);
-            
+            gErrorCode = FAT_setDrivePartitionActive((const char *) drv[1]);
 
-            if(cluster == EXIT_CODE32_FAT_FAIL)
-            {
-                drv[4] = gErrorCode;
+            if(gErrorCode == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
                 break;
-            }
+
+            /* starting cluster of requested item (DIR or FILE) */
+            dir_entry = FAT_convertPath((char *)drv[1]);
             
-            if(gErrorCode == EXIT_CODE_FAT_UNKNOWN_DIR)
-            {
-                /*ptr = FAT_readFile(FAT_convertFilename((char *) drv[1]), cluster);*/
-                FAT_convertFilenameToFATCompat(drv[1], dummy);
-                /*drv[2] = (uint32_t) vmalloc(size, pid, 1);*/
+            // /* if the file was not found, return */
+            // if((dir_entry == (FAT32_DIR *) NULL) && (gErrorCode == EXIT_CODE_FAT_FILE_NOT_FOUND))
+            //     break;
+
+                /* todo:
+                    - check if file or not existing
+                    - read file if exists */
+                
+                // FAT_convertFilenameToFATCompat(drv[1], dummy);
+                //ptr = FAT_readFile();
+                
+                ptr = FAT32_read_file(currentWorkingDrive, currentWorkingPartition, &filename[0], dir_entry);
+                drv[2] = (uint32_t) ptr;
+                drv[3] = dir_entry->fSize;
                 /*ptr = FAT_readFile(dummy, cluster);*/
-            }
-            else
-                ptr = (uint32_t *) FAT32_readDir(cluster);
-            
-            
         break;
+
+        default:
+            gErrorCode = EXIT_CODE_FAT_UNSUPPORTED_COMMAND;
+        break;
+        
     }
     
-    gErrorCode = EXIT_CODE_GLOBAL_SUCCESS;
+    drv[4] = gErrorCode;
+}
+
+static void FAT_setup_FS_INFO(void)
+{
+    uint8_t drive = 0;
+    for(uint8_t i = 0; i < FAT_MAX_PARTITIONS >> 1; ++i)
+    {
+       /* first drive */
+       partition_info_t[i].drive = (i >> 2U) - 1U;
+       partition_info_t[i].partition = i - ((drive + 1U) * 2U);
+    }
 }
 
 static uint32_t FAT_cluster_LBA(uint32_t cluster)
 {
-    FS_INFO *info = FAT_getInfo();
+    FS_INFO* info = FAT_getInfo();
 
-    uint32_t LBA = ((cluster - 2) * info->sectclust) + info->firstdatasect;
+    uint32_t LBA = ((cluster - 2) * (info->sectclust)) + (info->firstdatasect);
     return LBA;
 }
 
+/* retrieves information structure */
 static FS_INFO *FAT_getInfo(void)
 {
-    uint8_t i;
-    FS_INFO *info;
-
-    for(i = 0; i < FAT_MAX_PARTITIONS; ++i)
-    {
-        info = (FS_INFO *) partition_info_t[i];
-        
-        if(info->drive == currentWorkingDrive 
-            && info->partition == currentWorkingPartition)
-            break;
-    }
-
-    dbg_assert(!(i == FAT_MAX_PARTITIONS));
-
-    return info;
+    //dbg_assert(partition_info_ptr);
+    return (FS_INFO *) partition_info_ptr; //(&partition_info_t[(currentWorkingDrive + 1) * currentWorkingPartition]);
 }
 
 static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype)
 {
     uint8_t error;
-    uint32_t startLBA = MBR_getStartLBA((uint8_t) drive, (uint8_t) partition);
-    uint8_t *buf         = kmalloc(512);
-    FS_INFO *info     = (FS_INFO *) (((uint32_t)info_buffer) + (partitions*sizeof(FS_INFO)));
-    FAT32_EBPB *bpb  = (FAT32_EBPB *) buf; 
+    uint32_t startLBA   = MBR_getStartLBA((uint8_t) drive, (uint8_t) partition);
+    uint8_t *buf        = kmalloc(512);
+    FS_INFO *info        = &partition_info_t;
+    FAT32_EBPB *bpb     = (FAT32_EBPB *) buf; 
 
     /* if we already know this partition then... what are you doing here? */
     if(FAT_alreadyExists((uint8_t)drive, (uint8_t)partition))
@@ -246,8 +273,8 @@ static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype)
 
     /* only support 512 bytes per sector */
     dbg_assert(bpb->bpb.bSector == 512U);
+    info->fatsector = (bpb->bpb.resvSect) + startLBA;
 
-    info->fatsector = bpb->bpb.resvSect + startLBA;
 
     /* store the cluster for the root directory */
     if(FStype == FS_TYPE_FAT32)
@@ -258,43 +285,43 @@ static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype)
     memcpy((char *)&info->volname, (char *)&bpb->volName, 11);
     info->volname[11] = '\0';
 
-    info->firstdatasect = info->fatsector + (bpb->bpb.nFAT * bpb->sectFAT32);
+    info->firstdatasect = (info->fatsector) + (bpb->bpb.nFAT * bpb->sectFAT32);
     info->sectclust     = bpb->bpb.SectClust;
+
+    partition_info_ptr = (uint32_t *) info;
     
     #ifndef NO_DEBUG_INFO
+    trace("[FAT_DRIVER] Drive: %i\n", drive);
+    trace("[FAT_DRIVER] Partition: %i\n", partition);
     trace("[FAT_DRIVER] Volume name: %s\n", (uint32_t) &info->volname);
     trace("[FAT_DRIVER] FAT cluster: %i\n", (uint32_t) info->fatsector);
     trace("[FAT_DRIVER] RootDir cluster: %i\n", (uint32_t) info->rootcluster);
-    trace("[FAT_DRIVER] FS_INFO *: 0x%x\n", (uint32_t) info);
+    trace("[FAT_DRIVER] FS_INFO * *: 0x%x\n", (uint32_t) info);
     print("\n");
     #endif
 
     info->FStype = (uint8_t) (FStype);
-
-    partition_info_t[partitions] = (uint32_t *) info;
-    ++partitions;
     
     kfree(buf);
+
+    fat_flags |= FAT_DRIVER_FLAG_INIT_RAN;
 }
 
 /* returns fail when partition exists in our list, success when does not exist */
 static uint8_t FAT_alreadyExists(uint8_t drive, uint8_t partition)
 {   
     uint8_t i;
-    FS_INFO *info;
+    FS_INFO * info = FAT_getInfo();
 
     for(i = 0; i < FAT_MAX_PARTITIONS; ++i)
     {
         /* if the pointer is NULL we have no information for that partition */
-        if(partition_info_t[i] == NULL)
+
+        if(!((info->drive) == drive && (info->partition) == partition))
             continue;
 
-        info = (FS_INFO *) partition_info_t[i];
-
-        if(!(info->drive == drive && info->partition == partition))
-            continue;
-
-        /* FStype can never be zero if the info block is initialized */
+        /* FStype can never be zero if the info block is initialized 
+            so, one that isn't zero means we've already had this one... */
         if(info->FStype)
             return EXIT_CODE_GLOBAL_GENERAL_FAIL;            
     }
@@ -302,7 +329,7 @@ static uint8_t FAT_alreadyExists(uint8_t drive, uint8_t partition)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-/* returns succes when succesful, not supported when the id is an unknown format */
+/* returns succes when succesful, returns not supported when the id is an unknown format */
 static uint8_t FAT_setDrivePartitionActive(const char *id)
 {
     uint8_t drive, partition;
@@ -331,150 +358,210 @@ static uint8_t FAT_setDrivePartitionActive(const char *id)
 static uint32_t *FAT32_readFat(uint32_t cluster, uint32_t *nclusters)
 {
     uint8_t error;
-    FS_INFO *info      = FAT_getInfo();
+    FS_INFO *info     = FAT_getInfo();
     uint32_t *table    = kmalloc(512);
-    uint32_t *clusters[128];
+    uint32_t *clusters = kmalloc(128 * sizeof(uint32_t));
     uint32_t fat_sector, entry;
-
+    
     *(nclusters) = 0;
     
+    uint32_t i = 0;
     while(cluster != 0 && ((cluster & 0x0FFFFFFF) < 0x0FFFFFF8))
     {
         /* store the cluster found in the previous round of this loop 
         (if we just now started, this will store the cluster given to us as
         an argument) */
-        clusters[*(nclusters)] = cluster;
+        clusters[(uint32_t) *(nclusters)] = cluster;
 
         /* what do we need to read? */        
-        fat_sector = (uint32_t) info->fatsector + ((cluster * 4) / 512);
+        fat_sector = (uint32_t) (info->fatsector) + ((cluster * 4) / 512);
         entry = (cluster * 4) % 512;
 
         /* read it! */
-        error = READ(info->drive, fat_sector, 1U, (uint8_t *) table);
-        
+        error = READ(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table);
         if(error)
             return NULL;
 
         cluster = *(&table[entry]) & 0x0FFFFFFF;
 
-        *(nclusters) = *(nclusters) + 1U;
+        i++;
+        *(nclusters) = i;
     }
 
     kfree(table);
-    
-    return &clusters;
+    return clusters;
 }
 
 static uint16_t *FAT32_readDir(uint32_t cluster)
 {
-    FS_INFO *info = FAT_getInfo();
-    uint32_t nclusters;
-    uint32_t *dir_clusters = FAT32_readFat((cluster) ? cluster : info->rootcluster, &nclusters); 
-    uint16_t *buffer = (uint16_t *) kmalloc(nclusters * info->sectclust * 512);
+    FS_INFO * info = FAT_getInfo();
+    uint32_t nclusters = 0;
+
+    cluster = (cluster) ? cluster : info->rootcluster;
+    
+    uint32_t *dir_clusters = FAT32_readFat(cluster, &nclusters); 
+ 
+    uint16_t *buffer = (uint16_t *) kmalloc(nclusters * (info->sectclust) * 512);
     uint16_t *original = (uint16_t *) buffer;
     uint32_t lba, i;
     uint8_t error;
 
-    for(i = 0; i < 1; ++i)
+    for(i = 0; i < nclusters; ++i)
     {
-        lba = FAT_cluster_LBA(cluster);
+        cluster = dir_clusters[i];
+        lba = FAT_cluster_LBA(dir_clusters[i]);
         
-        error = READ(0, lba, 1, (uint8_t *) buffer);
+        error = READ(currentWorkingDrive, lba, (info->sectclust), (uint8_t *) buffer);
+
         if(error)
-            return NULL;
+            return NULL;     
         
         buffer = (uint16_t *) (((uint32_t)buffer) + 512);
     }
 
-    
     kfree(dir_clusters);
     
     return original;
 }
 
-/* function assumes filename to be FAT compatible (no dots, 11 chars long) */
-static uint32_t FAT32_getClusterByFileName(FAT32_DIR *dir, char *filename)
+/* returns vptr of the buffer */
+static uint32_t *FAT32_read_file(uint8_t drive, uint8_t partition, char *filename, FAT32_DIR *entry)
+{
+    /* actually, if you're requesting a dir then the dir has already been read before (and has been erased from memory),
+        in order to find it. believe it or not, that's double the work if we're going to read it again here.
+        so, in the future that could be an optimalization TODO */
+
+    /* get the clusters for the file from the FAT table */
+    uint32_t cluster = (entry->clHi << 16U) | (entry->clLo);
+    uint32_t nclusters = 0;
+    uint32_t *clusters = FAT32_readFat(cluster, &nclusters);
+
+    FAT32_EBPB *bpb = (FAT32_EBPB *) info_buffer;
+
+    const uint32_t sectclust = bpb->bpb.SectClust;
+
+    /* file size and the number of lba's to be read */
+    uint32_t fsize = entry->fSize;
+    uint32_t nlba_read  = (fsize >> 9) /* DIV by SECTOR_SIZE */ + 1U;
+
+    uint32_t page_size = nlba_read << 9; /* bytes */
+
+    /* request a page */
+    PAGE_REQ *req = kmalloc(sizeof(PAGE_REQ));
+    req->pid = PID_KERNEL;
+    req->attr = PAGE_REQ_ATTR_READ_ONLY | PAGE_REQ_ATTR_SUPERVISOR;
+    req->size = page_size;
+    
+    uint32_t *obuffer;
+    uint32_t *buffer = obuffer = (uint32_t *) valloc(req);
+
+    kfree(req);
+
+    /* read the clusters */
+    for(uint32_t i = 0; i < nclusters; ++i)
+    {
+        const uint32_t nsects = (nlba_read < sectclust) ? nlba_read : sectclust;
+        uint32_t starting_lba = FAT_cluster_LBA(clusters[i]);
+
+        READ(drive, starting_lba, (uint32_t) nsects, (uint8_t *) buffer);
+
+        buffer += sectclust << 9;
+
+        /* no underflows in my kingdom >:) */
+        if(nlba_read >= sectclust)
+            nlba_read -= sectclust;
+    }
+    
+    kfree(clusters);
+    kfree(entry);
+    
+    return obuffer;
+}
+
+/* returns cluster */
+static FAT32_DIR *FAT_find_in_dir(FAT32_DIR *dir, char *filename)
 {
     uint32_t i = 0;
     char file[12];
-
-    /* TODO: make me work with dots for filenames like in (hi.txt) */
-
+    
     file[11] = '\0';
+
 
     while(dir[i].name[0] && (i != 0xFFFFFFFF))
     {
-        /* not a dir, not a file? skip! (also skip long filenames, who cares 
-        about them, right? pff! --> going full DOS style 
-        here with the great, nice, lovely 11 character filenames) :) */
-        if(dir[i].name[0] == 0xE5 || dir[i].attrib == FAT_DIR_ATTRIB_LFN || 
+        /* not a dir, not a file? skip! (also skip long filenames, don't care about those :) ) */
+        if( ((uint8_t)dir[i].name[0]) == 0xE5 || dir[i].attrib == FAT_DIR_ATTRIB_LFN || 
             dir[i].attrib == FAT_DIR_ATTRIB_VOLUME_ID || 
             dir[i].attrib == FAT_DIR_ATTRIB_HIDDEN)
-            {
-                ++i;
-                continue;
-            }
+        {
+            ++i;
+            continue;
+        }
         
-        memcpy((char *)&file, (char *)&dir[i].name, 8);
-        memcpy((char *)&file[8], (char *)&dir[i].ext, 3);
-        
+        memcpy((char *)&file[0], (char *)&(dir[i].name[0]), 8);
+        memcpy((char *)&file[8], (char *)&(dir[i].ext[0]), 3);
+
         /* return the cluster of the file- or directoryname */
-        if(!strcmp(&file, filename))
-            return (uint32_t) (dir[i].clHi << 16) | dir[i].clLo;
+        if(!strcmp((char *) &file[0], filename))
+            return &dir[i];
         
         ++i;
     }
+
 
     dbg_assert(!(i >= EXIT_CODE32_FAT_FAIL));
     return EXIT_CODE32_FAT_FAIL;
     
 }
 
-/* if an error is detected this will return 0xFFFFFFFF (since a sector could never
-have that value) and the first byte of path, will be the official error code */
-static uint32_t FAT_convertPath(char *path)
+/* returns null if not found */
+static FAT32_DIR *FAT_convertPath(char *path)
 {
-    uint8_t stat = 0;
     char *current, *backup;
-    uint32_t cluster = 2, prevCluster = 0;
-    FAT32_DIR *dir = (FAT32_DIR *) NULL;
-    char filename[12];
-    uint32_t i = 0;
+    FS_INFO * info = FAT_getInfo();
+    const uint8_t path_has_file = (!strchr(path, '.')) ? 1 : 0;
 
     memcpy(backup, path, strlen(path));
-    
+
+    /* drive and partition number, ignored */
     current = strtok(backup, "/");
-    gErrorCode = stat = FAT_setDrivePartitionActive(current);
 
+    uint32_t cluster = info->rootcluster;
+    FAT32_DIR *dir = NULL;
 
-    if(stat == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
-        return EXIT_CODE32_FAT_FAIL; /* this is a 32-bit value!!! */
-
-    while(current = strtok(NULL, "/"))
+    current = strtok(NULL, "/");
+    /* search directories */
+    while(1)
     {
-        dir = (FAT32_DIR *) FAT32_readDir(cluster);
-        prevCluster = cluster;
-        cluster = FAT32_getClusterByFileName(dir, current);
+        char *file = current;
 
-        /* we either found a file or we got a non-existing dir */
-        if(cluster == EXIT_CODE32_FAT_FAIL)
-        {
-            gErrorCode = EXIT_CODE_FAT_UNKNOWN_DIR;
-            cluster = prevCluster;
+        // if this is a file, we need to make the filename compatible with
+        // FAT (and not 'parent directory')
+        if(!strchr(current, '.') && strcmp(current, (char *) ".."))
+            FAT_convertFilenameToFATCompat(current, file);
+        
+
+        uint16_t *buffer = FAT32_readDir(cluster);
+        
+        dir = FAT_find_in_dir((FAT32_DIR *) buffer, file);
+        
+        cluster = (dir->clHi << 16) | (dir->clLo);
+
+        kfree(buffer);
+
+        current = strtok(NULL, "/");
+        if(current == NULL)
             break;
-        }
-
-        kfree(dir);
     }
     
-    return cluster;
+    return dir;
 }
 
 /* This function converts a filename 'file.txt' to 'file    txt'
     (aka FAT compatible)
 
     the argument dummy is where the new FAT compatible filename will live */
-void FAT_convertFilenameToFATCompat(char *path, char *dummy)
+static void FAT_convertFilenameToFATCompat(char *path, char *dummy)
 {
     char *current, *prev, *file;
     uint8_t spaces, i;
@@ -483,20 +570,18 @@ void FAT_convertFilenameToFATCompat(char *path, char *dummy)
     
     memcpy(file, path, strlen(path));
 
-    current = strtok(file, "/");
-    prev = current;
+    prev = current = path;
 
-    /* since we get the entire file path, we should get rid of the path itself */
-    while(current = strtok(NULL, "/"))
-        prev = current;
-
-    trace("prev: %s\n", prev);
+    // /* since we get the entire file path, we should get rid of the path itself */
+    // while(current = strtok(NULL, "/"))
+    //     prev = current;
 
     /* we got rid of the file path and we now just have the filename!
      so let's get rid of the dot and copy the filename itself */
     current = strtok(prev, ".");
     len = (uint8_t) strlen(current);
-    memcpy((char *) &filename, (char *) current, len);
+    
+    memcpy((char *) &filename[0], (char *) current, len);
     
     /* add the right amount of spaces as padding */
     spaces = 8U - len;
@@ -508,7 +593,7 @@ void FAT_convertFilenameToFATCompat(char *path, char *dummy)
     if(current != NULL)
     {
         /* if we get here the file DID have an extension, so let's copy that */
-        len = strlen(current);
+        len = ((len = strlen(current)) > 3) ? 3 : len;
         memcpy((char *) &filename[8], (char *) current, len);
     }
     else
@@ -517,15 +602,16 @@ void FAT_convertFilenameToFATCompat(char *path, char *dummy)
     
     /* now add the right amount of spaces as padding */
     spaces = 3U - len;
-    for(i = 0; i < spaces; ++i)
+    for(i = 0; i != spaces; ++i)
         filename[8+len+i] = ' ';
-    
+        
     /* let's null terminate the string, because we can */
     filename[11] = '\0';
-    
+
+    //while(1);
     /* put the entie FAT compatible filename in the dummy given 
     as argument tot this function */
-    memcpy(dummy, &filename, 12);
+    memcpy( (char *) &dummy[0], (char *) &filename[0], 12);
 }
 
 /* this is just for testing, this *should* have been removed before you
@@ -551,6 +637,6 @@ static void test_dir(void)
         trace("%x\n", dir[i].attrib);
         ++i;
     }
-    
+    while(1);
     kfree((void *)buf);
 }

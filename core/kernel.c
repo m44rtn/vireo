@@ -135,7 +135,7 @@ void main(void)
 
     init_env();
 
-    /*driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
+    driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
     drv[0] = DRV_COMMAND_INIT;
     drv[1] = 0;
     drv[2] = 0;
@@ -143,14 +143,22 @@ void main(void)
     driver_exec((0x0B | DRIVER_TYPE_FS), drv);
     
     drv[0] = FS_COMMAND_READ;
-    drv[1] = (uint32_t) "HD0P0/FDOS/../HI.TXT";
+    drv[1] = (uint32_t) "HD0P0/FDOS/../HI.TXT\0";
     drv[2] = 0;
     driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+
+    uint32_t *buffer = (uint32_t *) drv[2];
+    uint32_t buffer_size = drv[3];
+
+    trace("buffer address: 0x%x\n", buffer);
+    trace("buffer_size (bytes): %i\n", buffer_size);
+
+    trace("\n\n\n\n\n\n file content:\n\n%s\n", buffer);
 
     if(drv[4] == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
         print("[FAT_DRIVER] Drive specification unsupported\n");
     else
-        print("[FAT_DRIVER] SUCCESS\n");*/
+        print("[FAT_DRIVER] SUCCESS\n");
     
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");

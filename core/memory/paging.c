@@ -54,7 +54,7 @@ uint32_t shadow_len = 0;
 uint32_t *page_dir = NULL;
 
 
-static uint32_t paging_convert_to_entry(uint32_t ptr, PAGE_REQ *req);
+static uint32_t paging_convert_ptr_to_entry(uint32_t ptr, PAGE_REQ *req);
 static uint32_t *paging_find_free(uint32_t npages);
 static uint32_t paging_create_tables(void);
 static void paging_prepare_table(uint32_t *table, uint8_t type);
@@ -62,7 +62,7 @@ static void paging_map_kernelspace(uint32_t end_of_kernel_space);
 
 void paging_init(void)
 {
-    /* current should be enough to get v86 to work 
+    /* current should be okay
     TODO: list of todo things:
         - paging_umap()
         - store pages on disk */  
@@ -72,9 +72,6 @@ void paging_init(void)
     
     ASM_CPU_PAGING_ENABLE(page_dir);
 
-    /* TODO: REMOVE ME */
-    trace("page_dir %x\n\n\n\n\n\n", page_dir);
-
     #ifndef NO_DEBUG_INFO
     print( "[PAGING] Hello paging world! :)\n\n");
     #endif
@@ -82,7 +79,7 @@ void paging_init(void)
 
 void *paging_vptr_to_pptr(void *vptr)
 {
-    uint32_t pdindex = (uint32_t)vptr >> 22; /* same as vptr / PAGING_PAGE_SIZE / PAGING_TABLE_SIZE
+    uint32_t pdindex = (uint32_t)vptr >> 22; /* same as vptr / PAGING_PAGE_SIZE / PAGING_TABLE_SIZE */
 
     /* location ptindex: vptr / PAGING_PAGE_SIZE */
     uint32_t ptindex = (uint32_t) (((uint32_t)vptr) >> 12) & 0x03FF;
@@ -106,7 +103,7 @@ void paging_map(void *pptr, void *vptr, PAGE_REQ *req)
     uint32_t *pd = page_dir;
     uint32_t *pt = (uint32_t *) (pd[pdindex] & 0xFFFFF000);
 
-    pt[ptindex] = paging_convert_to_entry((uint32_t) pptr, req);
+    pt[ptindex] = paging_convert_ptr_to_entry((uint32_t) pptr, req);
 
     ASM_CPU_INVLPG((uint32_t *)pptr);
     
@@ -118,7 +115,7 @@ void *valloc(PAGE_REQ *req)
     uint32_t *free_pages, *ptable;
     uint32_t page_id, t_index, d_index;
     uint32_t temp;
-    uint32_t i; /* for loop */
+    uint32_t i; /* for-loop */
 
     /* just checking... */
     dbg_assert((uint32_t)page_dir);
@@ -144,7 +141,7 @@ void *valloc(PAGE_REQ *req)
         trace("ptable: %x\n", ptable);
         /*while(1);*/
 
-        ptable[t_index] = paging_convert_to_entry(ptable[t_index], req);
+        ptable[t_index] = paging_convert_ptr_to_entry(ptable[t_index], req);
         
         ASM_CPU_INVLPG((uint32_t *)ptable[t_index]);
 
@@ -212,10 +209,12 @@ static uint32_t *paging_find_free(uint32_t npages)
     return NULL;
 }
 
-static uint32_t paging_convert_to_entry(uint32_t ptr, PAGE_REQ *req)
+static uint32_t paging_convert_ptr_to_entry(uint32_t ptr, PAGE_REQ *req)
 {
     /* remove the attributes so that we only enable the things we should */
-    uint32_t temp = ptr & ~((PAGE_REQ_ATTR_SUPERVISOR | PAGE_REQ_ATTR_READ_ONLY) << 1);    
+    uint32_t temp = ptr & ~((PAGE_REQ_ATTR_SUPERVISOR | PAGE_REQ_ATTR_READ_ONLY) << 1);   
+
+    /* now enable the things we do need. */ 
     temp = temp | ((req->attr) << 1) | PAGE_PRESENT;
 
     return temp;
