@@ -196,6 +196,8 @@ volatile uint16_t fat_flags = 0;
 
 /* FAT12 and 16 come sometime in the future */
 
+// TODO: cleanup and delete
+
 void FAT_HANDLER(uint32_t *drv)
 {
     FAT32_DIR *dir_entry;
@@ -603,6 +605,13 @@ static void FAT_rename(char *old, char *new)
 
     trace("cluster: %x\n", cluster);
     trace("obackup: %s\n", obackup);
+
+    if(FAT_file_exists(dir, &n[0]) != MAX)
+    {
+        print("yooo\n");
+        gErrorCode = EXIT_CODE_FAT_FILE_EXISTS;
+        return;
+    }
     
     // find the file
     uint32_t entry = FAT_file_exists(dir, &o[0]);
