@@ -154,6 +154,9 @@ static FS_INFO * FAT_getInfo(void);
 static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype);
 static uint8_t FAT_alreadyExists(uint8_t drive, uint8_t partition);
 
+static void FAT_get_file_name(char *path, char *output);
+static void FAT_rename(char *old, char *new);
+
 static uint32_t *FAT32_readFat(uint32_t cluster, uint32_t *nclusters);
 static uint32_t FAT32_read_table(uint32_t cluster);
 
@@ -549,7 +552,7 @@ static uint32_t *FAT32_read_file(FAT32_DIR *entry)
     return obuffer;
 }
 
-void FAT_get_file_name(char *path, char *output)
+static void FAT_get_file_name(char *path, char *output)
 {
     uint32_t i = path_find_last(path);
 
@@ -562,49 +565,72 @@ void FAT_get_file_name(char *path, char *output)
     kfree(filename);
 }
 
-void FAT_rename(char *old, char *new)
+static void FAT_rename(char *old, char *new)
 {
     // FIXME: shares way too much code with update_dir
     // TODO: make this work
     FS_INFO *info = FAT_getInfo();
 
-    char n[12], o[12];
+    char n[12], o[12], *obackup;
     
+    // copy filenames and make FAT compatible
     FAT_get_file_name(old, &o[0]);
-    FAT_get_file_name(new, &n[0]);
+    FAT_convertFilenameToFATCompat(new, &n[0]);
 
+    // backup path
+    obackup = kmalloc(strlen(old) + 1);
+    memcpy(obackup, old, strlen(old)+1);
+    
+    // find the last folder in the path and end the string there
+    uint32_t i = path_find_last(obackup);
+    obackup[i-1] = '\0';
+
+    // find that cluster
     uint32_t cluster = 0;
-    FAT32_DIR *dir = FAT_convertPath(old, &cluster); 
+    FAT32_DIR *dir = FAT_convertPath(obackup, &cluster); 
 
-    if(dir == NULL)
+    uint32_t *d = (uint32_t *) FAT32_readDir(cluster); // was read file
+
+    if(d == NULL)
     {
+        print("yooo\n");
         gErrorCode = EXIT_CODE_FAT_FILE_NOT_FOUND;
         return;
     }
-    kfree(dir);
+    kfree((void *) dir);
 
-    FAT32_DIR *d = (FAT32_DIR *) FAT32_readDir(cluster);
+    dir = (FAT32_DIR *) d;
 
-    uint32_t entry = FAT_file_exists(d, &o[0]);
+    trace("cluster: %x\n", cluster);
+    trace("obackup: %s\n", obackup);
+    
+    // find the file
+    uint32_t entry = FAT_file_exists(dir, &o[0]);
+
+    trace("entry: %x\n", entry);
 
     if(entry == MAX)
-        return;
+        return; // FIXME: kfree(dir) here
 
-    memcpy((char *) &(d[entry].name[0]), &n[0], 11U);
+    memcpy((char *) &(dir[entry].name[0]), &n[0], 11U);
+
+    cluster = dir_determine_cluster(entry, cluster, info);
+
+    trace("cluster: 0x%x\n", cluster);
 
     // fixme: make this function save_dir()
     uint32_t c[1];
     c[0] = cluster;
 
-    trace("dir: 0x%x\n", d);
-    trace("entry: 0x%x\n", entry);
-    trace("&c: 0x%x\n\n\n\n\n\n\n\n\n", &c);
+    // trace("dir: 0x%x\n", d);
+    // trace("entry: 0x%x\n", entry);
+    // trace("&c: 0x%x\n\n\n\n\n\n\n\n\n", &c);
 
     // calculate the first entry which needs to be written to the cluster
     uint32_t start = (entry / (SECTOR_SIZE * (info->sectclust)));
 
-    // save(&c[0], 1U, (uint16_t *) &d[start], SECTOR_SIZE * (info->sectclust)); 
-    kfree(d);
+    save(&c[0], 1U, (uint16_t *) &dir[start], SECTOR_SIZE * (info->sectclust)); 
+    kfree(dir);
 }
 
 static void FAT_save_file(char *filename, uint16_t * buffer, size_t buffer_size, uint8_t attrib)
@@ -762,8 +788,9 @@ static uint32_t dir_determine_cluster(uint32_t entry, uint32_t cluster, FS_INFO 
     uint32_t i = 0;
     uint32_t *clusters = FAT32_readFat(cluster, &i);
 
+    // calculate at which cluster in the list the entry should be at
     uint32_t c = ((entry * sizeof(FAT32_DIR)) >> 9U /* DIV by SECTOR_SIZE */);
-    c += (((entry * sizeof(FAT32_DIR)) % SECTOR_SIZE) != 0); // need one more?? TODO: is this right?
+    c += (((entry * sizeof(FAT32_DIR)) % SECTOR_SIZE) != 0);
     c /= (info->sectclust);
 
 
@@ -775,6 +802,7 @@ static uint32_t dir_determine_cluster(uint32_t entry, uint32_t cluster, FS_INFO 
     if(clusters[c] == 0x0FFFFFFF)
         return cluster;
 
+    // get and return cluster
     c = clusters[c];
     kfree(clusters);
 
