@@ -37,6 +37,8 @@ void memset(char *start, unsigned int size, char val);
 
 void sleep(unsigned int timeIn_ms);
 unsigned char flag_check(unsigned int flag, unsigned int to_check); 
+unsigned int findstr(char *o, const char *fnd);
+
 unsigned char strchr(char *str, char ch);
 void memcpy(char *destination, char *source, unsigned int size);
 

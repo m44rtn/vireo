@@ -27,6 +27,7 @@ SOFTWARE.
 #define EXIT_CODE_FAT_UNSUPPORTED_DRIVE     0x10
 #define EXIT_CODE_FAT_FILE_NOT_FOUND        0x11
 #define EXIT_CODE_FAT_UNSUPPORTED_COMMAND   0x12
+#define EXIT_CODE_FAT_FILE_EXISTS           0x13
 
 /* a 32-bit exit code (unlike the normal exit codes which are bytes) */
 #define EXIT_CODE32_FAT_FAIL 0xFFFFFFFF

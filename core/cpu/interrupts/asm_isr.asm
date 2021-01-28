@@ -141,6 +141,7 @@ iret
 global ISR_20
 extern ISR_20_HANDLER
 ISR_20:
+; PIT
 pushad
     cld
     call ISR_20_HANDLER  
@@ -150,6 +151,7 @@ iret
 global ISR_21
 extern ISR_21_HANDLER
 ISR_21:
+; KEYBOARD
 pushad
     cld
     call ISR_21_HANDLER 

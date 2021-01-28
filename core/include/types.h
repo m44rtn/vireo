@@ -34,6 +34,8 @@ SOFTWARE.
 
 #define UCHAR_MAX 255
 
+#define MAX       0xFFFFFFFF
+
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
 typedef signed short int16_t;

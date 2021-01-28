@@ -30,35 +30,35 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
+// FIXME: make this nice some day
+
 /* panic with CPU state */
 void panic(const char *type, const char *error)
 {
     CPU_STATE cpustate = CPU_get_state();
     screen_set_hexdigits(8);
 
-    print("--- kernel panic ---\n");
-    trace("Fatal %s: ", (uint32_t) type);
+    print("\n [KERNEL PANIC]\n");
+    trace(" Fatal %s: ", (uint32_t) type);
     trace("%s\n", (uint32_t) error);
     
     /* kernel version string */
-    print("Kernel version string: ");
+    print(" Kernel version string: ");
     info_print_version();
 
-    print("\nRegister dump:\n\t");
-    trace("eax=0x%x ", cpustate.eax);
-    trace("ecx=0x%x ", cpustate.ecx);
-    trace("edx=0x%x\n\t", cpustate.edx);
+    print("\n Register dump:\n\t");
+    trace("eax: 0x%x\t", cpustate.eax);
+    trace("ecx: 0x%x\t", cpustate.ecx);
+    trace("edx: 0x%x\n\t", cpustate.edx);
 
-    trace("ebx=0x%x ", cpustate.ebx);
-    trace("esp=0x%x ", cpustate.esp);
-    trace("ebp=0x%x\n\t", cpustate.ebp);
+    trace("ebx: 0x%x\t", cpustate.ebx);
+    trace("esp: 0x%x\t", cpustate.esp);
+    trace("ebp: 0x%x\n\t", cpustate.ebp);
 
-    trace("esi=0x%x ", cpustate.esi);
-    trace("edi=0x%x\n\n", cpustate.edi);
+    trace("esi: 0x%x\t", cpustate.esi);
+    trace("edi: 0x%x\n\n", cpustate.edi);
 
-    trace("\teip=0x%x\n", (unsigned int) cpustate.eip);
-
-    print("--- end kernel panic ---\n");
+    trace("\teip: 0x%x\n", (unsigned int) cpustate.eip);
 
     screen_basic_disable_cursor();
     screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
@@ -67,17 +67,36 @@ void panic(const char *type, const char *error)
 }
 
 /* panic without cpu state --> mainly used for non-cpu-exceptions */
-void easy_panic(const char *type, const char *error)
+void easy_panic(const char *type, const char *error, const char *file, const uint32_t line, void *fptr)
 {
-    print("--- kernel panic ---\n");
-    trace("Fatal %s: ", (uint32_t) type);
+    print("\n [KERNEL PANIC]\n");
+    trace(" Fatal %s: ", (uint32_t) type);
     trace("%s\n", (uint32_t) error);
     
     /* kernel version string */
-    print("Kernel version string: ");
+    print(" Kernel version string: ");
     info_print_version();
 
-    print("--- end kernel panic ---\n");
+    print("\n Debug information:\n\t");
+    trace("file: %s\n\t", (uint32_t) file);
+    trace("line: %i\n\t", line);
+    trace("fptr: 0x%x\n", (uint32_t) fptr);
+
+    screen_basic_disable_cursor();
+    screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
+
+    while(1);
+}
+
+void really_easy_panic(const char *type, const char *error)
+{
+    print("\n [KERNEL PANIC]\n");
+    trace(" Fatal %s: ", (uint32_t) type);
+    trace("%s\n", (uint32_t) error);
+    
+    /* kernel version string */
+    print(" Kernel version string: ");
+    info_print_version();
 
     screen_basic_disable_cursor();
     screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);

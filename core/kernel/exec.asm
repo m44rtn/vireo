@@ -44,3 +44,6 @@ mov esp, ebp
 pop ebp
 
 ret
+
+.funcptr dd 0x00
+.datstct dd 0x00

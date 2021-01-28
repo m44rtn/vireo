@@ -50,6 +50,7 @@ SOFTWARE.
 #define MEMORY_MALLOC_MEMSTRT     0x200000
 
 #define MEMORY_TABLE_LENGTH    128 
+#define MEMORY_BLOCK_SIZE      512 // bytes
 
 #define MEMORY_VMALLOC_STAT_ALLOCT      1<<7
 #define MEMORY_VMALLOC_STAT_READONLY    1<<6
@@ -152,7 +153,7 @@ void *kmalloc(size_t size)
     uint8_t index;
     int8_t mallocd_index;
 
-    uint8_t blocks = HOW_MANY(size, 512);
+    uint8_t blocks = (uint8_t) (HOW_MANY(size, MEMORY_BLOCK_SIZE));
 
     /* see if we can find enough 512 blocks to fit our needs; look down below for a *very detailed* explanation
      on why this only allocates 512 byte blocks */
@@ -182,7 +183,7 @@ void *kmalloc(size_t size)
         memory_update_table(0, MEMORY_MALLOC_MEMSTRT, blocks);
     else
     {
-        location = (uint32_t) (memory_t[mallocd_index].loc + (memory_t[mallocd_index].size * 512));
+        location = (uint32_t) (memory_t[mallocd_index].loc + (memory_t[mallocd_index].size * MEMORY_BLOCK_SIZE));
         memory_update_table(index, location, blocks);
     }
 
@@ -200,17 +201,16 @@ void *kmalloc(size_t size)
 void kfree(void *ptr)
 {
     uint8_t i;
-
-    size_t size;
     uint8_t len;
+
+    if(ptr == NULL)
+        return;
     
     /* find the memory table entries that correspond to 
         the pointer */
     for(i = 0; i < MEMORY_TABLE_LENGTH; i++)
         if(memory_t[i].loc == (uint32_t) ptr)
             break;
-    
-    size = memory_t[i].size * 512;
 
     len = (uint8_t) (i + memory_t[i].size);
     for(i = i; i < len; i++)
@@ -218,6 +218,8 @@ void kfree(void *ptr)
         memory_t[i].loc  = 0;
         memory_t[i].size = 0;
     }
+
+    // memset(ptr, len * MEMORY_BLOCK_SIZE, 0);
 }
 
 uint32_t memory_getAvailable(void)

@@ -163,6 +163,10 @@ void trace(const char* str, unsigned int val)
 					print((char*) val);
 					i++;
 					break;
+				case 'c':
+					screen_basic_char_put_on_screen((char) val);
+					i++;
+				break;
 				default:
 				screen_basic_char_put_on_screen(str[i]);
 			 }

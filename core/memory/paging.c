@@ -44,6 +44,8 @@ SOFTWARE.
 
 #define PAGE_PRESENT 1
 
+uint32_t g_max_pages = 0;
+
 typedef struct
 {
     uint8_t pid;
@@ -114,14 +116,19 @@ void *valloc(PAGE_REQ *req)
     uint32_t npages;
     uint32_t *free_pages, *ptable;
     uint32_t page_id, t_index, d_index;
-    uint32_t temp;
     uint32_t i; /* for-loop */
 
     /* just checking... */
     dbg_assert((uint32_t)page_dir);
 
     /* how many pages do we need? */
-    npages = HOW_MANY(req->size, PAGING_PAGE_SIZE);
+    npages = HOW_MANY((req->size), PAGING_PAGE_SIZE);
+
+    trace("NPAGES: %i\n", npages);
+    
+    
+    if((npages > g_max_pages) || (npages == 0))
+        return NULL;
 
     free_pages = paging_find_free(npages);
     dbg_assert(free_pages);
@@ -134,12 +141,7 @@ void *valloc(PAGE_REQ *req)
         d_index = page_id >> 10; /* same as page_id / PAGING_TABLE_SIZE */
         t_index = page_id % PAGING_TABLE_SIZE;
 
-        ptable = page_dir[d_index] & PAGING_ADDR_MSK;
-
-        /*trace("free page n1: %x\n", free_pages[i]);
-        trace("d_index: %x\n", d_index);
-        trace("ptable: %x\n", ptable);
-        /*while(1);*/
+        ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
 
         ptable[t_index] = paging_convert_ptr_to_entry(ptable[t_index], req);
         
@@ -170,7 +172,7 @@ void vfree(void *ptr)
     t_index = page_id % PAGING_TABLE_SIZE;
 
     /* make page supervisor only */
-    ptable = page_dir[d_index] & PAGING_ADDR_MSK;
+    ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
     ptable[t_index] = ptable[t_index] & ~(PAGE_REQ_ATTR_SUPERVISOR<<1);
 
     /* update our shadow map (RESV PID means unallocated) */
@@ -215,7 +217,7 @@ static uint32_t paging_convert_ptr_to_entry(uint32_t ptr, PAGE_REQ *req)
     uint32_t temp = ptr & ~((PAGE_REQ_ATTR_SUPERVISOR | PAGE_REQ_ATTR_READ_ONLY) << 1);   
 
     /* now enable the things we do need. */ 
-    temp = temp | ((req->attr) << 1) | PAGE_PRESENT;
+    temp = (uint32_t) (temp | (uint32_t)((req->attr) << 1U) | PAGE_PRESENT);
 
     return temp;
 }
@@ -236,6 +238,9 @@ static uint32_t paging_create_tables(void)
 
     /* here's some math; first up: the amount of page tables required to map all of the memory available */
     page_tables = (available_mem / PAGING_PAGE_SIZE); /* # of pages */
+
+    g_max_pages = page_tables;
+
     page_tables = HOW_MANY(page_tables, PAGING_TABLE_SIZE); /* # page tables */
     trace("page_tables: 0x%x\n", page_tables);
 
@@ -256,7 +261,7 @@ static uint32_t paging_create_tables(void)
     /* allocate a shadow map for all of the pages */
     shadow_len = available_mem / PAGING_PAGE_SIZE;
     shadow_t = (shadow_allocated *) kmalloc(shadow_len * sizeof(shadow_allocated));
-    memset((char *)shadow_t, shadow_len, PID_RESV); /* no page is allocated */
+    memset((char *)shadow_t, shadow_len, (char) PID_RESV); /* no page is allocated */
 
     /* TODO: remove me */
     trace("shadow_t: 0x%x\n", shadow_t);

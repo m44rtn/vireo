@@ -30,6 +30,8 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
+#include "../memory/memory.h"
+
 char utilPool[32];
 
 static size_t __strxspn(const char *s, const char *map, char parity);
@@ -133,7 +135,7 @@ unsigned int hex_digit_count(uint32_t value)
 	else if(value >= 0x10000 && value <= 0xFFFFF) return 5;
 	else if(value >= 0x100000 && value <= 0xFFFFFF) return 6;
 	else if(value >= 0x1000000 && value <= 0xFFFFFFF) return 7;
-	else if(value >= 0x10000000 && value <= 0xFFFFFFFF) return 8;
+	else if(value >= 0x10000000 && value <= MAX) return 8;
 
 	return 2;
 }
@@ -152,8 +154,8 @@ void sleep(uint32_t timeIn_ms)
 
 	/* should *in theory* stop you from possibly having a 7 week sleep when the computer is already on for 7 weeks. 
 	   if not, I'm sorry, but also: many thanks for using Vireo for that long! :) */
-	if(current + timeIn_ms >= 0xFFFFFFFF)
-		wait_for = timeIn_ms - (0xFFFFFFFF - current);
+	if(current + timeIn_ms >= MAX)
+		wait_for = timeIn_ms - (MAX - current);
 
 	while((current = timer_getCurrentTick()) < wait_for);
 }
@@ -167,6 +169,29 @@ unsigned char flag_check(unsigned int flag, unsigned int to_check)
     return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 }
 
+// returns first occurance of the thing to be found
+uint32_t findstr(char *o, const char *fnd)
+{
+	uint32_t c = 0;
+	uint32_t len = strlen((char *) fnd) - 1;
+	uint32_t olen = strlen(o) + 1;
+
+	for(uint32_t i = 0; i < olen; ++i)
+	{
+
+		if(o[i] == fnd[c])
+			++c;
+		else
+			c = 0;
+		
+		if(c == len)
+			return (i - len) + 1;
+	}
+
+	return MAX;
+}
+
+// searches character
 unsigned char strchr(char *str, char ch)
 {
 	uint32_t i = 0;
@@ -184,6 +209,7 @@ void memcpy(char *destination, char *source, size_t size)
 	
 	for(i = 0; i < size; ++i)
 		*(destination + i) = *(source + i);
+
 }
 
 

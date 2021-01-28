@@ -191,9 +191,10 @@ or has executed succesfully in the past */
     
 }
 
+// ISR
 void IDE_IRQ(void)
 {
-    print((char*)"IDE IRQ\n");
+    // print((char*)"IDE IRQ\n");
     ide_flags = ide_flags | IDE_FLAG_IRQ;
 
     PIC_EOI(0x0F);
@@ -403,7 +404,7 @@ static uint8_t IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, u
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
     uint16_t *buf_ptr = buf;
-
+    
     if(drive > 3)
         return EXIT_CODE_IDE_ERROR_READING_DRIVE;
     if(drive_info_t[drive].type != DRIVE_TYPE_IDE_PATA)

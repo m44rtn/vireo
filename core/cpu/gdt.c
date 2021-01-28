@@ -83,14 +83,14 @@ void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
     varFlags  = GDT_prepare_flags(flags); 
         
     /* Ring 0 stuff - used to be 0x000FFFFF*/
-    GDT_entry(&GDT[1], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
-    GDT_entry(&GDT[2], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
+    GDT_entry(&GDT[1], 0, MAX, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
+    GDT_entry(&GDT[2], 0, MAX, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
 
     internal_access.isRing3     = true;
 
     /* Ring 3 stuff */
-    GDT_entry(&GDT[3], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
-    GDT_entry(&GDT[4], 0, 0xFFFFFFFF, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
+    GDT_entry(&GDT[3], 0, MAX, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_CODE), varFlags);
+    GDT_entry(&GDT[4], 0, MAX, GDT_prepare_access(internal_access, GDT_SEGMENT_TYPE_DATA), varFlags);
 
     descriptor.offset = (uint32_t) &GDT[0];
     descriptor.size   = (sizeof(GDT_ENTRY) * GDT_LENGTH) - 1;

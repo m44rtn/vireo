@@ -34,6 +34,6 @@ uint32_t timer_getCurrentTick(void)
 
 void timer_incTicks(void)
 {
-    if(++ticks == 0xFFFFFFFF) 
+    if(++ticks == MAX) 
         ticks = 0;
 }

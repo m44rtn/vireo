@@ -110,6 +110,7 @@ void init_env(void)
     device = devicelist[1];
     kfree(devicelist);
 
+    // initialize IDE driver
     drvcmd = kmalloc(DRIVER_COMMAND_PACKET_LEN * sizeof(uint32_t *));
     drvcmd[0] = DRV_COMMAND_INIT;
     drvcmd[1] = (uint32_t) device;
@@ -143,7 +144,7 @@ void main(void)
     driver_exec((0x0B | DRIVER_TYPE_FS), drv);
     
     drv[0] = FS_COMMAND_READ;
-    drv[1] = (uint32_t) "HD0P0/FDOS/../HI.TXT\0";
+    drv[1] = (uint32_t) "HD0P0/AUTOEXEC.BAT\0";
     drv[2] = 0;
     driver_exec((0x0B | DRIVER_TYPE_FS), drv);
 
@@ -155,10 +156,36 @@ void main(void)
 
     trace("\n\n\n\n\n\n file content:\n\n%s\n", buffer);
 
+    // and that's why you free dynamic alloced memory...
+    vfree(buffer);
+
+    char *test = kmalloc(512);
+    memcpy(test, "H UIOWE RHEUWI HOWE THWEH TUWEHU THWET HYD YFS AY GYA Y893892389383", 60);
+
+    drv[0] = FS_COMMAND_WRITE;
+    drv[1] = (uint32_t) "HD0P0/FDOS/ABCD.TXT\0";
+    drv[2] = (uint32_t) test;
+    drv[3] = 256u;
+    drv[4] = FAT_FILE_ATTRIB_FILE;
+    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+
+    // drv[0] = FS_COMMAND_RENAME;
+    // drv[1] = (uint32_t) "HD0P0/FDOS/TEST.TXT\0";
+    // drv[2] = (uint32_t) "HD0P0/FDOS/LOL.TXT\0";
+    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+
+    // drv[0] = FS_COMMAND_READ;
+    // drv[1] = (uint32_t) "HD0P0/FDOS/TEST.TXT\0";
+    // drv[2] = 0;
+    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+
+    // buffer = (uint32_t *) drv[2];
+    // buffer_size = drv[3];
+
+    // trace("\n\n\n\n\n\n file content:\n\n%s\n", buffer);
+
     if(drv[4] == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
-        print("[FAT_DRIVER] Drive specification unsupported\n");
-    else
-        print("[FAT_DRIVER] SUCCESS\n");
+        print("Error: drive specification unsupported\n");
     
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     print((char*) "[KERNEL] ");
