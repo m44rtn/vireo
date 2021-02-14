@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2020 Maarten Vermeulen
+Copyright (c) 2019-2021 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -143,37 +143,42 @@ void main(void)
     drv[3] = 0x0B;
     driver_exec((0x0B | DRIVER_TYPE_FS), drv);
     
-    drv[0] = FS_COMMAND_READ;
-    drv[1] = (uint32_t) "HD0P0/AUTOEXEC.BAT\0";
-    drv[2] = 0;
-    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+    // drv[0] = FS_COMMAND_READ;
+    // drv[1] = (uint32_t) "HD0P0/AUTOEXEC.BAT\0";
+    // drv[2] = 0;
+    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
 
-    uint32_t *buffer = (uint32_t *) drv[2];
-    uint32_t buffer_size = drv[3];
+    // uint32_t *buffer = (uint32_t *) drv[2];
+    // uint32_t buffer_size = drv[3];
 
-    trace("buffer address: 0x%x\n", buffer);
-    trace("buffer_size (bytes): %i\n", buffer_size);
+    // trace("buffer address: 0x%x\n", buffer);
+    // trace("buffer_size (bytes): %i\n", buffer_size);
 
-    trace("\n\n\n\n\n\n file content:\n\n%s\n", buffer);
+    // trace("\n\n\n\n\n\n file content:\n\n%s\n", buffer);
 
     // and that's why you free dynamic alloced memory...
-    vfree(buffer);
+    // vfree(buffer);
     // while(1);
 
-    // char *test = kmalloc(512);
-    // memcpy(test, "H UIOWE RHEUWI HOWE THWEH TUWEHU THWET HYD YFS AY GYA Y893892389383", 60);
-
     drv[0] = FS_COMMAND_RENAME;
-    drv[1] = (uint32_t) "HD0P0/FDOS/ABCD.TXT\0";
-    drv[2] = (uint32_t) "LOL.TXT\0";
+    drv[1] = (uint32_t) "HD0P0/FDOS/LOL.TXT\0";
+    drv[2] = (uint32_t) "HAHA.TXT\0";
     driver_exec((0x0B | DRIVER_TYPE_FS), drv);
 
-    // drv[0] = FS_COMMAND_WRITE;
-    // drv[1] = (uint32_t) "HD0P0/FDOS/WOEI.TXT\0";
-    // drv[2] = (uint32_t) test;
-    // drv[3] = 256u;
-    // drv[4] = FAT_FILE_ATTRIB_FILE;
-    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+    char *test = kmalloc(512);
+    memcpy(test, "YAY!", 5);
+
+    drv[0] = FS_COMMAND_WRITE;
+    drv[1] = (uint32_t) "HD0P0/FDOS/TEST.TXT\0";
+    drv[2] = (uint32_t) test;
+    drv[3] = 4U;
+    drv[4] = FAT_FILE_ATTRIB_FILE;
+    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+
+    kfree(test);
+    memset(test, 0, 512);
+
+    sleep(1);
 
     // drv[0] = FS_COMMAND_READ;
     // drv[1] = (uint32_t) "HD0P0/FDOS/TEST.TXT\0";

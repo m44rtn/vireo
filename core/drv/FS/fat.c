@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2020 Maarten Vermeulen
+Copyright (c) 2019-2021 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -196,7 +196,8 @@ volatile uint16_t fat_flags = 0;
 
 /* FAT12 and 16 come sometime in the future */
 
-// TODO: cleanup and delete
+// TODO: cleanup and delete, I'm sure there are memory leaks somewhere
+// READ doesn't work after a write, or at least not immidiately after a write
 
 void FAT_HANDLER(uint32_t *drv)
 {
