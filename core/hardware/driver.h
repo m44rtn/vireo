@@ -28,10 +28,10 @@ SOFTWARE.
         take a look in the refman for some of the values */
 struct DRIVER
 {
-    unsigned int sign1;
-    char sign2[8];
+    unsigned int sign1; // 0xB14D05 = "BIRDOS" (used to be the name of this project)
+    char sign2[8];      // "VIREODRV"
     unsigned int type;
-    unsigned int interface;
+    unsigned int interface; // function pointer to handler function
 } __attribute__ ((packed));
 
 #define DRIVER_TYPE_PCI             0x01 << 24

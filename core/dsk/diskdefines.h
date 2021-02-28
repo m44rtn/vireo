@@ -21,16 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __DISKDEFINES_H__
+#define __DISKDEFINES_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 3116
+#define DRIVE_TYPE_IDE_PATA    0x00
+#define DRIVE_TYPE_IDE_PATAPI  0x01
+#define DRIVE_TYPE_UNKNOWN     0xFF
 
-#define BUILDDATE    __DATE__
-#define BUILDTIME    __TIME__
-
-void info_print_version(void);
+#define IDE_DRIVER_MAX_DRIVES   4
+#define MAX_DRIVES    IDE_DRIVER_MAX_DRIVES /*TODO: + floppy's + ... */
 
 #endif

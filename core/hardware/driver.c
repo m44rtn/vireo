@@ -44,8 +44,8 @@ SOFTWARE.
 
 struct DRIVER_SEARCH
 {
-    unsigned int sign1;
-    char sign2[8];
+    unsigned int sign1; // signature
+    char sign2[8];      // signature
     unsigned int type;
 } __attribute__((packed));
 
@@ -109,11 +109,14 @@ void driver_addInternalDriver(uint32_t identifier)
     struct DRIVER_SEARCH drv = {DRIVER_STRUCT_HEXSIGN, "VIREODRV", 0};
     uint32_t *driver_loc;
     
+    // find the associated driver
     drv.type = identifier;
     driver_loc = memsrch((void *) &drv, sizeof(struct DRIVER_SEARCH), memory_getKernelStart(), memory_getMallocStart());
     
     dbg_assert((uint32_t)driver_loc);
+    dbg_assert(cur_devices != DRIVER_MAX_SUPPORTED);
     
+    // save the information on our driver
     drv_list[cur_devices].device = 0;
     drv_list[cur_devices].type = identifier;
     drv_list[cur_devices].driver = (uint32_t *) *( (uint32_t*) ((uint32_t)driver_loc + sizeof(struct DRIVER_SEARCH)));

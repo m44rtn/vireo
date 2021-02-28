@@ -124,9 +124,6 @@ void *valloc(PAGE_REQ *req)
     /* how many pages do we need? */
     npages = HOW_MANY((req->size), PAGING_PAGE_SIZE);
 
-    trace("NPAGES: %i\n", npages);
-    
-    
     if((npages > g_max_pages) || (npages == 0))
         return NULL;
 
@@ -242,7 +239,6 @@ static uint32_t paging_create_tables(void)
     g_max_pages = page_tables;
 
     page_tables = HOW_MANY(page_tables, PAGING_TABLE_SIZE); /* # page tables */
-    trace("page_tables: 0x%x\n", page_tables);
 
     /* next: how much memory is needed for them. */
     amount_mem = (PAGING_TABLE_SIZE + (page_tables * PAGING_TABLE_SIZE)) * sizeof(uint32_t); /* in bytes */
@@ -262,10 +258,6 @@ static uint32_t paging_create_tables(void)
     shadow_len = available_mem / PAGING_PAGE_SIZE;
     shadow_t = (shadow_allocated *) kmalloc(shadow_len * sizeof(shadow_allocated));
     memset((char *)shadow_t, shadow_len, (char) PID_RESV); /* no page is allocated */
-
-    /* TODO: remove me */
-    trace("shadow_t: 0x%x\n", shadow_t);
-    trace("end of kernel mem: 0x%x\n", ((uint32_t)page_dir) + amount_mem);
 
     return (((uint32_t)page_dir) + amount_mem);
 }

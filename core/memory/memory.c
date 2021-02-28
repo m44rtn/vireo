@@ -135,10 +135,6 @@ uint32_t *memory_paging_tables_loc(void)
 {
     uint32_t *tables = (uint32_t *) (MEMORY_VIRTUAL_TABLES);
 
-
-    trace("tables: %x\n", tables);
-    trace("tables define: %x\n", MEMORY_VIRTUAL_TABLES);
-    
     /* this puts the total available memory at the location of the tables allocation, which 
     save space in memory and this file (I'm too lazy to make a struct for this) */
     tables[0] = memory_info_t.available_memory;

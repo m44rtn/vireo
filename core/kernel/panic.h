@@ -27,11 +27,12 @@ SOFTWARE.
 #define PANIC_TYPE_EXCEPTION    "exception"
 #define PANIC_TYPE_INIT_ERROR   "init_condition"
 #define PANIC_TYPE_DANGERZONE   "dangerzone"        // basically for situations that can't be trusted
+#define PANIC_TYPE_NOT_IMPL     "not_implemented"
 
-#define EASY_PANIC(type, error, function) easy_panic(type, error, __FILE__, __LINE__, (void *) (function))
+#define EASY_PANIC(type, error, function) easy_panic(type, error, __FILE__, __LINE__, (unsigned int) (function))
 
 void panic(const char *type, const char *error);
-void easy_panic(const char *type, const char *error, const char *file, const unsigned int line, void *fptr);
+void easy_panic(const char *type, const char *error, const char *file, const unsigned int line, unsigned int fptr);
 
 void really_easy_panic(const char *type, const char *error);
 

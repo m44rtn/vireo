@@ -24,7 +24,7 @@ SOFTWARE.
 #include "diskio.h"
 
 #include "../include/types.h"
-#include "../include/diskstuff.h"
+#include "../dsk/diskdefines.h"
 #include "../include/exit_code.h"
 
 #include "../hardware/driver.h"
@@ -34,7 +34,7 @@ SOFTWARE.
 
 #include "../drv/IDE_commands.h"
 
-#define DISKIO_MAX_DRIVES 4 /* max. 4 IDE drives, (TODO:) max. 2 floppies */
+#define DISKIO_MAX_DRIVES 4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
 
 typedef struct{
     uint8_t diskID;
@@ -49,18 +49,23 @@ void diskio_init(void)
     uint8_t i;
     uint32_t *devicelist, IDE_ctrl;
     uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
+    
+    // drive list
     uint8_t *drives = (uint8_t *)((uint32_t)drv) + sizeof(uint32_t)*DRIVER_COMMAND_PACKET_LEN;
 
     devicelist = pciGetDevices(0x01, 0x01);
     IDE_ctrl = devicelist[1];
     kfree(devicelist);
 
+    // prepare and exec IDE report command
     drv[0] = IDE_COMMAND_REPORTDRIVES;
     drv[1] = (uint32_t) (drives);
-    driver_exec(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv);
+    driver_exec(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv); 
 
     for(i = 0; i < DISKIO_MAX_DRIVES; ++i)
     {
+        // disks are returned in order with their type being stored at the 
+        // index of the drive number (see IDE_commands.h for more info)
         disk_info_t[i].disktype = (uint8_t) drives[i];
         disk_info_t[i].diskID = i; 
         disk_info_t[i].controller_info = (uint16_t) pciGetInfo(IDE_ctrl);
@@ -80,7 +85,7 @@ uint8_t *diskio_reportDrives(void)
     return drive_list;
 }
 
-uint8_t READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf)
+uint8_t read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf)
 {
     uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint8_t disk_type = disk_info_t[drive].disktype;
@@ -106,7 +111,7 @@ uint8_t READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsig
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-uint8_t WRITE(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf)
+uint8_t write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf)
 {
     uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint32_t command = (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATA) ?

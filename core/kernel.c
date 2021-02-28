@@ -29,7 +29,6 @@ SOFTWARE.
 #include "boot/loader.h"
 
 #include "io/io.h"
-#include "io/diskio.h"
 
 #include "screen/screen_basic.h"
 
@@ -48,7 +47,10 @@ SOFTWARE.
 
 #include "dbg/dbg.h"
 
-#include "kernel/mbr.h"
+#include "dsk/diskio.h"
+#include "dsk/mbr.h"
+#include "dsk/cd.h"
+
 #include "kernel/exec.h"
 #include "kernel/panic.h"
 #include "kernel/info.h"
@@ -57,6 +59,7 @@ SOFTWARE.
 #include "drv/COMMANDS.H"
 #include "drv/IDE_commands.h"
 #include "drv/FS_commands.h"
+#include "drv/FS_TYPES.H"
 
 #include "drv/FS/fat.h"
 
@@ -122,6 +125,15 @@ void init_env(void)
     diskio_init();
 
     MBR_enumerate();
+
+    // TODO: get a function to do this
+    // ----------> One way would be to let MBR handle this stuff
+    // driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
+    // drv[0] = DRV_COMMAND_INIT;
+    // drv[1] = 0;
+    // drv[2] = 0;
+    // drv[3] = 0x0B;
+    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
 }
 
 void main(void)
@@ -136,66 +148,16 @@ void main(void)
 
     init_env();
 
-    driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
-    drv[0] = DRV_COMMAND_INIT;
-    drv[1] = 0;
-    drv[2] = 0;
-    drv[3] = 0x0B;
-    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
-    
-    // drv[0] = FS_COMMAND_READ;
-    // drv[1] = (uint32_t) "HD0P0/AUTOEXEC.BAT\0";
-    // drv[2] = 0;
-    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
-
-    // uint32_t *buffer = (uint32_t *) drv[2];
-    // uint32_t buffer_size = drv[3];
-
-    // trace("buffer address: 0x%x\n", buffer);
-    // trace("buffer_size (bytes): %i\n", buffer_size);
-
-    // trace("\n\n\n\n\n\n file content:\n\n%s\n", buffer);
-
-    // and that's why you free dynamic alloced memory...
-    // vfree(buffer);
-    // while(1);
-
-    drv[0] = FS_COMMAND_RENAME;
-    drv[1] = (uint32_t) "HD0P0/FDOS/LOL.TXT\0";
-    drv[2] = (uint32_t) "HAHA.TXT\0";
-    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
-
-    char *test = kmalloc(512);
-    memcpy(test, "YAY!", 5);
-
-    drv[0] = FS_COMMAND_WRITE;
-    drv[1] = (uint32_t) "HD0P0/FDOS/TEST.TXT\0";
-    drv[2] = (uint32_t) test;
-    drv[3] = 4U;
-    drv[4] = FAT_FILE_ATTRIB_FILE;
-    driver_exec((0x0B | DRIVER_TYPE_FS), drv);
-
-    kfree(test);
-    memset(test, 0, 512);
-
-    sleep(1);
-
-    // drv[0] = FS_COMMAND_READ;
-    // drv[1] = (uint32_t) "HD0P0/FDOS/TEST.TXT\0";
-    // drv[2] = 0;
-    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
-
-    // buffer = (uint32_t *) drv[2];
-    // buffer_size = drv[3];
-
-    // trace("\n\n\n\n\n\n file content:\n\n%s\n", buffer);
+    cd_init();
 
     if(drv[4] == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
         print("Error: drive specification unsupported\n");
     
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
-    print((char*) "[KERNEL] ");
+    print((char*) "\n[KERNEL] ");
     info_print_version();
+    trace("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
+    trace("at %s\n", (uint32_t) BUILDTIME);
     print((char*)"\n");
 #endif
 

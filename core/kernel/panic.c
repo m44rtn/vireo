@@ -67,7 +67,7 @@ void panic(const char *type, const char *error)
 }
 
 /* panic without cpu state --> mainly used for non-cpu-exceptions */
-void easy_panic(const char *type, const char *error, const char *file, const uint32_t line, void *fptr)
+void easy_panic(const char *type, const char *error, const char *file, const uint32_t line, uint32_t fptr)
 {
     print("\n [KERNEL PANIC]\n");
     trace(" Fatal %s: ", (uint32_t) type);

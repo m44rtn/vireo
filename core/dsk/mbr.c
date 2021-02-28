@@ -22,14 +22,13 @@ SOFTWARE.
 */
 
 #include "mbr.h"
+#include "diskio.h"
 
 #include "../hardware/driver.h"
 #include "../hardware/pci.h"
 
-#include "../io/diskio.h"
-
 #include "../include/types.h"
-#include "../include/diskstuff.h"
+#include "../dsk/diskdefines.h"
 
 #include "../memory/memory.h"
 
@@ -58,7 +57,7 @@ typedef struct
     MBR_ENTRY_INFO mbr_entry_t[4];
 } __attribute__((packed)) MBR;
 
-MBR DISKS[DISKSTUFF_MAX_DRIVES];
+MBR DISKS[MAX_DRIVES];
 uint8_t nDisks;
 
 #ifndef NO_DEBUG_INFO
@@ -82,16 +81,17 @@ void MBR_enumerate(void)
 
     mbr = (uint8_t *) kmalloc(512);
 
-    /* this is IDE only, when floppy's are introduced this should be moved
-to a seperate function */
+    /* this is IDE only, if floppy's are introduced this should be moved
+      to a seperate function */
     for(i = 0; i < disks; ++i)
     {
         
-        error = READ(DISKS[i].disk, 0U, 1U, mbr);
+        error = read(DISKS[i].disk, 0U, 1U, mbr);
         
         if(error)
           return;
 
+        // read all partition entries
         for(j = 0; j < 4; ++j)
         {
             mbr_entry = (uint32_t *) &mbr[MBR_PARTENTRY_START + j*MBR_PARTENTRY_SIZE];

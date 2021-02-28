@@ -24,12 +24,15 @@ SOFTWARE.
 #ifndef __EXIT_CODE_H__
 #define __EXIT_CODE_H__
 
+#define FIRST_NOT_RESV_EXIT_CODE            0x10
+
 #define EXIT_CODE_GLOBAL_SUCCESS            0x00
 #define EXIT_CODE_GLOBAL_GENERAL_FAIL       0x01
 #define EXIT_CODE_GLOBAL_NOT_IMPLEMENTED    0x02
 #define EXIT_CODE_GLOBAL_OUT_OF_RANGE       0x03
 
 #define EXIT_CODE_GLOBAL_UNSUPPORTED        0x0A
+#define EXIT_CODE_OUT_OF_MEMORY             0x0B
 /* 0x00 - 0x0F are reserved for global exit_codes used by the kernel*/
 
 #endif

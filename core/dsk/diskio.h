@@ -26,8 +26,8 @@ SOFTWARE.
 
 void diskio_init(void);
 unsigned char *diskio_reportDrives(void);
-unsigned char READ(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf);
-unsigned char WRITE(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf);
+unsigned char read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf);
+unsigned char write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf);
 
 
 #endif

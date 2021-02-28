@@ -24,8 +24,10 @@ SOFTWARE.
 #ifndef __FS_TYPES_H__
 #define __FS_TYPES_H__
 
-#define FS_TYPE_FAT12 0x01
-#define FS_TYPE_FAT16 0x04
-#define FS_TYPE_FAT32 0x0B
+#define FS_TYPE_FAT12   0x01
+#define FS_TYPE_FAT16   0x04
+#define FS_TYPE_FAT32   0x0B
+
+#define FS_TYPE_ISO     0x96
 
 #endif

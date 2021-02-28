@@ -24,18 +24,18 @@ SOFTWARE.
 #include "fat.h"
 
 #include "../../include/types.h"
-#include "../../include/diskstuff.h"
+#include "../../dsk/diskdefines.h"
 #include "../../include/exit_code.h"
 #include "../../include/file.h"
 
-#include "../../io/diskio.h"
+#include "../../dsk/diskio.h"
 
 #include "../../memory/memory.h"
 #include "../../memory/paging.h"
 
 #include "../../hardware/driver.h"
 
-#include "../../kernel/mbr.h"
+#include "../../dsk/mbr.h"
 
 #include "../../screen/screen_basic.h"
 
@@ -143,7 +143,7 @@ typedef struct{
 
 
 // functions
-void FAT_HANDLER(uint32_t *drv);
+void fat_handler(uint32_t *drv);
 
 static void FAT_setup_FS_INFO(void);
 
@@ -190,16 +190,18 @@ static volatile uint8_t gErrorCode = 0;
 static volatile uint32_t *info_buffer; /* location of BPB in memory */
 
 /* the indentifier for drivers + information about our driver */
-struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT32 | DRIVER_TYPE_FS), (uint32_t) (FAT_HANDLER)};
+struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT32 | DRIVER_TYPE_FS), (uint32_t) (fat_handler)};
 
 volatile uint16_t fat_flags = 0;
 
 /* FAT12 and 16 come sometime in the future */
 
 // TODO: cleanup and delete, I'm sure there are memory leaks somewhere
-// READ doesn't work after a write, or at least not immidiately after a write
+// FIXME read doesn't work after a write, or at least not immidiately after a write (or it's some other thing, it just deletes stuff)
 
-void FAT_HANDLER(uint32_t *drv)
+// FIXME remove static declarations/prototypes and put all functions in .h
+
+void fat_handler(uint32_t *drv)
 {
     FAT32_DIR *dir_entry;
     uint32_t *ptr;
@@ -316,7 +318,7 @@ static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype)
         return;
     
     /* read the BPB */
-    error = READ((uint8_t)drive, startLBA, 1U, buf);
+    error = read((uint8_t)drive, startLBA, 1U, buf);
     if(error)
         return;
 
@@ -446,7 +448,7 @@ static uint32_t FAT32_read_table(uint32_t cluster)
     entry = (cluster * 4) % 512;
 
     /* read it! */
-    error = READ(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table); // TODO: TEST THIS!!!
+    error = read(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table); // TODO: TEST THIS!!!
 
     if(error)
         return NULL;
@@ -479,7 +481,7 @@ static uint16_t *FAT32_readDir(uint32_t cluster)
         cluster = dir_clusters[i];
         lba = FAT_cluster_LBA(dir_clusters[i]);
         
-        error = READ(currentWorkingDrive, lba, (info->sectclust), (uint8_t *) buffer);
+        error = read(currentWorkingDrive, lba, (info->sectclust), (uint8_t *) buffer);
 
         if(error)
             return NULL;     
@@ -532,8 +534,6 @@ static uint32_t *FAT32_read_file(FAT32_DIR *entry)
         return NULL;
 
     kfree(req);
-    trace("buffer: 0x%x\n", buffer);
-    trace("clusters: 0x%x\n", clusters);
 
     /* read the clusters */
     for(uint32_t i = 0; i < nclusters; ++i)
@@ -541,7 +541,7 @@ static uint32_t *FAT32_read_file(FAT32_DIR *entry)
         const uint32_t nsects = (nlba_read < sectclust) ? nlba_read : sectclust;
         uint32_t starting_lba = FAT_cluster_LBA(clusters[i]);
 
-        READ(currentWorkingDrive, starting_lba, (uint32_t) nsects, (uint8_t *) buffer);
+        read(currentWorkingDrive, starting_lba, (uint32_t) nsects, (uint8_t *) buffer);
 
         buffer += sectclust << 9;
 
@@ -564,7 +564,6 @@ static void FAT_get_file_name(char *path, char *output)
 
     FAT_convertFilenameToFATCompat(&filename[0], output);
 
-    trace("filename: %s\n", output);
     kfree(filename);
 }
 
@@ -596,7 +595,6 @@ static void FAT_rename(char *old, char *new)
 
     if(d == NULL)
     {
-        print("yooo\n");
         gErrorCode = EXIT_CODE_FAT_FILE_NOT_FOUND;
         return;
     }
@@ -604,20 +602,14 @@ static void FAT_rename(char *old, char *new)
 
     dir = (FAT32_DIR *) d;
 
-    trace("cluster: %x\n", cluster);
-    trace("obackup: %s\n", obackup);
-
     if(FAT_file_exists(dir, &n[0]) != MAX)
     {
-        print("yooo\n");
         gErrorCode = EXIT_CODE_FAT_FILE_EXISTS;
         return;
     }
     
     // find the file
     uint32_t entry = FAT_file_exists(dir, &o[0]);
-
-    trace("entry: %x\n", entry);
 
     if(entry == MAX)
         return; // FIXME: kfree(dir) here
@@ -626,15 +618,9 @@ static void FAT_rename(char *old, char *new)
 
     cluster = dir_determine_cluster(entry, cluster, info);
 
-    trace("cluster: 0x%x\n", cluster);
-
     // fixme: make this function save_dir()
     uint32_t c[1];
     c[0] = cluster;
-
-    // trace("dir: 0x%x\n", d);
-    // trace("entry: 0x%x\n", entry);
-    // trace("&c: 0x%x\n\n\n\n\n\n\n\n\n", &c);
 
     // calculate the first entry which needs to be written to the cluster
     uint32_t start = (entry / (SECTOR_SIZE * (info->sectclust)));
@@ -646,8 +632,6 @@ static void FAT_rename(char *old, char *new)
 static void FAT_save_file(char *filename, uint16_t * buffer, size_t buffer_size, uint8_t attrib)
 {
     FS_INFO *info = FAT_getInfo();
-
-    print("\n\n\n\n==================\nWRITE FILE\n==================\n\n");
     
     // number of clusters necessarry to store the file
     uint32_t n_clusters = buffer_size / ((info->sectclust) * SECTOR_SIZE);
@@ -665,7 +649,7 @@ static void FAT_save_file(char *filename, uint16_t * buffer, size_t buffer_size,
     {
 
         // TODO: update fat here to reset everything
-        trace("[FAT_DRIVER] Function error %x\n", error);
+        trace("[FAT_DRIVER] Function error %x\n", (uint32_t) error);
         gErrorCode = error;
         return;
     }
@@ -687,16 +671,9 @@ static void FAT_save_file(char *filename, uint16_t * buffer, size_t buffer_size,
     if(n_clusters-1U)
     {
         clusters = seek_empty_clusters(n_clusters-1U);
-        memcpy((c + sizeof(uint32_t)), clusters, (n_clusters-1) * sizeof(uint32_t));
+        memcpy((char *) (c + sizeof(uint32_t)), (char *) clusters, (n_clusters-1) * sizeof(uint32_t));
         kfree(clusters);
     }
-
-
-    trace("n_clusters: %i\n", n_clusters);
-
-    trace("svfile: filename: 0x%x\n", filename);
-    trace("svfile: buffer: 0x%x\n", buffer);
-    // while(1);
 
     // update the FAT to include the right clusters
     update_fat(&c[0], n_clusters);
@@ -723,8 +700,6 @@ static uint8_t update_dir(char *path, size_t fsize, uint8_t attrib, uint32_t fcl
     
     s[i-1] = '\0';
 
-    trace("s:::::%s\n", s);
-
     // FIXME: could be function get_dir or something
     uint32_t cluster = 0; //  we need to know what the first cluster of this directory is
     FAT32_DIR *dir = FAT_convertPath(&s[0], &cluster); 
@@ -737,11 +712,6 @@ static uint8_t update_dir(char *path, size_t fsize, uint8_t attrib, uint32_t fcl
     kfree((void *) dir);
 
     dir = (FAT32_DIR *) d;
-
-    trace("s: %s\n", s);
-    trace("cluster:: %x\n", cluster);
-    trace("dir: 0x%x\n", dir);
-    trace("f: %s\n", &f[0]);
 
     // file exists?
     if(FAT_file_exists(dir, &f[0]) != MAX)
@@ -771,20 +741,10 @@ static uint8_t update_dir(char *path, size_t fsize, uint8_t attrib, uint32_t fcl
     uint32_t c[1];
     c[0] = cluster;
 
-    trace("root cluster: 0x%x\n", (info->rootcluster));
-    trace("&c: 0x%x\n", &c);
-
-    trace("filename: 0x%x\n", path);
-    trace("s: 0x%x\n", s);
-    trace("d: 0x%x\n", d);
-    trace("dir: 0x%x\n", dir);
-
     // calculate the first entry which needs to be written to the cluster
     uint32_t start = (entry / (SECTOR_SIZE * (info->sectclust)));
 
     save(&c[0], 1, (uint16_t *) &dir[start], SECTOR_SIZE * (info->sectclust)); 
-
-    trace("f2: %s\n", &f[0]);
     
     // TODO: also if error
     kfree(d);
@@ -802,12 +762,6 @@ static uint32_t dir_determine_cluster(uint32_t entry, uint32_t cluster, FS_INFO 
     uint32_t c = ((entry * sizeof(FAT32_DIR)) >> 9U /* DIV by SECTOR_SIZE */);
     c += (((entry * sizeof(FAT32_DIR)) % SECTOR_SIZE) != 0);
     c /= (info->sectclust);
-
-
-    trace("&clusters: 0x%x\n", clusters);
-    trace("i: 0x%x\n", i);
-    trace("cluster is %x\n", clusters[i]);
-    // while(1);
 
     if(clusters[c] == 0x0FFFFFFF)
         return cluster;
@@ -827,9 +781,6 @@ static uint32_t dir_prepare_new(FAT32_DIR *dir, uint32_t *entry, FS_INFO *info, 
 
     FAT32_DIR *d = (FAT32_DIR *) kmalloc((info->sectclust) * SECTOR_SIZE);
     *(&dir) = d;
-
-    trace("dir: 0x%x\n", dir);
-    trace("d: 0x%x\n", d);
 
     uint32_t *clusters = seek_empty_clusters(1U);
 
@@ -887,10 +838,6 @@ static void update_fat(uint32_t *clusters, uint32_t n)
 
     // TODO: allow clusters to be set to 0 meaning free
 
-    trace("clusters: 0x%x\n", clusters);
-    trace("n: %x\n", n);
-    //while(1);
-
     for(uint32_t i = 0; i < n; i++)
     {
         uint32_t cluster = clusters[i];
@@ -900,20 +847,19 @@ static void update_fat(uint32_t *clusters, uint32_t n)
         entry = (cluster * 4) % 512;
 
         /* read it! (but only if we haven't before, since PIO can be really slow) */
-        error = READ(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table); // TODO: TEST THIS!!!
+        error = read(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table); // TODO: TEST THIS!!!
 
         if(error != NULL) // error
             return; // abort
 
-        trace("i: %i\n", i);
 
         if(i == (n-1)) // last cluster in the list
             table[entry] = 0x0FFFFFFF;
         else
             table[entry] = clusters[i+1] & 0x0FFFFFFF;
-        trace("table: 0x%x\n", table);
+       
         
-        WRITE(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table);
+        write(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table);
     }
 
     kfree(table);
@@ -929,11 +875,6 @@ static void save(uint32_t *clusters, uint32_t n, uint16_t *buffer, size_t buffer
     const uint32_t sectclust = bpb->bpb.SectClust;
     uint32_t nlba_write = (buffer_size >> 9) /* DIV by SECTOR_SIZE */ + 1U;
 
-    trace("first cluster: %x\t", clusters[0]);
-    trace("clusters: 0x%x\t", clusters);
-    trace("n: %i\t", n);
-    trace("buffer: 0x%x\n", buffer);
-
     for(uint32_t i = 0; i < n; i++)
     {
         const uint32_t nsects = (nlba_write < sectclust) ? nlba_write : sectclust;
@@ -943,7 +884,7 @@ static void save(uint32_t *clusters, uint32_t n, uint16_t *buffer, size_t buffer
         // of the buffer is smaller than exactly one cluster
 
         // write the file
-        WRITE(currentWorkingDrive, starting_lba, (uint32_t) nsects, (uint8_t *) buffer);
+        write(currentWorkingDrive, starting_lba, (uint32_t) nsects, (uint8_t *) buffer);
 
         // update buffer pointer to point to the next cluster (adding a few zeroes to fill up the end of the buffer
         // would probably solve the fixme above)
@@ -996,23 +937,16 @@ static uint32_t * seek_empty_clusters(uint32_t n)
 /* returns entry of the directory, or input pointer if fail */
 static FAT32_DIR *FAT_find_in_dir(FAT32_DIR *dir, char *filename)
 {
-    uint32_t i = 0;
     char *file[12];
     FAT32_DIR *d = (FAT32_DIR *) NULL;
 
-    FAT_convertFilenameToFATCompat(&filename[0], &file[0]);
-
-    trace("filename: %s\n", filename);
-    trace("dir fat find in dir -- 0x%x\n", dir);
+    FAT_convertFilenameToFATCompat(&filename[0], (char *) &file[0]);
         
-    uint32_t entry = FAT_file_exists(dir, &file[0]);
+    uint32_t entry = FAT_file_exists(dir, (char *) &file[0]);
         
     if(entry != MAX)
-    {
-        trace("found filename at: %x\t", entry);
-        trace("filename: %s\n", &dir[entry].name[0]);
         d = &dir[entry];    
-    }
+    
 
     //dbg_assert(!(i >= EXIT_CODE32_FAT_FAIL));
     return d;
@@ -1026,8 +960,6 @@ static uint32_t FAT_file_exists(FAT32_DIR *dir, char *filename)
 
     if(strlen(filename) > FILENAME_LEN || strlen(filename) == 0)
         return MAX;
-
-    trace("filename - file_exists: %s\n", filename);
 
     while(dir[i].name[0] && (i != MAX))
     {
@@ -1047,7 +979,6 @@ static uint32_t FAT_file_exists(FAT32_DIR *dir, char *filename)
         memcpy((char *)&file[8], (char *)&(dir[i].ext[0]), 3);
 
         file[11] = '\0';
-        trace("file: %s\n", &file);
         // trace("filename: %s\n", filename);
         // file exists */
         if(!strcmp((char *) &file[0], filename))
@@ -1094,21 +1025,6 @@ static FAT32_DIR *FAT_convertPath(char *path, uint32_t *dir_cluster)
 
         //file[size+1] = '\0';
 
-        print("==============================================\n");
-
-        //trace("dir: 0x%x\n", (FAT32_DIR *) buffer);
-        trace("cluster: %x\n", cluster);
-        trace("file: %s\n", &file[0]);
-        trace("file: 0x%x\n", &file[0]);
-        trace("current: %s\n", current);
-        trace("current: %x\n", current);
-        trace("path: %s\n\n", path);
-        print("==============================================\n");
-
-        print("HELLO FROM CONVERTPATH :)\n");
-
-        trace("strlen(current): %i\n\n", size);
-
         // if this is a file, we need to make the filename compatible with
         // FAT (and not 'parent directory')
         //if(!strchr(current, '.') && strcmp(current, (char *) ".."))
@@ -1117,11 +1033,9 @@ static FAT32_DIR *FAT_convertPath(char *path, uint32_t *dir_cluster)
         
         uint16_t *buffer = FAT32_readDir(cluster);
 
-        dir = FAT_find_in_dir((FAT32_DIR *) buffer, &file);
+        dir = FAT_find_in_dir((FAT32_DIR *) buffer, &file[0]);
 
         cluster = (uint32_t) ((dir->clHi << 16U) | (dir->clLo));
-
-        //while(1);
 
         // TODO: MAKE SURE EVERY FUNCTION CHECKS FOR A NULL RETURNED
         // AND IF RETURNED READS THE DIR_CLUSTER THEMSELVES
@@ -1146,7 +1060,6 @@ static FAT32_DIR *FAT_convertPath(char *path, uint32_t *dir_cluster)
     }
 
     kfree((void *) backup);
-    print("------------\nconvert path end\n-----------\n");
     return dir;
 }
 
@@ -1161,10 +1074,6 @@ static void FAT_convertFilenameToFATCompat(char *path, char *dummy)
     char filename[12];
     size_t len;
 
-    trace("-- dummy: 0x%x --\n", dummy);
-    trace("-- &filename: 0x%x --\n", &filename[0]);
-    print("---\n");
-
     if(strchr(path, '.'))
     {
         // seems to be fine already
@@ -1174,10 +1083,6 @@ static void FAT_convertFilenameToFATCompat(char *path, char *dummy)
     
     memcpy(file, path, strlen(path) + 1);
     prev = current = path;
-    
-    // /* since we get the entire file path, we should get rid of the path itself */
-    // while(current = strtok(NULL, "/"))
-    //     prev = current;
 
     /* we got rid of the file path and we now just have the filename!
      so let's get rid of the dot and copy the filename itself */
@@ -1186,18 +1091,13 @@ static void FAT_convertFilenameToFATCompat(char *path, char *dummy)
 
     len = (len > FILENAME_LEN-3) ? FILENAME_LEN-3 : len;
 
-    // trace("-- len: %x --\n", len);
-    // trace("-- dummy: 0x%x --\n", dummy);
-    // trace("-- dummy_val: 0x%x --\n", &dummy);
-    // trace("-- &filename[0]: 0x%x --\n", &filename[0]);
-    // trace("-- &current: 0x%x --\n", current);
     memcpy((char *) &filename[0], (char *) current, len);
 
     /* add the right amount of spaces as padding */
     spaces = (uint8_t) (8U - len);
     for(i = 0; i < spaces; ++i)
         filename[len+i] = ' ';
-    trace("-- dummy: 0x%x --\n", dummy);
+    trace("-- dummy: 0x%x --\n", (uint32_t) dummy);
     /* now let's get working on the extension */
     current = strtok(NULL, ".");
     if(current != NULL)
@@ -1218,10 +1118,8 @@ static void FAT_convertFilenameToFATCompat(char *path, char *dummy)
     /* let's null terminate the string, because we can */
     filename[11] = '\0';
 
-    //while(1);
     /* put the entie FAT compatible filename in the dummy given 
     as argument tot this function */
-    print("hier anders?\n");
     memcpy( (char *) dummy, (char *) &filename[0], 12);
 
     kfree((void *) file);

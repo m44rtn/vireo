@@ -21,14 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __DRIVETYPES_H__
-#define __DRIVETYPES_H__
+#ifndef __CD_H__
+#define __CD_H__
 
-#define DRIVE_TYPE_IDE_PATA    0x00
-#define DRIVE_TYPE_IDE_PATAPI  0x01
-#define DRIVE_TYPE_UNKNOWN     0xFF
-
-#define IDE_DRIVER_MAX_DRIVES   4
-#define DISKSTUFF_MAX_DRIVES    IDE_DRIVER_MAX_DRIVES /*TODO: + floppy's + ... */
+void cd_init(void);
+unsigned char cd_check_exists(unsigned char *drives);
 
 #endif

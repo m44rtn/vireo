@@ -1,6 +1,6 @@
 # Vireo Kernel II
 
-The Vireo kernel is an x86 kernel written in C.
+The Vireo kernel is an x86 kernel written in C. Fair warning: this code is not my best work.
 
 A few facts and a warning:
 - This project exists since 2014, and has had several rewrites now (hopefully this is the last)

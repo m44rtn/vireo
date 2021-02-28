@@ -1,6 +1,11 @@
 PROJDIRS := core
+
+# called OBJDIR but is actually kernel.sys dir
 OBJDIR   := bin
 VM_NAME  := "BirdOS"
+
+# any modules/objects not to be included in the final build
+OBJIGNORE := core/misc/conway.o
 
 SRCFILES = $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
@@ -10,7 +15,8 @@ LDFILES  := $(shell find $(PROJDIRS) -type f -name "*.o")
 DCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.d")
 OCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.o")
 
-OBJFILES := $(foreach thing,$(SRCFILES),$(thing:%.c=%.o)) #$(patsubst %.c, %.o, $(SRCFILES))
+ALLOBJFILES := $(foreach thing,$(SRCFILES),$(thing:%.c=%.o))
+OBJFILES :=  $(filter-out $(OBJIGNORE), $(ALLOBJFILES))		#$(patsubst %.c, %.o, $(SRCFILES))
 ASOBJFILES := $(foreach thing,$(ASMFILES),$(thing:%.asm=%.o))
 
 LDOBJFILES := $(filter-out core/kernel.o, $(OBJFILES))
@@ -56,13 +62,14 @@ clean:
 	-@for file in $(DCLEAN:Makefile=); do rm $$file; done; true
 	-@for file in $(OCLEAN:Makefile=); do rm $$file; done; true
 
+# creates a map of all function
 map:
 	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES)
 
 run:
 	vboxmanage startvm $(VM_NAME) -E VBOX_GUI_DBG_ENABLED=true
 
+# this one works better, because it start the command line on startup (instead
+# of you having to manually open it, which is the case with the other one)
 run-old:
 	virtualbox --startvm $(VM_NAME) --debug-command-line --start-running
-
-

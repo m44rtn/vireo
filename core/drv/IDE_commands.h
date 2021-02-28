@@ -53,21 +53,21 @@ SOFTWARE.
 
 #define IDE_COMMAND_REPORTDRIVES   0x12
 /*
-reports the drive 'map' detected by the driver in an array as large as IDE_DRIVER_MAX_DRIVES:
+	reports the drive 'map' detected by the driver in an array as large as IDE_DRIVER_MAX_DRIVES:
 
-array[0] will be the first drive slot
-array[1] will be the second drive slot
-etc.
+		drv[0] will be the first drive slot
+		drv[1] will be the second drive slot
+	etc.
 
-the array uses the defines listed below (1) to indicate what drive type was found at which slot.
- unknown means no drive attached, in most cases.
+	the array uses the defines listed below (1) to indicate what drive type was found at which slot.
+	unknown means no drive attached, in most cases.
 
-parameter1: pointer to array to store the map in
+	parameter1: pointer to array to store the map in
 
-(1):
-DRIVE_TYPE_IDE_PATA
-DRIVE_TYPE_IDE_PATAPI
-DRIVE_TYPE_UNKNOWN
+	(1):
+	DRIVE_TYPE_IDE_PATA
+	DRIVE_TYPE_IDE_PATAPI
+	DRIVE_TYPE_UNKNOWN
 */
 
 #ifndef IDE_DRIVER_MAX_DRIVES
