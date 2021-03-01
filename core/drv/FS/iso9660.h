@@ -25,6 +25,7 @@ SOFTWARE.
 #define __ISO9660_H__
 
 void iso_handler(unsigned int *drv);
+void search_descriptor(unsigned char drive, unsigned short *buffer, unsigned char type);
 unsigned int * iso_allocate_bfr(unsigned int size);
 
 #endif

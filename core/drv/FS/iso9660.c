@@ -51,6 +51,7 @@ SOFTWARE.
 
 // Descriptor types
 #define VD_TYPE_PRIMARY			0x01
+#define VD_TYPE_TERMINATOR		0xFF // I'll be back
 
 // offsets within the Primary Volume Descriptor
 #define PVD_VOL_IDENT           40
@@ -151,24 +152,38 @@ void iso_init(uint8_t drive)
 		// oh no! something went wrong with the allocation of memory (buffer / cd_info)
 		return; 
 
-
-	// we're just going to guess and say the PVD starts at sector
-	// 0x11, and hopefully they're nice enough to do that (okay it was 0x10)
-	uint8_t error = read(drive, FIRST_DESCRIPTOR_LBA, 0x01, (uint16_t *) buffer);
-
-	dbg_assert(!error); // asserts when drive is out of range
-
 	trace("buffer: 0x%x\n", &buffer[0]);
 	trace("drive: 0x%x\n", drive);
 
+	search_descriptor(drive, buffer, VD_TYPE_PRIMARY);
 	dbg_assert(buffer[0] == VD_TYPE_PRIMARY);
 
 	print("ISO works! (for now)\n");
 
 	// TODO:
-	// - search for the PVD the proper way
 	// - safe the useful data
 
+}
+
+void search_descriptor(uint8_t drive, uint16_t *buffer, uint8_t type)
+{
+	uint32_t lba = FIRST_DESCRIPTOR_LBA;
+
+	while(1)
+	{
+		// we're just going to guess and say the PVD starts at sector
+		// 0x11, and hopefully they're nice enough to do that (okay it was 0x10)
+		uint8_t error = read(drive, lba, 0x01, (uint16_t *) buffer);
+
+		dbg_assert(!error); // asserts when drive is out of range
+
+		if((buffer[0] == type) || (buffer[0] == VD_TYPE_TERMINATOR))
+			break;
+
+		lba++;
+
+		dbg_assert(lba != MAX);		
+	}
 }
 
 uint32_t * iso_allocate_bfr(size_t size)
