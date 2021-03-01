@@ -47,12 +47,11 @@ SOFTWARE.
 
 // =========================================
 
-#define SECTOR_SIZE             2048
+#define SECTOR_SIZE				2048
 #define CD_INFO_SIZE			512
 #define VOL_IDENT_SIZE			32
 
-#define FIRST_DESCRIPTOR_LBA 	0x10
-
+#define FIRST_DESCRIPTOR_LBA	0x10
 
 // Descriptor types
 #define VD_TYPE_PRIMARY			0x01
