@@ -174,6 +174,7 @@ void iso_init(uint8_t drive)
 		trace("[ISO9660 DRIVER] Path table size: %i\n", (uint32_t) &(info->path_table_size));
 		trace("[ISO9660 DRIVER] Path tanle lba: %i\n", (uint32_t) &(info->path_table_lba));
 		trace("[ISO9660 DRIVER] Rootdir lba: %i\n", (uint32_t) &(info->rootdir_lba));
+        print("\n");
 	#endif
 	
 }
@@ -201,7 +202,7 @@ void search_descriptor(uint8_t drive, uint8_t * buffer, uint8_t type)
 
 void save_pvd_data(uint8_t * pvd, uint8_t drive)
 {
-	// since I don't want to use 882 bytes of my precious kernel space
+    // since I don't want to use 882 bytes of my precious kernel space
     // for stuff I'm probably never going to use, I'm going to use pointers 
     // and array indexes for searching all the information I need (this is a warning
     // because it may get messy)
