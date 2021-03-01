@@ -161,7 +161,7 @@ void iso_init(uint8_t drive)
 	print("ISO works! (for now)\n");
 
 	// TODO:
-	// - safe the useful data
+	// - save the useful data
 
 }
 
