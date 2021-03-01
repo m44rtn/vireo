@@ -41,13 +41,18 @@ SOFTWARE.
 #include "../../memory/paging.h"
 
 #include "../../dsk/diskio.h"
+#include "../../dsk/diskdefines.h"
+
+#include "../../util/util.h"
 
 // =========================================
 
 #define SECTOR_SIZE             2048
 #define CD_INFO_SIZE			512
+#define VOL_IDENT_SIZE			32
 
 #define FIRST_DESCRIPTOR_LBA 	0x10
+
 
 // Descriptor types
 #define VD_TYPE_PRIMARY			0x01
@@ -99,9 +104,9 @@ typedef struct
 {
 	uint32_t path_table_lba;
 	uint32_t path_table_size;
-	uint32_t rootdir_size;
+	uint32_t rootdir_lba;
 
-	char volident[32]; // volume name
+	char volident[VOL_IDENT_SIZE+1]; // volume name
 	uint32_t vol_size;	// in blocks of 2048 bytes
 } __attribute__((packed)) cd_info_t;
 
@@ -116,7 +121,7 @@ uint32_t *cd_info_ptr 	= NULL;
 
 uint8_t gerror;
 
-void iso_handler(uint32_t *drv)
+void iso_handler(uint32_t * drv)
 {
 	gerror = 0;
 
@@ -132,12 +137,7 @@ void iso_handler(uint32_t *drv)
 }
 
 void iso_init(uint8_t drive)
-{
-    // since I don't want to use 882 bytes of my precious kernel space
-    // for stuff I'm probably never going to use, I'm going to use pointers 
-    // and array indexes for searching all the information I need (this is a warning
-    // because it may get messy)
-    
+{    
 	// do we know this drive already?
 	if(atapi_devices >> drive)
 		return;
@@ -152,20 +152,34 @@ void iso_init(uint8_t drive)
 		// oh no! something went wrong with the allocation of memory (buffer / cd_info)
 		return; 
 
-	trace("buffer: 0x%x\n", &buffer[0]);
-	trace("drive: 0x%x\n", drive);
-
+	// search and read the primary vol. desc.
 	search_descriptor(drive, buffer, VD_TYPE_PRIMARY);
 	dbg_assert(buffer[0] == VD_TYPE_PRIMARY);
 
-	print("ISO works! (for now)\n");
+	// save all interesting data
+	save_pvd_data(buffer, drive);
 
-	// TODO:
-	// - save the useful data
+	if(n_atapi_devs < IDE_DRIVER_MAX_DRIVES)
+		atapi_devices |= (1 << drive);
 
+	// free buffer space with the right function depending on the type
+	if(buffer > memory_get_malloc_end())
+		vfree(buffer);
+	else
+		kfree(buffer);
+
+	#ifndef NO_DEBUG_INFO
+		cd_info_t * info = (cd_info_t *) cd_info_ptr;
+		trace("[ISO9660 DRIVER] Vol. ident.: %s\n", (uint32_t) &(info->volident));
+		trace("[ISO9660 DRIVER] Vol. size (in 2048 byte blocks): %i\n", (uint32_t) &(info->vol_size));
+		trace("[ISO9660 DRIVER] Path table size: %i\n", (uint32_t) &(info->path_table_size));
+		trace("[ISO9660 DRIVER] Path tanle lba: %i\n", (uint32_t) &(info->path_table_lba));
+		trace("[ISO9660 DRIVER] Rootdir lba: %i\n", (uint32_t) &(info->rootdir_lba));
+	#endif
+	
 }
 
-void search_descriptor(uint8_t drive, uint8_t *buffer, uint8_t type)
+void search_descriptor(uint8_t drive, uint8_t * buffer, uint8_t type)
 {
 	uint32_t lba = FIRST_DESCRIPTOR_LBA;
 
@@ -186,6 +200,42 @@ void search_descriptor(uint8_t drive, uint8_t *buffer, uint8_t type)
 	}
 }
 
+void save_pvd_data(uint8_t * pvd, uint8_t drive)
+{
+	// since I don't want to use 882 bytes of my precious kernel space
+    // for stuff I'm probably never going to use, I'm going to use pointers 
+    // and array indexes for searching all the information I need (this is a warning
+    // because it may get messy)
+
+	cd_info_t * info = (cd_info_t *) cd_info_ptr;
+	uint32_t * dword;
+	uint16_t * word;
+
+	// save volume identifier
+	memcpy(&(info->volident), &pvd[PVD_VOL_IDENT], VOL_IDENT_SIZE);
+	info->volident[VOL_IDENT_SIZE] = '\0';
+
+	// save size of volume (in blocks of 2048)
+	dword = (uint32_t *) &pvd[PVD_VOL_SIZE];
+	info->vol_size = *(dword);
+
+	// check if sector size is equal to standard sector size (this driver does not
+	// support ISO's that deviate from that sector size)
+	word = (uint16_t *) &pvd[PVD_BLOCK_SIZE];
+	dbg_assert(*(word) == SECTOR_SIZE);
+
+	// store path table size and lba
+	dword = (uint32_t *) &pvd[PVD_PATHTABLE_SIZE];
+	info->path_table_size = *(dword);
+
+	dword = (uint32_t *) &pvd[PVD_PATHTABLE_LBA];
+	info->path_table_lba = *(dword);
+
+	// store root dir lba
+	direntry_t *root = (direntry_t *) &pvd[PVD_ROOTDIR_ENTRY];
+	info->rootdir_lba = (root->lba_extend);
+}
+
 uint32_t * iso_allocate_bfr(size_t size)
 {
 	uint32_t * ptr = kmalloc(size);
@@ -193,7 +243,7 @@ uint32_t * iso_allocate_bfr(size_t size)
 	if(ptr)
 		return ptr;
 
-	// no kernel memory left, so let's use paging
+	// no kernel memory left, so let's use a page
 	PAGE_REQ req;
 	req.attr = PAGE_REQ_ATTR_READ_WRITE | PAGE_REQ_ATTR_SUPERVISOR;
 	req.pid  = PID_KERNEL;

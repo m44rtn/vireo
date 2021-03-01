@@ -31,6 +31,7 @@ void kfree(void *ptr);
 unsigned int memory_getAvailable(void);
 unsigned int memory_getKernelStart(void);
 unsigned int memory_getMallocStart(void);
+unsigned int memory_get_malloc_end(void);
 unsigned int memory_get_kernel_space_end(void);
 
 unsigned int *memsrch(void *match, unsigned int matchsize, unsigned int start, unsigned int end);

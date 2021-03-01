@@ -49,8 +49,10 @@ SOFTWARE.
 #define MEMORY_KERNELSTRT         0x100000
 #define MEMORY_MALLOC_MEMSTRT     0x200000
 
-#define MEMORY_TABLE_LENGTH    128 
-#define MEMORY_BLOCK_SIZE      512 // bytes
+#define MEMORY_TABLE_LENGTH    128U 
+#define MEMORY_BLOCK_SIZE      512U // bytes
+
+#define MEMORY_MALLOC_SPACE     (MEMORY_BLOCK_SIZE * MEMORY_TABLE_LENGTH)
 
 #define MEMORY_VMALLOC_STAT_ALLOCT      1<<7
 #define MEMORY_VMALLOC_STAT_READONLY    1<<6
@@ -77,7 +79,7 @@ typedef struct
 } MEMORY_TABLE;
 
 /* I'm sorry for this ugly define line here */
-#define MEMORY_VIRTUAL_TABLES  MEMORY_MALLOC_MEMSTRT + (512U * MEMORY_TABLE_LENGTH)
+#define MEMORY_VIRTUAL_TABLES  MEMORY_MALLOC_MEMSTRT + (MEMORY_BLOCK_SIZE * MEMORY_TABLE_LENGTH)
 /* ---- */
 
 extern void start(void);
@@ -192,8 +194,6 @@ void *kmalloc(size_t size)
 
 }
 
-/* TODO: comment from here to end */
-
 void kfree(void *ptr)
 {
     uint8_t i;
@@ -231,6 +231,11 @@ uint32_t memory_getKernelStart(void)
 uint32_t memory_getMallocStart(void)
 {
     return (uint32_t) MEMORY_MALLOC_MEMSTRT;
+}
+
+uint32_t memory_get_malloc_end(void)
+{
+    return (uint32_t) MEMORY_MALLOC_MEMSTRT + MEMORY_MALLOC_SPACE;
 }
 
 uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)

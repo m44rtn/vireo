@@ -26,6 +26,7 @@ SOFTWARE.
 
 void iso_handler(unsigned int *drv);
 void search_descriptor(unsigned char drive, unsigned char *buffer, unsigned char type);
+void save_pvd_data(unsigned char * pvd, unsigned char drive);
 unsigned int * iso_allocate_bfr(unsigned int size);
 
 #endif
