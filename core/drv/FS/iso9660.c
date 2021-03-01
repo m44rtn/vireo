@@ -47,15 +47,15 @@ SOFTWARE.
 
 // =========================================
 
-#define SECTOR_SIZE				2048
-#define CD_INFO_SIZE			512
-#define VOL_IDENT_SIZE			32
+#define SECTOR_SIZE             2048
+#define CD_INFO_SIZE            512
+#define VOL_IDENT_SIZE          32
 
 #define FIRST_DESCRIPTOR_LBA	0x10
 
 // Descriptor types
-#define VD_TYPE_PRIMARY			0x01
-#define VD_TYPE_TERMINATOR		0xFF // I'll be back
+#define VD_TYPE_PRIMARY         0x01
+#define VD_TYPE_TERMINATOR      0xFF // I'll be back
 
 // offsets within the Primary Volume Descriptor
 #define PVD_VOL_IDENT           40
