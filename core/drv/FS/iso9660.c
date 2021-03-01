@@ -165,7 +165,7 @@ void iso_init(uint8_t drive)
 
 }
 
-void search_descriptor(uint8_t drive, uint16_t *buffer, uint8_t type)
+void search_descriptor(uint8_t drive, uint8_t *buffer, uint8_t type)
 {
 	uint32_t lba = FIRST_DESCRIPTOR_LBA;
 
@@ -180,10 +180,12 @@ void search_descriptor(uint8_t drive, uint16_t *buffer, uint8_t type)
 		if((buffer[0] == type) || (buffer[0] == VD_TYPE_TERMINATOR))
 			break;
 
-		lba++;
+		++lba;
 
-		dbg_assert(lba != MAX);		
+		dbg_assert(lba != 0xFF);		
 	}
+
+	trace("lba: %x\n", lba);
 }
 
 uint32_t * iso_allocate_bfr(size_t size)
