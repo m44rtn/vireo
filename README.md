@@ -5,10 +5,8 @@ The Vireo kernel is an x86 kernel written in C. Fair warning: this code is not m
 A few facts and a warning:
 - This project exists since 2014, and has had several rewrites now (hopefully this is the last)
 - The project was originally called Bird OS
-- It's written in C89. You may ask why, but I wouldn't have an answer for you
 - I started with this rewrite (Vireo-II) in 2019
-- If you think this code is terrible, don't look at the *VireoI* branch
-- The code of Vireo-II *is* terrible
+- Don't look at the VireoI branch
 
 ## License
 The kernel is MIT licensed.
@@ -33,7 +31,7 @@ To build the Vireo-II kernel you will at least need GNU make, gcc-i686 (cross co
 ### Configuring a Virtualbox VM
 In order for the `make run` command to work, you will need to have a few things configured beforehand. First thing is to create a VM named "BirdOS". You can also use a different name, in which case you will need to change the `VM_NAME` variable in the makefile.
 
-After this, you will need to make sure the VM boots from CD and make sure the birdos.iso file is attached to the IDE controller of the VM. You can also do this while the VM has already been launched by going to **Devices > Optical Drives**.
+After this, you will need to make sure the VM boots from CD and make sure the birdos.iso file is attached to the IDE controller of the VM. You can also do this while the VM has already been launched by going to **Devices > Optical Drives** and hitting [Right ctrl + R] to reboot the VM.
 
 ## Documentation
 > There was an attempt...
