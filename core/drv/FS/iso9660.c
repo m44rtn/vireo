@@ -171,8 +171,7 @@ void search_descriptor(uint8_t drive, uint8_t *buffer, uint8_t type)
 
 	while(1)
 	{
-		// we're just going to guess and say the PVD starts at sector
-		// 0x11, and hopefully they're nice enough to do that (okay it was 0x10)
+		// read disk
 		uint8_t error = read(drive, lba, 0x01, (uint16_t *) buffer);
 
 		dbg_assert(!error); // asserts when drive is out of range
@@ -182,10 +181,9 @@ void search_descriptor(uint8_t drive, uint8_t *buffer, uint8_t type)
 
 		++lba;
 
-		dbg_assert(lba != 0xFF);		
+		dbg_assert(lba != 0xFF);	// we don't want to read the whole CD until we 'find' what we
+									// are looking for
 	}
-
-	trace("lba: %x\n", lba);
 }
 
 uint32_t * iso_allocate_bfr(size_t size)
