@@ -32,9 +32,15 @@ SOFTWARE.
 
 #include "../memory/memory.h"
 
+#include "../util/util.h"
+
 #include "../drv/IDE_commands.h"
 
 #define DISKIO_MAX_DRIVES 4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
+
+#define DISKIO_DISKID_HD    "HD"    // HDD
+#define DISKIO_DISKID_CD    "CD"    // CD/DVD drive
+#define DISKIO_DISKID_P     "P"     // partition
 
 typedef struct{
     uint8_t diskID;
@@ -131,4 +137,91 @@ uint8_t write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, uns
     kfree(drv);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+// @returns:
+//   - most significant byte: actual drive number
+//   - least significant byte: actual partition number (when applicable)
+uint16_t convert_drive_id(const char *id)
+{
+    // FIXME: magic numbers!
+
+    uint8_t drive, type;
+    uint16_t result = 0;
+
+    // get drive type
+    type = drive_type(id);
+
+    if(type == ((uint8_t) MAX))
+        return type;
+
+    // get drive number (drive id of that type)
+    drive = strdigit_toInt(id[2]);
+    
+    if(drive == EXIT_CODE_GLOBAL_UNSUPPORTED)
+        return (uint16_t) MAX;
+
+    // convert drive id of type to the actual real world drive number
+    drive = to_actual_drive(drive, type);
+    trace("drive: %x\n", drive);
+    // store it
+    result |= (drive & 0xFF) << 8;
+
+    // is there a partition specified?
+    if(id[3] != DISKIO_DISKID_P)
+        return result;
+
+    // yes
+    // let's get it
+
+    drive = strdigit_toInt(id[4]);
+    
+    if(drive == EXIT_CODE_GLOBAL_UNSUPPORTED)
+        return (uint16_t) MAX;
+    
+    // store it
+    result |= drive & 0xFF;
+
+    return result;
+}
+
+uint8_t drive_type(const char *id)
+{
+    uint8_t type;
+    
+    // check drive type
+    if(!strcmp_until(&id[0], DISKIO_DISKID_HD, 2)) // is hdd?
+        type = DRIVE_TYPE_IDE_PATA;
+    else if(!strcmp_until(&id[0], DISKIO_DISKID_CD, 2)) // is cd?
+        type = DRIVE_TYPE_IDE_PATAPI;
+    else
+        return (uint8_t) MAX;
+    
+    return type;
+}
+
+uint8_t to_actual_drive(uint8_t drive, uint8_t type)
+{
+    uint8_t *drivelist = diskio_reportDrives();
+    uint8_t nfound = 0;
+
+    // if we get drive number 0 as argument, we need the first drive
+    // we find, thus it should be at least one (the offset is also 1)
+    drive += 1;
+    
+    for(uint8_t i = 0; i < DISKIO_MAX_DRIVES; ++i)
+    {
+        if(drivelist[i] == type)
+        {
+            nfound++;
+
+            trace("drive type: %x\n", drivelist[i]);
+
+            if(nfound == drive)
+                return i;
+        }
+    }
+
+    kfree(drivelist);
+    return MAX;
 }

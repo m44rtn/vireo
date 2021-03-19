@@ -29,5 +29,8 @@ unsigned char *diskio_reportDrives(void);
 unsigned char read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf);
 unsigned char write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf);
 
+unsigned short convert_drive_id(const char *id);
+unsigned char drive_type(const char *id);
+unsigned char to_actual_drive(unsigned char drive, unsigned char type);
 
 #endif
