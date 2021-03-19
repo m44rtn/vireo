@@ -145,6 +145,7 @@ uint16_t ide_flags = 0;
 struct DRIVER IDE_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
 
 // FIXME remove static declarations/prototypes and put all functions in .h
+// FIXME check in read/write functions if sctrwrite is not too big of a value (creates fault)
 
 void IDEController_handler(uint32_t *drv)
 {
@@ -181,6 +182,10 @@ or has executed succesfully in the past */
         case IDE_COMMAND_REPORTDRIVES:
             IDE_reportDrives((uint8_t *) *(&drv[1]));
         break;
+
+        default:
+            error = EXIT_CODE_GLOBAL_UNSUPPORTED;
+        break;
     }
 
     if(!error)
@@ -195,7 +200,6 @@ or has executed succesfully in the past */
 // ISR
 void IDE_IRQ(void)
 {
-    // print((char*)"IDE IRQ\n");
     ide_flags = ide_flags | IDE_FLAG_IRQ;
 
     PIC_EOI(0x0F);
