@@ -31,6 +31,9 @@ SOFTWARE.
 
 #define SCREEN_BASIC_DEFAULT_COLOR  0x07
 
+#define SCREEN_BASIC_FIRST_SCNLINE	0
+#define SCREEN_BASIC_LAST_SCNLINE	15
+
 typedef struct SCREENDATA
 {
 	unsigned short cursorY;
@@ -50,7 +53,10 @@ static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(void);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
 
-/* TODO: comment some of this stuff */
+/* TODO & FIXME: 
+	- comment some of this stuff 
+	- defines for outb command
+	*/
 
 /*
  * 'Public' part
@@ -70,7 +76,7 @@ unsigned char screen_basic_init(void)
     screen_basic_clear_screen();
 
 	/* Enable the cursor and put it at the top */
-	screen_basic_enable_cursor(0, 15);
+	screen_basic_enable_cursor(SCREEN_BASIC_FIRST_SCNLINE, SCREEN_BASIC_LAST_SCNLINE);
 	check = screen_basic_move_cursor(SCRscreenData.cursorY, SCRscreenData.cursorY);
 
 	if(check == EXIT_CODE_GLOBAL_SUCCESS) SCRscreenData.SCREEN_FLAGS |= SCREEN_BASIC_CURSOR_ENABLED;
