@@ -62,6 +62,7 @@ SOFTWARE.
 #include "drv/FS_TYPES.H"
 
 #include "drv/FS/fat.h"
+#include "drv/FS/fs_exitcode.h"
 
 void init_env(void);
 void main(void);
@@ -150,7 +151,7 @@ void main(void)
 
     cd_init();
 
-    if(drv[4] == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
+    if(drv[4] == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
         print("Error: drive specification unsupported\n");
     
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */

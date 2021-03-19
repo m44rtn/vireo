@@ -21,10 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __FAT_H__
-#define __FAT_H__
+#ifndef __FS_EXITCODE_H__
+#define __FS_EXITCODE_H__
 
-/* a 32-bit exit code (unlike the normal exit codes which are bytes) */
-#define EXIT_CODE32_FAT_FAIL 0xFFFFFFFF
+#define EXIT_CODE_FS_UNSUPPORTED_DRIVE     0x10
+#define EXIT_CODE_FS_FILE_NOT_FOUND        0x11
+#define EXIT_CODE_FS_FILE_EXISTS           0x13
 
 #endif
