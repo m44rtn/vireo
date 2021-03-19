@@ -23,7 +23,7 @@ SOFTWARE.
 
 #include "memory.h"
 
-/* TODO: can be removed when the tasking header is finished 
+/* TODO: can be removed if (no, not when) a tasking header is implemented 
  we only need this header because of the PIDs */
 #include "paging.h" 
 

@@ -64,10 +64,6 @@ static void paging_map_kernelspace(uint32_t end_of_kernel_space);
 
 void paging_init(void)
 {
-    /* current should be okay
-    TODO: list of todo things:
-        - paging_umap()
-        - store pages on disk */  
 
     uint32_t kernel_space_end = paging_create_tables();
     paging_map_kernelspace(kernel_space_end);
@@ -222,15 +218,13 @@ static uint32_t paging_convert_ptr_to_entry(uint32_t ptr, PAGE_REQ *req)
 /* returns: end of the tables */
 static uint32_t paging_create_tables(void)
 {
-    /* FIXME: I like spagetthi :) */
+    /* I like spagetthi :) */
 
     uint32_t available_mem, page_tables;
     uint32_t i, table_loc, amount_mem; /* for-loop */
 
     page_dir = memory_paging_tables_loc();
 
-    /* TODO: REMOVE ME 
-    trace("page_dir %x\n\n\n\n\n\n", page_dir);*/
     available_mem = (page_dir[0] * 1000);
 
     /* here's some math; first up: the amount of page tables required to map all of the memory available */
