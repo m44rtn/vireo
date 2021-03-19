@@ -22,6 +22,7 @@ SOFTWARE.
 */
 
 #include "fat.h"
+#include "fs_exitcode.h"
 
 #include "../../include/types.h"
 #include "../../dsk/diskdefines.h"
@@ -227,7 +228,7 @@ void fat_handler(uint32_t *drv)
         case FS_COMMAND_READ:
             gErrorCode = FAT_setDrivePartitionActive((const char *) drv[1]);
 
-            if(gErrorCode == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
+            if(gErrorCode == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
                 break;
 
             /* starting cluster of requested item (DIR or FILE) */
@@ -236,7 +237,7 @@ void fat_handler(uint32_t *drv)
 
             if(dir_entry == NULL)
             {
-                gErrorCode = EXIT_CODE_FAT_FILE_NOT_FOUND;
+                gErrorCode = EXIT_CODE_FS_FILE_NOT_FOUND;
                 break;
             }
 
@@ -254,7 +255,7 @@ void fat_handler(uint32_t *drv)
         case FS_COMMAND_WRITE:
             gErrorCode = FAT_setDrivePartitionActive((const char *) drv[1]);
 
-            if(gErrorCode == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
+            if(gErrorCode == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
                 break;
 
             FAT_save_file((char *) drv[1], (uint16_t *) drv[2], (size_t) drv[3], (uint8_t) drv[4]);      
@@ -263,14 +264,14 @@ void fat_handler(uint32_t *drv)
         case FS_COMMAND_RENAME:
             gErrorCode = FAT_setDrivePartitionActive((const char *) drv[1]);
 
-            if(gErrorCode == EXIT_CODE_FAT_UNSUPPORTED_DRIVE)
+            if(gErrorCode == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
                 break;
 
             FAT_rename((char *) drv[1], (char *) drv[2]);      
         break;
 
         default:
-            gErrorCode = EXIT_CODE_FAT_UNSUPPORTED_COMMAND;
+            gErrorCode = EXIT_CODE_GLOBAL_UNSUPPORTED;
         break;
         
     }
@@ -380,28 +381,18 @@ static uint8_t FAT_alreadyExists(uint8_t drive, uint8_t partition)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-/* returns succes when succesful, returns not supported when the id is an unknown format */
+/* returns success when succesful, returns not supported when the id is an unknown format */
 static uint8_t FAT_setDrivePartitionActive(const char *id)
 {
-    uint8_t drive, partition;
 
-    /* get the drive number  
-        HD0 (where HD means harddrive and the 0 is the drive number) */
-    drive = strdigit_toInt(id[2]);
-    
-    if(drive == EXIT_CODE_GLOBAL_UNSUPPORTED)
-        return EXIT_CODE_FAT_UNSUPPORTED_DRIVE;
+    // let's hope this still works
+    uint16_t drive = convert_drive_id(id);
 
-    /* get the partition number
-        P0 (where P means partition and the 0 is the partition number) */
-    partition = strdigit_toInt(id[4]);
+    if(drive == (uint16_t) MAX)
+        return EXIT_CODE_FS_UNSUPPORTED_DRIVE;
 
-    if(partition == EXIT_CODE_GLOBAL_UNSUPPORTED)
-        return EXIT_CODE_FAT_UNSUPPORTED_DRIVE;
-
-    /* set the current working drive and partititon */
-    currentWorkingDrive = drive;
-    currentWorkingPartition = partition;
+    currentWorkingDrive = (drive >> 8) & 0xFF;
+    currentWorkingPartition = drive & 0xFF;
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
@@ -448,7 +439,7 @@ static uint32_t FAT32_read_table(uint32_t cluster)
     entry = (cluster * 4) % 512;
 
     /* read it! */
-    error = read(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table); // TODO: TEST THIS!!!
+    error = read(currentWorkingDrive, fat_sector, 1U, (uint8_t *) table);
 
     if(error)
         return NULL;
@@ -595,7 +586,7 @@ static void FAT_rename(char *old, char *new)
 
     if(d == NULL)
     {
-        gErrorCode = EXIT_CODE_FAT_FILE_NOT_FOUND;
+        gErrorCode = EXIT_CODE_FS_FILE_NOT_FOUND;
         return;
     }
     kfree((void *) dir);
@@ -604,7 +595,7 @@ static void FAT_rename(char *old, char *new)
 
     if(FAT_file_exists(dir, &n[0]) != MAX)
     {
-        gErrorCode = EXIT_CODE_FAT_FILE_EXISTS;
+        gErrorCode = EXIT_CODE_FS_FILE_EXISTS;
         return;
     }
     
@@ -679,8 +670,6 @@ static void FAT_save_file(char *filename, uint16_t * buffer, size_t buffer_size,
     update_fat(&c[0], n_clusters);
 
     // now, save the file
-    // FIXME: ALS DEZE UITGECOMMENT IS WERKT T ALLEMAAL OKAY, MAAR ALS
-    // IE NIET UITGECOMMENT IS GAAT T ALLEMAAL NAAR ZN FLIKKER
     save(&c[0], n_clusters, buffer, buffer_size);
 
     // cleanup time!
@@ -715,7 +704,7 @@ static uint8_t update_dir(char *path, size_t fsize, uint8_t attrib, uint32_t fcl
 
     // file exists?
     if(FAT_file_exists(dir, &f[0]) != MAX)
-        return EXIT_CODE_FAT_FILE_EXISTS;
+        return EXIT_CODE_FS_FILE_EXISTS;
 
     uint32_t entry = dir_find_last(dir);
     FS_INFO *info = FAT_getInfo();
@@ -1007,14 +996,10 @@ static FAT32_DIR *FAT_convertPath(char *path, uint32_t *dir_cluster)
 
     current = strtok(NULL, "/");
 
-    // trace("current: %x\n", current);
-    // trace("current: %s\n", current);
-    // trace("path: %s\n\n", path);
-
     char file[12];
 
     /* search directories */
-    while(1)
+    while(1)                    // should change this in something that can't infinite loop
     {
         size_t size = 0;
         memcpy(&file[0], current, (size = strlen(current) - 1));
@@ -1097,7 +1082,7 @@ static void FAT_convertFilenameToFATCompat(char *path, char *dummy)
     spaces = (uint8_t) (8U - len);
     for(i = 0; i < spaces; ++i)
         filename[len+i] = ' ';
-    trace("-- dummy: 0x%x --\n", (uint32_t) dummy);
+
     /* now let's get working on the extension */
     current = strtok(NULL, ".");
     if(current != NULL)
