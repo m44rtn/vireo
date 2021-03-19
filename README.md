@@ -1,12 +1,8 @@
 # Vireo Kernel II
 
-The Vireo kernel is an x86 kernel written in C. Fair warning: this code is not my best work.
+The Vireo kernel is an x86 kernel written in C. 
 
-A few facts and a warning:
-- This project exists since 2014, and has had several rewrites now (hopefully this is the last)
-- The project was originally called Bird OS
-- I started with this rewrite (Vireo-II) in 2019
-- Don't look at the VireoI branch
+Currently, this is work in progress so the quality of code can be dissapointing.
 
 ## License
 The kernel is MIT licensed.
