@@ -299,8 +299,6 @@ uint32_t iso_traverse(char *path, size_t *fsize)
 
 	uint32_t dir_lba = iso_path_to_dir_lba(drive, p);
 
-	uint16_t *dir = iso_read_drive(drive, dir_lba, 1);
-
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize);
 	
 	iso_free_bfr(p);
@@ -332,7 +330,7 @@ uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *filename, s
 	while(nlba)
 	{
 		read(drive, dir_lba, to_read, (uint8_t *) bfr);
-		flba = iso_search_dir_bfr((const uint32_t *) bfr, bfr_size, filename, fsize);
+		flba = iso_search_dir_bfr(bfr, bfr_size, filename, fsize);
 		
 		if(flba || !(nlba--))
 			break;
@@ -409,33 +407,6 @@ static uint8_t check_parent(char *filename, pathtable_t *p)
 	return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-static uint32_t *get_first_parent(uint8_t drive, char *child, char *parent)
-{
-	uint32_t *ptr = iso_search_in_path_table(drive, child, 1);
-
-	if(!ptr)
-		return NULL;
-	
-	pathtable_t *t = (pathtable_t *) ptr;
-	uint32_t *p = iso_find_index(drive, (t->parent) - 1U);
-
-	while(check_parent(parent, (pathtable_t *) p))
-	{
-		iso_free_bfr(p);
-		iso_free_bfr(ptr);
-
-		t = (pathtable_t *) iso_search_in_path_table(drive, child, 0);
-
-		if(!t)
-			return NULL;
-		
-		p = iso_find_index(drive, (t->parent) - 1);
-	}
-
-	iso_free_bfr(ptr);
-	return p;
-}
-
 static uint8_t check_parents(const pathtable_t *child, uint8_t drive, char *path_parents_only)
 {
 	char *p = path_parents_only; // just to make the name shorter
@@ -445,9 +416,9 @@ static uint8_t check_parents(const pathtable_t *child, uint8_t drive, char *path
 
 	while(parent)
 	{
-		pathtable_t *t = (pathtable_t *) iso_find_index(drive, (index)-1);
+		pathtable_t *t = (pathtable_t *) iso_find_index(drive, (uint16_t) (index - 1));
 
-		replace_in_str(parent, 0x20, 0x00);
+		replace_in_str(parent, ' ', '\0');
 		if(check_parent(parent, t))
 			return 0; // parents do not match
 		
@@ -466,7 +437,7 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, char *path)
 	pathtable_t *t;
 
 	// create backup string and reverse path
-	char *current, *parent, *p = create_backup_str(path);
+	char *p = create_backup_str(path);
 	
 	// get the length of the file name of the first child and put it in a seperate buffer
 	uint32_t len = find_in_str(path, "/");
@@ -507,7 +478,7 @@ static uint16_t iso_read_path_table_buffer(uint8_t *buffer, char *filename, uint
 	while(read < SECTOR_SIZE)
 	{
 		pathtable_t *p = (pathtable_t *) &buffer[read];
-		uint32_t ident_len = (uint32_t) (p->ident_len);
+		uint16_t ident_len = (uint16_t) (p->ident_len);
 
 		if(!(p->ident_len) && !(p->parent))
 		 break;
@@ -519,7 +490,7 @@ static uint16_t iso_read_path_table_buffer(uint8_t *buffer, char *filename, uint
 			return (uint16_t) read;
 		
 		// add amount of bytes read: base entry size, length of the identifier and padding byte 
-		read += sizeof(pathtable_t) + ident_len + (ident_len % 2 == 1);
+		read = (uint16_t) (read + sizeof(pathtable_t) + ident_len + (ident_len % 2 == 1));
 	}
 
 	return (uint16_t) MAX;
@@ -550,13 +521,13 @@ uint32_t *iso_search_in_path_table(uint8_t drive, char *filename, uint8_t reset)
 		
 		// if we get here we found what we were looking for
 		pathtable_t *t = (pathtable_t *) &b[loc];
-		uint32_t len = (t->ident_len) + sizeof(pathtable_t);
+		uint16_t len = (uint16_t) ((t->ident_len) + sizeof(pathtable_t));
 		uint32_t *ret = iso_allocate_bfr(len);
 		
 		dbg_assert(ret);
 		
 		memcpy((char *) ret, (char *) &b[loc], len);
-		loc += len;
+		loc = (uint16_t) (loc + len);
 		
 		return ret;		
 	}
@@ -571,15 +542,13 @@ static uint16_t iso_count_index(uint16_t *index_start, uint16_t until, uint8_t *
 	while(read < SECTOR_SIZE)
 	{
 		pathtable_t *p = (pathtable_t *) &buffer[read];
-		uint32_t ident_len = (uint32_t) (p->ident_len);
-
-		const char *str = (const char *) &buffer[read + sizeof(pathtable_t)];
+		uint16_t ident_len = (uint32_t) (p->ident_len);
 
 		if(index == until)
 			break;
 
 		// add amount of bytes read: base entry size, length of the identifier and padding byte
-		read += sizeof(pathtable_t) + ident_len + (ident_len % 2 == 1);
+		read = (uint16_t) (read + sizeof(pathtable_t) + ident_len + ((ident_len % 2) == 1));
 		index++;
 	}
 
@@ -608,7 +577,12 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 		// if we are at the end of the current buffer, update the total
 		// reset i and increase the lba
 		if(read >= SECTOR_SIZE)
-			{total += i; i = 0; lba++; continue; }
+		{
+			total = (uint16_t) (total + i); 
+			i = 0; 
+			lba++; 
+			continue; 
+		}
 		
 		if((total + i) != index)
 			continue;
@@ -627,7 +601,7 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 	return NULL;
 }
 
-void iso_clean_path_reverse(const char *p)
+void iso_clean_path_reverse(char *p)
 {	
 	if((convert_drive_id(p) >> DISKIO_DISK_NUMBER) != 0xFF)
 		remove_from_str(p, strlen(DISKIO_DISKID_CD) + 2); // remove disk id, n = 4 ('CD0/')

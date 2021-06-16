@@ -161,7 +161,7 @@ uint16_t convert_drive_id(const char *id)
     drive = to_actual_drive(drive, type);
 
     // store it
-    result |= (uint16_t) (drive & 0xFFU) << 8U;
+    result = (uint16_t) (result | (drive & 0xFFU) << 8U);
 
     // is there a partition specified?
     if(id[3] != DISKIO_DISKID_P)
@@ -176,7 +176,7 @@ uint16_t convert_drive_id(const char *id)
         return (uint16_t) MAX;
     
     // store it
-    result |= (uint16_t) (drive & 0xFFU);
+    result = (uint16_t) (result | (drive & 0xFF));
 
     return result;
 }
@@ -203,7 +203,7 @@ uint8_t to_actual_drive(uint8_t drive, uint8_t type)
 
     // if we get drive number 0 as argument, we need the first drive
     // we find, thus it should be at least one (the offset is also 1)
-    drive += (uint8_t) 1U;
+    drive++;
     
     for(uint8_t i = 0; i < DISKIO_MAX_DRIVES; ++i)
     {

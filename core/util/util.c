@@ -41,7 +41,7 @@ char utilPool[UTIL_POOL_SIZE];
 
 static size_t __strxspn(const char *s, const char *map, char parity);
 
-unsigned int strlen(char *str)
+unsigned int strlen(const char *str)
 {
     uint32_t i = 0;
     while(str[i])

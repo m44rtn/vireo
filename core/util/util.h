@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
-unsigned int strlen(char *str);
+unsigned int strlen(const char *str);
 void remove_from_str(char *p, unsigned int n);
 void replace_in_str(char *p, const char c, const char repl);
 unsigned char strcmp(const char *str1, const char *str2);

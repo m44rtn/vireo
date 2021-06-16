@@ -110,9 +110,8 @@ void paging_map(void *pptr, void *vptr, PAGE_REQ *req)
 void *valloc(PAGE_REQ *req)
 {   
     uint32_t npages;
-    uint32_t *free_pages, *ptable;
+    uint32_t *ptable;
     uint32_t page_id, t_index, d_index;
-    uint32_t i; /* for-loop */
 
     /* just checking... */
     dbg_assert((uint32_t)page_dir);
