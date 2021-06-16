@@ -25,7 +25,12 @@ SOFTWARE.
 #define __UTIL_H__
 
 unsigned int strlen(char *str);
-unsigned char strcmp(char *str1, char *str2);
+void remove_from_str(char *p, unsigned int n);
+void replace_in_str(char *p, const char c, const char repl);
+unsigned char strcmp(const char *str1, const char *str2);
+unsigned char strcmp_until(const char *str1, const char *str2, unsigned int stop);
+char *create_backup_str(char *str);
+
 char* hexstr(unsigned int value, unsigned char digit_amount);
 char *intstr(unsigned int value);
 unsigned char strdigit_toInt(const char digit);
@@ -37,7 +42,7 @@ void memset(char *start, unsigned int size, char val);
 
 void sleep(unsigned int timeIn_ms);
 unsigned char flag_check(unsigned int flag, unsigned int to_check); 
-unsigned int findstr(char *o, const char *fnd);
+unsigned int find_in_str(char *o, const char *fnd);
 
 unsigned char strchr(char *str, char ch);
 void memcpy(char *destination, char *source, unsigned int size);

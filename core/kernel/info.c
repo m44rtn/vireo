@@ -23,9 +23,19 @@ SOFTWARE.
 
 #include "info.h"
 
+#include "../include/types.h"
+
 #include "../screen/screen_basic.h"
 
 void info_print_version(void)
 {
     trace( "Vireo II build %i\n", BUILD);
+}
+
+void info_print_full_version(void)
+{
+    print((char*) "\n[KERNEL] ");
+    info_print_version();
+    trace("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
+    trace("at %s\n", (uint32_t) BUILDTIME);
 }

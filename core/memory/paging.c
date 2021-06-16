@@ -57,7 +57,7 @@ uint32_t *page_dir = NULL;
 
 
 static uint32_t paging_convert_ptr_to_entry(uint32_t ptr, PAGE_REQ *req);
-static uint32_t *paging_find_free(uint32_t npages);
+static void *paging_find_free(uint32_t npages);
 static uint32_t paging_create_tables(void);
 static void paging_prepare_table(uint32_t *table, uint8_t type);
 static void paging_map_kernelspace(uint32_t end_of_kernel_space);
@@ -123,31 +123,23 @@ void *valloc(PAGE_REQ *req)
     if((npages > g_max_pages) || (npages == 0))
         return NULL;
 
-    free_pages = paging_find_free(npages);
-    dbg_assert(free_pages);
+    void * ptr = paging_find_free(npages);
+    dbg_assert(ptr);
 
-    for(i = 0; i < npages; ++i)
-    {
-        page_id = free_pages[i];
+    page_id = ((uint32_t) ptr) >> 12;
+    d_index = page_id >> 10; /* same as page_id / PAGING_TABLE_SIZE */
+    t_index = page_id % PAGING_TABLE_SIZE;
 
-        /* calculate page table and directory index */
-        d_index = page_id >> 10; /* same as page_id / PAGING_TABLE_SIZE */
-        t_index = page_id % PAGING_TABLE_SIZE;
+    ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
 
-        ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
-
-        ptable[t_index] = paging_convert_ptr_to_entry(ptable[t_index], req);
+    ptable[t_index] = paging_convert_ptr_to_entry(ptable[t_index] & PAGING_ADDR_MSK, req);
         
-        ASM_CPU_INVLPG((uint32_t *)ptable[t_index]);
+    ASM_CPU_INVLPG((uint32_t *)ptable[t_index]);
 
-        /* update our information about this page */
-        shadow_t[page_id].pid = req->pid;
+    /* update our information about this page */
+    shadow_t[page_id].pid = req->pid;
 
-        /* store the address of that page */
-        free_pages[i] = page_id * PAGING_PAGE_SIZE; 
-    }
-
-    return free_pages;
+    return ptr;
 }
 
 void vfree(void *ptr)
@@ -172,34 +164,22 @@ void vfree(void *ptr)
     shadow_t[page_id].pid = PID_RESV;
 }
 
-/* function: find_free_pages()
-   returns: - allocated pointer to an array with free pages;
-            - OR NULL if failed*/ 
-static uint32_t *paging_find_free(uint32_t npages)
+
+static void *paging_find_free(uint32_t npages)
 {
-    uint32_t *parray = (uint32_t *) kmalloc(npages * sizeof(uint32_t *));
-    uint32_t i, index = 0;
+    uint32_t index, cnt = 0;
 
-    /* huge problem */
-    if(!shadow_len)
-        return NULL;
-
-    for(i = 0; i < shadow_len; ++i)
+    for(uint32_t i = 0; i < shadow_len; ++i)
     {
         if(shadow_t[i].pid != PID_RESV)
-            continue;
+        { cnt = 0; continue; }
+
+        if(!cnt)
+            index = i;
         
-        /* found free page */
-        parray[index] = i;
-
-        if(index == npages)
-            return parray;
-
-        ++index;
+        if(cnt++ == npages)
+            return (void *) (index << 12); // same as index * PAGE_SIZE
     }
-
-    /* something went wrong */
-    kfree((void *) parray);
 
     return NULL;
 }

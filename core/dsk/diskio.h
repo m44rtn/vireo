@@ -24,6 +24,14 @@ SOFTWARE.
 #ifndef __DISKIO_H__
 #define __DISKIO_H__
 
+#define DISKIO_DISKID_HD    "HD"    // HDD
+#define DISKIO_DISKID_CD    "CD"    // CD/DVD drive
+#define DISKIO_DISKID_P     'P'    // partition
+
+// defines for convert_drive_id()
+#define DISKIO_DISK_NUMBER  8U
+#define DISKIO_PART_NUMBER  16U
+
 void diskio_init(void);
 unsigned char *diskio_reportDrives(void);
 unsigned char read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf);

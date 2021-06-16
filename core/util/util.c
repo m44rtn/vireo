@@ -32,7 +32,12 @@ SOFTWARE.
 
 #include "../memory/memory.h"
 
-char utilPool[32];
+#define UTIL_POOL_SIZE		32
+
+// --> memory pool for util
+// this is necessarry because util is used while
+// the memory module hasn't been initialized yet
+char utilPool[UTIL_POOL_SIZE];
 
 static size_t __strxspn(const char *s, const char *map, char parity);
 
@@ -45,9 +50,35 @@ unsigned int strlen(char *str)
     return i;
 }
 
-unsigned char strcmp(char *str1, char *str2)
+void remove_from_str(char *p, uint32_t n)
+{
+	uint32_t max = strlen(p);
+	uint32_t i = 0, s = n;
+
+	for(; s < max; ++s)
+	{
+		p[i] = p[s];
+		i++;
+	}
+
+	p[max-n] = '\0';
+}
+
+void replace_in_str(char *p, const char c, const char repl)
+{
+	uint32_t max = strlen(p);
+
+	for(uint32_t i = 0; i < max; ++i)
+		if(p[i] == c)
+			p[i] = repl;
+}
+
+unsigned char strcmp(const char *str1, const char *str2)
 {
 	uint32_t i = 0;
+
+	if(strlen(str1) != strlen(str2))
+		return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 
 	while(str1[i] && str2[i])
 	{
@@ -57,6 +88,35 @@ unsigned char strcmp(char *str1, char *str2)
 	}
 
 	return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+uint8_t strcmp_until(const char *str1, const char *str2, uint32_t stop)
+{
+	uint32_t i = 0;
+
+	while((str1[i] && str2[i]) && (i < stop))
+	{
+		if(str1[i] != str2[i])
+			return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+		++i;
+	}
+
+	// fix for failing if first character in string is '\0' 
+	return (str1[0] != str2[0]) ? EXIT_CODE_GLOBAL_GENERAL_FAIL : EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+// creates a backup string that can be used for strtok
+char *create_backup_str(char *str)
+{
+	char *backup;
+	backup = kmalloc(strlen(str) + 1);
+
+	if(!backup)
+		return NULL; // error (out of mem)
+
+	memcpy(backup, str, strlen(str) + 1);
+
+	return backup;
 }
 
 /* digit_amount: amount of digits to show, if 0 (or the value is bigger) the normal 
@@ -170,10 +230,10 @@ unsigned char flag_check(unsigned int flag, unsigned int to_check)
 }
 
 // returns first occurance of the thing to be found
-uint32_t findstr(char *o, const char *fnd)
+uint32_t find_in_str(char *o, const char *fnd)
 {
 	uint32_t c = 0;
-	uint32_t len = strlen((char *) fnd) - 1;
+	uint32_t len = strlen((char *) fnd);
 	uint32_t olen = strlen(o) + 1;
 
 	for(uint32_t i = 0; i < olen; ++i)

@@ -151,14 +151,21 @@ void main(void)
 
     cd_init();
 
+    
+    drv[0] = FS_COMMAND_READ;
+    drv[1] = (uint32_t) "CD0/TEST/U/TEST/EASY.TXT\0";
+    driver_exec((FS_TYPE_ISO | DRIVER_TYPE_FS), drv);
+    trace("READ FILE WITH ERROR CODE: %x\n", drv[4]);
+    trace("buffer location: 0x%x\t", drv[2]);
+    trace("size: %i\n", drv[3]);
+    trace("file that should have been read: %s\n", drv[1]);
+    
+
     if(drv[4] == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
         print("Error: drive specification unsupported\n");
     
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
-    print((char*) "\n[KERNEL] ");
-    info_print_version();
-    trace("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
-    trace("at %s\n", (uint32_t) BUILDTIME);
+    info_print_full_version();    
     print((char*)"\n");
 #endif
 

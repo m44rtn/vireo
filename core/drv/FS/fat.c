@@ -391,8 +391,8 @@ static uint8_t FAT_setDrivePartitionActive(const char *id)
     if(drive == (uint16_t) MAX)
         return EXIT_CODE_FS_UNSUPPORTED_DRIVE;
 
-    currentWorkingDrive = (drive >> 8) & 0xFF;
-    currentWorkingPartition = drive & 0xFF;
+    currentWorkingDrive = (drive >> 8) & 0xFFu;
+    currentWorkingPartition = drive & 0xFFu;
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
@@ -550,7 +550,7 @@ static void FAT_get_file_name(char *path, char *output)
 {
     uint32_t i = path_find_last(path);
 
-    char *filename = kmalloc(12); //[12];
+    char *filename = kmalloc(12);
     memcpy(&filename[0], &path[i], strlen(&path[i]));
 
     FAT_convertFilenameToFATCompat(&filename[0], output);
@@ -812,7 +812,7 @@ static uint32_t path_find_last(char *str)
         memcpy(&prev[0], current, size = strlen(current));
     
     prev[size] = '\0';
-    uint32_t i = findstr(str, &prev[0]);
+    uint32_t i = find_in_str(str, &prev[0]);
     
     return i;
 }
@@ -859,7 +859,7 @@ static void update_fat(uint32_t *clusters, uint32_t n)
 static void save(uint32_t *clusters, uint32_t n, uint16_t *buffer, size_t buffer_size)
 {
 
-    // FIXME: could be a bug waiting to happen when using multiple partitions with multiple EBPBs
+    // FIXME: bug waiting to happen when using multiple partitions with multiple EBPBs
     FAT32_EBPB *bpb = (FAT32_EBPB *) info_buffer;
     const uint32_t sectclust = bpb->bpb.SectClust;
     uint32_t nlba_write = (buffer_size >> 9) /* DIV by SECTOR_SIZE */ + 1U;

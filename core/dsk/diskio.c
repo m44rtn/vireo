@@ -38,10 +38,6 @@ SOFTWARE.
 
 #define DISKIO_MAX_DRIVES 4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
 
-#define DISKIO_DISKID_HD    "HD"    // HDD
-#define DISKIO_DISKID_CD    "CD"    // CD/DVD drive
-#define DISKIO_DISKID_P     "P"     // partition
-
 typedef struct{
     uint8_t diskID;
     uint8_t disktype;
@@ -163,9 +159,9 @@ uint16_t convert_drive_id(const char *id)
 
     // convert drive id of type to the actual real world drive number
     drive = to_actual_drive(drive, type);
-    trace("drive: %x\n", drive);
+
     // store it
-    result |= (drive & 0xFF) << 8;
+    result |= (uint16_t) (drive & 0xFFU) << 8U;
 
     // is there a partition specified?
     if(id[3] != DISKIO_DISKID_P)
@@ -180,7 +176,7 @@ uint16_t convert_drive_id(const char *id)
         return (uint16_t) MAX;
     
     // store it
-    result |= drive & 0xFF;
+    result |= (uint16_t) (drive & 0xFFU);
 
     return result;
 }
@@ -207,7 +203,7 @@ uint8_t to_actual_drive(uint8_t drive, uint8_t type)
 
     // if we get drive number 0 as argument, we need the first drive
     // we find, thus it should be at least one (the offset is also 1)
-    drive += 1;
+    drive += (uint8_t) 1U;
     
     for(uint8_t i = 0; i < DISKIO_MAX_DRIVES; ++i)
     {
@@ -215,13 +211,11 @@ uint8_t to_actual_drive(uint8_t drive, uint8_t type)
         {
             nfound++;
 
-            trace("drive type: %x\n", drivelist[i]);
-
             if(nfound == drive)
                 return i;
         }
     }
 
     kfree(drivelist);
-    return MAX;
+    return (uint8_t) MAX;
 }

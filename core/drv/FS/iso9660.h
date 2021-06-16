@@ -25,8 +25,30 @@ SOFTWARE.
 #define __ISO9660_H__
 
 void iso_handler(unsigned int *drv);
-void search_descriptor(unsigned char drive, unsigned char *buffer, unsigned char type);
-void save_pvd_data(unsigned char * pvd, unsigned char drive);
-unsigned int * iso_allocate_bfr(unsigned int size);
+
+void iso_init(unsigned char drive);
+void iso_search_descriptor(unsigned char drive, unsigned char * buffer, unsigned char type);
+void iso_save_pvd_data(unsigned char * pvd);
+
+void * iso_allocate_bfr(unsigned int size);
+void iso_free_bfr(void *ptr);
+
+unsigned int iso_traverse(char *path, unsigned int *fsize);
+unsigned int iso_search_dir(unsigned char drive, unsigned int dir_lba, const char *filename, unsigned int *fsize);
+unsigned int iso_search_dir_bfr(unsigned int *bfr, unsigned int bfr_size, const char *filename, unsigned int *fsize);
+unsigned int iso_alloc_dir_buffer(unsigned int dir_size, unsigned int **ret_addr);
+unsigned int iso_get_dir_size(unsigned char drive, unsigned int dir_lba);
+
+unsigned int *iso_search_in_path_table(unsigned char drive, char *filename, unsigned char reset);
+unsigned int *iso_find_index(unsigned char drive, unsigned short index);
+
+unsigned short iso_search_path_table(const char *file, unsigned char drive, unsigned int start_lba, unsigned int *b_ptr);
+unsigned int iso_path_to_dir_lba(unsigned char drive, char *path);
+
+void iso_clean_path_reverse(const char *p);
+void reverse_path(char *path);
+
+unsigned short *iso_read_drive(unsigned char drive, unsigned int lba, unsigned int sctr_read);
+void iso_read(char * path, unsigned int *drv);
 
 #endif

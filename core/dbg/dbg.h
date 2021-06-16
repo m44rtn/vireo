@@ -25,18 +25,20 @@ SOFTWARE.
 #define __DBG_H__
 
 #include "../screen/screen_basic.h"
+#include "../kernel/info.h"
 #include "debug.h"
 
 #ifndef NDEBUG
 #define dbg_assert(expression)                                          \
-    if(!(expression))                                                     \
+    if(!(expression))                                                   \
     {                                                                   \
                                                                         \
-    print( "Vireo:");                                           \
+    print( "Vireo:");                                                   \
     screen_basic_set_screen_color(0x03);                                \
-    trace( "%s:", (unsigned int) __FILE__);                     \
+    trace( "%s:", (unsigned int) __FILE__);                             \
     screen_basic_set_screen_color(0x07);                                \
-    trace( "%i: Assertion Failed", (unsigned int) __LINE__);    \
+    trace( "%i: Assertion Failed\n", (unsigned int) __LINE__);            \
+    info_print_full_version();                                               \
                                                                         \
     while(1);                                                           \
     }                                                     
