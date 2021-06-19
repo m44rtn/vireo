@@ -35,9 +35,9 @@ SOFTWARE.
                                                                         \
     print( "Vireo:");                                                   \
     screen_basic_set_screen_color(0x03);                                \
-    trace( "%s:", (unsigned int) __FILE__);                             \
+    print_value( "%s:", (unsigned int) __FILE__);                             \
     screen_basic_set_screen_color(0x07);                                \
-    trace( "%i: Assertion Failed\n", (unsigned int) __LINE__);            \
+    print_value( "%i: Assertion Failed\n", (unsigned int) __LINE__);            \
     info_print_full_version();                                               \
                                                                         \
     while(1);                                                           \

@@ -75,8 +75,8 @@ void pci_init(void)
 
                 #ifndef NO_DEBUG_INFO
                 screen_set_hexdigits(4);
-                trace( "[PCI] Found device %x:", deviceid);
-                trace( "%x\n", vendorid);
+                print_value( "[PCI] Found device %x:", deviceid);
+                print_value( "%x\n", vendorid);
                 #endif
                 
                 PCI_DEV_LIST[i].device = (uint32_t) ((bus & 0xFF << 24) | (device << 16) | (func << 8) | (class & 0xFF));

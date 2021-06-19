@@ -147,7 +147,7 @@ void screen_set_hexdigits(uint8_t value)
 	hexdigits = value;
 }
 
-void trace(const char* str, unsigned int val)
+void print_value(const char* str, unsigned int val)
 {
 	unsigned int i;  
 	unsigned int length = strlen((char *) str);

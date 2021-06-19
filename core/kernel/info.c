@@ -29,13 +29,13 @@ SOFTWARE.
 
 void info_print_version(void)
 {
-    trace( "Vireo II build %i\n", BUILD);
+    print_value( "Vireo II build %i\n", BUILD);
 }
 
 void info_print_full_version(void)
 {
     print((char*) "\n[KERNEL] ");
     info_print_version();
-    trace("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
-    trace("at %s\n", (uint32_t) BUILDTIME);
+    print_value("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
+    print_value("at %s\n", (uint32_t) BUILDTIME);
 }

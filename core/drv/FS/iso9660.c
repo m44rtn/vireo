@@ -182,11 +182,11 @@ void iso_init(uint8_t drive)
 
 	#ifndef NO_DEBUG_INFO
 		cd_info_t * info = (cd_info_t *) cd_info_ptr;
-		trace("[ISO9660 DRIVER] Vol. ident.: %s\n", (uint32_t) (info->volident));
-		trace("[ISO9660 DRIVER] Vol. size (in 2048 byte blocks): %i\n", (uint32_t) (info->vol_size));
-		trace("[ISO9660 DRIVER] Path table size (in sectors): %i\n", (uint32_t) (info->path_table_size));
-		trace("[ISO9660 DRIVER] Path tanle lba: %i\n", (uint32_t) (info->path_table_lba));
-		trace("[ISO9660 DRIVER] Rootdir lba: %i\n", (uint32_t) (info->rootdir_lba));
+		print_value("[ISO9660 DRIVER] Vol. ident.: %s\n", (uint32_t) (info->volident));
+		print_value("[ISO9660 DRIVER] Vol. size (in 2048 byte blocks): %i\n", (uint32_t) (info->vol_size));
+		print_value("[ISO9660 DRIVER] Path table size (in sectors): %i\n", (uint32_t) (info->path_table_size));
+		print_value("[ISO9660 DRIVER] Path tanle lba: %i\n", (uint32_t) (info->path_table_lba));
+		print_value("[ISO9660 DRIVER] Rootdir lba: %i\n", (uint32_t) (info->rootdir_lba));
         print("\n");
 	#endif
 	

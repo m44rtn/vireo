@@ -119,9 +119,9 @@ uint8_t memory_init(void)
     memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory * 1.024);
     
     #ifndef NO_DEBUG_INFO
-    trace("[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
-    trace("[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
-    trace("[MEMORY] Memory map length: %i bytes\n\n", infoStruct.mmap_length);
+    print_value("[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
+    print_value("[MEMORY] Memory map location: %x\n", (unsigned int) infoStruct.mmap);
+    print_value("[MEMORY] Memory map length: %i bytes\n\n", infoStruct.mmap_length);
     #endif
 
     /* TODO: if exists, read memory map */

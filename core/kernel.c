@@ -155,10 +155,10 @@ void main(void)
     drv[0] = FS_COMMAND_READ;
     drv[1] = (uint32_t) "CD0/TEST/U/TEST/EASY.TXT\0";
     driver_exec((FS_TYPE_ISO | DRIVER_TYPE_FS), drv);
-    trace("READ FILE WITH ERROR CODE: %x\n", drv[4]);
-    trace("buffer location: 0x%x\t", drv[2]);
-    trace("size: %i\n", drv[3]);
-    trace("file that should have been read: %s\n", drv[1]);
+    print_value("READ FILE WITH ERROR CODE: %x\n", drv[4]);
+    print_value("buffer location: 0x%x\t", drv[2]);
+    print_value("size: %i\n", drv[3]);
+    print_value("file that should have been read: %s\n", drv[1]);
     
 
     if(drv[4] == EXIT_CODE_FS_UNSUPPORTED_DRIVE)

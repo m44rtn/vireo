@@ -88,7 +88,7 @@ static uint8_t conway_check_neighbours(uint32_t x, uint32_t y)
         for(xa = (x <= 0) ? 0 : x-1; xa <= (x + isxScreenWidth); ++xa)
             if(screen_basic_getchar(xa, y-1) == 'X') ++live_cells;
     
-    /*trace("live_cells %i\n", live_cells);*/
+    /*print_value("live_cells %i\n", live_cells);*/
     
     /* check our row */
     if(x > 0)

@@ -49,7 +49,7 @@ void screen_basic_set_screen_color(unsigned char color);
 void screen_set_hexdigits(unsigned char value);
 
 void print(const char* text);
-void trace(const char* text, unsigned int val);
+void print_value(const char* text, unsigned int val);
 void screen_basic_clear_screen(void);
 
 char screen_basic_getchar(unsigned int x, unsigned int y);

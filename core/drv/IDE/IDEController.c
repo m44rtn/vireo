@@ -314,12 +314,12 @@ static void IDEDriverInit(uint32_t device)
 static void IDEPrintWelcome(void)
 {
     print( IDE_DRIVER_VERSION_STRING);
-    trace( "[IDE_DRIVER] Kernel reported PCI controller %x\n", PCI_controller);
+    print_value( "[IDE_DRIVER] Kernel reported PCI controller %x\n", PCI_controller);
 
-    trace( "[IDE_DRIVER] Primary base port: %x\n", p_base_port);
-    trace( "[IDE_DRIVER] Secondary base port: %x\n", s_base_port);
-    trace( "[IDE_DRIVER] Primary control port: %x\n", p_ctrl_port);
-    trace( "[IDE_DRIVER] Secondary control port: %x\n", s_ctrl_port);
+    print_value( "[IDE_DRIVER] Primary base port: %x\n", p_base_port);
+    print_value( "[IDE_DRIVER] Secondary base port: %x\n", s_base_port);
+    print_value( "[IDE_DRIVER] Primary control port: %x\n", p_ctrl_port);
+    print_value( "[IDE_DRIVER] Secondary control port: %x\n", s_ctrl_port);
 
     print( "\n");
 

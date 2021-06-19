@@ -152,8 +152,8 @@ static void driver_search_pciAll(void)
             drv_list[cur_devices].driver = (uint32_t *) *( (uint32_t*) ((uint32_t)driver_loc + sizeof(struct DRIVER_SEARCH))); /* I'm sorry */
             
             #ifndef NO_DEBUG_INFO
-            trace( "[DRIVER SUBSYSTEM] Found driver for device %x @ ", pciGetReg0(drv_list[cur_devices].device));
-            trace( "0x%x\n", (uint32_t) drv_list[cur_devices].driver);
+            print_value( "[DRIVER SUBSYSTEM] Found driver for device %x @ ", pciGetReg0(drv_list[cur_devices].device));
+            print_value( "0x%x\n", (uint32_t) drv_list[cur_devices].driver);
             #endif
 
             ++cur_devices;    

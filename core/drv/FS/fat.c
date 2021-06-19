@@ -343,12 +343,12 @@ static void FAT_init(uint32_t drive, uint32_t partition, uint32_t FStype)
     partition_info_ptr = (uint32_t *) info;
     
     #ifndef NO_DEBUG_INFO
-    trace("[FAT_DRIVER] Drive: %i\n", drive);
-    trace("[FAT_DRIVER] Partition: %i\n", partition);
-    trace("[FAT_DRIVER] Volume name: %s\n", (uint32_t) &info->volname);
-    trace("[FAT_DRIVER] FAT cluster: %i\n", (uint32_t) info->fatsector);
-    trace("[FAT_DRIVER] RootDir cluster: %i\n", (uint32_t) info->rootcluster);
-    trace("[FAT_DRIVER] FS_INFO * *: 0x%x\n", (uint32_t) info);
+    print_value("[FAT_DRIVER] Drive: %i\n", drive);
+    print_value("[FAT_DRIVER] Partition: %i\n", partition);
+    print_value("[FAT_DRIVER] Volume name: %s\n", (uint32_t) &info->volname);
+    print_value("[FAT_DRIVER] FAT cluster: %i\n", (uint32_t) info->fatsector);
+    print_value("[FAT_DRIVER] RootDir cluster: %i\n", (uint32_t) info->rootcluster);
+    print_value("[FAT_DRIVER] FS_INFO * *: 0x%x\n", (uint32_t) info);
     print("\n");
     #endif
 
@@ -640,7 +640,7 @@ static void FAT_save_file(char *filename, uint16_t * buffer, size_t buffer_size,
     {
 
         // TODO: update fat here to reset everything
-        trace("[FAT_DRIVER] Function error %x\n", (uint32_t) error);
+        print_value("[FAT_DRIVER] Function error %x\n", (uint32_t) error);
         gErrorCode = error;
         return;
     }
@@ -968,7 +968,7 @@ static uint32_t FAT_file_exists(FAT32_DIR *dir, char *filename)
         memcpy((char *)&file[8], (char *)&(dir[i].ext[0]), 3);
 
         file[11] = '\0';
-        // trace("filename: %s\n", filename);
+        // print_value("filename: %s\n", filename);
         // file exists */
         if(!strcmp((char *) &file[0], filename))
             return i;

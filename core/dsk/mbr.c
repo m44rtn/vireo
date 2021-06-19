@@ -126,12 +126,12 @@ static void MBR_printAll(void)
       if(!DISKS[i].mbr_entry_t[j].start_LBA)
         continue;
 
-      trace("[PARTITIONS] HD%i", DISKS[i].disk);
-      trace("p%i: ", j);
-      trace("lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
-      trace("active: %x, ", DISKS[i].mbr_entry_t[j].active);
-      trace("sectors: %i, ", DISKS[i].mbr_entry_t[j].n_sectors);
-      trace("type: %x\n", DISKS[i].mbr_entry_t[j].type);
+      print_value("[PARTITIONS] HD%i", DISKS[i].disk);
+      print_value("p%i: ", j);
+      print_value("lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
+      print_value("active: %x, ", DISKS[i].mbr_entry_t[j].active);
+      print_value("sectors: %i, ", DISKS[i].mbr_entry_t[j].n_sectors);
+      print_value("type: %x\n", DISKS[i].mbr_entry_t[j].type);
     }
   }
 
