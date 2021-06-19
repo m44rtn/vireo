@@ -26,12 +26,13 @@ SOFTWARE.
 
 /* this is always the build number for next build. 
 current binary build = [BUILD] - 1 */
-#define BUILD 3455
+#define BUILD 3518
 
 #define BUILDDATE    __DATE__
 #define BUILDTIME    __TIME__
 
 void info_print_version(void);
 void info_print_full_version(void);
+void info_print_panic_version(void);
 
 #endif

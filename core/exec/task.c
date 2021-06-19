@@ -21,29 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "info.h"
+#include "task.h"
 
 #include "../include/types.h"
 
-#include "../screen/screen_basic.h"
-
-void info_print_version(void)
+uint8_t task_new_pid(void)
 {
-    print_value( "Vireo II build %i\n", BUILD);
-}
+    static uint8_t pid = PID_KERNEL;
 
-void info_print_full_version(void)
-{
-    print((char*) "\n[KERNEL] ");
-    info_print_version();
-    print_value("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
-}
+    // check if we are almost out of process id's, if so reset
+    if(pid++ == PID_RESV)
+        pid = PID_KERNEL + 1;
 
-void info_print_panic_version(void)
-{
-    print(" Kernel version string: ");
-    info_print_version();
-    print_value(" Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
+    return pid;
 }

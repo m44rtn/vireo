@@ -21,29 +21,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "info.h"
+#include "flat.h"
+#include "task.h"
+#include "exec.h"
 
 #include "../include/types.h"
 
-#include "../screen/screen_basic.h"
+#include "../memory/paging.h"
 
-void info_print_version(void)
+void flat_call_binary(void *ptr, size_t stack_size)
 {
-    print_value( "Vireo II build %i\n", BUILD);
-}
+    PAGE_REQ req = {
+        .pid = task_new_pid(),
+        .attr = PAGE_REQ_ATTR_READ_WRITE,
+        .size = stack_size
+    };
 
-void info_print_full_version(void)
-{
-    print((char*) "\n[KERNEL] ");
-    info_print_version();
-    print_value("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
-}
+    // TODO: maybe there's a better way to do this
+    uint32_t *stack = valloc(&req);
+    asm_exec_call(ptr, stack + stack_size);
 
-void info_print_panic_version(void)
-{
-    print(" Kernel version string: ");
-    info_print_version();
-    print_value(" Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
 }

@@ -21,7 +21,7 @@
 
 bits 32
 
-; c header used for the functions in this file is kernel/exec.h
+; c header used for the functions in this file is exec/exec.h
 
 section .text
 global EXEC_CALL_FUNC
@@ -47,3 +47,34 @@ ret
 
 .funcptr dd 0x00
 .datstct dd 0x00
+
+
+global asm_exec_call
+section .text
+
+asm_exec_call:
+; calls an external binary
+;	input: 
+;       - pointer to binary    [stack]
+;       - pointer to new stack [stack + 4]
+;	ouput: n/a
+
+push ebp
+push esp
+
+mov ebp, esp
+
+; function to call
+mov eax, DWORD [ebp + 12]
+mov edi, eax
+
+; new stack
+mov eax, DWORD [ebp + 16]
+mov esp, eax
+
+call edi
+
+pop esp
+pop ebp
+
+ret

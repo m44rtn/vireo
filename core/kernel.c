@@ -51,7 +51,9 @@ SOFTWARE.
 #include "dsk/mbr.h"
 #include "dsk/cd.h"
 
-#include "kernel/exec.h"
+#include "exec/exec.h"
+#include "exec/flat.h"
+
 #include "kernel/panic.h"
 #include "kernel/info.h"
 
@@ -126,6 +128,7 @@ void init_env(void)
     diskio_init();
 
     MBR_enumerate();
+    cd_init();
 
     // TODO: get a function to do this
     // ----------> One way would be to let MBR handle this stuff
@@ -149,17 +152,13 @@ void main(void)
 
     init_env();
 
-    cd_init();
-
-    
     drv[0] = FS_COMMAND_READ;
-    drv[1] = (uint32_t) "CD0/TEST/U/TEST/EASY.TXT\0";
+    drv[1] = (uint32_t) "CD0/TEST/TEST.BIN\0";
     driver_exec((FS_TYPE_ISO | DRIVER_TYPE_FS), drv);
     print_value("READ FILE WITH ERROR CODE: %x\n", drv[4]);
     print_value("buffer location: 0x%x\t", drv[2]);
     print_value("size: %i\n", drv[3]);
     print_value("file that should have been read: %s\n", drv[1]);
-    
 
     if(drv[4] == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
         print("Error: drive specification unsupported\n");
@@ -169,6 +168,7 @@ void main(void)
     print((char*)"\n");
 #endif
 
+    flat_call_binary((void *) drv[2], 512);
     /*conways_game_of_life();*/
 
     while(1);

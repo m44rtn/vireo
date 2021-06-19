@@ -43,6 +43,9 @@ static size_t __strxspn(const char *s, const char *map, char parity);
 
 unsigned int strlen(const char *str)
 {
+	if(!str)
+		return 0;
+
     uint32_t i = 0;
     while(str[i])
         ++i;

@@ -21,29 +21,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "info.h"
+#ifndef __ASM_FUNCTIONS_H__
+#define __ASM_FUNCTIONS_H__
 
-#include "../include/types.h"
+extern void EXEC_CALL_FUNC(unsigned int *ptr, unsigned int *data);
+extern void asm_exec_call(void *ptr, void *stack);
 
-#include "../screen/screen_basic.h"
-
-void info_print_version(void)
-{
-    print_value( "Vireo II build %i\n", BUILD);
-}
-
-void info_print_full_version(void)
-{
-    print((char*) "\n[KERNEL] ");
-    info_print_version();
-    print_value("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
-}
-
-void info_print_panic_version(void)
-{
-    print(" Kernel version string: ");
-    info_print_version();
-    print_value(" Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
-}
+#endif

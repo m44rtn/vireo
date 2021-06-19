@@ -21,29 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "info.h"
+#ifndef __TASK_H__
+#define __TASK_H__
 
-#include "../include/types.h"
+#define PID_KERNEL                  0U
+#define PID_RESV                    0xFFU
 
-#include "../screen/screen_basic.h"
+unsigned char task_new_pid(void);
 
-void info_print_version(void)
-{
-    print_value( "Vireo II build %i\n", BUILD);
-}
-
-void info_print_full_version(void)
-{
-    print((char*) "\n[KERNEL] ");
-    info_print_version();
-    print_value("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
-}
-
-void info_print_panic_version(void)
-{
-    print(" Kernel version string: ");
-    info_print_version();
-    print_value(" Build on: %s ", (uint32_t) BUILDDATE);
-    print_value("at %s\n", (uint32_t) BUILDTIME);
-}
+#endif

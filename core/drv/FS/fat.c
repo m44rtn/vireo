@@ -34,6 +34,8 @@ SOFTWARE.
 #include "../../memory/memory.h"
 #include "../../memory/paging.h"
 
+#include "../../exec/task.h"
+
 #include "../../hardware/driver.h"
 
 #include "../../dsk/mbr.h"

@@ -42,6 +42,8 @@ SOFTWARE.
 #include "../../memory/memory.h"
 #include "../../memory/paging.h"
 
+#include "../../exec/task.h"
+
 #include "../../dsk/diskio.h"
 #include "../../dsk/diskdefines.h"
 
@@ -295,9 +297,7 @@ uint32_t iso_traverse(char *path, size_t *fsize)
 
 	char *filename = iso_allocate_bfr(flen + 1);
 	memcpy(filename, a, flen);
-	filename[flen] = ' \0';
-
-	print_value("filename by traverse: %s\n", filename);
+	filename[flen] = '\0';
 
 	// reverse path and remove everything we don't need anymore
 	iso_clean_path_reverse(p);
@@ -360,8 +360,6 @@ uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename
 	uint32_t i = 0;
 
 	*(fsize) = 0;
-	print_value("filename: %s\n", filename);
-	print_value("filename len: %x\n", len);
 
 	while(bfr_size)
 	{

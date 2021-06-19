@@ -27,7 +27,7 @@ SOFTWARE.
 #include "pci.h"
 
 #include "../include/types.h"
-#include "../kernel/exec.h"
+#include "../exec/exec.h"
 
 #include "../memory/memory.h"
 

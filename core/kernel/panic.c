@@ -43,8 +43,7 @@ void panic(const char *type, const char *error)
     print_value("%s\n", (uint32_t) error);
     
     /* kernel version string */
-    print(" Kernel version string: ");
-    info_print_version();
+    info_print_panic_version();
 
     print("\n Register dump:\n\t");
     print_value("eax: 0x%x\t", cpustate.eax);
@@ -74,8 +73,7 @@ void easy_panic(const char *type, const char *error, const char *file, const uin
     print_value("%s\n", (uint32_t) error);
     
     /* kernel version string */
-    print(" Kernel version string: ");
-    info_print_version();
+    info_print_panic_version();
 
     print("\n Debug information:\n\t");
     print_value("file: %s\n\t", (uint32_t) file);
@@ -95,8 +93,7 @@ void really_easy_panic(const char *type, const char *error)
     print_value("%s\n", (uint32_t) error);
     
     /* kernel version string */
-    print(" Kernel version string: ");
-    info_print_version();
+    info_print_panic_version();
 
     screen_basic_disable_cursor();
     screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);

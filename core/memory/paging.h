@@ -30,10 +30,6 @@ SOFTWARE.
 #define PAGE_REQ_ATTR_READ_ONLY     !PAGE_REQ_ATTR_READ_WRITE
 #define PAGE_REQ_ATTR_SUPERVISOR    1U << 1
 
-/* todo: move this to tasking when we're there */
-#define PID_KERNEL                  0U
-#define PID_RESV                    0xFFU
-
 typedef struct
 {
     uint8_t pid;        /* process id */

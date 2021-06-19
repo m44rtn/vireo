@@ -21,9 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __ASM_FUNCTIONS_H__
-#define __ASM_FUNCTIONS_H__
+#ifndef __FLAT_H__
+#define __FLAT_H__
 
-extern void EXEC_CALL_FUNC(unsigned int *ptr, unsigned int *data);
+void flat_call_binary(void *ptr, unsigned int stack_size);
 
 #endif
