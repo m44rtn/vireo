@@ -286,19 +286,29 @@ uint32_t iso_traverse(char *path, size_t *fsize)
 	
 	char *p = create_backup_str(path);
 
-	// save file name (TODO: can be seperate functions)
+	// save file name (TODO: can be seperate function)
 	char * a = create_backup_str(path);
 	reverse_path(a);
+	
 	uint32_t flen = find_in_str(a, "/");
 	dbg_assert(flen != MAX);
-	char *filename = iso_allocate_bfr(flen);
+
+	char *filename = iso_allocate_bfr(flen + 1);
 	memcpy(filename, a, flen);
+	filename[flen] = ' \0';
+
+	print_value("filename by traverse: %s\n", filename);
 
 	// reverse path and remove everything we don't need anymore
 	iso_clean_path_reverse(p);
 
-	uint32_t dir_lba = iso_path_to_dir_lba(drive, p);
+	cd_info_t *info = (cd_info_t *) cd_info_ptr;
+	uint32_t dir_lba = (info->rootdir_lba);
 
+	// if there is only a file in the path, we do not have to search for directories
+	if(find_in_str(p, ".") == MAX)
+		dir_lba = iso_path_to_dir_lba(drive, p);
+	
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize);
 	
 	iso_free_bfr(p);
@@ -350,20 +360,23 @@ uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename
 	uint32_t i = 0;
 
 	*(fsize) = 0;
-
+	print_value("filename: %s\n", filename);
+	print_value("filename len: %x\n", len);
 
 	while(bfr_size)
 	{
 		direntry_t *entry = (direntry_t *) &b[i];
 		size_t size = (entry->DR_len);
+		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
 
 		dbg_assert(size);
 		
-		if(!strcmp_until(filename, (char *) ((char *)&(entry->ident_len) + sizeof(uint8_t)), len))
-		{
-			*(fsize) = (entry->size);
-			return (entry->lba_extend);
-		}
+		if(strlen(file) >= len)
+			if(!strcmp_until(filename, (char *) ((char *)&(entry->ident_len) + sizeof(uint8_t)), len))
+			{
+				*(fsize) = (entry->size);
+				return (entry->lba_extend);
+			}
 
 		bfr_size -= size;
 		i += size;
@@ -411,6 +424,9 @@ static uint8_t check_parents(const pathtable_t *child, uint8_t drive, char *path
 {
 	char *p = path_parents_only; // just to make the name shorter
 
+	if(find_in_str(path_parents_only, "/") == MAX)
+		return 1; // success since there are no parents to search for
+
 	char * parent = strtok(p, "/");
 	uint16_t index = child->parent;
 
@@ -441,6 +457,11 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, char *path)
 	
 	// get the length of the file name of the first child and put it in a seperate buffer
 	uint32_t len = find_in_str(path, "/");
+
+	// only dir in path?
+	if(len == MAX)
+		len = strlen(path);
+	
 	char *file = iso_allocate_bfr(len + 1);
 	memcpy(file, path, len);
 	file[len] = '\0';
@@ -605,6 +626,11 @@ void iso_clean_path_reverse(char *p)
 {	
 	if((convert_drive_id(p) >> DISKIO_DISK_NUMBER) != 0xFF)
 		remove_from_str(p, strlen(DISKIO_DISKID_CD) + 2); // remove disk id, n = 4 ('CD0/')
+
+	// check if there are slashes in the path (if not it's a file in the root dir)
+	uint32_t loc = find_in_str(p, "/");
+	if(loc == MAX)
+		return;
 
 	reverse_path(p);
 	remove_from_str(p, find_in_str(p, "/") + 1);
