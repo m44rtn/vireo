@@ -1,14 +1,11 @@
 # Vireo Kernel II
 
-The Vireo kernel is an x86 kernel written in C. 
+The Vireo kernel is an x86 kernel written in C. It will be a mono-tasking kernel that should still be very flexible.
 
-Currently, this is work in progress so the quality of code can be dissapointing.
+Currently, this is work in progress and the quality of code can be dissapointing.
 
 ## License
 The kernel is MIT licensed.
-
-## Goals of Vireo-II
-One of the goals of Vireo-II is to support older ports such as serial and parallel. Another goal is to have a flexible OS that can run on most older 32-bit systems (i686+) while also not being a memory hungry pacman.
 
 ## Building
 
@@ -25,11 +22,11 @@ To build the Vireo-II kernel you will at least need GNU make, gcc-i686 (cross co
 - Run `make todo` to show a list of comments in the entire code base containing the words 'TODO' or 'FIXME'
 
 ### Configuring a Virtualbox VM
-In order for the `make run` command to work, you will need to have a few things configured beforehand. First thing is to create a VM named "BirdOS". You can also use a different name, in which case you will need to change the `VM_NAME` variable in the makefile.
+In order for the `make run` command to work, you will need to have a few things configured beforehand. First thing is to create a Virtualbox virtual machine (VM) named "BirdOS". You can also use a different name, in which case you will need to change the `VM_NAME` variable in the makefile.
 
 After this, you will need to make sure the VM boots from CD and make sure the birdos.iso file is attached to the IDE controller of the VM. You can also do this while the VM has already been launched by going to **Devices > Optical Drives** and hitting [Right ctrl + R] to reboot the VM.
 
-## Documentation
-> There was an attempt...
+**NOTE:** If you are testing the Vireo kernel, without changing the code, it is recommended to make sure the ATAPI device containing the `birdos.iso` is the first or the only drive in the sytem to make sure it is labeled as `CD0` by the kernel. The kernel labels drives in the following order: primary master, primary slave, secondary master, secondary slave.
 
-We've got this README, an occassional comment here and there and a very outdated 'refman'. 
+## Documentation
+Currently, the documentation provided leaves something to be desired. However, this will change in the future.
