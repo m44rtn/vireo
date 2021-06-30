@@ -51,6 +51,7 @@ uint32_t g_max_pages = 0;
 typedef struct
 {
     uint8_t pid;
+    uint16_t npages;
 } __attribute__ ((packed)) shadow_allocated;
 
 shadow_allocated *shadow_t;
@@ -138,7 +139,10 @@ void *valloc(PAGE_REQ *req)
     ASM_CPU_INVLPG((uint32_t *)ptable[t_index]);
 
     /* update our information about this page */
-    shadow_t[page_id].pid = req->pid;
+    for(uint32_t i = 0; i < npages; ++i)
+        shadow_t[page_id + i].pid = (req->pid);
+    
+    shadow_t[page_id].npages = npages;
 
     return ptr;
 }
@@ -148,28 +152,28 @@ void vfree(void *ptr)
     uint32_t d_index, t_index,
             page_id = ((uint32_t) ptr) / PAGING_PAGE_SIZE;
     uint32_t *ptable;
-    
-    /* remove the contents
-       --> note to future self when debugging: memset() has caused problems with kfree()
-        before */
-    memset((char *)ptr, PAGING_PAGE_SIZE, 0x00);
 
     d_index = page_id / PAGING_TABLE_SIZE;
     t_index = page_id % PAGING_TABLE_SIZE;
 
-    /* make page supervisor only */
+    /* make page supervisor only 
+    TODO/FIXME: do not! 
+    */
     ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
     ptable[t_index] = ptable[t_index] & ~(PAGE_REQ_ATTR_SUPERVISOR<<1);
+    
+     /* remove the contents */
+    memset((char *)ptr, PAGING_PAGE_SIZE * shadow_t[page_id].npages, 0x00);
 
-    /* update our shadow map (RESV PID means unallocated) */
-    shadow_t[page_id].pid = PID_RESV;
+    //* update our shadow map (RESV PID means unallocated) */
+    for(uint32_t i = 0; i < shadow_t[page_id].npages; i++)
+        shadow_t[page_id + i].pid = PID_RESV;
 }
 
 
 static void *paging_find_free(uint32_t npages)
 {
     uint32_t index, cnt = 0;
-
     for(uint32_t i = 0; i < shadow_len; ++i)
     {
         if(shadow_t[i].pid != PID_RESV)
@@ -232,7 +236,7 @@ static uint32_t paging_create_tables(void)
     /* allocate a shadow map for all of the pages */
     shadow_len = available_mem / PAGING_PAGE_SIZE;
     shadow_t = (shadow_allocated *) kmalloc(shadow_len * sizeof(shadow_allocated));
-    memset((char *)shadow_t, shadow_len, (char) PID_RESV); /* no page is allocated */
+    memset((char *)shadow_t, shadow_len * sizeof(shadow_allocated), (char) PID_RESV);
 
     return (((uint32_t)page_dir) + amount_mem);
 }
@@ -256,7 +260,7 @@ static void paging_prepare_table(uint32_t *table, uint8_t type)
 
 static void paging_map_kernelspace(uint32_t end_of_kernel_space)
 {
-    PAGE_REQ req = {PID_KERNEL, PAGE_REQ_ATTR_SUPERVISOR, PAGING_PAGE_SIZE};
+    PAGE_REQ req = {PID_KERNEL, PAGE_REQ_ATTR_SUPERVISOR | PAGE_REQ_ATTR_READ_WRITE, PAGING_PAGE_SIZE};
     uint32_t i;
     uint32_t pages = end_of_kernel_space >> 12; /* same as end_of_kernel_space / PAGING_PAGE_SIZE */
 

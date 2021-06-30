@@ -62,7 +62,7 @@ clean:
 	-@for file in $(DCLEAN:Makefile=); do rm $$file; done; true
 	-@for file in $(OCLEAN:Makefile=); do rm $$file; done; true
 
-# creates a map of all function
+# creates a map of all functions
 map:
 	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES)
 

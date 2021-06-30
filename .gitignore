@@ -6,4 +6,6 @@ grub/boot/kernel.sys
 birdos.iso
 kernel.map
 
+test
+
 *.o

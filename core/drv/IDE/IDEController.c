@@ -516,10 +516,10 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     if(status & 0x01)
         return EXIT_CODE_IDE_ERROR_READING_DRIVE;
     
-    read_command[2] = (uint8_t) (start >> 0x18);
-    read_command[3] = (uint8_t) (start >> 0x10);
-    read_command[4] = (uint8_t) (start >> 0x08);
-    read_command[5] = (uint8_t) (start >> 0x00);
+    read_command[2] = (uint8_t) (start >> 0x18) & 0xFF;
+    read_command[3] = (uint8_t) (start >> 0x10) & 0xFF;
+    read_command[4] = (uint8_t) (start >> 0x08) & 0xFF;
+    read_command[5] = (uint8_t) (start >> 0x00) & 0xFF;
     read_command[9] = (uint8_t) sctrwrite;
 
     outsw(port, 6, (uint16_t *) &read_command);
@@ -531,11 +531,10 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
     dbg_assert(size == byteCount);
 
-    for(i = 0; i < sctrwrite; ++i)
-        insw(port, byteCount / 2U, buf+(byteCount*i));
+    insw(port, (sctrwrite * byteCount) / sizeof(uint16_t), buf);
 
     /* wait for second IRQ or timeout */
-    while(!(ide_flags & IDE_FLAG_IRQ) && ((++i) != 10000))
+    while(inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ))
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
 

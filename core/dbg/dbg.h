@@ -33,7 +33,7 @@ SOFTWARE.
     if(!(expression))                                                   \
     {                                                                   \
                                                                         \
-    print( "Vireo:");                                                   \
+    print( "[ASSERT] Vireo:");                                                   \
     screen_basic_set_screen_color(0x03);                                \
     print_value( "%s:", (unsigned int) __FILE__);                             \
     screen_basic_set_screen_color(0x07);                                \

@@ -345,6 +345,7 @@ uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *filename, s
 		if(flba || !(nlba--))
 			break;
 
+		iso_free_bfr(bfr);
 		dir_lba++;
 	}
 
@@ -474,6 +475,8 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, char *path)
 	// check if the parents are the same as expected
 	while(!check_parents((const pathtable_t *) t, drive, backup))
 	{
+		iso_free_bfr(t);
+
 		// find the next file with that has the same name as the child
 		if(!(t = (pathtable_t *) iso_search_in_path_table(drive, file, NO_RESET)))
 			return MAX;
@@ -483,11 +486,14 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, char *path)
 		backup = create_backup_str(&p[len] + 1);
 	}
 	
+	uint32_t lba = (t->lba);
+
 	iso_free_bfr(p);	
 	iso_free_bfr(file);	
 	iso_free_bfr(backup);
+	iso_free_bfr(t);
 
-	return (t->lba);
+	return lba;
 }
 
 static uint16_t iso_read_path_table_buffer(uint8_t *buffer, char *filename, uint16_t s)
@@ -517,7 +523,6 @@ static uint16_t iso_read_path_table_buffer(uint8_t *buffer, char *filename, uint
 
 uint32_t *iso_search_in_path_table(uint8_t drive, char *filename, uint8_t reset)
 {
-	// TODO: does not support lba cross-over?
 	static uint16_t loc = 0;
 	static uint32_t lba = 0;
 	
@@ -680,7 +685,7 @@ uint16_t *iso_read_drive(uint8_t drive, uint32_t lba, uint32_t sctr_read)
 	}
 
 	// read the drive
-	read(drive, lba, 1, (uint8_t *) buf);
+	read(drive, lba, sctr_read, (uint8_t *) buf);
 
 	return buf;
 }
@@ -691,11 +696,11 @@ void iso_read(char * path, uint32_t *drv)
     uint32_t flba = iso_traverse(path, &fsize);
 
 	uint32_t nlba = fsize / SECTOR_SIZE + ((fsize % SECTOR_SIZE) != 0);
-	
 	uint8_t drive = (uint8_t) (convert_drive_id((const char *) path) >> DISKIO_DISK_NUMBER);
 
+	// FIXME: use paging instead of default iso memory (which may use kernel memory)
 	uint16_t *bfr = iso_read_drive(drive, flba, nlba);
 
 	drv[2] = (uint32_t) bfr;
-	drv[3] = (nlba * SECTOR_SIZE);
+	drv[3] = fsize;
 }

@@ -21,18 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __ELF_H__
+#define __ELF_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 3658
-
-#define BUILDDATE    __DATE__
-#define BUILDTIME    __TIME__
-
-void info_print_version(void);
-void info_print_full_version(void);
-void info_print_panic_version(void);
+unsigned char elf_parse_binary(void **ptr, unsigned int size);
 
 #endif

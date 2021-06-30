@@ -153,7 +153,7 @@ void main(void)
     init_env();
 
     drv[0] = FS_COMMAND_READ;
-    drv[1] = (uint32_t) "CD0/TEST/TEST.BIN\0";
+    drv[1] = (uint32_t) "CD0/TEST/CONWAY.ELF\0";
     driver_exec((FS_TYPE_ISO | DRIVER_TYPE_FS), drv);
     print_value("READ FILE WITH ERROR CODE: %x\n", drv[4]);
     print_value("buffer location: 0x%x\t", drv[2]);
@@ -168,7 +168,13 @@ void main(void)
     print((char*)"\n");
 #endif
 
-    flat_call_binary((void *) drv[2], 512);
+    uint8_t err = elf_parse_binary((void **) &drv[2], drv[3]);
+    print_value("new pointer: 0x%x\n", drv[2]);
+
+    if(err == EXIT_CODE_GLOBAL_UNSUPPORTED)
+        debug_print_error("ELF binary incompatible");
+
+    print_value("::%x\n", kmalloc(512));
     /*conways_game_of_life();*/
 
     while(1);

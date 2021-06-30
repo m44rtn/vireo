@@ -46,10 +46,11 @@ SOFTWARE.
 #define MEMORY_MMAP_TYPE_VIREO 1
 #define MEMORY_MMAP_TYPE_RESV  2
 
+// 1  MiB - 1 byte reserved for kernel (0x100000 thru 0x1fffff)
 #define MEMORY_KERNELSTRT         0x100000
 #define MEMORY_MALLOC_MEMSTRT     0x200000
 
-#define MEMORY_TABLE_LENGTH    128U 
+#define MEMORY_TABLE_LENGTH    128U  // entries
 #define MEMORY_BLOCK_SIZE      512U // bytes
 
 #define MEMORY_MALLOC_SPACE     (MEMORY_BLOCK_SIZE * MEMORY_TABLE_LENGTH)
