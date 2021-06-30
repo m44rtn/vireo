@@ -26,7 +26,7 @@ In order for the `make run` command to work, you will need to have a few things 
 
 After this, you will need to make sure the VM boots from CD and make sure the birdos.iso file is attached to the IDE controller of the VM. You can also do this while the VM has already been launched by going to **Devices > Optical Drives** and hitting [Right ctrl + R] to reboot the VM.
 
-**NOTE:** If you are testing the Vireo kernel, without changing the code, it is recommended to make sure the ATAPI device containing the `birdos.iso` file is the first or the only drive in the sytem to make sure it is labeled as `CD0` by the kernel. The kernel labels drives in the following order: primary master, primary slave, secondary master, secondary slave.
+**NOTE:** If you are testing the Vireo kernel, without changing the code, it is recommended to make sure the ATAPI device containing the `birdos.iso` file is the first or the only drive in the system to make sure it is labeled as `CD0` by the kernel. The kernel labels drives in the following order: primary master, primary slave, secondary master, secondary slave.
 
 ## Documentation
 Currently, the documentation provided leaves something to be desired. However, this will change in the future.
