@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "kernel.h"
+#include "main.h"
 
 #include "include/exit_code.h"
 #include "include/types.h"
@@ -140,6 +140,7 @@ void init_env(void)
     // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
 }
 
+extern void call_int80();
 void main(void)
 {
     unsigned int exit_code = 0;
@@ -152,8 +153,11 @@ void main(void)
 
     init_env();
 
+    //call_int80();
+
+#ifndef NO_DEBUG_INFO
     drv[0] = FS_COMMAND_READ;
-    drv[1] = (uint32_t) "CD0/TEST/CONWAY.ELF\0";
+    drv[1] = (uint32_t) "CD0/TEST/BREAKER.ELF\0";
     driver_exec((FS_TYPE_ISO | DRIVER_TYPE_FS), drv);
     print_value("READ FILE WITH ERROR CODE: %x\n", drv[4]);
     print_value("buffer location: 0x%x\t", drv[2]);
@@ -162,6 +166,7 @@ void main(void)
 
     if(drv[4] == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
         print("Error: drive specification unsupported\n");
+#endif // NO_DEBUG_INFO
     
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     info_print_full_version();    
@@ -173,8 +178,9 @@ void main(void)
 
     if(err == EXIT_CODE_GLOBAL_UNSUPPORTED)
         debug_print_error("ELF binary incompatible");
-
-    print_value("::%x\n", kmalloc(512));
+    else if(err)
+        debug_print_error("Problem loading ELF file");
+    print_value("error code: %x\n", err);
     /*conways_game_of_life();*/
 
     while(1);
