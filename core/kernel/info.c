@@ -26,10 +26,18 @@ SOFTWARE.
 #include "../include/types.h"
 
 #include "../screen/screen_basic.h"
+#include "../util/util.h"
+#include "../memory/memory.h"
+
+// Version str format: Vireo-[version] build [BUILD_NUMBER] (v[MAJOR].[MINOR][REVISION])
+#define INFO_VER_STR_START  "Vireo-II build "
 
 void info_print_version(void)
 {
-    print_value( "Vireo II build %i\n", BUILD);
+    print_value(INFO_VER_STR_START "%i (", BUILD);
+    print_value("v%i.", MAJOR);
+    print_value("%i", MINOR);
+    print_value("%s)\n", REV);
 }
 
 void info_print_full_version(void)
@@ -46,4 +54,23 @@ void info_print_panic_version(void)
     info_print_version();
     print_value(" Build on: %s ", (uint32_t) BUILDDATE);
     print_value("at %s\n", (uint32_t) BUILDTIME);
+}
+
+char *info_make_version_str(void)
+{
+    char *str = kmalloc(512);
+    memset(str, 512, 0); // FIXME: buffer is filled with 0x20 if memset is not used
+    str_add_val(str, INFO_VER_STR_START "%i (", BUILD);
+
+    uint32_t i = strlen(str);
+
+    str_add_val(&str[i], "v%i.", MAJOR);
+    i = strlen(str);
+
+    str_add_val(&str[i], "%i", MINOR);
+    i = strlen(str);
+
+    str_add_val(&str[i], "%s)", REV);
+    
+    return str;
 }
