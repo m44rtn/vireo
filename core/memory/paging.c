@@ -233,12 +233,14 @@ static uint32_t paging_create_tables(void)
         paging_prepare_table((uint32_t *) table_loc, PAGING_TABLE_TYPE_TAB);      
     }
 
-    /* allocate a shadow map for all of the pages */
+    /* put the shadow map for all of the pages right after the page tables */
     shadow_len = available_mem / PAGING_PAGE_SIZE;
-    shadow_t = (shadow_allocated *) kmalloc(shadow_len * sizeof(shadow_allocated));
-    memset((char *)shadow_t, shadow_len * sizeof(shadow_allocated), (char) PID_RESV);
+    size_t shadow_size = shadow_len * sizeof(shadow_allocated);
 
-    return (((uint32_t)page_dir) + amount_mem);
+    shadow_t = (shadow_allocated *) page_dir + amount_mem;
+    memset((char *)shadow_t, shadow_size, (char) PID_RESV);
+
+    return ((uint32_t) shadow_t) + shadow_size;
 }
 
 static void paging_prepare_table(uint32_t *table, uint8_t type)
@@ -262,7 +264,7 @@ static void paging_map_kernelspace(uint32_t end_of_kernel_space)
 {
     PAGE_REQ req = {PID_KERNEL, PAGE_REQ_ATTR_SUPERVISOR | PAGE_REQ_ATTR_READ_WRITE, PAGING_PAGE_SIZE};
     uint32_t i;
-    uint32_t pages = end_of_kernel_space >> 12; /* same as end_of_kernel_space / PAGING_PAGE_SIZE */
+    uint32_t pages = ((end_of_kernel_space & PAGING_ADDR_MSK) >> 12) + (end_of_kernel_space & 0xFFF != 0);
 
     for(i = 0; i < pages; ++i)
     {
