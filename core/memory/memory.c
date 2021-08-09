@@ -267,14 +267,16 @@ void kfree(void *ptr)
         if(memory_t[i].loc == (uint32_t) ptr)
             break;
 
-    len = (uint8_t) (i + memory_t[i].size);
+    size_t s = memory_t[i].size;
+
+    len = (uint8_t) (i + s);
     for(i = i; i < len; i++)
     {
         memory_t[i].loc  = 0;
         memory_t[i].size = 0;
     }
 
-    // memset(ptr, len * MEMORY_BLOCK_SIZE, 0);
+    memset(ptr, s, 0);
 }
 
 uint32_t memory_getAvailable(void)
