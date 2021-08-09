@@ -267,7 +267,7 @@ void * iso_allocate_bfr(size_t size)
 	ptr = valloc(&req);
 
 	if(!ptr)
-		gerror = EXIT_CODE_OUT_OF_MEMORY;
+		gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
 	
 	return ptr;
 }
@@ -326,7 +326,7 @@ uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *filename, s
 	size_t bfr_size = iso_alloc_dir_buffer(size, &bfr);
 
 	if(!bfr || !bfr_size)
-	{gerror = EXIT_CODE_OUT_OF_MEMORY; return 0;}
+	{gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return 0;}
 	
 	uint32_t nlba = size / SECTOR_SIZE + ((size % SECTOR_SIZE) != 0);
 	const uint32_t to_read = (bfr_size / SECTOR_SIZE);
@@ -680,7 +680,7 @@ uint16_t *iso_read_drive(uint8_t drive, uint32_t lba, uint32_t sctr_read)
 	// check if we got a null pointer back
 	if(!buf)
 	{
-		gerror = EXIT_CODE_OUT_OF_MEMORY;
+		gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
 		return NULL;
 	}
 
