@@ -74,19 +74,21 @@ SOFTWARE.
 #define ATA_STAT_DF     0x20
 #define ATA_STAT_BUSY   0x80
 
-#define ATAPI_COMMAND_READ 0xA8
+#define ATAPI_COMMAND_READ      0xA8
 
-#define ATA_COMMAND_READ    0x20
-#define ATA_COMMAND_WRITE   0x30
+#define ATA_COMMAND_MAX_ADDR    0xF8
 
-#define ATAPI_COMMAND_PACKET 0xA0
-#define ATAPI_COMMAND_READ  0xA8
+#define ATA_COMMAND_READ        0x20
+#define ATA_COMMAND_WRITE       0x30
 
-#define ATA_COMMAND_DMAREAD 0xC8
-#define ATA_COMMAND_DMAWRITE 0xCA
+#define ATAPI_COMMAND_PACKET    0xA0
+#define ATAPI_COMMAND_READ      0xA8
 
-#define ATAPI_IDENTIFY   0xA1
-#define ATA_IDENTIFY     0xEC
+#define ATA_COMMAND_DMAREAD     0xC8
+#define ATA_COMMAND_DMAWRITE    0xCA
+
+#define ATAPI_IDENTIFY          0xA1
+#define ATA_IDENTIFY            0xEC
 
 /* Flags stuff */
 #define IDE_FLAG_INIT_RAN   1 /* used by init to say it did ran and did it's thing */
@@ -147,6 +149,23 @@ struct DRIVER IDE_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_P
 // FIXME remove static declarations/prototypes and put all functions in .h
 // FIXME check in read/write functions if sctrwrite is not too big of a value (creates fault)
 
+
+static uint32_t ide_get_max_addr(uint8_t drive)
+{
+    uint16_t port = IDE_getPort(drive);
+    
+    outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_MAX_ADDR);
+
+    IDE_polling(port, false);
+
+    uint32_t lba = (uint32_t) inb(port | ATA_PORT_LBALOW);
+    lba += (uint32_t) inb(port | ATA_PORT_LBAMID) << 8;
+    lba += (uint32_t) inb(port | ATA_PORT_LBAHI) << 16;
+    lba += (uint32_t) (inb(port | ATA_PORT_SELECT) & 0x0F) << 24;
+    
+    return lba;
+}
+
 void IDEController_handler(uint32_t *drv)
 {
     uint8_t error = 0;
@@ -180,7 +199,14 @@ or has executed succesfully in the past */
         break;
 
         case IDE_COMMAND_REPORTDRIVES:
-            IDE_reportDrives((uint8_t *) *(&drv[1]));
+            if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATA)
+                IDE_reportDrives((uint8_t *) *(&drv[1]));
+            else
+                error = EXIT_CODE_GLOBAL_UNSUPPORTED;
+        break;
+
+        case IDE_COMMAND_GET_MAX_ADDRESS:
+            drv[2] = ide_get_max_addr((uint8_t) drv[1]);
         break;
 
         default:
@@ -490,7 +516,7 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
     uint8_t status;
-    uint32_t size, i;
+    uint32_t size, i = 0;
 
     if(drive > 3)
         return EXIT_CODE_IDE_ERROR_READING_DRIVE;
@@ -524,7 +550,7 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
 
     outsw(port, 6, (uint16_t *) &read_command);
     
-    while(!(ide_flags & IDE_FLAG_IRQ))
+    while(!(ide_flags & IDE_FLAG_IRQ) && i++ < 100000)
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
 
@@ -533,7 +559,7 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
 
     insw(port, (sctrwrite * byteCount) / sizeof(uint16_t), buf);
 
-    /* wait for second IRQ or timeout */
+    /* wait for BUSY and DRQ to clear */
     while(inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ))
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);

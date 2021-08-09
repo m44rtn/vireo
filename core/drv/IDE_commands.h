@@ -24,6 +24,7 @@ SOFTWARE.
 #ifndef __IDE_COMMANDS_H__
 #define __IDE_COMMANDS_H__
 
+// TODO use COMMANDS.H first not reserved define
 
 /*#define IDE_COMMAND_INIT    0x00
 ---- (not defined since COMMANDS.H already defines INIT)
@@ -69,6 +70,16 @@ SOFTWARE.
 	DRIVE_TYPE_IDE_PATAPI
 	DRIVE_TYPE_UNKNOWN
 */
+
+#define IDE_COMMAND_GET_MAX_ADDRESS	0x13
+/* 
+	returns the maximum relative address of a drive (i.e. last sector)
+	
+	parameter1: drive
+	
+	Returns:
+	parameter2 max relative address
+*/ 
 
 #ifndef IDE_DRIVER_MAX_DRIVES
 #define IDE_DRIVER_MAX_DRIVES   4
