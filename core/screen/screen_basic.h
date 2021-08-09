@@ -40,6 +40,8 @@ SOFTWARE.
 
 unsigned char screen_basic_init(void);
 
+void screen_basic_api(void *req);
+
 void screen_basic_enable_cursor(unsigned char cursor_start, unsigned char cursor_end);
 void screen_basic_disable_cursor(void);
 unsigned char screen_basic_move_cursor(unsigned short x, unsigned short y);

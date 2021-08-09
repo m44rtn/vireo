@@ -24,6 +24,8 @@ SOFTWARE.
 #ifndef __COMMANDS_H__
 #define __COMMANDS_H__
 
+#define DRV_COMMAND_FIRST_NOT_RESERVED  0x10
+
 #define   DRV_COMMAND_INIT    0x00
 /* I guess we'll just reserve until 0x0F */
 

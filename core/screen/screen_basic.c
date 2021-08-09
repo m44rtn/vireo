@@ -23,6 +23,9 @@ SOFTWARE.
 
 #include "screen_basic.h"
 
+#include "../api/api.h"
+#include "../api/syscalls.h"
+
 #include "../io/io.h"
 #include "../include/types.h"
 #include "../include/exit_code.h"
@@ -43,6 +46,33 @@ typedef struct SCREENDATA
 	unsigned char chScreenColor;
 } SCREENDATA;
 
+typedef struct api_screen_t
+{
+    syscall_hdr_t hdr;
+    const char *str;
+    uint32_t x;
+    uint32_t y;
+} __attribute__((packed)) api_screen_t;
+
+typedef struct screen_color_t
+{
+    syscall_hdr_t hdr;
+    uint8_t color;
+} __attribute__((packed)) api_screen_color_t;
+
+typedef enum screen_mode_t
+{
+    VGA_MODE_3      // aka BIOS/'default' text mode
+} screen_mode_t;
+
+typedef struct screen_info_t
+{
+    screen_mode_t mode;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+} __attribute__((packed)) screen_info_t;
+
 static SCREENDATA SCRscreenData;
 uint8_t hexdigits = 0;
 
@@ -61,6 +91,76 @@ static void screen_basic_clear_line(unsigned char from, unsigned char to);
 /*
  * 'Public' part
  */
+void screen_basic_api(void *req)
+{
+	api_screen_t *r = (api_screen_t *) req;
+	switch(r->hdr.system_call)
+	{
+		default:
+			r->hdr.exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
+		break;
+
+		case SYSCALL_GET_SCREEN_INFO:
+		{
+			screen_info_t *scr = (screen_info_t *) api_alloc(sizeof(screen_info_t));
+			
+			scr->mode = VGA_MODE_3;
+			scr->depth = SCREEN_BASIC_DEPTH;
+			scr->width = SCREEN_BASIC_WIDTH;
+			scr->height = SCREEN_BASIC_HEIGHT;
+
+			r->hdr.response_ptr = (void *) scr;
+			r->hdr.response_size = sizeof(screen_info_t);
+			break;
+		}
+
+		case SYSCALL_PRINT:
+			print(r->str);
+		break;
+
+		case SYSCALL_PRINT_AT:
+		{
+			uint16_t _x = SCRscreenData.cursorX, _y = SCRscreenData.cursorY;
+			
+			// set new cursor position and print
+			SCRscreenData.cursorX = r->x;
+			SCRscreenData.cursorY = r->y;
+			print(r->str);
+
+			// reset cursor positions to before syscall
+			SCRscreenData.cursorX = _x;
+			SCRscreenData.cursorY = _y;
+
+			break;
+		}
+
+		case SYSCALL_GET_SCREEN_BUFFER:
+			r->hdr.response_ptr = api_alloc(SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH);
+			r->hdr.response_size = SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH;
+
+			// TODO: make 0xb8000 a define
+			memcpy(r->hdr.response_ptr, 0xb8000, r->hdr.response_size);
+		break;
+
+		case SYSCALL_GET_SCREEN_GET_BYTE:
+			r->hdr.response_ptr = (void *) screen_basic_getchar(r->x, r->y);
+		break;
+
+		case SYSCALL_SET_SCREEN_COLOR:
+		{
+			api_screen_color_t *c = (api_screen_color_t *) req;
+			screen_basic_set_screen_color(c->color);
+			break;
+		}
+
+		case SYSCALL_CLEAR_SCREEN:
+			screen_basic_clear_screen();
+		break;
+		
+
+	}
+}
+
 
 unsigned char screen_basic_init(void)
 {

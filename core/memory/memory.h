@@ -24,6 +24,8 @@ SOFTWARE.
 #ifndef __MEMORY_H__
 #define __MEMORY_H__
 
+void memory_api(void *req);
+
 unsigned char memory_init(void);
 unsigned int *memory_paging_tables_loc(void);
 void *kmalloc(unsigned int size);

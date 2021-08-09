@@ -24,7 +24,15 @@ SOFTWARE.
 #ifndef __ISR_H__
 #define __ISR_H__
 
+#define MAX_PIC_INTERRUPTS      0x10
+
+void isr_set_extern_handler(unsigned char type, void *handler);
+void **isr_get_extern_handlers(void);
+
+void ISR_STANDARD_HANDLER(void);
+
 void ISR_00_HANDLER(void);
+void ISR_01_HANDLER(void);
 void ISR_05_HANDLER(void);
 void ISR_06_HANDLER(void);
 void ISR_0D_HANDLER(void);
@@ -33,5 +41,6 @@ void ISR_0E_handler(unsigned int error_code);
 void ISR_20_HANDLER(void);
 void ISR_21_HANDLER(void);
 
+void ISR_80_HANDLER(void *eip, void *req);
 
 #endif

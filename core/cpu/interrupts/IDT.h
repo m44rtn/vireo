@@ -31,6 +31,7 @@ void IDT_add_handler(unsigned char index, unsigned int handler);
 extern void ASM_IDT_SUBMIT(unsigned int *IDT);
 
 /* ASSEMBLY ISR HANDLERS */
+extern void ISR_STANDARD(void);
 extern void ISR_00(void);
 extern void ISR_01(void);
 extern void ISR_02(void);
@@ -49,5 +50,7 @@ extern void ISR_0E(void);
 
 extern void ISR_20(void);
 extern void ISR_21(void);
+
+extern void ISR_80(void);
 
 #endif

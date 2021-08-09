@@ -78,3 +78,27 @@ pop esp
 pop ebp
 
 ret
+
+global asm_exec_isr
+section .text
+
+asm_exec_isr:
+; calls an external binary
+;	input: 
+;       - pointer to binary    [stack]
+;	ouput: n/a
+
+push ebp
+
+mov ebp, esp
+
+; function to call
+mov eax, DWORD [ebp + 8]
+mov edi, eax
+
+call edi
+
+pop esp
+pop ebp
+
+ret

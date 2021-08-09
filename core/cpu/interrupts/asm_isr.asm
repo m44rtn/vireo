@@ -3,6 +3,15 @@ bits 32
 extern ASM_CPU_SAVE_STATE
 extern state
 
+global ISR_STANDARD
+extern ISR_STANDARD_HANDLER
+ISR_STANDARD:
+pushad
+    cld
+    call ISR_STANDARD_HANDLER
+popad
+iret
+
 global ISR_00
 extern ISR_00_HANDLER
 ISR_00:
@@ -16,9 +25,14 @@ popad
 iret
 
 global ISR_01
+extern ISR_01_HANDLER
 ISR_01:
 pushad
-    jmp $ 
+   push state
+   call ASM_CPU_SAVE_STATE
+   cld
+   call ISR_01_HANDLER
+   jmp $ 
 popad
 iret
 
@@ -158,6 +172,19 @@ pushad
 popad
 iret
 
+global ISR_80
+extern api_dispatcher_start
+extern start
+ISR_80:
+; System calls
 
-; for ignoring values without tampering with the registers
+; save old eip
+pop DWORD [ignore]
+mov edi, DWORD [ignore]
+
+; FIXME: may not work when user mode is used for programs
+push api_dispatcher_start
+iretd
+
+; for ignoring values without using the registers
 ignore dd 0x0

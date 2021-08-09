@@ -23,9 +23,10 @@ SOFTWARE.
 
 #include "memory.h"
 
-/* TODO: can be removed if (no, not when) a tasking header is implemented 
- we only need this header because of the PIDs */
 #include "paging.h" 
+
+#include "../api/api.h"
+#include "../api/syscalls.h"
 
 #include "../include/types.h"
 #include "../include/exit_code.h"
@@ -79,6 +80,26 @@ typedef struct
     uint32_t size;
 } MEMORY_TABLE;
 
+// api stuff
+typedef struct valloc_t
+{
+    syscall_hdr_t hdr;
+    size_t size;
+} __attribute__((packed)) valloc_t;
+
+typedef struct vfree_t
+{
+    syscall_hdr_t hdr;
+    void *ptr;
+} __attribute__((packed)) vfree_t;
+
+typedef struct api_mem_info_t
+{
+    size_t memory_space_kb;
+    void *program_space_start;
+} __attribute__((packed)) api_mem_info_t;
+// -- end api stuff
+
 /* I'm sorry for this ugly define line here */
 #define MEMORY_VIRTUAL_TABLES  MEMORY_MALLOC_MEMSTRT + (MEMORY_BLOCK_SIZE * MEMORY_TABLE_LENGTH)
 /* ---- */
@@ -98,6 +119,43 @@ uint8_t loader_type = 0;
 
 static void memory_update_table(uint8_t index, uint32_t loc, uint8_t blocks);
 static void memory_create_temp_mmap(void);
+
+void memory_api(void *req)
+{
+    syscall_hdr_t *hdr = (syscall_hdr_t *) req;
+
+    switch(hdr->system_call)
+    {
+        case SYSCALL_GET_MEM_INFO:
+        {
+            api_mem_info_t *mem = (api_mem_info_t *) api_alloc(sizeof(api_mem_info_t));
+            mem->memory_space_kb = memory_info_t.available_memory;
+            mem->program_space_start = NULL; // TODO: either fix or remove
+            
+            hdr->response_ptr = mem;
+            hdr->response_size = sizeof(api_mem_info_t);
+            break;
+        }
+
+        case SYSCALL_VALLOC:
+        {
+            valloc_t *v = (valloc_t *) req;
+            v->hdr.response_ptr = api_alloc(v->size);
+            break;
+        }
+
+        case SYSCALL_VFREE:
+        {
+            vfree_t *v = (vfree_t *) req;
+            vfree(v->ptr);
+            break;
+        }
+
+        default:
+            hdr->exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
+        break;
+    }
+}
 
 uint8_t memory_init(void)
 {

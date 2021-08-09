@@ -21,23 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __KERNEL_H__
+#define __KERNEL_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 3851
+void kernel_api_handler(void *req);
 
-#define MAJOR 0
-#define MINOR 1  
-#define REV "-pre1"
-
-#define BUILDDATE    __DATE__
-#define BUILDTIME    __TIME__
-
-void info_print_version(void);
-void info_print_full_version(void);
-void info_print_panic_version(void);
-char *info_make_version_str(void);
-
-#endif
+#endif // __KERNEL_H__

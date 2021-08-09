@@ -21,23 +21,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#ifndef __API_H__
+#define __API_H__
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 3851
+#include "../include/types.h"
 
-#define MAJOR 0
-#define MINOR 1  
-#define REV "-pre1"
+typedef struct
+{
+    uint16_t system_call;
+    uint8_t exit_code;
+    void *response_ptr;
+    uint32_t response;
+    size_t response_size;
+} __attribute__((packed)) syscall_hdr_t;
 
-#define BUILDDATE    __DATE__
-#define BUILDTIME    __TIME__
+typedef struct
+{
+    uint8_t exit_code;
+    size_t size;
+} __attribute__((packed)) response_hdr_t;
 
-void info_print_version(void);
-void info_print_full_version(void);
-void info_print_panic_version(void);
-char *info_make_version_str(void);
+void api_dispatcher(void *eip, void *req);
+void *api_alloc(size_t size);
 
-#endif
+extern void api_dispatcher_start(void);
+extern void api_dispatcher_return(void *eip);
+
+#endif // __API_H__

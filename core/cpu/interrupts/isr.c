@@ -33,10 +33,42 @@ SOFTWARE.
 #include "../../io/io.h"
 
 #include "../../kernel/panic.h"
+#include "../../exec/exec.h"
+
+#include "../../util/util.h"
+
+void *extern_handlers[MAX_PIC_INTERRUPTS];
+
+void isr_set_extern_handler(uint8_t type, void *handler)
+{
+    if(type >= MAX_PIC_INTERRUPTS)
+        return;
+
+    extern_handlers[type] = handler;
+}
+
+void **isr_get_extern_handlers(void)
+{
+    return &extern_handlers;
+}
+
+void ISR_STANDARD_HANDLER(void)
+{
+    uint16_t pic = nth_bit(PIC_read_ISR() & ~PIC_CASCADE, sizeof(uint16_t) << 3);
+    
+    // FIXME: when user mode exists, isr should be executed there
+    if((pic && pic < 0xFF) && extern_handlers[pic] != NULL)
+        asm_exec_isr(extern_handlers[pic]);
+}
 
 void ISR_00_HANDLER(void)
 {
     panic(PANIC_TYPE_EXCEPTION, "DIVIDE_BY_ZERO");
+}
+
+void ISR_01_HANDLER(void)
+{
+    panic(PANIC_TYPE_EXCEPTION, "DEBUG");
 }
 
 void ISR_05_HANDLER(void)
@@ -46,7 +78,7 @@ void ISR_05_HANDLER(void)
 
 void ISR_06_HANDLER(void)
 {
-    panic(PANIC_TYPE_EXCEPTION, "GENERAL_PROTECTION_FAULT");
+    panic(PANIC_TYPE_EXCEPTION, "INVALID_OPCODE");
 }
 
 void ISR_0D_HANDLER(void)

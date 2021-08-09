@@ -152,8 +152,6 @@ uint8_t elf_parse_binary(void **ptr, unsigned int size)
     uint8_t err;
     if((err = elf_check_errors(hdr)))
         return err;
-    
-    print("well! seems to be compatible...\n");
 
     void *nptr = elf_load_binary(*ptr);
 

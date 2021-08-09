@@ -23,6 +23,8 @@ SOFTWARE.
 
 #include "diskio.h"
 
+#include "mbr.h"
+
 #include "../include/types.h"
 #include "../dsk/diskdefines.h"
 #include "../include/exit_code.h"
@@ -36,7 +38,37 @@ SOFTWARE.
 
 #include "../drv/IDE_commands.h"
 
-#define DISKIO_MAX_DRIVES 4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
+#include "../api/api.h"
+#include "../api/syscalls.h"
+
+#define DISK_ID_MAX_SIZE        8
+#define DISKIO_MAX_DRIVES       4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
+
+// api stuff
+typedef struct disk_info_t
+{
+    char name[DISK_ID_MAX_SIZE];
+    size_t sector_size;
+    size_t disk_size;
+} __attribute__((packed)) api_disk_info_t;
+
+typedef struct partition_info_t
+{
+    uint32_t starting_sector;
+    uint32_t n_sectors;
+    uint8_t type;
+} __attribute__((packed)) api_partition_info_t;
+
+typedef struct disk_syscall_t
+{
+    syscall_hdr_t hdr;
+    char *drive;
+    uint32_t lba;
+    uint32_t nlba;
+    size_t buffer_size;
+    void *buffer;
+} __attribute__((packed)) disk_syscall_t;
+// -- end api stuff
 
 typedef struct{
     uint8_t diskID;
@@ -45,6 +77,111 @@ typedef struct{
 }__attribute__((packed)) DISKINFO;
 
 DISKINFO disk_info_t[DISKIO_MAX_DRIVES];
+
+void diskio_api(void *req)
+{
+    syscall_hdr_t *hdr = (syscall_hdr_t *) req;
+
+    switch(hdr->system_call)
+    {
+        case SYSCALL_DISK_LIST:
+        {
+            // TODO make function
+            uint8_t *disks = diskio_reportDrives();
+            api_disk_info_t *dsk = (api_disk_info_t *) api_alloc(DISKIO_MAX_DRIVES * sizeof(api_disk_info_t));
+            
+            for(uint8_t i = 0; i < DISKIO_MAX_DRIVES; ++i)
+            {
+                if(disks[i] == DRIVE_TYPE_UNKNOWN)
+                    break;
+
+                dsk[i].disk_size = disk_get_max_addr(i) * disk_get_sector_size(i);
+
+                const char *id = drive_type_to_chars(disks[i]);
+                memcpy(&dsk[i].name[0], (char *) (id), strlen(id));
+
+                dsk[i].sector_size = disk_get_sector_size(i);
+            }
+
+            hdr->response_ptr = (void *) dsk;
+            hdr->response_size = DISKIO_MAX_DRIVES * sizeof(api_disk_info_t);
+
+            kfree(disks);
+            break;
+        }
+
+        case SYSCALL_PARTITION_INFO:
+        {
+            // TODO make function
+            disk_syscall_t *c = (disk_syscall_t *) req;
+
+            uint16_t id = convert_drive_id(c->drive);
+
+            uint8_t disk = (id >> 8) & 0xFF;
+            uint8_t part = id & 0xFF;
+
+            api_partition_info_t *p = (api_partition_info_t *) api_alloc(sizeof(api_partition_info_t));
+
+            p->n_sectors = mbr_get_sector_count(disk, part);
+            p->starting_sector = MBR_getStartLBA(disk, part);
+            p->type = mbr_get_type(disk, part);
+
+            c->hdr.response_ptr = (void *) p;
+            c->hdr.response_size = sizeof(api_partition_info_t);
+
+            break;
+        }
+
+        case SYSCALL_DISK_ABS_READ:
+        {
+            // TODO: make function
+            disk_syscall_t *c = (disk_syscall_t *) req;
+
+            if(c->buffer < memory_get_malloc_end() /* (end of kernel space) */) 
+                { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
+
+            uint16_t id = convert_drive_id((const char *) c->drive);
+            uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
+            uint8_t part = (uint8_t) (id & 0xFF);
+
+            uint16_t *b = api_alloc(c->nlba * SECTOR_SIZE);
+            uint32_t lba = (drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI) ? c->lba : c->lba + MBR_getStartLBA(drive, part);
+
+            c->hdr.exit_code = read(drive, lba, c->nlba, b);
+
+            c->hdr.response_ptr = b;
+            c->hdr.response_size = c->nlba * SECTOR_SIZE;
+            
+            break;
+        }
+
+        case SYSCALL_DISK_ABS_WRITE:
+        {
+            // TODO: make function
+            disk_syscall_t *c = (disk_syscall_t *) req;
+
+            if(c->buffer_size < (c->nlba * SECTOR_SIZE))
+                { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
+            if(c->buffer < memory_get_malloc_end() /* (end of kernel space) */) 
+                { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
+            if(drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI)
+                { c->hdr.exit_code = EXIT_CODE_GLOBAL_UNSUPPORTED; break; }
+
+            uint16_t id = convert_drive_id((const char *) c->drive);
+            uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
+            uint8_t part = (uint8_t) (id & 0xFF);
+
+            uint32_t lba = c->lba + MBR_getStartLBA(drive, part);
+
+            c->hdr.exit_code = write(drive, lba, c->nlba, (uint8_t *) c->buffer);
+            break;
+        }
+
+        default:
+            hdr->exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
+        break;
+    }
+}
 
 void diskio_init(void)
 {
@@ -64,6 +201,8 @@ void diskio_init(void)
     drv[1] = (uint32_t) (drives);
     driver_exec(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv); 
 
+    // FIXME: this is the incorrect way to init drive_info_t (assumes for example that there will 
+    // be 4 drives returned by the IDE driver, while this is usually not the case)
     for(i = 0; i < DISKIO_MAX_DRIVES; ++i)
     {
         // disks are returned in order with their type being stored at the 
@@ -135,6 +274,37 @@ uint8_t write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, uns
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+size_t disk_get_max_addr(uint8_t drive)
+{
+
+    uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
+    uint32_t command = (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATA) ?
+            IDE_COMMAND_GET_MAX_ADDRESS : NULL; /* TODO: make NULL floppy command */
+
+    drv[0] = command;
+    drv[1] = (uint32_t) (drive);
+
+    driver_exec((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
+    
+    return drv[2];
+}
+
+size_t disk_get_sector_size(uint8_t drive)
+{
+    return (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATAPI) ? ATAPI_SECTOR_SIZE : SECTOR_SIZE;
+}
+
+void drive_convert_to_drive_id(uint8_t drive, char *out_id)
+{
+    uint8_t type = disk_info_t[drive].disktype;
+
+    char *t = drive_type_to_chars(type);
+    size_t s = strlen(t);
+
+    memcpy(out_id, t, s);
+    out_id[s] = drive_to_type_index(drive, type) + '0';
+}
+
 // @returns:
 //   - most significant byte: actual drive number
 //   - least significant byte: actual partition number (when applicable)
@@ -167,9 +337,8 @@ uint16_t convert_drive_id(const char *id)
     if(id[3] != DISKIO_DISKID_P)
         return result;
 
-    // yes
-    // let's get it
-
+    // if yes
+    // get its number
     drive = strdigit_toInt(id[4]);
     
     if(drive == EXIT_CODE_GLOBAL_UNSUPPORTED)
@@ -218,4 +387,31 @@ uint8_t to_actual_drive(uint8_t drive, uint8_t type)
 
     kfree(drivelist);
     return (uint8_t) MAX;
+}
+
+// function converts a drive number to the 'th drive of that type
+// (i.e. the opposite of to_actual_drive())
+uint8_t drive_to_type_index(uint8_t drive, uint8_t type)
+{
+    uint8_t *drivelist = diskio_reportDrives();
+    uint8_t nfound = 0;
+
+    for(uint8_t i = 0; i < drive; ++i)
+    {
+        if(drivelist[i] == type)
+            nfound++;
+    }
+
+    kfree(drivelist);
+    return (uint8_t) nfound;
+}
+
+const char *drive_type_to_chars(uint8_t type)
+{
+    if(type == DRIVE_TYPE_IDE_PATA)
+        return (const char *) DISKIO_DISKID_HD;
+    else if (type == DRIVE_TYPE_IDE_PATAPI)
+        return (const char *) DISKIO_DISKID_CD;
+    
+    return (const char *) " ";
 }

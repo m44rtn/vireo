@@ -24,6 +24,8 @@ SOFTWARE.
 #ifndef __PIC_H__
 #define __PIC_H__
 
+#define PIC_CASCADE             1 << 2
+
 void PIC_controller_setup(void);
 
 void PIC_mask(unsigned char IRQ);

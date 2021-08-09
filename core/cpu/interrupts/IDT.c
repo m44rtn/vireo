@@ -63,8 +63,10 @@ static void IDT_default_list(void);
         - PAGE_FAULT
         - COPROCESSOR_ERROR
 
-        - TIMER     (does little at this moment)
-        - KEYBOARD (directly prints to screen and doesn't store)
+        - TIMER
+        - KEYBOARD
+
+        - API handler for system calls
         
     Some exceptions hang, some panic and others will display a message
          */
@@ -116,5 +118,8 @@ static void IDT_default_list(void)
     
     IDT_add_handler(0x20, (uint32_t) ISR_20);
     IDT_add_handler(0x21, (uint32_t) ISR_21);
+
+    // api handler
+    IDT_add_handler(0x80, (uint32_t) ISR_80);
 }
 
