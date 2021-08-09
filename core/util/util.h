@@ -47,6 +47,10 @@ unsigned int find_in_str(char *o, const char *fnd);
 unsigned char strchr(char *str, char ch);
 void memcpy(char *destination, char *source, unsigned int size);
 
+void str_add_val(char *str, const char *format, unsigned int value);
+
+unsigned char nth_bit(unsigned int dword, unsigned char size);
+
 char *strtok(char *s, const char *delim);
 char *strsep(char **stringp, const char *delim);
 char *strpbrk(const char *s, const char *accept);

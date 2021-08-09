@@ -275,6 +275,67 @@ void memcpy(char *destination, char *source, size_t size)
 
 }
 
+static uint32_t str_find_val(const char *str)
+{
+	size_t length = strlen(str);
+	uint32_t i = 0;
+
+	for(; i < length; ++i)
+		if(str[i] == '%') 
+			break;
+
+	return i;
+}
+
+void str_add_val(char *str, const char *format, uint32_t value)
+{
+	size_t length = strlen(format);
+	uint32_t val_index = str_find_val(format);
+
+	memcpy(str, format, val_index);
+
+	if(val_index >= length)
+		return;
+
+	switch(format[val_index + 1])
+	{
+		case 'x':
+		{
+			char *s = hexstr(value, SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
+			memcpy(&str[val_index], s, strlen(s));		
+			break;
+		}
+
+		case 'i':
+		{
+			char *s = intstr(value);
+			memcpy(&str[val_index], s, strlen(s));
+			break;
+		}
+
+		case 's':
+			memcpy(&str[val_index], (char *) value, strlen((const char *) value));	
+		break;
+		
+		case 'c':
+			str[val_index] = (char) value;
+		break;	
+	}
+
+	memcpy(&str[strlen(str)], &format[val_index + 2], strlen(&format[val_index + 2]));
+}
+
+uint8_t nth_bit(uint32_t dword, uint8_t size)
+{
+	size = size > 32 ? 32 : size;
+
+	for(uint8_t i = 0; i < size; ++i)
+		if(dword == (1 << i))
+			return i;
+	
+	return (uint8_t) MAX;
+}
+
 
 /* LIB C stuff */
 char *strtok(char *s, const char *delim)
