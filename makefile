@@ -19,7 +19,7 @@ ALLOBJFILES := $(foreach thing,$(SRCFILES),$(thing:%.c=%.o))
 OBJFILES :=  $(filter-out $(OBJIGNORE), $(ALLOBJFILES))		#$(patsubst %.c, %.o, $(SRCFILES))
 ASOBJFILES := $(foreach thing,$(ASMFILES),$(thing:%.asm=%.o))
 
-LDOBJFILES := $(filter-out core/kernel.o, $(OBJFILES))
+LDOBJFILES := $(filter-out core/main.o, $(OBJFILES))
 LDASOBJFILES := $(filter-out core/boot.o, $(ASOBJFILES))
 
 ALLFILES := $(SRCFILES) $(HDRFILES) $(ASMFILES)
@@ -39,7 +39,9 @@ AC := nasm
 
 .PHONY: all clean todo run assembly iso
 
-iso: all
+m: all iso
+
+iso:
 	cp bin/kernel.sys grub/boot/kernel.sys
 	grub-mkrescue -o birdos.iso grub/
 
@@ -47,7 +49,7 @@ todo:
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
 all: clean $(OBJFILES) $(ASOBJFILES)
-	@$(CC) -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
+	@$(CC) -T linker.ld -o bin/kernel.sys core/boot.o core/main.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
 	-@xenops -f core/kernel/info.h -q
@@ -64,7 +66,7 @@ clean:
 
 # creates a map of all functions
 map:
-	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/kernel.o $(LDOBJFILES) $(LDASOBJFILES)
+	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/main.o $(LDOBJFILES) $(LDASOBJFILES)
 
 run:
 	vboxmanage startvm $(VM_NAME) -E VBOX_GUI_DBG_ENABLED=true
