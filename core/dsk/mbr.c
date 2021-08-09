@@ -45,16 +45,16 @@ SOFTWARE.
 
 typedef struct /* only the mbr info that's interesting to us */
 {
-    uint8_t active;
-    uint8_t type;
-    uint32_t start_LBA;
-    uint32_t n_sectors;
+  uint8_t active;
+  uint8_t type;
+  uint32_t start_LBA;
+  uint32_t n_sectors;
 } __attribute__((packed)) MBR_ENTRY_INFO;
 
 typedef struct
 {
-    uint8_t disk;
-    MBR_ENTRY_INFO mbr_entry_t[4];
+  uint8_t disk;
+  MBR_ENTRY_INFO mbr_entry_t[4];
 } __attribute__((packed)) MBR;
 
 MBR DISKS[MAX_DRIVES];
@@ -113,6 +113,16 @@ void MBR_enumerate(void)
 uint32_t MBR_getStartLBA(uint8_t disk, uint8_t partition)
 {
   return DISKS[disk].mbr_entry_t[partition].start_LBA;
+}
+
+uint32_t mbr_get_sector_count(uint8_t disk, uint8_t partition)
+{
+  return DISKS[disk].mbr_entry_t[partition].n_sectors;
+}
+
+uint8_t mbr_get_type(uint8_t disk, uint8_t partition)
+{
+  return DISKS[disk].mbr_entry_t[partition].type;
 }
 
 #ifndef NO_DEBUG_INFO

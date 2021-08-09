@@ -26,5 +26,7 @@ SOFTWARE.
 
 void MBR_enumerate(void);
 unsigned int MBR_getStartLBA(unsigned char disk, unsigned char partition);
+unsigned int mbr_get_sector_count(unsigned char disk, unsigned char partition);
+unsigned char mbr_get_type(unsigned char disk, unsigned char partition);
 
 #endif
