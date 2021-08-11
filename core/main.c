@@ -140,7 +140,6 @@ void init_env(void)
     // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
 }
 
-extern void call_int80();
 void main(void)
 {
     unsigned int exit_code = 0;
@@ -152,8 +151,6 @@ void main(void)
         while(1);
 
     init_env();
-
-    //call_int80();
 
 #ifndef NO_DEBUG_INFO
     drv[0] = FS_COMMAND_READ;

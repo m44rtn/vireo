@@ -199,10 +199,10 @@ or has executed succesfully in the past */
         break;
 
         case IDE_COMMAND_REPORTDRIVES:
-            if(drive_info_t[drv[1]].type == DRIVE_TYPE_IDE_PATA)
+            if(drv[1])
                 IDE_reportDrives((uint8_t *) *(&drv[1]));
             else
-                error = EXIT_CODE_GLOBAL_UNSUPPORTED;
+                error = EXIT_CODE_GLOBAL_OUT_OF_RANGE;
         break;
 
         case IDE_COMMAND_GET_MAX_ADDRESS:
