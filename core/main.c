@@ -53,6 +53,8 @@ SOFTWARE.
 
 #include "exec/exec.h"
 #include "exec/flat.h"
+#include "exec/elf.h"
+#include "exec/prog.h"
 
 #include "kernel/panic.h"
 #include "kernel/info.h"
@@ -75,6 +77,11 @@ typedef struct
     char *sign2;
 } __attribute__((packed)) tester;
 
+void loop(void)
+{
+    print("[KERNEL] Looping!\n");
+    while(1);
+}
 
 /* initializes 'the environment' */
 void init_env(void)
@@ -84,6 +91,11 @@ void init_env(void)
     GDT_FLAGS flags;
     uint8_t exit_code;
     uint32_t *drvcmd, *devicelist, device; /* for the driver inits and such */
+
+    exit_code = screen_basic_init();
+
+    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS)
+        while(1);
 
     exit_code = loader_detect();
     if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED)
@@ -142,43 +154,15 @@ void init_env(void)
 
 void main(void)
 {
-    unsigned int exit_code = 0;
-    uint32_t *drv = kmalloc(5 * sizeof(uint32_t));
-
-    exit_code = screen_basic_init();
-
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS)
-        while(1);
-
     init_env();
 
-#ifndef NO_DEBUG_INFO
-    drv[0] = FS_COMMAND_READ;
-    drv[1] = (uint32_t) "CD0/TEST/BREAKER.ELF\0";
-    driver_exec((FS_TYPE_ISO | DRIVER_TYPE_FS), drv);
-    print_value("READ FILE WITH ERROR CODE: %x\n", drv[4]);
-    print_value("buffer location: 0x%x\t", drv[2]);
-    print_value("size: %i\n", drv[3]);
-    print_value("file that should have been read: %s\n", drv[1]);
-
-    if(drv[4] == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
-        print("Error: drive specification unsupported\n");
-#endif // NO_DEBUG_INFO
-    
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     info_print_full_version();    
     print((char*)"\n");
 #endif
 
-    uint8_t err = elf_parse_binary((void **) &drv[2], drv[3]);
-    print_value("new pointer: 0x%x\n", drv[2]);
+    // testing purposes
+    prog_launch_binary("CD0/TEST/BREAKER.ELF\0", loop);
 
-    if(err == EXIT_CODE_GLOBAL_UNSUPPORTED)
-        debug_print_error("ELF binary incompatible");
-    else if(err)
-        debug_print_error("Problem loading ELF file");
-    print_value("error code: %x\n", err);
-    /*conways_game_of_life();*/
-
-    while(1);
+    loop();
 }
