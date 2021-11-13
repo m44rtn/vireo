@@ -24,6 +24,6 @@ SOFTWARE.
 #ifndef __ELF_H__
 #define __ELF_H__
 
-unsigned char elf_parse_binary(void **ptr, unsigned int size);
+void *elf_parse_binary(void **ptr, unsigned int size, unsigned char pid, unsigned char *_err);
 
 #endif

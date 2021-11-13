@@ -26,13 +26,14 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#define PAGE_SIZE                   4096 // bytes
 #define PAGE_REQ_ATTR_READ_WRITE    1U << 0
 #define PAGE_REQ_ATTR_READ_ONLY     !PAGE_REQ_ATTR_READ_WRITE
 #define PAGE_REQ_ATTR_SUPERVISOR    1U << 1
 
 typedef struct
 {
-    uint8_t pid;        /* process id */
+    pid_t pid;        /* process id */
     uint8_t attr;       /* paging attributes --> use defines */
     size_t size;        /* size in bytes to be allocated */
 } __attribute__((packed)) PAGE_REQ;
@@ -44,6 +45,7 @@ void paging_map(void *pptr, void *vptr, PAGE_REQ *req);
 
 void *valloc(PAGE_REQ *req);
 void vfree(void *ptr);
+void paging_rel_resources(const pid_t pid);
 
 extern void ASM_CPU_PAGING_ENABLE(unsigned int *table);
 extern void ASM_CPU_INVLPG(void *paddr);

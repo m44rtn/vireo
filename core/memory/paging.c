@@ -50,7 +50,7 @@ uint32_t g_max_pages = 0;
 
 typedef struct
 {
-    uint8_t pid;
+    pid_t pid;
     uint16_t npages;
 } __attribute__ ((packed)) shadow_allocated;
 
@@ -163,13 +163,20 @@ void vfree(void *ptr)
     ptable[t_index] = ptable[t_index] & ~(PAGE_REQ_ATTR_SUPERVISOR<<1);
     
      /* remove the contents */
-    memset((char *)ptr, PAGING_PAGE_SIZE * shadow_t[page_id].npages, 0x00);
+    memset((void *)ptr, PAGING_PAGE_SIZE * shadow_t[page_id].npages, 0x00);
 
     //* update our shadow map (RESV PID means unallocated) */
     for(uint32_t i = 0; i < shadow_t[page_id].npages; i++)
         shadow_t[page_id + i].pid = PID_RESV;
 }
 
+// release all resources belonging to program with this pid
+void paging_rel_resources(const pid_t pid)
+{
+    for(uint32_t i = 0; i < shadow_len; ++i)
+        if(shadow_t[i].pid == pid)
+            shadow_t[i].pid = PID_RESV;
+}
 
 static void *paging_find_free(uint32_t npages)
 {
@@ -238,7 +245,7 @@ static uint32_t paging_create_tables(void)
     size_t shadow_size = shadow_len * sizeof(shadow_allocated);
 
     shadow_t = (shadow_allocated *) page_dir + amount_mem;
-    memset((char *)shadow_t, shadow_size, (char) PID_RESV);
+    memset((void *)shadow_t, shadow_size, (char) PID_RESV);
 
     return ((uint32_t) shadow_t) + shadow_size;
 }

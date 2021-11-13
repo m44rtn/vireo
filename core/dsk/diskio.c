@@ -84,11 +84,11 @@ void diskio_api(void *req)
 
     switch(hdr->system_call)
     {
-        case SYSCALL_DISK_LIST:
+        case SYSCALL_DISK_LIST: // GET DRIVE LIST
         {
             // TODO make function
             uint8_t *disks = diskio_reportDrives();
-            api_disk_info_t *dsk = (api_disk_info_t *) api_alloc(DISKIO_MAX_DRIVES * sizeof(api_disk_info_t));
+            api_disk_info_t *dsk = (api_disk_info_t *) api_alloc(DISKIO_MAX_DRIVES * sizeof(api_disk_info_t), prog_get_current_running());
             
             for(uint8_t i = 0; i < DISKIO_MAX_DRIVES; ++i)
             {
@@ -110,7 +110,7 @@ void diskio_api(void *req)
             break;
         }
 
-        case SYSCALL_PARTITION_INFO:
+        case SYSCALL_PARTITION_INFO: // GET PARTITION INFO
         {
             // TODO make function
             disk_syscall_t *c = (disk_syscall_t *) req;
@@ -120,7 +120,7 @@ void diskio_api(void *req)
             uint8_t disk = (id >> 8) & 0xFF;
             uint8_t part = id & 0xFF;
 
-            api_partition_info_t *p = (api_partition_info_t *) api_alloc(sizeof(api_partition_info_t));
+            api_partition_info_t *p = (api_partition_info_t *) api_alloc(sizeof(api_partition_info_t), prog_get_current_running());
 
             p->n_sectors = mbr_get_sector_count(disk, part);
             p->starting_sector = MBR_getStartLBA(disk, part);
@@ -144,7 +144,7 @@ void diskio_api(void *req)
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
             uint8_t part = (uint8_t) (id & 0xFF);
 
-            uint16_t *b = api_alloc(c->nlba * SECTOR_SIZE);
+            uint16_t *b = api_alloc(c->nlba * SECTOR_SIZE, prog_get_current_running());
             uint32_t lba = (drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI) ? c->lba : c->lba + MBR_getStartLBA(drive, part);
 
             c->hdr.exit_code = read(drive, lba, c->nlba, b);
@@ -187,7 +187,7 @@ void diskio_init(void)
 {
     uint8_t i;
     uint32_t *devicelist, IDE_ctrl;
-    uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
+    uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN + sizeof(uint32_t) * MAX_DRIVES);
     
     // drive list
     uint8_t *drives = (uint8_t *)((uint32_t)drv) + sizeof(uint32_t)*DRIVER_COMMAND_PACKET_LEN;

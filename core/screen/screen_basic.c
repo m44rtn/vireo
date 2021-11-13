@@ -94,6 +94,7 @@ static void screen_basic_clear_line(unsigned char from, unsigned char to);
 void screen_basic_api(void *req)
 {
 	api_screen_t *r = (api_screen_t *) req;
+
 	switch(r->hdr.system_call)
 	{
 		default:
@@ -102,7 +103,7 @@ void screen_basic_api(void *req)
 
 		case SYSCALL_GET_SCREEN_INFO:
 		{
-			screen_info_t *scr = (screen_info_t *) api_alloc(sizeof(screen_info_t));
+			screen_info_t *scr = (screen_info_t *) api_alloc(sizeof(screen_info_t), prog_get_current_running());
 			
 			scr->mode = VGA_MODE_3;
 			scr->depth = SCREEN_BASIC_DEPTH;
@@ -135,7 +136,7 @@ void screen_basic_api(void *req)
 		}
 
 		case SYSCALL_GET_SCREEN_BUFFER:
-			r->hdr.response_ptr = api_alloc(SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH);
+			r->hdr.response_ptr = api_alloc(SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH, prog_get_current_running());
 			r->hdr.response_size = SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH;
 
 			// TODO: make 0xb8000 a define
@@ -156,8 +157,6 @@ void screen_basic_api(void *req)
 		case SYSCALL_CLEAR_SCREEN:
 			screen_basic_clear_screen();
 		break;
-		
-
 	}
 }
 
@@ -407,7 +406,6 @@ static void screen_basic_scroll(unsigned char line)
 
 static void screen_basic_clear_line(unsigned char from, unsigned char to)
 {
-	
 	unsigned short i = (unsigned short) (SCREEN_BASIC_WIDTH * from * SCREEN_BASIC_DEPTH);
 	char* vidmem = (char*) 0xb8000;
 	

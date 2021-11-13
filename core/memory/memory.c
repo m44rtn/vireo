@@ -128,7 +128,7 @@ void memory_api(void *req)
     {
         case SYSCALL_GET_MEM_INFO:
         {
-            api_mem_info_t *mem = (api_mem_info_t *) api_alloc(sizeof(api_mem_info_t));
+            api_mem_info_t *mem = (api_mem_info_t *) api_alloc(sizeof(api_mem_info_t), prog_get_current_running());
             mem->memory_space_kb = memory_info_t.available_memory;
             mem->program_space_start = NULL; // TODO: either fix or remove
             
@@ -140,7 +140,7 @@ void memory_api(void *req)
         case SYSCALL_VALLOC:
         {
             valloc_t *v = (valloc_t *) req;
-            v->hdr.response_ptr = api_alloc(v->size);
+            v->hdr.response_ptr = api_alloc(v->size, prog_get_current_running());
             break;
         }
 
@@ -187,7 +187,7 @@ uint8_t memory_init(void)
     /* TODO: if not exists, try int 15h (v86) */
     memory_create_temp_mmap();
     
-    memset((char *) &memory_t, sizeof(MEMORY_TABLE)*128, 0);
+    memset((void *) &memory_t, sizeof(MEMORY_TABLE)*128, 0);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }

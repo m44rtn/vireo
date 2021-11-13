@@ -64,4 +64,7 @@ drv[2] (parameter2) --> new filename
 drv[4] (parameter4) --> (returns) error code
 */
 
+#define FS_COMMAND_DELETE 0x13
+/* TBD */
+
 #endif

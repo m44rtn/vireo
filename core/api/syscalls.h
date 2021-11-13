@@ -57,12 +57,13 @@ SOFTWARE.
 #define SYSCALL_FS_READ                 0x0401
 #define SYSCALL_FS_WRITE                0x0402
 #define SYSCALL_FS_DELETE               0x0403
-#define SYSCALL_FS_REMAME               0x0404
+#define SYSCALL_FS_RENAME               0x0404
 
 // program (0x0500-0x05ff)
 #define SYSCALL_GET_PROGRAM_INFO        0x0500
 #define SYSCALL_PROGRAM_START_NEW       0x0501
 #define SYSCALL_PROGRAM_TERMINATE       0x0502
+#define SYSCALL_PROGRAM_TERMINATE_PID   0x0503
 
 // driver (0x0a00-0x0aff)
 #define SYSCALL_DRIVER_GET_LIST         0x0a00

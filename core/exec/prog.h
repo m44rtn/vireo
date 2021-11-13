@@ -21,47 +21,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __TYPES_H__
-#define __TYPES_H__
+#ifndef __PROG_H__
+#define __PROG_H__
 
-#define NULL    0
+#include "../include/types.h"
 
-#define FALSE   0
-#define TRUE    1
+void prog_api(void *req);
+void prog_launch_binary(char *filename, return_t *ret_addr);
+uint32_t prog_find_free_index(void);
+pid_t prog_get_current_running(void);
+void prog_terminate(pid_t pid);
 
-/* if you want quiet start-up: */
-// #define NO_DEBUG_INFO
-
-/* if you don't want assertions (dbg.h): */
-/*#define NDEBUG*/
-
-#define UCHAR_MAX 255
-
-#define MAX       0xFFFFFFFF
-
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-
-typedef uint8_t size8_t;
-typedef uint32_t size_t; 
-
-typedef uint16_t syscall_t;
-typedef uint8_t err_t;
-
-typedef void return_t; // return addresses
-typedef uint8_t pid_t;
-
-typedef uint8_t bool_t;
-
-typedef void file_t;
-
-typedef enum{
-    false,
-    true
-} bool;
-
-#endif
+#endif // __PROG_H__

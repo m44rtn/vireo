@@ -37,6 +37,8 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 #include "../kernel/kernel.h"
+#include "../dsk/fs.h"
+#include "../exec/prog.h"
 
 #define API_SYSCALL_SEGMENT     0x100
 
@@ -80,19 +82,21 @@ void api_dispatcher(void *eip, void *req)
         break;
 
         case API_SEG_DISK_ABS:
+            // allows a program to perform absolute disk operations
             diskio_api(req);
         break;
 
         case API_SEG_FILESYSTEM:
-            // TODO
             // allows a program to use the file system
+            fs_api(req);
         break;
 
         case API_SEG_PROGRAM:
-            // TODO
+           
             // will allow a program to launch new (child) programs
             // and will keep track of them, will also be responsible for terminating
             // programs
+            prog_api(req);
         break;
 
         case API_SEG_DRIVER:
@@ -108,10 +112,12 @@ void api_dispatcher(void *eip, void *req)
     }
 }
 
-void *api_alloc(size_t size)
+void *api_alloc(size_t size, pid_t pid)
 {
+    uint8_t attr = (!pid) ? PAGE_REQ_ATTR_READ_WRITE | PAGE_REQ_ATTR_SUPERVISOR : 
+                            PAGE_REQ_ATTR_READ_WRITE;
     PAGE_REQ req = {
-        .pid = 0xFE, // TODO: get current program PID
+        .pid = pid,
         .size = size,
         .attr = PAGE_REQ_ATTR_READ_WRITE
     };

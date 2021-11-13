@@ -117,12 +117,11 @@ static uint8_t elf_check_errors(elf_header_t *hdr)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-static void *elf_load_binary(void *file)
+static void *elf_load_binary(void *file, pid_t pid)
 {
     const elf_header_t *hdr = (elf_header_t *) file;
     const elf_program_t *prog = (elf_program_t *) (file + (hdr->phoff));
 
-    uint8_t pid = task_new_pid();
     void *ptr = 0;
 
     for(uint32_t i = 0; i < (hdr->phnum); ++i)
@@ -145,22 +144,23 @@ static void *elf_load_binary(void *file)
     return ptr;
 }
 
-uint8_t elf_parse_binary(void **ptr, unsigned int size)
+// returns relative entry address, memory pointer to parsed binary in ptr, error in _err
+void *elf_parse_binary(void **ptr, unsigned int size, pid_t pid, err_t *_err)
 {
     elf_header_t *hdr = (elf_header_t *) *ptr;
+    void *entry = hdr->entry;
     
     uint8_t err;
     if((err = elf_check_errors(hdr)))
-        return err;
-
-    void *nptr = elf_load_binary(*ptr);
+        *_err = err;
+    
+    void *nptr = elf_load_binary(*ptr, pid);
 
     // FIXME: freeing file pointer generates page fault
     //vfree(*ptr);
-    
+
     *ptr = nptr;
-    uint32_t * stck  = valloc(4096);
-    asm_exec_call((void *) ((hdr->entry) | (uint32_t)nptr), stck);
-    
-    return EXIT_CODE_GLOBAL_SUCCESS;
+
+    *_err = EXIT_CODE_GLOBAL_SUCCESS;
+    return entry; 
 }

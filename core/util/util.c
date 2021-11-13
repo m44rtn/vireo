@@ -203,10 +203,12 @@ unsigned int hex_digit_count(uint32_t value)
 	return 2;
 }
 
-void memset(char *start, size_t size, char val)
+void memset(void *start, size_t size, char val)
 {
+	char *s = start;
+
 	while(size--)
-		start[size] = val;
+		s[size] = val;
 }
 
 void sleep(uint32_t timeIn_ms)

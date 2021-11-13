@@ -27,7 +27,7 @@ SOFTWARE.
 
 uint8_t task_new_pid(void)
 {
-    static uint8_t pid = PID_KERNEL;
+    static pid_t pid = PID_KERNEL;
 
     // check if we are almost out of process id's, if so reset
     if(pid++ == PID_RESV)
