@@ -42,4 +42,6 @@ unsigned int pciGetDeviceByReg0(unsigned int Reg0);
 
 unsigned int pciGetBar(unsigned int device, unsigned char bar);
 
+unsigned int pci_read_dword(unsigned char bus, unsigned char dev, unsigned char func, unsigned char offset);
+
 #endif

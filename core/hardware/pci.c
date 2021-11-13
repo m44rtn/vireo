@@ -36,6 +36,9 @@ SOFTWARE.
 
 #define PCI_DEVLIST_LENGTH          64
 
+#define PCI_CONFIG_ADDR             0xcf8
+#define PCI_CONFIG_DATA             0xcfc
+
 typedef struct
 {
     uint32_t device;
@@ -197,6 +200,15 @@ uint32_t pciGetBar(uint32_t device, uint8_t bar)
     return pciConfigRead(bus, dev, func, bar);
 }
 
+uint32_t pci_read_dword(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset)
+{
+    uint32_t addr = (uint32_t) (0x80000000u | (bus << 16) | (dev << 11) | (func << 8) | (offset & 0xfc));
+    outl(PCI_CONFIG_ADDR, addr);
+    return (uint32_t) inl(PCI_CONFIG_DATA);
+}
+
+/* read used by pci.c itself, it's left here because it is slightly different compared to the above
+    function and may work differently */
 static uint32_t pciConfigRead (uint8_t bus, uint8_t device, uint8_t func, uint8_t reg){
 	
 	/*just so it looks nice*/

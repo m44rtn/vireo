@@ -73,7 +73,6 @@ void MBR_enumerate(void)
     uint8_t *mbr, disks;
     uint8_t i, j, error;
 
-
     nDisks = disks = MBR_getIDEDrives(diskio_reportDrives());
 
     if(nDisks < 1)
@@ -154,7 +153,9 @@ static uint8_t MBR_getIDEDrives(uint8_t *drives)
 {
     uint8_t i = 0, disks = 0;
     for(; i < IDE_DRIVER_MAX_DRIVES; ++i)
+    {
         if(drives[i] == DRIVE_TYPE_IDE_PATA) DISKS[disks++].disk = i;
+    }
 
     return disks;
 }

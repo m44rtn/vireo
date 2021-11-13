@@ -172,12 +172,15 @@ void IDEController_handler(uint32_t *drv)
 
     /* To make sure that we don't do anything stupid, we check if INIT is either being called NOW
 or has executed succesfully in the past */
-    if(drv[0] != DRV_COMMAND_INIT && flag_check(ide_flags, 1U))
+    if(drv[0] != DRV_COMMAND_INIT && flag_check(ide_flags, IDE_FLAG_INIT_RAN))
         return;
 
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
+            if(!flag_check(ide_flags, IDE_FLAG_INIT_RAN))
+                break;
+
             IDEDriverInit(drv[1]);
         break;
 
@@ -244,6 +247,9 @@ static void IDE_software_reset(uint16_t port){
 
 static void IDE_wait(void)
 {
+    if(pciGetReg0(PCI_controller) == 0x24CB8086)
+    { sleep(4); return; }
+
     inb(p_ctrl_port);
     inb(p_ctrl_port);
     inb(p_ctrl_port);
@@ -299,12 +305,11 @@ static void IDEDriverInit(uint32_t device)
     /* this is the PCI controller of a real life computer I use
         for testing. it has problems with this driver, so to remind me 
         to fix that someday, here an assert() */
-    dbg_assert(!(pciGetReg0(PCI_controller) == 0x24CB8086));
+    //dbg_assert(!(pciGetReg0(PCI_controller) == 0x24CB8086));
 
     /* get the ports for both primary and secondary */
     IDE_enumerate();
     
-
     IDE_software_reset(p_ctrl_port);
     IDE_software_reset(s_ctrl_port);
 
@@ -329,8 +334,8 @@ static void IDEDriverInit(uint32_t device)
     outb((uint32_t) s_ctrl_port, 0);
 
     /* set the flag 'INIT ran successfully' */
-    ide_flags = ide_flags | 1U;
-
+    ide_flags = ide_flags | IDE_FLAG_INIT_RAN;
+    
 #ifndef NO_DEBUG_INFO
     IDEPrintWelcome();
 #endif
@@ -370,6 +375,14 @@ static void IDE_enumerate(void)
     bar = pciGetBar(PCI_controller, PCI_BAR3) & 0xFFFFFFFC;
     s_ctrl_port = (uint16_t) (bar + 0x376U*(!bar)) & 0xFFFFU;
 
+    if(pciGetReg0(PCI_controller) == 0x24CB8086)
+    {
+        // this controller (8086:24cb) does not seem to report its control block correctly.
+        // According to the datasheet these are 0x3f4 and 0x374 respectively
+        p_ctrl_port = 0x3f4;
+        s_ctrl_port = 0x374;
+    }
+
 }
 
 static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
@@ -383,6 +396,7 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
 
     outb((uint32_t) (port | ATA_PORT_SELECT), ((uint8_t)0xA0U) | (uint8_t)((slavebit) << 4U));
 
+    IDE_polling(port, false);
 
     /* apparently, when sending ATA_IDENTIFY to an ATAPI device virtualbox raises a general protection fault.
        to avoid the #GP we first check if we're dealing with a PATAPI device */
@@ -392,20 +406,22 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
     if(hi == 0xEB && lo == 0x14)
         type = DRIVE_TYPE_IDE_PATAPI;
 
-    else if(hi == 0x96 && lo == 0x69)
-        type = DRIVE_TYPE_IDE_PATAPI;
-
-    else if(!(hi == 0 && lo == 0))
-        return DRIVE_TYPE_UNKNOWN;
-
+    // TODO: the code that is commented out below
+    // can be removed after issue #26 is resolved
+    // (https://github.com/m44rtn/vireo-kernel/issues/26)
+    // else if(!(hi == 0 && lo == 0))
+    //     return DRIVE_TYPE_UNKNOWN;
 
     /* send the IDENTIFY command in case of PATA (not connected is also hi == lo == 0) */
     if(type == DRIVE_TYPE_IDE_PATA) outb((uint32_t) port_comstat, ATA_IDENTIFY);
     else if(type == DRIVE_TYPE_IDE_PATAPI)
         return type;
 
+   IDE_polling(port, false);
+
     /* if status = 0 then there's no such device */
-    if(!inb(port_comstat))
+    uint8_t stat = inb(port_comstat);
+    if(!stat || stat == 0x7F || stat == 0x01)
         return (uint8_t) DRIVE_TYPE_UNKNOWN;
 
     /* wait until BSY clears */
@@ -418,6 +434,16 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
         if(status & 0x01) break;
         if(status & 0x08) break;
     }
+
+    // check for the revised lo and hi which can better indicate the
+    // device type.
+    lo = inb( (port | ATA_PORT_LBAMID)) & 0xFF;
+    hi = inb( (port | ATA_PORT_LBAHI)) & 0xFF;
+
+    if(hi == 0xEB && lo == 0x14)
+        return DRIVE_TYPE_IDE_PATAPI;
+    else if(hi == 0x7F && lo == 0x7F)
+        return DRIVE_TYPE_UNKNOWN;
 
     /* right now we discard the info returned by the device, though it may be useful to not discard this in the future */
     buffer = kmalloc(256 * sizeof(uint16_t));
@@ -526,7 +552,7 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     IDEClearFlagBit(IDE_FLAG_IRQ);
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
-    IDE_wait();
+    //IDE_wait();
 
     outb(port | ATA_PORT_FEATURES, 0U);
     outb(port | ATA_PORT_LBAMID, (uint8_t) (2048 & 0xFF));
@@ -553,17 +579,18 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     while(!(ide_flags & IDE_FLAG_IRQ) && i++ < 100000)
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
-
+    
     size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
-    dbg_assert(size == byteCount);
-
+    
+    
     insw(port, (sctrwrite * byteCount) / sizeof(uint16_t), buf);
-
+    
     /* wait for BUSY and DRQ to clear */
-    while(inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ))
+    i = 0;
+    while((inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ)) && i++ < 100000)
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
-
+    
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 

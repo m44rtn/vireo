@@ -71,8 +71,10 @@ void cd_init(void)
 uint8_t cd_check_exists(uint8_t *drives)
 {
     for(uint8_t i = 0; i < IDE_DRIVER_MAX_DRIVES; ++i)
+    {
         if(drives[i] == DRIVE_TYPE_IDE_PATAPI)
             return 1; // true
+    }
     
     return 0;   // false
 }
