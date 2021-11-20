@@ -26,5 +26,6 @@ SOFTWARE.
 
 void debug_print_warning(const char *warning);
 void debug_print_error(const char *error);
+void debug_api(void *req);
 
 #endif

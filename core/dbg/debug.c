@@ -24,8 +24,12 @@ SOFTWARE.
 #include "debug.h"
 
 #include "../include/types.h"
+#include "../include/exit_code.h"
 
 #include "../screen/screen_basic.h"
+
+#include "../api/api.h"
+#include "../api/syscalls.h"
 
 void debug_print_warning(const char *warning)
 {
@@ -41,3 +45,20 @@ void debug_print_error(const char *error)
     screen_basic_set_screen_color(0x07);
 }
 
+void debug_api(void *req)
+{
+    syscall_hdr_t *hdr = req;
+
+    switch(hdr->system_call)
+    {
+        case SYSCALL_NOP:
+            // general fail exit code to indicate the API works and that the kernel
+            // is (still) alive.
+            hdr->exit_code = EXIT_CODE_GLOBAL_GENERAL_FAIL;    
+        break;
+
+        default:
+            hdr->exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
+        break;
+    }
+}

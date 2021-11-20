@@ -92,9 +92,8 @@ void api_dispatcher(void *eip, void *req)
         break;
 
         case API_SEG_PROGRAM:
-           
-            // will allow a program to launch new (child) programs
-            // and will keep track of them, will also be responsible for terminating
+            // allows a program to launch new (child) programs
+            // and will keep track of them, is also responsible for terminating
             // programs
             prog_api(req);
         break;
@@ -106,8 +105,7 @@ void api_dispatcher(void *eip, void *req)
         break;
 
         case API_SEG_DEBUG:
-            print("DBG segment\n");
-            // TODO
+            debug_api(req);
         break;
     }
 }
