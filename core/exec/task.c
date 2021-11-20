@@ -22,16 +22,28 @@ SOFTWARE.
 */
 
 #include "task.h"
+#include "prog.h"
 
 #include "../include/types.h"
 
-uint8_t task_new_pid(void)
+pid_t pids_in_use[8 * sizeof(pid_t)];
+
+pid_t task_new_pid(void)
 {
     static pid_t pid = PID_KERNEL;
 
     // check if we are almost out of process id's, if so reset
-    if(pid++ == PID_RESV)
-        pid = PID_KERNEL + 1;
+    while(pid < PID_RESV)
+    {
+        ++pid;
+        if(prog_pid_exists(pid))
+            continue;
+        
+        break;
+    }
+
+    if(pid == PID_RESV)
+            pid = PID_KERNEL;
 
     return pid;
 }

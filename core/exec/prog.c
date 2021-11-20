@@ -144,12 +144,20 @@ uint32_t prog_find_info_index(const pid_t pid)
     uint32_t i = 0;
 
     for(; i < PROG_INFO_MAX_INDEX; ++i)
+    {
         if(prog_info[i].pid == pid)
             break;
-
-    i = (i <= PROG_INFO_MAX_INDEX) ? i : MAX;
+        else if(i == PROG_INFO_MAX_INDEX)
+            { i = MAX; break; } // if still not found when i == max_index 
+                                // then use MAX to indicate NOT FOUND
+    }
     
     return i;
+}
+
+uint8_t prog_pid_exists(const pid_t pid)
+{
+    return (prog_find_info_index(pid) == MAX) ? FALSE : TRUE;
 }
 
 pid_t prog_get_current_running(void)

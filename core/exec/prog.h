@@ -28,6 +28,7 @@ SOFTWARE.
 
 void prog_api(void *req);
 void prog_launch_binary(char *filename, return_t *ret_addr);
+uint8_t prog_pid_exists(const pid_t pid);
 uint32_t prog_find_free_index(void);
 pid_t prog_get_current_running(void);
 void prog_terminate(pid_t pid);
