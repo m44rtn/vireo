@@ -175,7 +175,7 @@ void paging_rel_resources(const pid_t pid)
 {
     for(uint32_t i = 0; i < shadow_len; ++i)
         if(shadow_t[i].pid == pid)
-            shadow_t[i].pid = PID_RESV;
+            vfree(i << 12);
 }
 
 static void *paging_find_free(uint32_t npages)
