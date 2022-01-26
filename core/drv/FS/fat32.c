@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#include "fat.h"
+#include "fat32.h"
 #include "fs_exitcode.h"
 
 #include "../../include/types.h"
@@ -58,7 +58,7 @@ SOFTWARE.
 #define FAT_SUPPORTED_DRIVES        2 /* this driver is stupid, please choose another one. */
 #define FAT_PARTITIONS_PER_DRIVE    4 /* I'm really dissapointed in this driver */
 
-#define SECTOR_SIZE     512U /* bytes */
+#define FAT32_SECTOR_SIZE           512U /* bytes */
 
 #define FAT_DIR_ATTRIB_READ_ONLY    0x01
 #define FAT_DIR_ATTRIB_HIDDEN       0x02
@@ -219,7 +219,7 @@ void fat_handler(uint32_t *drv)
 
             /* FIXME: this driver seems to only support one drive, thanks to this... */
             if(!info_buffer)
-                info_buffer = (uint32_t *) kmalloc(SECTOR_SIZE); /* boot sector */
+                info_buffer = (uint32_t *) kmalloc(FAT32_SECTOR_SIZE); /* boot sector */
 
             if(!(fat_flags && FAT_DRIVER_FLAG_INIT_RAN))
                 FAT_setup_FS_INFO();
@@ -510,7 +510,7 @@ static uint32_t *FAT32_read_file(FAT32_DIR *entry)
     // if(fsize == MAX || fsize == 0)
     //     return NULL;
 
-    uint32_t nlba_read  = (fsize >> 9) /* DIV by SECTOR_SIZE */ + 1U;
+    uint32_t nlba_read  = (fsize >> 9) /* DIV by FAT32_SECTOR_SIZE */ + 1U;
 
     uint32_t page_size = nlba_read << 9; /* bytes */
 
@@ -616,9 +616,9 @@ static void FAT_rename(char *old, char *new)
     c[0] = cluster;
 
     // calculate the first entry which needs to be written to the cluster
-    uint32_t start = (entry / (SECTOR_SIZE * (info->sectclust)));
+    uint32_t start = (entry / (FAT32_SECTOR_SIZE * (info->sectclust)));
 
-    save(&c[0], 1U, (uint16_t *) &dir[start], SECTOR_SIZE * (info->sectclust)); 
+    save(&c[0], 1U, (uint16_t *) &dir[start], FAT32_SECTOR_SIZE * (info->sectclust)); 
     kfree(dir);
 }
 
@@ -627,8 +627,8 @@ static void FAT_save_file(char *filename, uint16_t * buffer, size_t buffer_size,
     FS_INFO *info = FAT_getInfo();
     
     // number of clusters necessarry to store the file
-    uint32_t n_clusters = buffer_size / ((info->sectclust) * SECTOR_SIZE);
-    n_clusters += (buffer_size % ((info->sectclust) * SECTOR_SIZE)) >= 1; // need an extra cluster?
+    uint32_t n_clusters = buffer_size / ((info->sectclust) * FAT32_SECTOR_SIZE);
+    n_clusters += (buffer_size % ((info->sectclust) * FAT32_SECTOR_SIZE)) >= 1; // need an extra cluster?
 
     // seek empty clusters for the file
     uint32_t *clusters = seek_empty_clusters(1U); // first cluster to use
@@ -712,7 +712,7 @@ static uint8_t update_dir(char *path, size_t fsize, uint8_t attrib, uint32_t fcl
     FS_INFO *info = FAT_getInfo();
 
     // do we need a new cluster?
-    if((entry * sizeof(FAT32_DIR)) >= (SECTOR_SIZE * (info->sectclust)))
+    if((entry * sizeof(FAT32_DIR)) >= (FAT32_SECTOR_SIZE * (info->sectclust)))
         cluster = dir_prepare_new(dir, &entry, info, cluster);
     else // FIXME: pass the right buffer pointer based on which cluster we need to write to
         // determine the right cluster, this way may cause round-down issues later
@@ -733,9 +733,9 @@ static uint8_t update_dir(char *path, size_t fsize, uint8_t attrib, uint32_t fcl
     c[0] = cluster;
 
     // calculate the first entry which needs to be written to the cluster
-    uint32_t start = (entry / (SECTOR_SIZE * (info->sectclust)));
+    uint32_t start = (entry / (FAT32_SECTOR_SIZE * (info->sectclust)));
 
-    save(&c[0], 1, (uint16_t *) &dir[start], SECTOR_SIZE * (info->sectclust)); 
+    save(&c[0], 1, (uint16_t *) &dir[start], FAT32_SECTOR_SIZE * (info->sectclust)); 
     
     // TODO: also if error
     kfree(d);
@@ -750,8 +750,8 @@ static uint32_t dir_determine_cluster(uint32_t entry, uint32_t cluster, FS_INFO 
     uint32_t *clusters = FAT32_readFat(cluster, &i);
 
     // calculate at which cluster in the list the entry should be at
-    uint32_t c = ((entry * sizeof(FAT32_DIR)) >> 9U /* DIV by SECTOR_SIZE */);
-    c += (((entry * sizeof(FAT32_DIR)) % SECTOR_SIZE) != 0);
+    uint32_t c = ((entry * sizeof(FAT32_DIR)) >> 9U /* DIV by FAT32_SECTOR_SIZE */);
+    c += (((entry * sizeof(FAT32_DIR)) % FAT32_SECTOR_SIZE) != 0);
     c /= (info->sectclust);
 
     if(clusters[c] == 0x0FFFFFFF)
@@ -770,7 +770,7 @@ static uint32_t dir_prepare_new(FAT32_DIR *dir, uint32_t *entry, FS_INFO *info, 
     kfree(dir);
     *(entry) = 0;
 
-    FAT32_DIR *d = (FAT32_DIR *) kmalloc((info->sectclust) * SECTOR_SIZE);
+    FAT32_DIR *d = (FAT32_DIR *) kmalloc((info->sectclust) * FAT32_SECTOR_SIZE);
     *(&dir) = d;
 
     uint32_t *clusters = seek_empty_clusters(1U);
@@ -864,7 +864,7 @@ static void save(uint32_t *clusters, uint32_t n, uint16_t *buffer, size_t buffer
     // FIXME: bug waiting to happen when using multiple partitions with multiple EBPBs
     FAT32_EBPB *bpb = (FAT32_EBPB *) info_buffer;
     const uint32_t sectclust = bpb->bpb.SectClust;
-    uint32_t nlba_write = (buffer_size >> 9) /* DIV by SECTOR_SIZE */ + 1U;
+    uint32_t nlba_write = (buffer_size >> 9) /* DIV by FAT32_SECTOR_SIZE */ + 1U;
 
     for(uint32_t i = 0; i < n; i++)
     {
