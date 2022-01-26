@@ -203,9 +203,9 @@ unsigned int hex_digit_count(uint32_t value)
 	return 2;
 }
 
-void memset(void *start, size_t size, char val)
+void memset(void *start, size_t size, unsigned char val)
 {
-	char *s = start;
+	uint8_t *s = start;
 
 	while(size--)
 		s[size] = val;
@@ -268,12 +268,15 @@ unsigned char strchr(char *str, char ch)
 	return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 }
 
-void memcpy(char *destination, char *source, size_t size)
+void memcpy(void *_dest, void *_src, size_t size)
 {
 	uint32_t i;
 	
+	char *dest = _dest;
+	char *src = _src;
+
 	for(i = 0; i < size; ++i)
-		*(destination + i) = *(source + i);
+		*(dest + i) = *(src + i);
 
 }
 
@@ -294,7 +297,7 @@ void str_add_val(char *str, const char *format, uint32_t value)
 	size_t length = strlen(format);
 	uint32_t val_index = str_find_val(format);
 
-	memcpy(str, format, val_index);
+	memcpy(str, (void *) (format), val_index);
 
 	if(val_index >= length)
 		return;
@@ -324,7 +327,7 @@ void str_add_val(char *str, const char *format, uint32_t value)
 		break;	
 	}
 
-	memcpy(&str[strlen(str)], &format[val_index + 2], strlen(&format[val_index + 2]));
+	memcpy(&str[strlen(str)], (void *) (&format[val_index + 2]), strlen(&format[val_index + 2]) + 1);
 }
 
 uint8_t nth_bit(uint32_t dword, uint8_t size)
@@ -332,7 +335,7 @@ uint8_t nth_bit(uint32_t dword, uint8_t size)
 	size = size > 32 ? 32 : size;
 
 	for(uint8_t i = 0; i < size; ++i)
-		if(dword == (1 << i))
+		if(dword == (1U << i))
 			return i;
 	
 	return (uint8_t) MAX;

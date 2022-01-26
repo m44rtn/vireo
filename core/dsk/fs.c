@@ -65,7 +65,7 @@ void fs_api(void *req)
             
             // if we get here the device is a known type of hard disk
             uint16_t drive_part = convert_drive_id(fs->path);
-            fs->hdr.response = mbr_get_type(drive_part >> 8, drive_part & 0xFF);
+            fs->hdr.response = mbr_get_type( (uint8_t) (drive_part >> 8), (uint8_t) (drive_part & 0xFF));
             break;
         }
 
@@ -76,7 +76,7 @@ void fs_api(void *req)
 
             drv[0] = FS_COMMAND_READ;
             drv[1] = (uint32_t) fs->path;
-            driver_exec(DRIVER_TYPE_FS | driver_type, &drv[0]);
+            driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
             
             fs->hdr.response_ptr = (void *) drv[2];
             fs->hdr.response_size = drv[3];
@@ -100,7 +100,7 @@ void fs_api(void *req)
             drv[2] = (uint32_t) fs->f;
             drv[3] = (uint32_t) fs->size;
             drv[4] = FAT_FILE_ATTRIB_FILE;
-            driver_exec(DRIVER_TYPE_FS | driver_type, &drv[0]);
+            driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
             
             fs->hdr.exit_code = (uint8_t) drv[4];
 
@@ -117,7 +117,7 @@ void fs_api(void *req)
 
             drv[0] = FS_COMMAND_DELETE;
             drv[1] = (uint32_t) fs->path;
-            driver_exec(DRIVER_TYPE_FS | driver_type, &drv[0]);
+            driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
             
             fs->hdr.exit_code = (uint8_t) drv[4];
 
@@ -135,7 +135,7 @@ void fs_api(void *req)
             drv[0] = FS_COMMAND_RENAME;
             drv[1] = (uint32_t) fs->path;
             drv[2] = (uint32_t) fs->new_name;
-            driver_exec(DRIVER_TYPE_FS | driver_type, &drv[0]);
+            driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
             
             fs->hdr.exit_code = (uint8_t) drv[4];
 

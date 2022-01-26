@@ -65,17 +65,16 @@ SOFTWARE.
 #include "drv/FS_commands.h"
 #include "drv/FS_TYPES.H"
 
-#include "drv/FS/fat.h"
+#include "drv/FS/fat32.h"
 #include "drv/FS/fs_exitcode.h"
+
+#include "api/api.h"
+#include "exec/task.h"
 
 void init_env(void);
 void main(void);
 
-typedef struct
-{
-    uint32_t sign1;
-    char *sign2;
-} __attribute__((packed)) tester;
+void loop(void);
 
 void loop(void)
 {
@@ -133,7 +132,7 @@ void init_env(void)
     drvcmd[0] = DRV_COMMAND_INIT;
     drvcmd[1] = (uint32_t) device;
 
-    driver_exec(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd);
+    driver_exec_int(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd);
     kfree(drvcmd);
 
     /* after all disk drivers have been initialized this one should be called */
@@ -149,7 +148,7 @@ void init_env(void)
     // drv[1] = 0;
     // drv[2] = 0;
     // drv[3] = 0x0B;
-    // driver_exec((0x0B | DRIVER_TYPE_FS), drv);
+    // driver_exec_int((0x0B | DRIVER_TYPE_FS), drv);
 }
 
 void main(void)
@@ -160,9 +159,8 @@ void main(void)
     info_print_full_version();    
     print((char*)"\n");
 #endif
-
     // testing purposes
-    prog_launch_binary("CD0/TEST/BREAKER.ELF\0", loop);
+    prog_launch_binary((char *) "CD0/TEST/BREAKER.ELF\0", (return_t *) (loop));
 
     loop();
 }

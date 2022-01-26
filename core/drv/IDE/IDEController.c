@@ -55,7 +55,7 @@ SOFTWARE.
 
 #define IDE_DRIVER_VERSION_STRING "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mk. I\n"
 
-#define SECTOR_SIZE         512 // bytes
+#define DEFAULT_SECTOR_SIZE         512 // bytes
 
 /* defines for ata_info_t */
 #define ATA_INFO_PRIMARY    0x00
@@ -488,7 +488,7 @@ static uint8_t IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, u
         insw(port, 256, buf_ptr);
         while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
 
-        buf_ptr += SECTOR_SIZE;
+        buf_ptr += DEFAULT_SECTOR_SIZE;
     }
 
     return EXIT_CODE_GLOBAL_SUCCESS;
@@ -527,7 +527,7 @@ static uint8_t IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, 
         outsw(port, 256, buf_ptr);
         while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
 
-        buf_ptr += SECTOR_SIZE;
+        buf_ptr += DEFAULT_SECTOR_SIZE;
     }
 
     outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_WRITE);
@@ -542,7 +542,7 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
     uint8_t status;
-    uint32_t size, i = 0;
+    uint32_t  i = 0;
 
     if(drive > 3)
         return EXIT_CODE_IDE_ERROR_READING_DRIVE;
@@ -580,10 +580,10 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
         __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
     
-    size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
+    // not used right now (will be in the future TODO)
+    // uint32_t size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
     
-    
-    insw(port, (sctrwrite * byteCount) / sizeof(uint16_t), buf);
+    insw(port, (uint32_t) ((uint32_t)(sctrwrite * byteCount) / (uint32_t)sizeof(uint16_t)), buf);
     
     /* wait for BUSY and DRQ to clear */
     i = 0;

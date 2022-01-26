@@ -70,6 +70,11 @@ SOFTWARE.
 #define SYSCALL_DRIVER_ADD              0x0a01
 #define SYSCALL_DRIVER_REMOVE           0x0a02
 
+// api (0x0b00-0x0bff)
+#define SYSCALL_GET_API_LISTING         0x0b00
+#define SYSCALL_GET_FREE_SYSCALLS       0x0b01
+#define SYSCALL_REQUEST_API_SPACE       0x0b02
+
 // debug (0xff00-0xffff)
 #define SYSCALL_NOP                     0xff00
 

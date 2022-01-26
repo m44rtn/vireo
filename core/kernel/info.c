@@ -37,7 +37,7 @@ void info_print_version(void)
     print_value(INFO_VER_STR_START "%i (", BUILD);
     print_value("v%i.", MAJOR);
     print_value("%i", MINOR);
-    print_value("%s)\n", REV);
+    print_value("%s)\n", (uint32_t) REV);
 }
 
 void info_print_full_version(void)
@@ -70,7 +70,7 @@ char *info_make_version_str(void)
     str_add_val(&str[i], "%i", MINOR);
     i = strlen(str);
 
-    str_add_val(&str[i], "%s)", REV);
+    str_add_val(&str[i], "%s)", (uint32_t) REV);
     
     return str;
 }

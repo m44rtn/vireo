@@ -53,7 +53,8 @@ typedef uint16_t syscall_t;
 typedef uint8_t err_t;
 
 typedef void return_t; // return addresses
-typedef uint8_t pid_t;
+
+typedef uint8_t pid_t; // process id
 
 typedef uint8_t bool_t;
 

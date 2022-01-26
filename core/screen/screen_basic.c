@@ -124,8 +124,8 @@ void screen_basic_api(void *req)
 			uint16_t _x = SCRscreenData.cursorX, _y = SCRscreenData.cursorY;
 			
 			// set new cursor position and print
-			SCRscreenData.cursorX = r->x;
-			SCRscreenData.cursorY = r->y;
+			SCRscreenData.cursorX = (uint16_t) r->x;
+			SCRscreenData.cursorY = (uint16_t) r->y;
 			print(r->str);
 
 			// reset cursor positions to before syscall
@@ -140,11 +140,11 @@ void screen_basic_api(void *req)
 			r->hdr.response_size = SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH;
 
 			// TODO: make 0xb8000 a define
-			memcpy(r->hdr.response_ptr, 0xb8000, r->hdr.response_size);
+			memcpy(r->hdr.response_ptr, (void *) 0xb8000, r->hdr.response_size);
 		break;
 
 		case SYSCALL_GET_SCREEN_GET_BYTE:
-			r->hdr.response_ptr = (void *) screen_basic_getchar(r->x, r->y);
+			r->hdr.response= (uint32_t) screen_basic_getchar(r->x, r->y);
 		break;
 
 		case SYSCALL_SET_SCREEN_COLOR:

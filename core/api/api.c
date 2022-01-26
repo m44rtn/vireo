@@ -49,9 +49,10 @@ SOFTWARE.
 #define API_SEG_FILESYSTEM      0x0400 / API_SYSCALL_SEGMENT
 #define API_SEG_PROGRAM         0x0500 / API_SYSCALL_SEGMENT
 #define API_SEG_DRIVER          0x0A00 / API_SYSCALL_SEGMENT
+#define API_SEG_API             0x0B00 / API_SYSCALL_SEGMENT
 
-#define API_SEG_DRIVERS_START   0x0B00 / API_SYSCALL_SEGMENT
-#define API_SEG_DRIVERS_END     0xBFFF / API_SYSCALL_SEGMENT
+//#define API_SEG_DRIVERS_START   0x0B00 / API_SYSCALL_SEGMENT
+//#define API_SEG_DRIVERS_END     0xBFFF / API_SYSCALL_SEGMENT
 
 #define API_SEG_DEBUG           0xFF00 / API_SYSCALL_SEGMENT
 
@@ -102,6 +103,7 @@ void api_dispatcher(void *eip, void *req)
             // TODO
             // will allow a program to get more information about drivers
             // and register/unregister drivers dynamically
+            driver_api(req);
         break;
 
         case API_SEG_DEBUG:
@@ -110,6 +112,7 @@ void api_dispatcher(void *eip, void *req)
     }
 }
 
+// TODO/FIXME: rename to easy_valloc() and move to paging.c!!!
 void *api_alloc(size_t size, pid_t pid)
 {
     uint8_t attr = (!pid) ? PAGE_REQ_ATTR_READ_WRITE | PAGE_REQ_ATTR_SUPERVISOR : 
@@ -117,7 +120,7 @@ void *api_alloc(size_t size, pid_t pid)
     PAGE_REQ req = {
         .pid = pid,
         .size = size,
-        .attr = PAGE_REQ_ATTR_READ_WRITE
+        .attr = attr
     };
     void *ptr = valloc(&req);
 

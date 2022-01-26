@@ -38,14 +38,14 @@ unsigned char strdigit_toInt(const char digit);
 unsigned int digit_count(unsigned int value);
 unsigned int hex_digit_count(unsigned int value);
 
-void memset(void *start, unsigned int size, char val);
+void memset(void *start, unsigned int size, unsigned char val);
 
 void sleep(unsigned int timeIn_ms);
 unsigned char flag_check(unsigned int flag, unsigned int to_check); 
 unsigned int find_in_str(char *o, const char *fnd);
 
 unsigned char strchr(char *str, char ch);
-void memcpy(char *destination, char *source, unsigned int size);
+void memcpy(void *_dest, void *_src, unsigned int size);
 
 void str_add_val(char *str, const char *format, unsigned int value);
 

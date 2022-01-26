@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __PIC_H__
 #define __PIC_H__
 
-#define PIC_CASCADE             1 << 2
+#define PIC_CASCADE             1U << 2
 
 void PIC_controller_setup(void);
 

@@ -88,7 +88,7 @@ typedef struct
 static uint8_t elf_check_file(elf_header_t *hdr)
 {
     if(hdr->elf_ident[0] == ELF_MAGIC_NUM && 
-        !strcmp_until(&(hdr->elf_ident[1]), ELF_MAGIC_STR, strlen(ELF_MAGIC_STR)))
+        !strcmp_until((char *) &(hdr->elf_ident[1]), ELF_MAGIC_STR, strlen(ELF_MAGIC_STR)))
             return 1; // success
     
     return 0;
@@ -120,7 +120,7 @@ static uint8_t elf_check_errors(elf_header_t *hdr)
 static void *elf_load_binary(void *file, pid_t pid)
 {
     const elf_header_t *hdr = (elf_header_t *) file;
-    const elf_program_t *prog = (elf_program_t *) (file + (hdr->phoff));
+    const elf_program_t *prog = (elf_program_t *) (((uint32_t)file) + (hdr->phoff));
 
     void *ptr = 0;
 
@@ -138,27 +138,25 @@ static void *elf_load_binary(void *file, pid_t pid)
         char *loc = valloc(&req);
         ptr = (!ptr) ? loc : ptr;
 
-        memcpy(loc, (file + prog[i].offset), prog[i].file_size);
+        memcpy(loc, (void *) (((uint32_t)file) + prog[i].offset), prog[i].file_size);
     }
 
     return ptr;
 }
 
 // returns relative entry address, memory pointer to parsed binary in ptr, error in _err
-void *elf_parse_binary(void **ptr, unsigned int size, pid_t pid, err_t *_err)
+void *elf_parse_binary(void **ptr, pid_t pid, err_t *_err)
 {
     elf_header_t *hdr = (elf_header_t *) *ptr;
-    void *entry = hdr->entry;
+    void *entry = (void *) hdr->entry;
     
     uint8_t err;
     if((err = elf_check_errors(hdr)))
         *_err = err;
     
     void *nptr = elf_load_binary(*ptr, pid);
-
-    // FIXME: freeing file pointer generates page fault
-    //vfree(*ptr);
-
+    vfree(*ptr);
+    
     *ptr = nptr;
 
     *_err = EXIT_CODE_GLOBAL_SUCCESS;

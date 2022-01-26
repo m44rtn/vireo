@@ -51,7 +51,7 @@ SOFTWARE.
 
 // =========================================
 
-#define SECTOR_SIZE             2048
+#define ISO_SECTOR_SIZE             2048
 #define CD_INFO_SIZE            512
 #define VOL_IDENT_SIZE          32
 
@@ -79,7 +79,7 @@ SOFTWARE.
 #define NO_RESET				0
 
 // path table stuff
-#define MINIMUM_NEXT_LBA_PTABLE(a)		((sizeof(pathtable_t) * a) / SECTOR_SIZE)		// used to compute the minimum lba that an entry may be at
+#define MINIMUM_NEXT_LBA_PTABLE(a)		((sizeof(pathtable_t) * a) / ISO_SECTOR_SIZE)		// used to compute the minimum lba that an entry may be at
 
 typedef struct 
 {
@@ -163,7 +163,7 @@ void iso_init(uint8_t drive)
 	if(cd_info_ptr == NULL)
 		cd_info_ptr = iso_allocate_bfr(CD_INFO_SIZE);
 
-	uint8_t *buffer = (uint8_t *) iso_allocate_bfr(SECTOR_SIZE);
+	uint8_t *buffer = (uint8_t *) iso_allocate_bfr(ISO_SECTOR_SIZE);
 
 	if(gerror)
 		// oh no! something went wrong with the allocation of memory (buffer / cd_info)
@@ -237,11 +237,11 @@ void iso_save_pvd_data(uint8_t * pvd)
 	// check if sector size is equal to standard sector size (this driver does not
 	// support ISO's that deviate from that sector size)
 	word = (uint16_t *) &pvd[PVD_BLOCK_SIZE];
-	dbg_assert(*(word) == SECTOR_SIZE);
+	dbg_assert(*(word) == ISO_SECTOR_SIZE);
 
 	// store path table size (in sectors) and lba
 	dword = (uint32_t *) &pvd[PVD_PATHTABLE_SIZE];
-	info->path_table_size = (*(dword) / SECTOR_SIZE) + (*(dword) % SECTOR_SIZE != 0);
+	info->path_table_size = (*(dword) / ISO_SECTOR_SIZE) + (*(dword) % ISO_SECTOR_SIZE != 0);
 
 	dword = (uint32_t *) &pvd[PVD_PATHTABLE_LBA];
 	info->path_table_lba = *(dword);
@@ -253,7 +253,10 @@ void iso_save_pvd_data(uint8_t * pvd)
 
 void * iso_allocate_bfr(size_t size)
 {
-	uint32_t * ptr = kmalloc(size);
+	uint32_t * ptr = NULL;
+
+	if(size < ISO_SECTOR_SIZE)
+		ptr = kmalloc(size);
 
 	if(ptr)
 		return ptr;
@@ -328,13 +331,13 @@ uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *filename, s
 	if(!bfr || !bfr_size)
 	{gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return 0;}
 	
-	uint32_t nlba = size / SECTOR_SIZE + ((size % SECTOR_SIZE) != 0);
-	const uint32_t to_read = (bfr_size / SECTOR_SIZE);
+	uint32_t nlba = size / ISO_SECTOR_SIZE + ((size % ISO_SECTOR_SIZE) != 0);
+	const uint32_t to_read = (bfr_size / ISO_SECTOR_SIZE);
 
 	// when the buffer is bigger than the sector size,
 	// it means we have enough space to read the entire directory in one go
 	// instead of multiple small ones
-	if(bfr_size > SECTOR_SIZE)
+	if(bfr_size > ISO_SECTOR_SIZE)
 		nlba = 1;
 
 	while(nlba)
@@ -388,7 +391,7 @@ size_t iso_alloc_dir_buffer(size_t dir_size, uint32_t **ret_addr)
 {
 	// first try and allocate the entire size of the dir, since that would make our job easier
 	// otherwise just try and allocate the size of one lba.
-	dir_size += SECTOR_SIZE - (dir_size % SECTOR_SIZE);
+	dir_size += ISO_SECTOR_SIZE - (dir_size % ISO_SECTOR_SIZE);
 
 	*(ret_addr) = iso_allocate_bfr(dir_size);
 	
@@ -396,9 +399,9 @@ size_t iso_alloc_dir_buffer(size_t dir_size, uint32_t **ret_addr)
 	if(*(ret_addr))
 		return dir_size;
 
-	*(ret_addr) = iso_allocate_bfr(SECTOR_SIZE);
+	*(ret_addr) = iso_allocate_bfr(ISO_SECTOR_SIZE);
 
-	return *(ret_addr) ? SECTOR_SIZE : 0;
+	return *(ret_addr) ? ISO_SECTOR_SIZE : 0;
 }
 
 size_t iso_get_dir_size(uint8_t drive, uint32_t dir_lba)
@@ -500,7 +503,7 @@ static uint16_t iso_read_path_table_buffer(uint8_t *buffer, char *filename, uint
 {
 	uint16_t read = s;
 	
-	while(read < SECTOR_SIZE)
+	while(read < ISO_SECTOR_SIZE)
 	{
 		pathtable_t *p = (pathtable_t *) &buffer[read];
 		uint16_t ident_len = (uint16_t) (p->ident_len);
@@ -531,7 +534,7 @@ uint32_t *iso_search_in_path_table(uint8_t drive, char *filename, uint8_t reset)
 
 	const cd_info_t *info = (cd_info_t *) cd_info_ptr;
 
-	while(lba < (info->path_table_size)) // was: (lba * SECTOR_SIZE) < (info->path_table_size)
+	while(lba < (info->path_table_size)) // was: (lba * ISO_SECTOR_SIZE) < (info->path_table_size)
 	{
 		uint8_t * b = (uint8_t *) iso_read_drive(drive, (info->path_table_lba) + lba, 1);
 		loc = iso_read_path_table_buffer(b, filename, loc);
@@ -563,7 +566,7 @@ static uint16_t iso_count_index(uint16_t *index_start, uint16_t until, uint8_t *
 {
 	uint16_t read = 0, index = *(index_start);
 	
-	while(read < SECTOR_SIZE)
+	while(read < ISO_SECTOR_SIZE)
 	{
 		pathtable_t *p = (pathtable_t *) &buffer[read];
 		uint16_t ident_len = (uint32_t) (p->ident_len);
@@ -593,14 +596,14 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 	const cd_info_t *info = (cd_info_t *) cd_info_ptr;
 	
 	// do while the current sector does not equal the max sectors of the path table
-	while(lba < (info->path_table_size)) // was: (lba * SECTOR_SIZE) < (info->path_table_size)
+	while(lba < (info->path_table_size)) // was: (lba * ISO_SECTOR_SIZE) < (info->path_table_size)
 	{
 		uint8_t * b = (uint8_t *) iso_read_drive(drive, (info->path_table_lba) + lba, 1);
 		uint16_t read = iso_count_index(&i, index, b);
 
 		// if we are at the end of the current buffer, update the total
 		// reset i and increase the lba
-		if(read >= SECTOR_SIZE)
+		if(read >= ISO_SECTOR_SIZE)
 		{
 			total = (uint16_t) (total + i); 
 			i = 0; 
@@ -675,7 +678,7 @@ void reverse_path(char *path)
 
 uint16_t *iso_read_drive(uint8_t drive, uint32_t lba, uint32_t sctr_read)
 {
-	uint16_t *buf = iso_allocate_bfr(SECTOR_SIZE * sctr_read);
+	uint16_t *buf = iso_allocate_bfr(ISO_SECTOR_SIZE * sctr_read);
 
 	// check if we got a null pointer back
 	if(!buf)
@@ -695,7 +698,7 @@ void iso_read(char * path, uint32_t *drv)
 	size_t fsize = 0;
     uint32_t flba = iso_traverse(path, &fsize);
 
-	uint32_t nlba = fsize / SECTOR_SIZE + ((fsize % SECTOR_SIZE) != 0);
+	uint32_t nlba = fsize / ISO_SECTOR_SIZE + ((fsize % ISO_SECTOR_SIZE) != 0);
 	uint8_t drive = (uint8_t) (convert_drive_id((const char *) path) >> DISKIO_DISK_NUMBER);
 
 	// FIXME: use paging instead of default iso memory (which may use kernel memory)

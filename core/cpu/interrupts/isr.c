@@ -49,7 +49,7 @@ void isr_set_extern_handler(uint8_t type, void *handler)
 
 void **isr_get_extern_handlers(void)
 {
-    return &extern_handlers;
+    return &extern_handlers[0];
 }
 
 void ISR_STANDARD_HANDLER(void)

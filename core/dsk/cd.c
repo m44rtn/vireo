@@ -61,7 +61,7 @@ void cd_init(void)
         drv[2] = 0;
         drv[2] = FS_TYPE_ISO;
 
-        driver_exec(FS_TYPE_ISO | DRIVER_TYPE_FS, drv);
+        driver_exec_int(FS_TYPE_ISO | DRIVER_TYPE_FS, drv);
     }
 
     kfree(drv);

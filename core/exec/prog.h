@@ -26,6 +26,8 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#define PROG_DEFAULT_STACK_SIZE 4096    // bytes
+
 void prog_api(void *req);
 void prog_launch_binary(char *filename, return_t *ret_addr);
 uint8_t prog_pid_exists(const pid_t pid);

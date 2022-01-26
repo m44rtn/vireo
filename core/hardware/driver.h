@@ -24,6 +24,8 @@ SOFTWARE.
 #ifndef __DRIVER_H__
 #define __DRIVER_H__
 
+#include "../include/types.h"
+
 /* information and indentifier struct for drivers
         take a look in the refman for some of the values */
 struct DRIVER
@@ -43,7 +45,12 @@ struct DRIVER
 #define DRIVER_COMMAND_PACKET_LEN   5
 
 void driver_init(void);
-void driver_exec(unsigned int type, unsigned int *data);
+void driver_exec_int(unsigned int type, unsigned int *data);
 void driver_addInternalDriver(unsigned int identifier);
+
+void driver_api(void *req);
+err_t driver_add_external_driver(uint32_t type, char *path);
+void driver_remove_external_driver(uint32_t type);
+err_t driver_ext_exec(uint32_t type, uint32_t *params);
 
 #endif

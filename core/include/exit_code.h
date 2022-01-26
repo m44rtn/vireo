@@ -35,6 +35,8 @@ SOFTWARE.
 #define EXIT_CODE_GLOBAL_UNSUPPORTED        0x0A
 #define EXIT_CODE_GLOBAL_OUT_OF_MEMORY      0x0B
 
+#define EXIT_CODE_GLOBAL_NOT_INITIALIZED    0x0C
+
 #define EXIT_CODE_GLOBAL_RESERVED           0x0F
 /* 0x00 - 0x0F are reserved for global exit_codes used by the kernel*/
 

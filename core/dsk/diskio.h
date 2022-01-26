@@ -24,8 +24,8 @@ SOFTWARE.
 #ifndef __DISKIO_H__
 #define __DISKIO_H__
 
-#define SECTOR_SIZE        512
-#define ATAPI_SECTOR_SIZE  2048
+#define DEFAULT_SECTOR_SIZE        512
+#define ATAPI_DEFAULT_SECTOR_SIZE  2048
 
 #define DISKIO_DISKID_HD    "HD"    // HDD
 #define DISKIO_DISKID_CD    "CD"    // CD/DVD drive

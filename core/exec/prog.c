@@ -45,7 +45,6 @@ SOFTWARE.
 
 #define PROG_INFO_TABLE_SIZE    4096    // bytes (= 1 page)
 #define PROG_INFO_MAX_INDEX     (4096 / sizeof(prog_info_t)) - 1
-#define PROG_DEFAULT_STACK_SIZE 4096    // bytes
 
 typedef struct
 {
@@ -83,6 +82,8 @@ prog_info_t *prog_info = NULL;
 pid_t current_running_pid = PID_KERNEL;
 
 /// ----- ///
+void prog_init(void);
+uint32_t prog_find_info_index(const pid_t pid);
 
 void prog_init(void)
 {
@@ -101,6 +102,8 @@ uint32_t prog_find_free_index(void)
     for(; i < PROG_INFO_MAX_INDEX; ++i)
         if(prog_info[i].pid == 0xFF)
             break;
+    if(i == PROG_INFO_MAX_INDEX) 
+        i = MAX;
 
     return i;
 }
@@ -112,6 +115,10 @@ void prog_launch_binary(char *filename, return_t *ret_addr)
 
     // find free index in prog_info
     uint32_t free_index = prog_find_free_index();
+
+    if(free_index == MAX)
+        return;
+
     size_t size = 0;
 
     // read binary file
@@ -124,10 +131,10 @@ void prog_launch_binary(char *filename, return_t *ret_addr)
     prog_info[free_index].filename = filename; // FIXME: could point to an unkown program's memory
     prog_info[free_index].ret_addr = ret_addr;
     prog_info[free_index].pid = task_new_pid();
-    prog_info[free_index].stck = api_alloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid) + PAGE_SIZE - 1;
+    prog_info[free_index].stck = (void *) (((uint32_t)api_alloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
 
     err_t err = 0;
-    void *rel_addr = elf_parse_binary(&elf, size, prog_info[free_index].pid, &err);
+    void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err);
 
     if(!err)
         prog_info[free_index].rel_start = (void *) ((uint32_t)rel_addr | (uint32_t)(elf));

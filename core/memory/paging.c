@@ -38,7 +38,7 @@ SOFTWARE.
 #include "../exec/task.h"
 
 #define PAGING_ADDR_MSK         0xFFFFF000       
-#define PAGING_PAGE_SIZE        4096 /* bytes */
+#define PAGING_PAGE_SIZE        4096U /* bytes */
 #define PAGING_TABLE_SIZE       1024 /* entries */
 
 #define PAGING_TABLE_TYPE_DIR 0
@@ -60,7 +60,7 @@ uint32_t *page_dir = NULL;
 
 
 static uint32_t paging_convert_ptr_to_entry(uint32_t ptr, PAGE_REQ *req);
-static void *paging_find_free(uint32_t npages);
+static void *paging_find_free(uint16_t npages);
 static uint32_t paging_create_tables(void);
 static void paging_prepare_table(uint32_t *table, uint8_t type);
 static void paging_map_kernelspace(uint32_t end_of_kernel_space);
@@ -112,7 +112,7 @@ void paging_map(void *pptr, void *vptr, PAGE_REQ *req)
 
 void *valloc(PAGE_REQ *req)
 {   
-    uint32_t npages;
+    uint16_t npages;
     uint32_t *ptable;
     uint32_t page_id, t_index, d_index;
 
@@ -120,7 +120,7 @@ void *valloc(PAGE_REQ *req)
     dbg_assert((uint32_t)page_dir);
 
     /* how many pages do we need? */
-    npages = HOW_MANY((req->size), PAGING_PAGE_SIZE);
+    npages = (uint16_t) (HOW_MANY((req->size), PAGING_PAGE_SIZE));
 
     if((npages > g_max_pages) || (npages == 0))
         return NULL;
@@ -175,10 +175,10 @@ void paging_rel_resources(const pid_t pid)
 {
     for(uint32_t i = 0; i < shadow_len; ++i)
         if(shadow_t[i].pid == pid)
-            vfree(i << 12);
+            vfree((void *) (i << 12));
 }
 
-static void *paging_find_free(uint32_t npages)
+static void *paging_find_free(uint16_t npages)
 {
     uint32_t index, cnt = 0;
     for(uint32_t i = 0; i < shadow_len; ++i)
@@ -245,7 +245,7 @@ static uint32_t paging_create_tables(void)
     size_t shadow_size = shadow_len * sizeof(shadow_allocated);
 
     shadow_t = (shadow_allocated *) page_dir + amount_mem;
-    memset((void *)shadow_t, shadow_size, (char) PID_RESV);
+    memset((void *)shadow_t, shadow_size, PID_RESV);
 
     return ((uint32_t) shadow_t) + shadow_size;
 }
@@ -271,7 +271,8 @@ static void paging_map_kernelspace(uint32_t end_of_kernel_space)
 {
     PAGE_REQ req = {PID_KERNEL, PAGE_REQ_ATTR_SUPERVISOR | PAGE_REQ_ATTR_READ_WRITE, PAGING_PAGE_SIZE};
     uint32_t i;
-    uint32_t pages = ((end_of_kernel_space & PAGING_ADDR_MSK) >> 12) + (end_of_kernel_space & 0xFFF != 0);
+    uint32_t pages = ((end_of_kernel_space & PAGING_ADDR_MSK) >> 12) + 
+                         ((end_of_kernel_space & 0xFFF) != 0);
 
     for(i = 0; i < pages; ++i)
     {

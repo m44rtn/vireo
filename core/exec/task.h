@@ -25,6 +25,10 @@ SOFTWARE.
 #define __TASK_H__
 
 #define PID_KERNEL                  0U
+
+// allows drivers to use valloc(), since it needs a PID to operate
+#define PID_DRIVER                  0xFEU
+
 #define PID_RESV                    0xFFU
 
 unsigned char task_new_pid(void);

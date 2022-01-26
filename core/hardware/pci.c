@@ -202,7 +202,7 @@ uint32_t pciGetBar(uint32_t device, uint8_t bar)
 
 uint32_t pci_read_dword(uint8_t bus, uint8_t dev, uint8_t func, uint8_t offset)
 {
-    uint32_t addr = (uint32_t) (0x80000000u | (bus << 16) | (dev << 11) | (func << 8) | (offset & 0xfc));
+    uint32_t addr = (uint32_t) (0x80000000u | (uint8_t)(bus << 16) | (uint8_t)(dev << 11) | (uint8_t)(func << 8) | (uint8_t)(offset & 0xfc));
     outl(PCI_CONFIG_ADDR, addr);
     return (uint32_t) inl(PCI_CONFIG_DATA);
 }

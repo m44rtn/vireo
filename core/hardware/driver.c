@@ -27,11 +27,25 @@ SOFTWARE.
 #include "pci.h"
 
 #include "../include/types.h"
+#include "../include/exit_code.h"
+
 #include "../exec/exec.h"
+#include "../exec/task.h"
+#include "../exec/elf.h"
 
 #include "../memory/memory.h"
+#include "../memory/paging.h"
+
+#include "../api/api.h"
+#include "../api/syscalls.h"
 
 #include "../dbg/dbg.h"
+
+#include "../util/util.h"
+
+#include "../drv/COMMANDS.H"
+
+#include "../dsk/fs.h"
 
 #ifndef NO_DEBUG_INFO
     #include "../screen/screen_basic.h"
@@ -40,7 +54,11 @@ SOFTWARE.
 #define DRIVER_STRUCT_HEXSIGN   0xB14D05
 #define DRIVER_STRUCT_CHARSIGN  "VIREODRV"
 
-#define DRIVER_MAX_SUPPORTED    64
+#define DRIVER_INTERNAL_MAX_SUPPORTED    16
+
+#define DRIVER_EXTERNAL_LIST_MAX_PAGES   1
+#define DRIVER_EXTERNAL_LIST_SIZE        DRIVER_EXTERNAL_LIST_MAX_PAGES * PAGE_SIZE
+#define DRIVER_EXTERNAL_MAX_SUPPORTED    DRIVER_EXTERNAL_LIST_SIZE / sizeof(ext_driver_list_t)
 
 struct DRIVER_SEARCH
 {
@@ -54,45 +72,61 @@ typedef struct
     uint32_t device;
     uint32_t type;
     uint32_t *driver;
-} DRIVER_LIST;
+} __attribute__((packed)) int_driver_list_t ;
 
-/* with 64 drivers this list is 768 bytes */
-DRIVER_LIST drv_list[DRIVER_MAX_SUPPORTED];
+typedef struct ext_driver_list_t
+{
+    uint32_t type;
+    void *start;  // pointer to the starting function of the binary
+    void *binary; // pointer to start of binary
+    void *stack;
+} __attribute__((packed)) ext_driver_list_t;
+
+typedef struct driver_call_t
+{
+    syscall_hdr_t hdr;
+    uint32_t type;
+    char *path;
+} __attribute__((packed)) driver_call_t;
+
+/* with 16 drivers this list is 192 bytes */
+int_driver_list_t drv_list[DRIVER_INTERNAL_MAX_SUPPORTED];
+ext_driver_list_t *ext_drv_list = NULL;
 uint8_t cur_devices = 0;
 
 static void driver_search_pciAll(void);
 
-/* TODO:
-        - add functionality to add and remove new/old drivers */
-
-/* A driver command packet is an array of five uint32_t's. 
+/* An internal driver command 'packet' is an array of five uint32_t's. 
     The packet is as follows:
 
     0: command
     1-4: parameter1 - parameter4
     */
-
+uint32_t driver_ext_find_free_index(void);
+uint32_t driver_ext_find_index(uint32_t type);
 
 void driver_init(void)
 {
     driver_search_pciAll();
+    ext_drv_list = api_alloc(DRIVER_EXTERNAL_LIST_SIZE, PID_KERNEL);
 
 #ifndef NO_DEBUG_INFO
     print( "\n");
 #endif
 }
 
-void driver_exec(uint32_t type, uint32_t *data)
+// executes internal drivers
+void driver_exec_int(uint32_t type, uint32_t *data)
 {
     uint8_t i;
 
     /* the kernel only supports one type for a driver, so this means we can use it as a key (which is easier to test with since you can just look it up on google). */
-    for(i = 0; i < DRIVER_MAX_SUPPORTED; ++i)
+    for(i = 0; i < DRIVER_INTERNAL_MAX_SUPPORTED; ++i)
         if(drv_list[i].type == type)
             break;
     
-    dbg_assert(!(i >= DRIVER_MAX_SUPPORTED));
-    if(i >= DRIVER_MAX_SUPPORTED)     
+    dbg_assert(!(i >= DRIVER_INTERNAL_MAX_SUPPORTED));
+    if(i >= DRIVER_INTERNAL_MAX_SUPPORTED)     
         return;
     
 
@@ -114,7 +148,7 @@ void driver_addInternalDriver(uint32_t identifier)
     driver_loc = memsrch((void *) &drv, sizeof(struct DRIVER_SEARCH), memory_getKernelStart(), memory_getMallocStart());
     
     dbg_assert((uint32_t)driver_loc);
-    dbg_assert(cur_devices != DRIVER_MAX_SUPPORTED);
+    dbg_assert(cur_devices != DRIVER_INTERNAL_MAX_SUPPORTED);
     
     // save the information on our driver
     drv_list[cur_devices].device = 0;
@@ -163,3 +197,108 @@ static void driver_search_pciAll(void)
     kfree(devicelist);
 }
 
+uint32_t driver_ext_find_free_index(void)
+{
+    uint32_t i = 0;
+    for(; i < DRIVER_EXTERNAL_MAX_SUPPORTED; ++i)
+        if(!ext_drv_list[i].type)
+            break;
+
+    return i == DRIVER_EXTERNAL_MAX_SUPPORTED ? MAX : i;
+}
+
+uint32_t driver_ext_find_index(uint32_t type)
+{
+    uint32_t i = 0;
+    for(; i < DRIVER_EXTERNAL_MAX_SUPPORTED; ++i)
+        if(ext_drv_list[i].type == type)
+            break;
+
+    return i >= DRIVER_EXTERNAL_MAX_SUPPORTED ? MAX : i;
+}
+
+err_t driver_add_external_driver(uint32_t type, char *path)
+{
+    size_t size = 0;
+    uint32_t index = driver_ext_find_free_index();
+
+    if(index == MAX)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+    // read binary file
+    file_t *f = fs_read_file(path, &size);
+    file_t *elf = f;
+
+    err_t err = 0;
+    void *rel_addr = elf_parse_binary(&elf, PID_DRIVER, &err);
+
+    // add information to the driver list based on the type of binary (elf, flat)
+    if(!err)
+    {
+        ext_drv_list[index].start = (void *) ((uint32_t)rel_addr | (uint32_t)(elf));
+        ext_drv_list[index].binary = elf;
+    }
+    else
+    { 
+        ext_drv_list[index].start = f; // start of file (in case of flat binary)
+        ext_drv_list[index].binary = f;
+    }
+
+    ext_drv_list[index].type = type;
+    ext_drv_list[index].stack = api_alloc(PROG_DEFAULT_STACK_SIZE, PID_DRIVER);
+
+    // initialize the  driver by calling its main()
+    EXEC_CALL_FUNC(ext_drv_list[index].start, NULL); // (((uint32_t)ext_drv_list[index].stack) + PROG_DEFAULT_STACK_SIZE)
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+void driver_remove_external_driver(uint32_t type)
+{
+    uint32_t index = driver_ext_find_index(type);
+
+    if(index == MAX)
+        return;
+    
+    vfree(ext_drv_list[index].stack);
+    vfree(ext_drv_list[index].binary);
+
+    // empty the entry of this driver
+    memset(&ext_drv_list[index], sizeof(ext_driver_list_t), 0);
+}
+
+void driver_api(void *req)
+{
+    driver_call_t *call = req;
+    
+    if(ext_drv_list == NULL)
+    { call->hdr.exit_code = EXIT_CODE_GLOBAL_NOT_INITIALIZED; return; }
+
+    switch(call->hdr.system_call)
+    {
+        case SYSCALL_DRIVER_GET_LIST:
+        {
+            ext_driver_list_t *list = api_alloc(DRIVER_EXTERNAL_LIST_SIZE, PID_DRIVER);
+            memcpy(list, ext_drv_list, DRIVER_EXTERNAL_LIST_SIZE);
+
+            call->hdr.exit_code = EXIT_CODE_GLOBAL_SUCCESS;
+            call->hdr.response_ptr = list;
+            call->hdr.response_size = DRIVER_EXTERNAL_LIST_SIZE;
+
+            break;
+        }
+        
+
+        case SYSCALL_DRIVER_ADD:
+            call->hdr.exit_code = driver_add_external_driver(call->type, call->path);
+        break;
+
+        case SYSCALL_DRIVER_REMOVE:
+            driver_remove_external_driver(call->type);
+        break;
+
+        default:
+            call->hdr.exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
+        break;
+    }
+}

@@ -117,8 +117,8 @@ void diskio_api(void *req)
 
             uint16_t id = convert_drive_id(c->drive);
 
-            uint8_t disk = (id >> 8) & 0xFF;
-            uint8_t part = id & 0xFF;
+            uint8_t disk = (uint8_t) ((id >> 8) & 0xFFU);
+            uint8_t part = (uint8_t) id & 0xFFU;
 
             api_partition_info_t *p = (api_partition_info_t *) api_alloc(sizeof(api_partition_info_t), prog_get_current_running());
 
@@ -137,20 +137,20 @@ void diskio_api(void *req)
             // TODO: make function
             disk_syscall_t *c = (disk_syscall_t *) req;
 
-            if(c->buffer < memory_get_malloc_end() /* (end of kernel space) */) 
+            if(c->buffer < (void *) memory_get_malloc_end() /* (end of kernel space) */) 
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
 
             uint16_t id = convert_drive_id((const char *) c->drive);
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
             uint8_t part = (uint8_t) (id & 0xFF);
 
-            uint16_t *b = api_alloc(c->nlba * SECTOR_SIZE, prog_get_current_running());
+            uint8_t *b = api_alloc(c->nlba * DEFAULT_SECTOR_SIZE, prog_get_current_running());
             uint32_t lba = (drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI) ? c->lba : c->lba + MBR_getStartLBA(drive, part);
 
             c->hdr.exit_code = read(drive, lba, c->nlba, b);
 
             c->hdr.response_ptr = b;
-            c->hdr.response_size = c->nlba * SECTOR_SIZE;
+            c->hdr.response_size = c->nlba * DEFAULT_SECTOR_SIZE;
             
             break;
         }
@@ -160,9 +160,9 @@ void diskio_api(void *req)
             // TODO: make function
             disk_syscall_t *c = (disk_syscall_t *) req;
 
-            if(c->buffer_size < (c->nlba * SECTOR_SIZE))
+            if(c->buffer_size < (c->nlba * DEFAULT_SECTOR_SIZE))
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
-            if(c->buffer < memory_get_malloc_end() /* (end of kernel space) */) 
+            if(c->buffer < (void *) memory_get_malloc_end() /* (end of kernel space) */) 
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
             if(drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI)
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_UNSUPPORTED; break; }
@@ -199,7 +199,7 @@ void diskio_init(void)
     // prepare and exec IDE report command
     drv[0] = IDE_COMMAND_REPORTDRIVES;
     drv[1] = (uint32_t) (drives);
-    driver_exec(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv); 
+    driver_exec_int(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv); 
 
     // FIXME: this is the incorrect way to init drive_info_t (assumes for example that there will 
     // be 4 drives returned by the IDE driver, while this is usually not the case)
@@ -242,7 +242,7 @@ uint8_t read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsig
     drv[3] = sctrRead;
     drv[4] = (uint32_t) (buf);
 
-    driver_exec((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
+    driver_exec_int((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
 
     if(drv[4] == NULL)
         return (uint8_t) drv[1];
@@ -264,7 +264,7 @@ uint8_t write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, uns
     drv[3] = sctrWrite;
     drv[4] = (uint32_t) (buf);
 
-    driver_exec((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
+    driver_exec_int((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
 
     if(drv[4] == NULL)
         return (uint8_t) drv[1];
@@ -284,25 +284,25 @@ size_t disk_get_max_addr(uint8_t drive)
     drv[0] = command;
     drv[1] = (uint32_t) (drive);
 
-    driver_exec((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
+    driver_exec_int((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
     
     return drv[2];
 }
 
 size_t disk_get_sector_size(uint8_t drive)
 {
-    return (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATAPI) ? ATAPI_SECTOR_SIZE : SECTOR_SIZE;
+    return (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATAPI) ? ATAPI_DEFAULT_SECTOR_SIZE : DEFAULT_SECTOR_SIZE;
 }
 
 void drive_convert_to_drive_id(uint8_t drive, char *out_id)
 {
     uint8_t type = disk_info_t[drive].disktype;
 
-    char *t = drive_type_to_chars(type);
+    char *t = (char *) (drive_type_to_chars(type));
     size_t s = strlen(t);
 
     memcpy(out_id, t, s);
-    out_id[s] = drive_to_type_index(drive, type) + '0';
+    out_id[s] = (char) (drive_to_type_index(drive, type) + '0');
 }
 
 // @returns:

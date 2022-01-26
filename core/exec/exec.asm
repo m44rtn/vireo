@@ -34,14 +34,18 @@ EXEC_CALL_FUNC:
 ;   output:
 ;       - N/A
 
+pushad
+
 push ebp
 mov ebp, esp
 
-push DWORD [ebp + 12]
-call DWORD [ebp + 8]
+push DWORD [ebp + 32 + 12]
+call DWORD [ebp + 32 + 8]
 
 mov esp, ebp
 pop ebp
+
+popad
 
 ret
 

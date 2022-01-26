@@ -33,7 +33,7 @@ pid_t task_new_pid(void)
     static pid_t pid = PID_KERNEL;
 
     // check if we are almost out of process id's, if so reset
-    while(pid < PID_RESV)
+    while(pid < PID_DRIVER)
     {
         ++pid;
         if(prog_pid_exists(pid))
@@ -42,7 +42,7 @@ pid_t task_new_pid(void)
         break;
     }
 
-    if(pid == PID_RESV)
+    if(pid == PID_DRIVER)
             pid = PID_KERNEL;
 
     return pid;
