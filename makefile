@@ -1,8 +1,9 @@
 PROJDIRS := core
 
-# called OBJDIR but is actually kernel.sys dir
+# called OBJDIR but is actually the BINARY_NAME dir
 OBJDIR   := bin
 VM_NAME  := "BirdOS"
+BINARY_NAME := vireo.sys
 
 # any modules/objects not to be included in the final build
 OBJIGNORE := core/misc/conway.o
@@ -42,14 +43,14 @@ AC := nasm
 m: all iso
 
 iso:
-	cp bin/kernel.sys grub/boot/kernel.sys
-	grub-mkrescue -o birdos.iso grub/
+	cp bin/$(BINARY_NAME) grub/boot/$(BINARY_NAME)
+	grub-mkrescue -o vireo.iso grub/
 
 todo: 
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
 
 all: clean $(OBJFILES) $(ASOBJFILES)
-	@$(CC) -T linker.ld -o bin/kernel.sys core/boot.o core/main.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
+	@$(CC) -T linker.ld -o bin/$(BINARY_NAME) core/boot.o core/main.o $(LDOBJFILES) $(LDASOBJFILES) -lgcc -ffreestanding -O2 -nostdlib
 
 	@# let xenops update the BUILD version for next time
 	-@xenops -f core/kernel/info.h -q
@@ -66,7 +67,7 @@ clean:
 
 # creates a map of all functions
 map:
-	@$(LD) -Map=kernel.map -T linker.ld -o bin/kernel.sys core/boot.o core/main.o $(LDOBJFILES) $(LDASOBJFILES)
+	@$(LD) -Map=kernel.map -T linker.ld -o bin/$(BINARY_NAME) core/boot.o core/main.o $(LDOBJFILES) $(LDASOBJFILES)
 
 run:
 	vboxmanage startvm $(VM_NAME) -E VBOX_GUI_DBG_ENABLED=true
