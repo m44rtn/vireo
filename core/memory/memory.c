@@ -128,7 +128,7 @@ void memory_api(void *req)
     {
         case SYSCALL_GET_MEM_INFO:
         {
-            api_mem_info_t *mem = (api_mem_info_t *) api_alloc(sizeof(api_mem_info_t), prog_get_current_running());
+            api_mem_info_t *mem = (api_mem_info_t *) evalloc(sizeof(api_mem_info_t), prog_get_current_running());
             mem->memory_space_kb = memory_info_t.available_memory;
             mem->program_space_start = NULL; // TODO: either fix or remove
             
@@ -140,7 +140,7 @@ void memory_api(void *req)
         case SYSCALL_VALLOC:
         {
             valloc_t *v = (valloc_t *) req;
-            v->hdr.response_ptr = api_alloc(v->size, prog_get_current_running());
+            v->hdr.response_ptr = evalloc(v->size, prog_get_current_running());
             break;
         }
 

@@ -32,6 +32,8 @@ SOFTWARE.
 
 #include "../util/util.h"
 
+#include "../memory/paging.h"
+
 #define SCREEN_BASIC_DEFAULT_COLOR  0x07
 
 #define SCREEN_BASIC_FIRST_SCNLINE	0
@@ -103,7 +105,7 @@ void screen_basic_api(void *req)
 
 		case SYSCALL_GET_SCREEN_INFO:
 		{
-			screen_info_t *scr = (screen_info_t *) api_alloc(sizeof(screen_info_t), prog_get_current_running());
+			screen_info_t *scr = (screen_info_t *) evalloc(sizeof(screen_info_t), prog_get_current_running());
 			
 			scr->mode = VGA_MODE_3;
 			scr->depth = SCREEN_BASIC_DEPTH;
@@ -136,7 +138,7 @@ void screen_basic_api(void *req)
 		}
 
 		case SYSCALL_GET_SCREEN_BUFFER:
-			r->hdr.response_ptr = api_alloc(SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH, prog_get_current_running());
+			r->hdr.response_ptr = evalloc(SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH, prog_get_current_running());
 			r->hdr.response_size = SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH;
 
 			// TODO: make 0xb8000 a define

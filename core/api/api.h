@@ -43,7 +43,6 @@ typedef struct
 } __attribute__((packed)) response_hdr_t;
 
 void api_dispatcher(void *eip, void *req);
-void *api_alloc(size_t size, pid_t pid);
 
 extern void api_dispatcher_start(void);
 extern void api_dispatcher_return(void *eip);

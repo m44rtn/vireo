@@ -33,6 +33,7 @@ SOFTWARE.
 #include "../hardware/pci.h"
 
 #include "../memory/memory.h"
+#include "../memory/paging.h"
 
 #include "../util/util.h"
 
@@ -88,7 +89,7 @@ void diskio_api(void *req)
         {
             // TODO make function
             uint8_t *disks = diskio_reportDrives();
-            api_disk_info_t *dsk = (api_disk_info_t *) api_alloc(DISKIO_MAX_DRIVES * sizeof(api_disk_info_t), prog_get_current_running());
+            api_disk_info_t *dsk = (api_disk_info_t *) evalloc(DISKIO_MAX_DRIVES * sizeof(api_disk_info_t), prog_get_current_running());
             
             for(uint8_t i = 0; i < DISKIO_MAX_DRIVES; ++i)
             {
@@ -120,7 +121,7 @@ void diskio_api(void *req)
             uint8_t disk = (uint8_t) ((id >> 8) & 0xFFU);
             uint8_t part = (uint8_t) id & 0xFFU;
 
-            api_partition_info_t *p = (api_partition_info_t *) api_alloc(sizeof(api_partition_info_t), prog_get_current_running());
+            api_partition_info_t *p = (api_partition_info_t *) evalloc(sizeof(api_partition_info_t), prog_get_current_running());
 
             p->n_sectors = mbr_get_sector_count(disk, part);
             p->starting_sector = MBR_getStartLBA(disk, part);
@@ -144,7 +145,7 @@ void diskio_api(void *req)
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
             uint8_t part = (uint8_t) (id & 0xFF);
 
-            uint8_t *b = api_alloc(c->nlba * DEFAULT_SECTOR_SIZE, prog_get_current_running());
+            uint8_t *b = evalloc(c->nlba * DEFAULT_SECTOR_SIZE, prog_get_current_running());
             uint32_t lba = (drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI) ? c->lba : c->lba + MBR_getStartLBA(drive, part);
 
             c->hdr.exit_code = read(drive, lba, c->nlba, b);

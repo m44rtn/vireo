@@ -73,7 +73,7 @@ void kernel_api_handler(void *req)
             // full version string
             char *str = info_make_version_str();
             
-            hdr->response_ptr = api_alloc(strlen(str) + 1, prog_get_current_running());
+            hdr->response_ptr = evalloc(strlen(str) + 1, prog_get_current_running());
             hdr->response_size = strlen(str) + 1;
             memcpy((hdr->response_ptr), str, strlen(str) + 1);
             kfree(str);
@@ -83,7 +83,7 @@ void kernel_api_handler(void *req)
         case SYSCALL_VERSION_NUM:
         {
             // version number (build, major, minor, rev)
-            kernel_ver_t *ver = api_alloc(sizeof(kernel_ver_t), prog_get_current_running());
+            kernel_ver_t *ver = evalloc(sizeof(kernel_ver_t), prog_get_current_running());
             hdr->response_ptr = ver;
             hdr->response_size = sizeof(kernel_ver_t);
 
@@ -96,7 +96,7 @@ void kernel_api_handler(void *req)
         }
 
         case SYSCALL_FREE_INT_HANDLERS:
-            hdr->response_ptr = api_alloc(MAX_PIC_INTERRUPTS * sizeof(void *), prog_get_current_running());
+            hdr->response_ptr = evalloc(MAX_PIC_INTERRUPTS * sizeof(void *), prog_get_current_running());
             hdr->response_size = MAX_PIC_INTERRUPTS * sizeof(void *);
             memcpy(hdr->response_ptr, isr_get_extern_handlers(), sizeof(void *));
         break;

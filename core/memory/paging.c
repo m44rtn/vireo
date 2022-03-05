@@ -147,6 +147,22 @@ void *valloc(PAGE_REQ *req)
     return ptr;
 }
 
+// easy valloc()
+void *evalloc(size_t size, pid_t pid)
+{
+    uint8_t attr = (!pid) ? PAGE_REQ_ATTR_READ_WRITE | PAGE_REQ_ATTR_SUPERVISOR : 
+                            PAGE_REQ_ATTR_READ_WRITE;
+    PAGE_REQ req = {
+        .pid = pid,
+        .size = size,
+        .attr = attr
+    };
+    void *ptr = valloc(&req);
+
+    dbg_assert(ptr);
+    return ptr;
+}
+
 void vfree(void *ptr)
 {
     uint32_t d_index, t_index,

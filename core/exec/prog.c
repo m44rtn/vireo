@@ -87,7 +87,7 @@ uint32_t prog_find_info_index(const pid_t pid);
 
 void prog_init(void)
 {
-    prog_info = api_alloc(PROG_INFO_TABLE_SIZE, PID_KERNEL);
+    prog_info = evalloc(PROG_INFO_TABLE_SIZE, PID_KERNEL);
 
     // out of memory?
     if(!prog_info)
@@ -131,7 +131,7 @@ void prog_launch_binary(char *filename, return_t *ret_addr)
     prog_info[free_index].filename = filename; // FIXME: could point to an unkown program's memory
     prog_info[free_index].ret_addr = ret_addr;
     prog_info[free_index].pid = task_new_pid();
-    prog_info[free_index].stck = (void *) (((uint32_t)api_alloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
+    prog_info[free_index].stck = (void *) (((uint32_t)evalloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
 
     err_t err = 0;
     void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err);
@@ -214,7 +214,7 @@ void prog_api(void *req)
     {
         case SYSCALL_GET_PROGRAM_INFO:
         {
-            api_prog_info_t *info = api_alloc(sizeof(api_prog_info_t), current_running_pid);
+            api_prog_info_t *info = evalloc(sizeof(api_prog_info_t), current_running_pid);
             dbg_assert(info);
             
             uint32_t pid_index = prog_find_info_index(current_running_pid);

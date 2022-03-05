@@ -82,6 +82,11 @@ typedef struct ext_driver_list_t
     void *stack;
 } __attribute__((packed)) ext_driver_list_t;
 
+typedef struct driver_info_t
+{
+    uint32_t type;
+} __attribute__((packed)) driver_info_t;
+
 typedef struct driver_call_t
 {
     syscall_hdr_t hdr;
@@ -108,7 +113,7 @@ uint32_t driver_ext_find_index(uint32_t type);
 void driver_init(void)
 {
     driver_search_pciAll();
-    ext_drv_list = api_alloc(DRIVER_EXTERNAL_LIST_SIZE, PID_KERNEL);
+    ext_drv_list = evalloc(DRIVER_EXTERNAL_LIST_SIZE, PID_KERNEL);
 
 #ifndef NO_DEBUG_INFO
     print( "\n");
@@ -245,9 +250,13 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     }
 
     ext_drv_list[index].type = type;
-    ext_drv_list[index].stack = api_alloc(PROG_DEFAULT_STACK_SIZE, PID_DRIVER);
+    ext_drv_list[index].stack = evalloc(PROG_DEFAULT_STACK_SIZE, PID_DRIVER);
 
     // initialize the  driver by calling its main()
+    // this is not the right function to use since this function does not change
+    // stack pointers, which means that the driver uses the stack of whatever program was
+    // running at the time of calling
+    // FIXME: change stacks
     EXEC_CALL_FUNC(ext_drv_list[index].start, NULL); // (((uint32_t)ext_drv_list[index].stack) + PROG_DEFAULT_STACK_SIZE)
 
     return EXIT_CODE_GLOBAL_SUCCESS;
@@ -278,8 +287,10 @@ void driver_api(void *req)
     {
         case SYSCALL_DRIVER_GET_LIST:
         {
-            ext_driver_list_t *list = api_alloc(DRIVER_EXTERNAL_LIST_SIZE, PID_DRIVER);
-            memcpy(list, ext_drv_list, DRIVER_EXTERNAL_LIST_SIZE);
+            driver_info_t *list = evalloc(DRIVER_EXTERNAL_MAX_SUPPORTED, PID_DRIVER);
+            
+            for(uint32_t i = 0; i < DRIVER_EXTERNAL_MAX_SUPPORTED; ++i)
+                list[i].type = ext_drv_list[i].type;
 
             call->hdr.exit_code = EXIT_CODE_GLOBAL_SUCCESS;
             call->hdr.response_ptr = list;

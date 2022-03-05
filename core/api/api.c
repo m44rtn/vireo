@@ -111,19 +111,3 @@ void api_dispatcher(void *eip, void *req)
         break;
     }
 }
-
-// TODO/FIXME: rename to easy_valloc() and move to paging.c!!!
-void *api_alloc(size_t size, pid_t pid)
-{
-    uint8_t attr = (!pid) ? PAGE_REQ_ATTR_READ_WRITE | PAGE_REQ_ATTR_SUPERVISOR : 
-                            PAGE_REQ_ATTR_READ_WRITE;
-    PAGE_REQ req = {
-        .pid = pid,
-        .size = size,
-        .attr = attr
-    };
-    void *ptr = valloc(&req);
-
-    dbg_assert(ptr);
-    return ptr;
-}

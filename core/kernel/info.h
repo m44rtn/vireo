@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@ SOFTWARE.
 
 /* this is always the build number for next build. 
 current binary build = [BUILD] - 1 */
-#define BUILD 4223
+#define BUILD 4226
 
 #define MAJOR 0
 #define MINOR 1  

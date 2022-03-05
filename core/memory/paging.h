@@ -44,6 +44,7 @@ void *paging_vptr_to_pptr(void *vptr);
 void paging_map(void *pptr, void *vptr, PAGE_REQ *req);
 
 void *valloc(PAGE_REQ *req);
+void *evalloc(size_t size, pid_t pid);
 void vfree(void *ptr);
 void paging_rel_resources(const pid_t pid);
 
