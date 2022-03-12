@@ -76,3 +76,4 @@ run:
 # of you having to manually open it, which is the case with the other one)
 run-old:
 	virtualbox --startvm $(VM_NAME) --debug-command-line --start-running
+	

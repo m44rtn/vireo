@@ -1,9 +1,9 @@
 .vscode
 bin
 
-grub/boot/kernel.sys
+grub/boot/vireo.sys
 
-birdos.iso
+vireo.iso
 kernel.map
 
 test/
