@@ -46,6 +46,9 @@ SOFTWARE.
 #define PROG_INFO_TABLE_SIZE    4096    // bytes (= 1 page)
 #define PROG_INFO_MAX_INDEX     (4096 / sizeof(prog_info_t)) - 1
 
+#define PROG_TERMINATE          0
+#define PROG_TERMINATE_STAY     1
+
 typedef struct
 {
   pid_t pid;
@@ -172,23 +175,33 @@ pid_t prog_get_current_running(void)
     return current_running_pid;
 }
 
-void prog_terminate(pid_t pid)
+const char *prog_get_filename(pid_t pid)
+{
+    uint32_t index = prog_find_info_index(pid);
+    return (const char *) prog_info[index].filename;
+}
+
+void prog_terminate(pid_t pid, bool_t stay)
 {
     // is the program we are terminating the current program running?
     uint8_t is_running = (pid == current_running_pid);
-
-    paging_rel_resources(pid);
-
+    
     uint32_t pid_index = prog_find_info_index(pid);
     
     if(pid_index == MAX) 
         return;
 
     // set new pid to the pid of the program that ran before this program
+    // or, in the case that terminate is being called by another program, keep using the current pid
     current_running_pid = (is_running) ? prog_info[pid_index].started_by : current_running_pid;
     return_t *ret_addr = prog_info[pid_index].ret_addr;
-
-    memset((void *) &prog_info[pid_index], sizeof(prog_info_t), 0xFF);
+    
+    // in case of TERMINATE_STAY, do not release the resources of the program
+    if(!stay)
+    {
+        paging_rel_resources(pid);
+        memset((void *) &prog_info[pid_index], sizeof(prog_info_t), 0xFF);
+    }
 
     // if the current program is terminating another program
     // then we don't need to go back to the program before the current program.
@@ -219,6 +232,7 @@ void prog_api(void *req)
             
             uint32_t pid_index = prog_find_info_index(current_running_pid);
             
+            // FIXME: copy filename instead of giving the pointer to it
             info->path = prog_info[pid_index].filename;
             info->pid = current_running_pid;
             info->size = prog_info[pid_index].size;
@@ -237,7 +251,7 @@ void prog_api(void *req)
         }
 
         case SYSCALL_PROGRAM_TERMINATE:
-            prog_terminate(current_running_pid);
+            prog_terminate(current_running_pid, PROG_TERMINATE);
         break;
 
         case SYSCALL_PROGRAM_TERMINATE_PID:
@@ -250,10 +264,14 @@ void prog_api(void *req)
             if(pid == PID_KERNEL || pid == PID_RESV)
             { hdr->exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
 
-            prog_terminate(pid);
+            prog_terminate(pid, PROG_TERMINATE);
             
             break;
         }
+
+        case SYSCALL_PROGRAM_TERMINATE_STAY:
+            prog_terminate(current_running_pid, PROG_TERMINATE_STAY);
+        break;
 
         default:
             hdr->exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
