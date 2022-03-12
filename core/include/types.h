@@ -54,7 +54,7 @@ typedef uint16_t api_space_t;
 typedef uint32_t api_key_t;
 typedef uint8_t err_t;
 
-typedef void return_t; // return addresses
+typedef uint32_t return_t; // return addresses
 
 typedef uint8_t pid_t; // process id
 

@@ -160,7 +160,7 @@ void main(void)
     print((char*)"\n");
 #endif
     // testing purposes
-    prog_launch_binary((char *) "CD0/TEST/BREAKER.ELF\0", (return_t *) (loop));
+    prog_launch_binary((char *) "CD0/TEST/BREAKER.ELF\0", (return_t) (loop));
 
     loop();
 }
