@@ -39,14 +39,14 @@ iret
 global ISR_02
 ISR_02:
 pushad
-    jmp $ 
+    ;jmp $ 
 popad
 iret
 
 global ISR_03
 ISR_03:
 pushad
-    jmp $ 
+    ;jmp $ 
 popad
 iret
 

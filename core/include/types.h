@@ -50,6 +50,8 @@ typedef uint8_t size8_t;
 typedef uint32_t size_t; 
 
 typedef uint16_t syscall_t;
+typedef uint16_t api_space_t;
+typedef uint32_t api_key_t;
 typedef uint8_t err_t;
 
 typedef void return_t; // return addresses

@@ -17,7 +17,6 @@ push edi
 call api_dispatcher
 
 ; return to function calling us
-push edi
 jmp api_dispatcher_return
 
 global api_dispatcher_return

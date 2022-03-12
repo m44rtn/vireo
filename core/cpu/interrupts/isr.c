@@ -121,6 +121,7 @@ void ISR_0E_handler(uint32_t error_code)
 
         default:
             panic(PANIC_TYPE_EXCEPTION, "PAGE_FAULT");
+        break;
     }
     
 }

@@ -64,6 +64,7 @@ SOFTWARE.
 #define SYSCALL_PROGRAM_START_NEW       0x0501
 #define SYSCALL_PROGRAM_TERMINATE       0x0502
 #define SYSCALL_PROGRAM_TERMINATE_PID   0x0503
+#define SYSCALL_PROGRAM_TERMINATE_STAY  0x0504 // terminate stay resident
 
 // driver (0x0a00-0x0aff)
 #define SYSCALL_DRIVER_GET_LIST         0x0a00
@@ -72,11 +73,11 @@ SOFTWARE.
 
 // api (0x0b00-0x0bff)
 #define SYSCALL_GET_API_LISTING         0x0b00
-#define SYSCALL_GET_FREE_SYSCALLS       0x0b01
-#define SYSCALL_REQUEST_API_SPACE       0x0b02
+#define SYSCALL_REQUEST_API_SPACE       0x0b01
+#define SYSCALL_FREE_API_SPACE          0x0b02
 
-// debug (0xff00-0xffff)
-#define SYSCALL_NOP                     0xff00
+// debug (0x0c00-0x0cff)
+#define SYSCALL_NOP                     0x0c00
 
 
 #endif // __SYSCALLS_H__
