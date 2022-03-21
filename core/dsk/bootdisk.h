@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __LOADER_H__
-#define __LOADER_H__
+#ifndef __BOOTDISK_H__
+#define __BOOTDISK_H__
 
-#define LOADER_TYPE_UNKNOWN             0
-#define LOADER_TYPE_MULTIBOOT           1
+#include "../include/types.h"
 
-typedef struct
-{
-    unsigned int *mmap;
-    unsigned int  mmap_length;
-    unsigned int  total_memory;
-    unsigned int  boot_drive;
-} LOADER_INFO;
-
-unsigned char loader_detect(void);
-
-unsigned char loader_get_type(void);
-unsigned int loader_get_boot_drive(void);
-LOADER_INFO loader_get_infoStruct(void);
-unsigned int *loader_get_multiboot_info_location(void);
+char *bootdisk(void);
+char *bootdisk_harddisk_drive_number(const uint8_t type, const uint8_t part);
+char *bootdisk_cddrive_drive_number(void);
 
 #endif

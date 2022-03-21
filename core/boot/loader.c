@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,8 @@ SOFTWARE.
 #include "../include/types.h"
 #include "../include/exit_code.h"
 
+#include "../util/util.h"
+
 #ifndef NO_DEBUG_INFO
 #include "../screen/screen_basic.h"
 #endif
@@ -46,7 +48,8 @@ LOADER_INFO loader_info;
 
 uint8_t loader_detect(void)
 {
-    /* there'll be more supported loaders in the future so that's why we have this here */
+    memset(&loader_info, sizeof(LOADER_INFO), 0);
+
     if(MAGICNUMBER == LOADER_MAGICNUMBER_MULTIBOOT)
         loader_multiboot_compliant();  
     else 
@@ -58,6 +61,11 @@ uint8_t loader_detect(void)
 uint8_t loader_get_type(void)
 {
     return loader_type;
+}
+
+uint32_t loader_get_boot_drive(void)
+{
+    return loader_info.boot_drive;
 }
 
 LOADER_INFO loader_get_infoStruct(void)
@@ -88,18 +96,16 @@ static void loader_multiboot_compliant(void)
 static void loader_multiboot_convertInfoStruct(void)
 {
     multiboot_info_t *info = (multiboot_info_t *) BOOTLOADER_STRUCT_ADDR;
-    
+
+    if(info->flags & 0x01)
+        loader_info.boot_drive = info->boot_device;
+
     if(info->flags & 0x40)
     {
         loader_info.mmap = (uint32_t *) info->mmap_addr;    
         loader_info.mmap_length = info->mmap_length;
     } 
-    else 
-    {
-        loader_info.mmap = (uint32_t *) 0;    
-        loader_info.mmap_length = 0;
-    }
-
+    
     loader_info.total_memory = info->mem_upper + info->mem_lower; 
 }
 
