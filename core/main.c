@@ -58,6 +58,7 @@ SOFTWARE.
 
 #include "kernel/panic.h"
 #include "kernel/info.h"
+#include "kernel/kernel.h"
 
 /* TODO: remove */
 #include "drv/COMMANDS.H"
@@ -70,11 +71,6 @@ SOFTWARE.
 
 #include "api/api.h"
 #include "exec/task.h"
-
-void init_env(void);
-void main(void);
-
-void loop(void);
 
 void loop(void)
 {
@@ -159,8 +155,7 @@ void main(void)
     info_print_full_version();    
     print((char*)"\n");
 #endif
-    // testing purposes
-    prog_launch_binary((char *) "CD0/TEST/BREAKER.ELF\0", (return_t) (loop));
 
+    kernel_execute_config();
     loop();
 }

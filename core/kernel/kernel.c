@@ -24,7 +24,8 @@ SOFTWARE.
 #include "kernel.h"
 #include "info.h"
 
-#include "../include/types.h"
+#include "../dbg/debug.h"
+
 #include "../include/exit_code.h"
 
 #include "../api/api.h"
@@ -38,6 +39,16 @@ SOFTWARE.
 #include "../cpu/interrupts/isr.h"
 
 #include "../hardware/timer.h"
+
+#include "../exec/task.h"
+#include "../exec/prog.h"
+#include "../dsk/fs.h"
+#include "../dsk/bootdisk.h"
+
+#include "../main.h"
+
+#define CONFIG_FILE_PATH_LEN    512 // bytes, maximum
+#define DEFAULT_CONFIG_FILE_LOC "/BOOT/CONFIG"
 
 #define KERNEL_REV_MAX_SIZE     8
 
@@ -124,4 +135,87 @@ void kernel_api_handler(void *req)
         break;
 
     }
+}
+
+void kernel_fetch_new_line(file_t *f, size_t size, uint32_t *loc, char *bfr)
+{
+    char *file = f;
+    uint32_t i = *(loc), st = *(loc); // inc, start
+
+    // copy until '\n' 
+    for(; i < size; ++i)
+    {
+        if(file[i] == '\n')
+            break;
+
+        bfr[i - st] = file[i];
+    }
+
+    *(loc) = i + 1;
+}
+
+void kernel_line_strip(char *line)
+{
+    for(uint32_t i = 0; i < CONFIG_FILE_PATH_LEN; ++i)
+    {
+        // if part of file path, skip
+        if( (line[i] >= 'A' && line[i] <= 'Z') || (line[i] >= '0' && line[i] <= '9') || line[i] == '.' || line[i] == '/')
+            continue;
+
+        // otherwise cut the string right here
+        line[i] = '\0';
+        break;
+    }
+}
+
+char *kernel_parse_config(file_t *f, size_t fsize)
+{
+    uint32_t loc = 0;
+    char *line = kmalloc(CONFIG_FILE_PATH_LEN);
+
+    while(loc < fsize)
+    {
+        kernel_fetch_new_line(f, fsize, &loc, line);
+
+        if(line[0] == '#')
+            continue;
+        
+        else
+            break;
+    }
+    
+    kernel_line_strip(line);
+
+    if(loc > fsize || !strlen(line))
+    {
+        kfree(line);
+        debug_print_error("Error parsing configuration file");
+        return NULL;
+    }
+
+    return line;
+}
+
+void kernel_execute_config(void)
+{
+    char *config_file = kmalloc(CONFIG_FILE_PATH_LEN);
+    char *disk = bootdisk();
+    
+    // create file path of config file
+    memcpy(config_file, disk, strlen(disk));
+    kfree(disk);
+    memcpy(&config_file[strlen(config_file)], (char *) DEFAULT_CONFIG_FILE_LOC, strlen(DEFAULT_CONFIG_FILE_LOC));
+
+    // read config file
+    size_t size = 0;
+    file_t *f = fs_read_file(config_file, &size);
+    kfree(config_file);
+
+    // parse config file
+    char *program = kernel_parse_config(f, size);
+    
+    if(!program)
+        return;
+    
+    prog_launch_binary(program, (return_t) loop);
 }

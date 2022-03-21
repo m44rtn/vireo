@@ -43,7 +43,6 @@ SOFTWARE.
 #include "../api/syscalls.h"
 
 #define DISK_ID_MAX_SIZE        8
-#define DISKIO_MAX_DRIVES       4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
 
 // api stuff
 typedef struct disk_info_t
@@ -311,8 +310,6 @@ void drive_convert_to_drive_id(uint8_t drive, char *out_id)
 //   - least significant byte: actual partition number (when applicable)
 uint16_t convert_drive_id(const char *id)
 {
-    // FIXME: magic numbers!
-
     uint8_t drive, type;
     uint16_t result = 0;
 

@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_H__
-#define __KERNEL_H__
+#ifndef __MAIN_H__
+#define __MAIN_H__
 
 /* for people who like to use the system compiler for a kernel */
 #if defined(__linux__)
@@ -35,6 +35,9 @@ SOFTWARE.
 #error "This is an i386 kernel, as such it expects an i386 compiler"
 #endif
 
-void cmain(void);
+void init_env(void);
+void main(void);
+
+void loop(void);
 
 #endif

@@ -34,14 +34,14 @@ SOFTWARE.
 void debug_print_warning(const char *warning)
 {
     screen_basic_set_screen_color(0x0E);
-    print_value( "[WARNING] %s\n\n", (uint32_t) warning);
+    print_value( "[VIREO:WARNING] %s\n\n", (uint32_t) warning);
     screen_basic_set_screen_color(0x07);
 }
 
 void debug_print_error(const char *error)
 {
     screen_basic_set_screen_color(0x04);
-    print_value( "[ERROR] %s\n\n", (uint32_t) error);
+    print_value( "[VIREO:ERROR] %s\n\n", (uint32_t) error);
     screen_basic_set_screen_color(0x07);
 }
 

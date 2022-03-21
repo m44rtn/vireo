@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -73,8 +73,8 @@ uint8_t cd_check_exists(uint8_t *drives)
     for(uint8_t i = 0; i < IDE_DRIVER_MAX_DRIVES; ++i)
     {
         if(drives[i] == DRIVE_TYPE_IDE_PATAPI)
-            return 1; // true
+            return TRUE;
     }
     
-    return 0;   // false
+    return FALSE;
 }

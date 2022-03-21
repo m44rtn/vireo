@@ -24,6 +24,8 @@ SOFTWARE.
 #ifndef __DISKIO_H__
 #define __DISKIO_H__
 
+#define DISKIO_MAX_DRIVES       4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
+
 #define DEFAULT_SECTOR_SIZE        512
 #define ATAPI_DEFAULT_SECTOR_SIZE  2048
 
