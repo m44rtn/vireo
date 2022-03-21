@@ -216,6 +216,8 @@ void kernel_execute_config(void)
     
     if(!program)
         return;
-    
+
+    // TODO: boot disk could be added here to the file path
+    // (if the path in config was only e.g., '/TEST/BREAKER.ELF')
     prog_launch_binary(program, (return_t) loop);
 }
