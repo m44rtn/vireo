@@ -276,7 +276,7 @@ void kfree(void *ptr)
         memory_t[i].size = 0;
     }
 
-    memset(ptr, s, 0);
+    memset(ptr, s * MEMORY_BLOCK_SIZE, 0);
 }
 
 uint32_t memory_getAvailable(void)
