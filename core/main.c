@@ -74,7 +74,10 @@ SOFTWARE.
 
 void loop(void)
 {
-    print("[KERNEL] Looping!\n");
+    #ifndef NO_DEBUG_INFO
+        print("[KERNEL] Looping!\n");
+    #endif
+    
     while(1);
 }
 

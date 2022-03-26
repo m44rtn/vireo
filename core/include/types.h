@@ -30,7 +30,7 @@ SOFTWARE.
 #define TRUE    1
 
 /* if you want quiet start-up: */
-// #define NO_DEBUG_INFO
+#define NO_DEBUG_INFO
 
 /* if you don't want assertions (dbg.h): */
 /*#define NDEBUG*/
