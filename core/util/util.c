@@ -268,6 +268,14 @@ unsigned char strchr(char *str, char ch)
 	return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 }
 
+void move_str_back(char *str, uint32_t move_by)
+{
+	uint32_t i = strlen(str) + 1, j = i + move_by - 1;
+	
+	for(; i; i--)
+		str[j--] = str[i-1];
+}
+
 void memcpy(void *_dest, void *_src, size_t size)
 {
 	uint32_t i;

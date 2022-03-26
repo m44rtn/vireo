@@ -45,6 +45,7 @@ unsigned char flag_check(unsigned int flag, unsigned int to_check);
 unsigned int find_in_str(char *o, const char *fnd);
 
 unsigned char strchr(char *str, char ch);
+void move_str_back(char *str, unsigned int move_by);
 void memcpy(void *_dest, void *_src, unsigned int size);
 
 void str_add_val(char *str, const char *format, unsigned int value);

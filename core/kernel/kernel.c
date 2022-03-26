@@ -203,7 +203,6 @@ void kernel_execute_config(void)
     
     // create file path of config file
     memcpy(config_file, disk, strlen(disk));
-    kfree(disk);
     memcpy(&config_file[strlen(config_file)], (char *) DEFAULT_CONFIG_FILE_LOC, strlen(DEFAULT_CONFIG_FILE_LOC));
 
     // read config file
@@ -214,10 +213,19 @@ void kernel_execute_config(void)
     // parse config file
     char *program = kernel_parse_config(f, size);
     
+    // error parsing config file
     if(!program)
-        return;
+    { kfree(disk); return; }
 
-    // TODO: boot disk could be added here to the file path
-    // (if the path in config was only e.g., '/TEST/BREAKER.ELF')
+    // if the config file only lists a path that starts at root 
+    // (no disk specified), we need to add the bootdisk in front
+    // of the path
+    if(program[0] == '/')
+    {
+        move_str_back(program, strlen(disk));
+        memcpy(program, disk, strlen(disk));
+    }
+
+    kfree(disk);
     prog_launch_binary(program, (return_t) loop);
 }
