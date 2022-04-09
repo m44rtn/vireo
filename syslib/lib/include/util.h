@@ -1,0 +1,99 @@
+/*
+MIT license
+Copyright (c) 2021 Maarten Vermeulen
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+#ifndef __UTIL_H__
+#define __UTIL_H__
+
+#include "types.h"
+#include "exit_code.h"
+#include "memory.h"
+
+#define HEX_DIGITS_USE_DEFAULT      0
+
+// returns length of string
+unsigned int strlen(const char *str);
+
+// removes chars in a string starting at n 
+void remove_from_str(char *p, unsigned int n);
+
+// replaces chars matching c with repl
+void replace_in_str(char *p, const char c, const char repl);
+
+// compares two strings and returns 0 if they are equal
+unsigned char strcmp(const char *str1, const char *str2);
+
+// compares two strings until `stop` bytes have been checked, returns 0 if equal
+unsigned char strcmp_until(const char *str1, const char *str2, unsigned int stop);
+
+// creates a backup string from str
+char *create_backup_str(char *str);
+
+// creates a string containing value in hexadecimal format (without leading `0x`),
+// amount of digits can be controlled with digit_amount. setting digit_amount to 0 is the same
+// as setting it to 8. digit_amount values are not strictly respected, meaning that when more
+// digits are necessarry to represent the value in parameter value the value in digit_amount 
+// WILL be ignored 
+// (i.e. hex_digit_count(value) > digit_amount then digit_amount = hex_digit_count(value)).
+char* hexstr(unsigned int value, unsigned char digit_amount);
+
+// creates a string containing value in decimal format
+char *intstr(unsigned int value);
+
+// converts an ascii number to a integer value (i.e. '9' becomes 9)
+unsigned char strdigit_to_int(const char digit);
+
+// returns amount of decimal digits necessary to represent value
+unsigned int digit_count(unsigned int value);
+
+// returns amount of hexadecimal digits necessary to represent value
+unsigned int hex_digit_count(unsigned int value);
+
+// places val at start for size bytes
+void memset(void *start, size_t size, char val);
+
+// returns 1 if to_check is set in flag
+unsigned char flag_check(unsigned int flag, unsigned int to_check); 
+
+// finds fnd in string o and returns index at which fnd can be found
+// returns MAX if not found
+unsigned int find_in_str(char *o, const char *fnd);
+
+// searches for first occurance of ch
+unsigned char strchr(char *str, char ch);
+
+// copies size bytes of memory from source to destination
+void memcpy(void *destination, const void *source, unsigned int size);
+
+// adds a value to string str complying to format (comparable to sprintf() except this one is only 
+// capable of adding one value at a time).
+// format:
+//  %s adds string
+//  %i adds integer value
+//  %x adds hexadecimal value
+//  %c adds a char
+void str_add_val(char *str, const char *format, unsigned int value);
+
+// returns the first bit that is set, function will search for size bits (max 32)
+unsigned char nth_bit(uint32_t dword, uint8_t size);
+
+#endif

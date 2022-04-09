@@ -1,7 +1,7 @@
 .vscode
-bin
+kernel/bin
 
-grub/boot/vireo.sys
+kernel/grub/boot/vireo.sys
 
 vireo.iso
 kernel.map

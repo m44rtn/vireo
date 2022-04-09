@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2022 Maarten Vermeulen
+Copyright (c) 2021 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,23 +21,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KERNEL_INFO_H__
-#define __KERNEL_INFO_H__
+#include "../include/debug.h"
+#include "../include/exit_code.h"
 
-/* this is always the build number for next build. 
-current binary build = [BUILD] - 1 */
-#define BUILD 4317
+err_t debug_nop(void)
+{
+    syscall_hdr_t hdr = {
+        .system_call = SYSCALL_NOP,
+        .exit_code = EXIT_CODE_GLOBAL_GENERAL_FAIL
+    };
+    asm_syscall(&hdr);
 
-#define MAJOR 0
-#define MINOR 1  
-#define REV (char *) "-pre1"
-
-#define BUILDDATE    __DATE__
-#define BUILDTIME    __TIME__
-
-void info_print_version(void);
-void info_print_full_version(void);
-void info_print_panic_version(void);
-char *info_make_version_str(void);
-
-#endif
+    return hdr.exit_code;
+}
