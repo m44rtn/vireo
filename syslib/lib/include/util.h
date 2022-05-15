@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2021 Maarten Vermeulen
+Copyright (c) 2021-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +45,8 @@ unsigned char strcmp(const char *str1, const char *str2);
 // compares two strings until `stop` bytes have been checked, returns 0 if equal
 unsigned char strcmp_until(const char *str1, const char *str2, unsigned int stop);
 
-// creates a backup string from str
-char *create_backup_str(char *str);
+// allocates a backup string from str using valloc
+char *create_backup_str(const char *str);
 
 // creates a string containing value in hexadecimal format (without leading `0x`),
 // amount of digits can be controlled with digit_amount. setting digit_amount to 0 is the same
