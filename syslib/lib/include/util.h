@@ -96,4 +96,23 @@ void str_add_val(char *str, const char *format, unsigned int value);
 // returns the first bit that is set, function will search for size bits (max 32)
 unsigned char nth_bit(uint32_t dword, uint8_t size);
 
+// returns a part of the string from start to the first chars equal to delim found in part_out.
+// function returns 0 when it has reached the end of the string (s) or 1 when it was not
+// *pindex is for internal use of the function but can be used to specify which part is wanted.
+//
+// example: input: s = "THIS/IS/A/PATH/TO/A/FILE"
+//          input: delim = "/"
+//          input: *(&pindex) = 1 
+//    then:
+//          output: *part_out = "IS" 
+//          output: returns uint8_t 1 for not at end of string    
+//
+// description of input:
+//
+//      part_out, pointer to copy the string part to
+//      s, original string
+//      delim, string specifying the characters that seperate a part (delimiter)
+//      pindex, pointer to uint32_t (used internally) / specifies which part is wanted
+uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t *pindex)
+
 #endif

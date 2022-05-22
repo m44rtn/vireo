@@ -316,3 +316,30 @@ uint8_t nth_bit(uint32_t dword, uint8_t size)
 	
 	return (uint8_t) MAX;
 }
+
+uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t *pindex)
+{
+	uint32_t strindex = 0;
+
+	if(*(pindex) == MAX)
+		return 0; // done
+
+	for(uint32_t i = 0; i < *(pindex); ++i)
+		if((strindex = find_in_str(&s[strindex], delim)) == MAX)
+			break;
+	
+	if(strindex == MAX)
+	{
+	 	strindex = 0;
+		 *(pindex) = MAX;
+	}
+
+	uint32_t next = find_in_str(&s[strindex], delim);
+
+	if(next == MAX)
+		next = strlen(&s[strindex]);
+	
+	memcpy(part_out, (void *) (&s[strindex]), next);
+
+	return 1; // not done
+}
