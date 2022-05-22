@@ -115,7 +115,7 @@ void diskio_api(void *req)
             // TODO make function
             disk_syscall_t *c = (disk_syscall_t *) req;
 
-            uint16_t id = convert_drive_id(c->drive);
+            uint16_t id = drive_convert_drive_id(c->drive);
 
             uint8_t disk = (uint8_t) ((id >> 8) & 0xFFU);
             uint8_t part = (uint8_t) id & 0xFFU;
@@ -140,7 +140,7 @@ void diskio_api(void *req)
             if(c->buffer < (void *) memory_get_malloc_end() /* (end of kernel space) */) 
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
 
-            uint16_t id = convert_drive_id((const char *) c->drive);
+            uint16_t id = drive_convert_drive_id((const char *) c->drive);
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
             uint8_t part = (uint8_t) (id & 0xFF);
 
@@ -167,7 +167,7 @@ void diskio_api(void *req)
             if(drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI)
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_UNSUPPORTED; break; }
 
-            uint16_t id = convert_drive_id((const char *) c->drive);
+            uint16_t id = drive_convert_drive_id((const char *) c->drive);
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
             uint8_t part = (uint8_t) (id & 0xFF);
 
@@ -308,7 +308,7 @@ void drive_convert_to_drive_id(uint8_t drive, char *out_id)
 // @returns:
 //   - most significant byte: actual drive number
 //   - least significant byte: actual partition number (when applicable)
-uint16_t convert_drive_id(const char *id)
+uint16_t drive_convert_drive_id(const char *id)
 {
     uint8_t drive, type;
     uint16_t result = 0;
@@ -329,7 +329,7 @@ uint16_t convert_drive_id(const char *id)
     drive = to_actual_drive(drive, type);
 
     // store it
-    result = (uint16_t) (result | (drive & 0xFFU) << 8U);
+    result = (uint16_t) (result | (drive & 0xFFU) << DISKIO_DISK_NUMBER);
 
     // is there a partition specified?
     if(id[3] != DISKIO_DISKID_P)
@@ -342,7 +342,7 @@ uint16_t convert_drive_id(const char *id)
     if(drive == EXIT_CODE_GLOBAL_UNSUPPORTED)
         return (uint16_t) MAX;
     
-    // store it
+    // store it (drive = partition number)
     result = (uint16_t) (result | (drive & 0xFF));
 
     return result;

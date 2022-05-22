@@ -29,13 +29,15 @@ SOFTWARE.
 #define DEFAULT_SECTOR_SIZE        512
 #define ATAPI_DEFAULT_SECTOR_SIZE  2048
 
+#define DISKIO_MAX_LEN_DISKID   8 // bytes
+
 #define DISKIO_DISKID_HD    "HD"    // HDD
 #define DISKIO_DISKID_CD    "CD"    // CD/DVD drive
 #define DISKIO_DISKID_P     'P'    // partition
 
-// defines for convert_drive_id()
-#define DISKIO_DISK_NUMBER  8U
-#define DISKIO_PART_NUMBER  16U
+// defines for drive_convert_drive_id()
+#define DISKIO_DISK_NUMBER  8U // shifts
+#define DISKIO_PART_NUMBER  0U // shifts
 
 void diskio_api(void *req);
 
@@ -51,7 +53,7 @@ void drive_convert_to_drive_id(unsigned char drive, char *out_id);
 unsigned char drive_to_type_index(unsigned char drive, unsigned char type);
 const char *drive_type_to_chars(unsigned char type);
 
-unsigned short convert_drive_id(const char *id);
+unsigned short drive_convert_drive_id(const char *id);
 unsigned char drive_type(const char *id);
 unsigned char to_actual_drive(unsigned char drive, unsigned char type);
 
