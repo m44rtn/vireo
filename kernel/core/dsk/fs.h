@@ -29,4 +29,6 @@ SOFTWARE.
 void fs_api(void *req);
 file_t *fs_read_file(char *fpath, size_t *o_size);
 
+err_t fs_write_file(char *fpath, file_t *file, size_t fsize);
+
 #endif
