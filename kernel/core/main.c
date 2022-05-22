@@ -60,6 +60,9 @@ SOFTWARE.
 #include "kernel/info.h"
 #include "kernel/kernel.h"
 
+#include "dsk/fs.h"
+#include "screen/screen_basic.h"
+
 /* TODO: remove */
 #include "drv/COMMANDS.H"
 #include "drv/IDE_commands.h"
@@ -140,14 +143,15 @@ void init_env(void)
     MBR_enumerate();
     cd_init();
 
+    uint32_t drv[5];
     // TODO: get a function to do this
     // ----------> One way would be to let MBR handle this stuff
-    // driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
-    // drv[0] = DRV_COMMAND_INIT;
-    // drv[1] = 0;
-    // drv[2] = 0;
-    // drv[3] = 0x0B;
-    // driver_exec_int((0x0B | DRIVER_TYPE_FS), drv);
+    driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
+    drv[0] = DRV_COMMAND_INIT;
+    drv[1] = 0;
+    drv[2] = 0;
+    drv[3] = 0x0B;
+    driver_exec_int((0x0B | DRIVER_TYPE_FS), &drv[0]);
 }
 
 void main(void)
@@ -159,6 +163,29 @@ void main(void)
     print((char*)"\n");
 #endif
 
+    //kernel_execute_config();
+    size_t s;
+
+    // Testing only
+    // TODO testing: sub-directories
+    file_t *f = fs_read_file((char *)"CD0/TEST/BREAKER.ELF", &s);
+    err_t err = fs_write_file((char *)"HD0P0/BREAKER.ELF", f, s);
+    //print_value("saved file with exit code: %x\n", err);
+    vfree(f);
+
+    // TODO: test conway and drv on HD0P0 using BREAKER
+    // (it currently uses these files on CD0)
+    f = fs_read_file((char *) "CD0/TEST/CONWAY.ELF", &s);
+    err = fs_write_file((char *)"HD0P0/CONWAY.ELF", f, s);
+    //print_value("saved file with exit code: %x\n", err);
+    vfree(f);
+
+    f = fs_read_file((char *)"CD0/TEST/DRV.DRV", &s);
+    err = fs_write_file((char *)"HD0P0/DRV.DRV", f, s);
+    //print_value("saved file with exit code: %x\n", err);
+    vfree(f);
+    
     kernel_execute_config();
+
     loop();
 }

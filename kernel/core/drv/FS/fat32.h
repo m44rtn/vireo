@@ -24,7 +24,11 @@ SOFTWARE.
 #ifndef __FAT_H__
 #define __FAT_H__
 
-/* a 32-bit exit code (unlike the normal exit codes which are bytes) */
-#define EXIT_CODE32_FAT_FAIL 0xFFFFFFFF
+#include "../../include/types.h"
+
+void fat_handler(uint32_t *drv);
+err_t fat_init(uint8_t disk, uint8_t part);
+file_t *fat_read(const char *path, size_t *ofile_size);
+err_t fat_write(const char *path, file_t *buffer, size_t file_size, uint8_t attrib);
 
 #endif

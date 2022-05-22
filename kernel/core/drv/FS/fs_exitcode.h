@@ -26,6 +26,8 @@ SOFTWARE.
 
 #define EXIT_CODE_FS_UNSUPPORTED_DRIVE     0x10
 #define EXIT_CODE_FS_FILE_NOT_FOUND        0x11
+#define EXIT_CODE_FS_FILE_READ_ONLY        0x12
 #define EXIT_CODE_FS_FILE_EXISTS           0x13
+#define EXIT_CODE_FS_NO_SPACE              0x14
 
 #endif
