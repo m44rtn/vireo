@@ -256,8 +256,6 @@ void prog_api(void *req)
 
         case SYSCALL_PROGRAM_TERMINATE_PID:
         {
-            // FIXME: at address 0x217e44, data gets overwritten by something
-            // probably by breaker itself
             api_terminate_t *t = req;
             pid_t pid = (t->pid);
 
