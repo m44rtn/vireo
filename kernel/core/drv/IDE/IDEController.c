@@ -53,7 +53,7 @@ SOFTWARE.
 
 #define IDEController_PCI_CLASS_SUBCLASS    0x101
 
-#define IDE_DRIVER_VERSION_STRING "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver Mk. I\n"
+#define IDE_DRIVER_VERSION_STRING "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver\n"
 
 #define DEFAULT_SECTOR_SIZE         512 // bytes
 
@@ -72,6 +72,7 @@ SOFTWARE.
 #define ATA_STAT_ERR    0x01
 #define ATA_STAT_DRQ    0x08
 #define ATA_STAT_DF     0x20
+#define ATA_STAT_READY  0x40
 #define ATA_STAT_BUSY   0x80
 
 #define ATAPI_COMMAND_READ      0xA8
@@ -80,6 +81,7 @@ SOFTWARE.
 
 #define ATA_COMMAND_READ        0x20
 #define ATA_COMMAND_WRITE       0x30
+#define ATA_COMMAND_CACHE_FLUSH 0xE7
 
 #define ATAPI_COMMAND_PACKET    0xA0
 #define ATAPI_COMMAND_READ      0xA8
@@ -460,7 +462,9 @@ static uint8_t IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, u
     uint8_t i = 0;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
-    uint16_t *buf_ptr = buf;
+    uint8_t *buf_ptr = (uint8_t *) buf;
+
+    while((inb(port |ATA_PORT_COMSTAT) & ATA_STAT_BUSY));
     
     if(drive > 3)
         return EXIT_CODE_IDE_ERROR_READING_DRIVE;
@@ -485,8 +489,10 @@ static uint8_t IDE_readPIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, u
 
     for(i = 0; i < sctrwrite; ++i)
     {
-        insw(port, 256, buf_ptr);
-        while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
+        IDE_polling(port, false);
+        while(!(inb(port | ATA_PORT_COMSTAT) & ATA_STAT_READY));
+
+        insw(port, 256, (uint16_t *) buf_ptr);
 
         buf_ptr += DEFAULT_SECTOR_SIZE;
     }
@@ -499,7 +505,9 @@ static uint8_t IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, 
     uint8_t i = 0;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
-    uint16_t *buf_ptr = buf;
+    uint8_t *buf_ptr = (uint8_t *) buf;
+
+    while((inb(port |ATA_PORT_COMSTAT) & ATA_STAT_BUSY));
 
     if(drive > 3)
         return EXIT_CODE_IDE_ERROR_READING_DRIVE;
@@ -521,16 +529,20 @@ static uint8_t IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, 
     IDE_wait();
 
     while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
-
+    
     for(i = 0; i < sctrwrite; ++i)
     {
-        outsw(port, 256, buf_ptr);
-        while(!(inb(port |ATA_PORT_COMSTAT) & 0x40));
+        IDE_polling(port, false);
+        while(!(inb(port | ATA_PORT_COMSTAT) & ATA_STAT_READY));
 
+        outsw(port, 256, (uint16_t *) buf_ptr);
+        
         buf_ptr += DEFAULT_SECTOR_SIZE;
     }
-
-    outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_WRITE);
+    IDE_polling(port, false);
+    while(!(inb(port | ATA_PORT_COMSTAT) & ATA_STAT_READY));
+    outb(port | ATA_PORT_COMSTAT, ATA_COMMAND_CACHE_FLUSH);
+    IDE_polling(port, false);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
