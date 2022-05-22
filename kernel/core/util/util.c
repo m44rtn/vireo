@@ -109,7 +109,7 @@ uint8_t strcmp_until(const char *str1, const char *str2, uint32_t stop)
 }
 
 // creates a backup string that can be used for strtok
-char *create_backup_str(char *str)
+char *create_backup_str(const char *str)
 {
 	char *backup;
 	backup = kmalloc(strlen(str) + 1);
@@ -117,7 +117,7 @@ char *create_backup_str(char *str)
 	if(!backup)
 		return NULL; // error (out of mem)
 
-	memcpy(backup, str, strlen(str) + 1);
+	memcpy(backup, (void *) (str), strlen(str) + 1);
 
 	return backup;
 }
@@ -235,7 +235,7 @@ unsigned char flag_check(unsigned int flag, unsigned int to_check)
 }
 
 // returns first occurance of the thing to be found
-uint32_t find_in_str(char *o, const char *fnd)
+uint32_t find_in_str(const char *o, const char *fnd)
 {
 	uint32_t c = 0;
 	uint32_t len = strlen((char *) fnd);
@@ -349,6 +349,33 @@ uint8_t nth_bit(uint32_t dword, uint8_t size)
 	return (uint8_t) MAX;
 }
 
+// like strtok() but non-destructive to the original string
+uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t *pindex)
+{
+	uint32_t strindex = 0;
+
+	if(*(pindex) == MAX)
+		return 0; // done
+
+	for(uint32_t i = 0; i < *(pindex); ++i)
+		if((strindex = find_in_str(&s[strindex], delim)) == MAX)
+			break;
+	
+	if(strindex == MAX)
+	{
+	 	strindex = 0;
+		 *(pindex) = MAX;
+	}
+
+	uint32_t next = find_in_str(&s[strindex], delim);
+
+	if(next == MAX)
+		next = strlen(&s[strindex]);
+	
+	memcpy(part_out, (void *) (&s[strindex]), next);
+
+	return 1; // not done
+}
 
 /* LIB C stuff */
 char *strtok(char *s, const char *delim)

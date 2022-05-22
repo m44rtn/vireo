@@ -24,12 +24,13 @@ SOFTWARE.
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+// FIXME: cleanup
 unsigned int strlen(const char *str);
 void remove_from_str(char *p, unsigned int n);
 void replace_in_str(char *p, const char c, const char repl);
 unsigned char strcmp(const char *str1, const char *str2);
 unsigned char strcmp_until(const char *str1, const char *str2, unsigned int stop);
-char *create_backup_str(char *str);
+char *create_backup_str(const char *str);
 
 char* hexstr(unsigned int value, unsigned char digit_amount);
 char *intstr(unsigned int value);
@@ -42,7 +43,7 @@ void memset(void *start, unsigned int size, unsigned char val);
 
 void sleep(unsigned int timeIn_ms);
 unsigned char flag_check(unsigned int flag, unsigned int to_check); 
-unsigned int find_in_str(char *o, const char *fnd);
+unsigned int find_in_str(const char *o, const char *fnd);
 
 unsigned char strchr(char *str, char ch);
 void move_str_back(char *str, unsigned int move_by);
@@ -51,6 +52,8 @@ void memcpy(void *_dest, void *_src, unsigned int size);
 void str_add_val(char *str, const char *format, unsigned int value);
 
 unsigned char nth_bit(unsigned int dword, unsigned char size);
+
+unsigned char str_get_part(char *part_out, const char *s, const char *delim, unsigned int *pindex);
 
 char *strtok(char *s, const char *delim);
 char *strsep(char **stringp, const char *delim);
