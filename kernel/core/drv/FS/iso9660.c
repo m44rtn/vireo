@@ -137,6 +137,7 @@ void iso_handler(uint32_t * drv)
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
+			// FIXME: does not support multiple CD drives...
             iso_init((uint8_t) drv[1]);
         break;
 
@@ -287,7 +288,7 @@ void iso_free_bfr(void *ptr)
 uint32_t iso_traverse(char *path, size_t *fsize)
 {
 	// convert drive identifier (e.g. 'CD0') to something useful
-	uint8_t drive = (uint8_t) ((convert_drive_id((const char *) path)) >> DISKIO_DISK_NUMBER); // TODO: 8 should be define in diskio
+	uint8_t drive = (uint8_t) ((drive_convert_drive_id((const char *) path)) >> DISKIO_DISK_NUMBER);
 	
 	char *p = create_backup_str(path);
 
@@ -630,7 +631,7 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 
 void iso_clean_path_reverse(char *p)
 {	
-	if((convert_drive_id(p) >> DISKIO_DISK_NUMBER) != 0xFF)
+	if((drive_convert_drive_id(p) >> DISKIO_DISK_NUMBER) != 0xFF)
 		remove_from_str(p, strlen(DISKIO_DISKID_CD) + 2); // remove disk id, n = 4 ('CD0/')
 
 	// check if there are slashes in the path (if not it's a file in the root dir)
@@ -699,7 +700,7 @@ void iso_read(char * path, uint32_t *drv)
     uint32_t flba = iso_traverse(path, &fsize);
 
 	uint32_t nlba = fsize / ISO_SECTOR_SIZE + ((fsize % ISO_SECTOR_SIZE) != 0);
-	uint8_t drive = (uint8_t) (convert_drive_id((const char *) path) >> DISKIO_DISK_NUMBER);
+	uint8_t drive = (uint8_t) (drive_convert_drive_id((const char *) path) >> DISKIO_DISK_NUMBER);
 
 	// FIXME: use paging instead of default iso memory (which may use kernel memory)
 	uint16_t *bfr = iso_read_drive(drive, flba, nlba);
