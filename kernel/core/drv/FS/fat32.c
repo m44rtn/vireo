@@ -653,7 +653,7 @@ static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t 
     fat_find_empty_cluster(disk, part, &cluster);
 
     // read the directory cluster (only the cluster we need to change anything)
-    // and update information (TODO should become seperate function)
+    // and update information
     err_t err = fat_write_dir(disk, part, cluster, dir_cluster, filesize, attrib, filename);
 
     if(err)
