@@ -176,7 +176,7 @@ void main(void)
     // TODO: test conway and drv on HD0P0 using BREAKER
     // (it currently uses these files on CD0)
     f = fs_read_file((char *) "CD0/TEST/CONWAY.ELF", &s);
-    err = fs_write_file((char *)"HD0P0/CONWAY.ELF", f, s);
+    err = fs_write_file((char *)"HD0P0/BREAKER.ELF", f, s);
     //print_value("saved file with exit code: %x\n", err);
     vfree(f);
 

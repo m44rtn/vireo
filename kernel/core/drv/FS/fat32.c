@@ -72,6 +72,8 @@ SOFTWARE.
 #define TOTAL_FILENAME_LEN          (FILE_NAME_LEN + FILE_EXT_LEN)
 
 #define FAT_CORRUPT_CLUSTER         0x0FFFFFF7
+#define FAT_LAST_CLUSTER            0x0FFFFFFF
+#define FAT_EMPTY_CLUSTER           0x00
 
 #define DIR_UNUSED_ENTRY     0xE5
 
@@ -384,7 +386,7 @@ static uint32_t fat_search_dir_part(FAT32_DIR *dir, const char *filename, size_t
 
         file[TOTAL_FILENAME_LEN] = '\0';
 
-        if(strcmp_until(&file[0], filename, FILE_NAME_LEN))
+        if(strcmp_until(&file[0], filename, TOTAL_FILENAME_LEN))
             continue;
         
         return i; 
@@ -513,7 +515,7 @@ file_t *fat_read(const char *path, size_t *ofile_size)
     if(!file)
         return NULL;
     
-    // // following two variables/pointers are necessary for fat_read_fat()
+    // following two variables/pointers are necessary for fat_read_fat()
     uint32_t last_fat_sector = 0;
     void *fat_table_buffer = kmalloc(FAT32_SECTOR_SIZE);
     
@@ -640,26 +642,11 @@ static err_t fat_write_dir(uint8_t disk, uint8_t part, uint32_t fcluster, uint32
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t dir_cluster, file_t *buffer, size_t filesize, uint8_t attrib)
+static void fat_write_new_clusters(uint8_t disk, uint8_t part, uint32_t cluster, file_t *buffer, size_t filesize)
 {
-    FAT32_EBPB *info = fat_get_ebpb(disk, part);
-    
-    if(!info)
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-
     uint32_t cluster_size = fat_get_cluster_size(disk, part);
 
-    uint32_t cluster = 0;
-    fat_find_empty_cluster(disk, part, &cluster);
-
-    // read the directory cluster (only the cluster we need to change anything)
-    // and update information
-    err_t err = fat_write_dir(disk, part, cluster, dir_cluster, filesize, attrib, filename);
-
-    if(err)
-        return err;
-    
-    // write the directory to the disk    
+    // write the file to the disk (TODO: seperate function)
     uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
     uint8_t *temp_buffer = evalloc(cluster_size, PID_DRIVER);
     uint32_t i = 0;
@@ -688,7 +675,150 @@ static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t 
     }
 
     vfree(temp_buffer);
+}
+
+static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t dir_cluster, file_t *buffer, size_t filesize, uint8_t attrib)
+{
+    FAT32_EBPB *info = fat_get_ebpb(disk, part);
     
+    if(!info)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+    uint32_t cluster = 0;
+    fat_find_empty_cluster(disk, part, &cluster);
+
+    // read the directory cluster (only the cluster we need to change anything)
+    // and update information
+    err_t err = fat_write_dir(disk, part, cluster, dir_cluster, filesize, attrib, filename);
+
+    if(err)
+        return err;
+    
+    fat_write_new_clusters(disk, part, cluster, buffer, filesize);
+    
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+static void fat_overwrite_dir_entry(uint8_t disk, uint8_t part, uint32_t dir_part_cluster, uint32_t dir_entry_index,
+                                size_t filesize, uint8_t attrib)
+{
+    uint32_t cluster_size = fat_get_cluster_size(disk, part);
+    uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
+
+    void *b = evalloc(cluster_size, PID_DRIVER);
+    uint32_t lba = fat_cluster_lba(disk, part, dir_part_cluster);
+
+    read(disk, lba, sectclust, (uint8_t *) b);
+
+    FAT32_DIR *dir_part = b;
+
+    dir_part[dir_entry_index].fSize = filesize;
+    dir_part[dir_entry_index].attrib = attrib;
+
+    write(disk, lba, sectclust, (uint8_t *) b);
+    vfree(b);
+}
+
+static uint32_t fat_write_current_clusters(uint8_t disk, uint8_t part, uint32_t cluster, file_t *buffer, size_t *fsize, uint32_t *n_clusters_written)
+{
+    uint32_t cluster_size = fat_get_cluster_size(disk, part);
+    uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
+
+    uint8_t *temp_buffer = evalloc(cluster_size, PID_DRIVER);
+    *n_clusters_written = 0;
+
+    // following two variables/pointers are necessary for fat_read_fat()
+    uint32_t last_fat_sector = 0;
+    void *fat_table_buffer = kmalloc(FAT32_SECTOR_SIZE);
+
+    uint32_t i = 0;
+    size_t filesize = *fsize;
+
+    while(filesize)
+    {
+        uint32_t size = (filesize >= cluster_size) ? cluster_size : filesize;
+
+        memcpy(temp_buffer, (void *) ((uint32_t)*(&buffer) + i), size);
+        memset(&temp_buffer[size], (sectclust * FAT32_SECTOR_SIZE) - size, 0);
+
+        uint32_t lba = fat_cluster_lba(disk, part, cluster);
+
+        write(disk, lba, sectclust,  temp_buffer);
+        *n_clusters_written = *n_clusters_written + 1;
+
+        cluster = fat_read_fat(disk, part, cluster, &last_fat_sector, fat_table_buffer);
+
+        if(cluster >= FAT_CORRUPT_CLUSTER)
+            break;        
+
+        i += size;
+        *fsize = (filesize -= size);
+    }
+
+    kfree(fat_table_buffer);
+    vfree(temp_buffer);
+
+    return cluster;
+}
+
+static void fat_remove_clusters(uint8_t disk, uint8_t part, uint32_t from_cluster)
+{
+    uint32_t last_fat_sector = 0;
+    void *fat_table_buffer = kmalloc(FAT32_SECTOR_SIZE);
+
+    uint32_t next_cluster = fat_read_fat(disk, part, from_cluster, &last_fat_sector, fat_table_buffer);
+    fat_write_cluster_to_table(disk, part, from_cluster, FAT_LAST_CLUSTER);
+
+    uint32_t cluster = next_cluster;
+
+    while(next_cluster < FAT_CORRUPT_CLUSTER)
+    {
+        next_cluster = fat_read_fat(disk, part, cluster, &last_fat_sector, fat_table_buffer);
+        
+        fat_write_cluster_to_table(disk, part, cluster, FAT_EMPTY_CLUSTER);
+        cluster = next_cluster;
+    }
+
+    kfree(fat_table_buffer);
+}
+
+static err_t fat_write_existing(uint8_t disk, uint8_t part, uint32_t dir_part_cluster, FAT32_DIR *entry, uint32_t dir_entry_index, file_t *buffer, 
+                                size_t filesize, uint8_t attrib)
+{
+    fat_overwrite_dir_entry(disk, part, dir_part_cluster, dir_entry_index, filesize, attrib);
+
+    uint32_t n_clusters_written = 0;
+    uint32_t cluster = (uint32_t) ((entry->clHi << 16u) | entry->clLo);
+    uint32_t last_cluster_written = fat_write_current_clusters(disk, part, cluster, buffer, &filesize, &n_clusters_written);
+
+    // Check if the same amount of clusters were written as currently in use --> file size as big or negligable increase in size
+    if(last_cluster_written >= FAT_CORRUPT_CLUSTER && !filesize)
+        return EXIT_CODE_GLOBAL_SUCCESS;
+    
+    // Less clusters written --> smaller file
+    if(last_cluster_written != FAT_CORRUPT_CLUSTER && !filesize)
+    {
+        fat_remove_clusters(disk, part, last_cluster_written);
+        return EXIT_CODE_GLOBAL_SUCCESS;
+    }
+    
+    // Bigger file
+    uint32_t result;
+
+    // following two variables/pointers are necessary for fat_read_fat()
+    uint32_t last_fat_sector = 0;
+    void *fat_table_buffer = kmalloc(FAT32_SECTOR_SIZE);
+
+    while((result = fat_read_fat(disk, part, cluster, &last_fat_sector, fat_table_buffer)) < FAT_CORRUPT_CLUSTER)
+        cluster = result;
+    
+    // update fat with new
+    uint32_t new_cluster = 0;
+    fat_find_empty_cluster(disk, part, &new_cluster);
+
+    fat_write_cluster_to_table(disk, part, cluster, new_cluster);
+    fat_write_new_clusters(disk, part, cluster, buffer, filesize);
+
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
@@ -728,9 +858,8 @@ err_t fat_write(const char *path, file_t *buffer, size_t file_size, uint8_t attr
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
     if(dir_index == MAX)
         err = fat_write_new(disk, part, &filename[0], dir_cluster, buffer, file_size, attrib);
-    // TODO:
-    //else
-    //    err = fat_write_existing(disk, part, dir_part_cluster, &dir_entry, dir_index, buffer, file_size, attrib);
+    else
+       err = fat_write_existing(disk, part, dir_part_cluster, &dir_entry, dir_index, buffer, file_size, attrib);
 
     kfree(working_path);
     return err;
