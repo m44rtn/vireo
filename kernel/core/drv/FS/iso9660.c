@@ -372,7 +372,8 @@ uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename
 		size_t size = (entry->DR_len);
 		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
 
-		dbg_assert(size);
+		if(!size)
+			continue;
 		
 		if(strlen(file) >= len)
 			if(!strcmp_until(filename, (char *) ((char *)&(entry->ident_len) + sizeof(uint8_t)), len))
