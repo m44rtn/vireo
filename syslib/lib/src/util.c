@@ -340,6 +340,7 @@ uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t 
 		next = strlen(&s[strindex]);
 	
 	memcpy(part_out, (void *) (&s[strindex]), next);
+	part_out[next] = '\0';
 
 	return 1; // not done
 }
