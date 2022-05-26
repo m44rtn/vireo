@@ -608,13 +608,8 @@ static uint32_t fat_find_free_index(uint8_t disk, uint8_t part, uint32_t *dir_cl
     return index;
 }
 
-static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t dir_cluster, file_t *buffer, size_t filesize, uint8_t attrib)
+static err_t fat_write_dir(uint8_t disk, uint8_t part, uint32_t fcluster, uint32_t dir_cluster, size_t fsize, uint8_t attrib, char *filename)
 {
-    FAT32_EBPB *info = fat_get_ebpb(disk, part);
-    
-    if(!info)
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-
     uint32_t current_dir_cluster = dir_cluster;
     uint32_t index = fat_find_free_index(disk, part, &dir_cluster);
 
@@ -623,30 +618,49 @@ static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t 
 
     uint32_t cluster_size = fat_get_cluster_size(disk, part);
 
-    // read the directory cluster (only the cluster we need to change anything)
-    // and update information (TODO should become seperate function)
     void *b = evalloc(cluster_size, PID_DRIVER);
     FAT32_DIR *dir_part = b;
-    read(disk, fat_cluster_lba(disk, part, dir_cluster), cluster_size / FAT32_SECTOR_SIZE, (uint8_t *) dir_part);
 
-    uint32_t cluster = 0;
-    fat_find_empty_cluster(disk, part, &cluster);
+    uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
+    read(disk, fat_cluster_lba(disk, part, dir_cluster), sectclust, (uint8_t *) dir_part);
 
     dir_part[index].attrib = attrib;
-    dir_part[index].fSize = filesize;
-    dir_part[index].clHi = (uint16_t) (cluster >> 16u);
-    dir_part[index].clLo = (uint16_t) (cluster & 0xFFFF);
+    dir_part[index].fSize = fsize;
+    dir_part[index].clHi = (uint16_t) (fcluster >> 16u);
+    dir_part[index].clLo = (uint16_t) (fcluster & 0xFFFF);
 
     memcpy(&dir_part[index].name[0], filename, TOTAL_FILENAME_LEN);
 
     if(current_dir_cluster != dir_cluster)
         dir_part[index + 1].name[0] = (char) DIR_UNUSED_ENTRY;
+    
+    write(disk, fat_cluster_lba(disk, part, dir_cluster), sectclust, (uint8_t *) b);
 
+    vfree(b);
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t dir_cluster, file_t *buffer, size_t filesize, uint8_t attrib)
+{
+    FAT32_EBPB *info = fat_get_ebpb(disk, part);
+    
+    if(!info)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+    uint32_t cluster_size = fat_get_cluster_size(disk, part);
+
+    uint32_t cluster = 0;
+    fat_find_empty_cluster(disk, part, &cluster);
+
+    // read the directory cluster (only the cluster we need to change anything)
+    // and update information (TODO should become seperate function)
+    err_t err = fat_write_dir(disk, part, cluster, dir_cluster, filesize, attrib, filename);
+
+    if(err)
+        return err;
     
     // write the directory to the disk    
     uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
-    write(disk, fat_cluster_lba(disk, part, dir_cluster), sectclust, (uint8_t *) b);
-    
     uint8_t *temp_buffer = evalloc(cluster_size, PID_DRIVER);
     uint32_t i = 0;
     
@@ -674,8 +688,7 @@ static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t 
     }
 
     vfree(temp_buffer);
-    vfree(b);
-
+    
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
@@ -717,7 +730,7 @@ err_t fat_write(const char *path, file_t *buffer, size_t file_size, uint8_t attr
         err = fat_write_new(disk, part, &filename[0], dir_cluster, buffer, file_size, attrib);
     // TODO:
     //else
-    //    err = fat_write_existing(disk, part, dir_part_cluster, &filename[0], &dir_entry, dir_index, buffer, file_size, attrib);
+    //    err = fat_write_existing(disk, part, dir_part_cluster, &dir_entry, dir_index, buffer, file_size, attrib);
 
     kfree(working_path);
     return err;
