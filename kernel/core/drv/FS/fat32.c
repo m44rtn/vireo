@@ -216,6 +216,14 @@ static uint32_t fat_cluster_lba(uint8_t disk, uint8_t part, uint32_t cluster)
     return LBA;
 }
 
+static uint32_t fat_get_cluster_size(uint8_t disk, uint8_t part)
+{
+    FAT32_EBPB* info = fat_get_ebpb(disk, part);
+    uint32_t sectclust = (info->bpb.SectClust);
+    
+    return sectclust * FAT32_SECTOR_SIZE;
+}
+
 static void fat_get_disk_from_path(const char *path, uint8_t *disk, uint8_t *part)
 {
     char diskname[DISKIO_MAX_LEN_DISKID];
@@ -396,8 +404,7 @@ static uint32_t fat_find_in_dir(uint8_t disk, uint8_t part, const char *filename
     // if no cluster is given, assume start at root dir
     uint32_t cluster = (!starting_cluster) ? info->clustLocRootdir : starting_cluster;
 
-    uint32_t sectclust = (info->bpb.SectClust);
-    uint32_t cluster_size = sectclust * FAT32_SECTOR_SIZE;
+    uint32_t cluster_size = fat_get_cluster_size(disk, part);
 
     FAT32_DIR *dir_part = evalloc(cluster_size, PID_DRIVER);
     
@@ -414,7 +421,7 @@ static uint32_t fat_find_in_dir(uint8_t disk, uint8_t part, const char *filename
     {
         *dir_part_cluster = cluster;
 
-        fat_read_cluster(disk, part, cluster, dir_part, sectclust);
+        fat_read_cluster(disk, part, cluster, dir_part, cluster_size / FAT32_SECTOR_SIZE);
         index = fat_search_dir_part(dir_part, filename, cluster_size);
 
         if(index != MAX)
@@ -590,12 +597,10 @@ static uint32_t fat_find_free_index(uint8_t disk, uint8_t part, uint32_t *dir_cl
 
     *dir_cluster = dir_part_cluster;
 
+    uint32_t cluster_size = fat_get_cluster_size(disk, part);
+
     // check if the entry is the very last one that can fit on a cluster
     // grow directory if so.
-    // FIXME cluster_size should become function (is used often)
-    uint32_t sectclust = (info->bpb.SectClust);
-    uint32_t cluster_size = sectclust * FAT32_SECTOR_SIZE;
-
     if(((index * sizeof(FAT32_DIR)) + sizeof(FAT32_DIR) >= cluster_size) &&
         empty_entry_name[0] == (char)0)
             index = fat_grow_dir(disk, part, dir_cluster);
@@ -616,15 +621,13 @@ static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t 
     if(index == MAX)
         return EXIT_CODE_FS_NO_SPACE;
 
-    // FIXME: should become function (fat_get_cluster_size() )
-    uint32_t sectclust = (info->bpb.SectClust);
-    uint32_t cluster_size = sectclust * FAT32_SECTOR_SIZE;
+    uint32_t cluster_size = fat_get_cluster_size(disk, part);
 
     // read the directory cluster (only the cluster we need to change anything)
     // and update information (TODO should become seperate function)
     void *b = evalloc(cluster_size, PID_DRIVER);
     FAT32_DIR *dir_part = b;
-    read(disk, fat_cluster_lba(disk, part, dir_cluster), sectclust, (uint8_t *) dir_part);
+    read(disk, fat_cluster_lba(disk, part, dir_cluster), cluster_size / FAT32_SECTOR_SIZE, (uint8_t *) dir_part);
 
     uint32_t cluster = 0;
     fat_find_empty_cluster(disk, part, &cluster);
@@ -641,6 +644,7 @@ static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t 
 
     
     // write the directory to the disk    
+    uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
     write(disk, fat_cluster_lba(disk, part, dir_cluster), sectclust, (uint8_t *) b);
     
     uint8_t *temp_buffer = evalloc(cluster_size, PID_DRIVER);
