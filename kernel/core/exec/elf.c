@@ -148,6 +148,10 @@ static void *elf_load_binary(void *file, pid_t pid)
 void *elf_parse_binary(void **ptr, pid_t pid, err_t *_err)
 {
     elf_header_t *hdr = (elf_header_t *) *ptr;
+
+    if(!(*ptr))
+        return NULL;
+
     void *entry = (void *) hdr->entry;
     
     uint8_t err;
