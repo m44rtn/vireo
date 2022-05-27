@@ -205,6 +205,9 @@ unsigned int hex_digit_count(uint32_t value)
 
 void memset(void *start, size_t size, unsigned char val)
 {
+	if(!start)
+		return;
+
 	uint8_t *s = start;
 
 	while(size--)
@@ -358,19 +361,28 @@ uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t 
 		return 0; // done
 
 	for(uint32_t i = 0; i < *(pindex); ++i)
-		if((strindex = find_in_str(&s[strindex], delim)) == MAX)
+	{
+		if((strindex = strindex + find_in_str(&s[strindex], delim)) == MAX)
 			break;
+
+		strindex = strindex + strlen(delim);
+	}
+
+	*(pindex) = *(pindex) + 1;
 	
 	if(strindex == MAX)
 	{
-	 	strindex = 0;
-		 *(pindex) = MAX;
+		*(pindex) = MAX;
+		return 0;
 	}
 
 	uint32_t next = find_in_str(&s[strindex], delim);
 
 	if(next == MAX)
+	{
 		next = strlen(&s[strindex]);
+		*(pindex) = MAX;
+	}
 	
 	memcpy(part_out, (void *) (&s[strindex]), next);
 	part_out[next] = '\0';
