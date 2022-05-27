@@ -140,7 +140,11 @@ void prog_launch_binary(char *filename, return_t ret_addr)
     void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err);
 
     if(!rel_addr)
+    {
+        paging_rel_resources(prog_info[free_index].pid);
+        memset((void *) &prog_info[free_index], sizeof(prog_info_t), 0xFF);
         return;
+    }
 
     if(!err)
         prog_info[free_index].rel_start = (void *) ((uint32_t)rel_addr | (uint32_t)(elf));
