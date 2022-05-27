@@ -37,6 +37,7 @@ SOFTWARE.
 
 #include "../../util/util.h"
 
+// FIXME: should support more than one handler
 void *extern_handlers[MAX_PIC_INTERRUPTS];
 
 void isr_set_extern_handler(uint8_t type, void *handler)
