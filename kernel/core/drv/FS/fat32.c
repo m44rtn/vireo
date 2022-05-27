@@ -377,7 +377,7 @@ static uint32_t fat_search_dir_part(FAT32_DIR *dir, const char *filename, size_t
     for(uint32_t i = 0; i < max_i; ++i)
     {
         if(dir[i].attrib == FAT_DIR_ATTRIB_LFN || 
-            dir[i].attrib == FAT_DIR_ATTRIB_VOLUME_ID)
+            dir[i].attrib == FAT_DIR_ATTRIB_VOLUME_ID )
                 continue;
         
         // copy file name and extension
@@ -477,7 +477,7 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
     // buffer for filename is maximum characters long. At this stage
     // this is 8 chars filename, 1 seperator ('.'), 3 chars extension
     char filename[TOTAL_FILENAME_LEN + 1];
-    uint32_t str_parts_index = 1;
+    uint32_t str_parts_index = 0;
     uint32_t starting_cluster = 0, ignore;
     FAT32_DIR dir_entry;
 
@@ -646,13 +646,13 @@ static void fat_write_new_clusters(uint8_t disk, uint8_t part, uint32_t cluster,
 {
     uint32_t cluster_size = fat_get_cluster_size(disk, part);
 
-    // write the file to the disk (TODO: seperate function)
+    // write the file to the disk
     uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
     uint8_t *temp_buffer = evalloc(cluster_size, PID_DRIVER);
     uint32_t i = 0;
     
     while(cluster < FAT_CORRUPT_CLUSTER)
-    {
+    { 
         size_t size = (filesize >= (sectclust * FAT32_SECTOR_SIZE)) ? (sectclust * FAT32_SECTOR_SIZE) : filesize;
         
         memcpy(temp_buffer, (void *) ((uint32_t)*(&buffer) + i), size);
@@ -862,5 +862,6 @@ err_t fat_write(const char *path, file_t *buffer, size_t file_size, uint8_t attr
        err = fat_write_existing(disk, part, dir_part_cluster, &dir_entry, dir_index, buffer, file_size, attrib);
 
     kfree(working_path);
+
     return err;
 }
