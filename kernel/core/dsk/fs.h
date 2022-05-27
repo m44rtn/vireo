@@ -29,7 +29,7 @@ SOFTWARE.
 void fs_api(void *req);
 file_t *fs_read_file(char *fpath, size_t *o_size);
 
-err_t fs_write_file(char *fpath, file_t *file, size_t fsize);
+err_t fs_write_file(char *fpath, file_t *file, size_t fsize, uint8_t attrib);
 err_t fs_rename_file(char *fpath, char *new_name);
 err_t fs_delete_file(char *fpath);
 

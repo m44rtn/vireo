@@ -151,9 +151,7 @@ struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT32 |
 volatile uint16_t fat_flags = 0;
 
 void fat_handler(uint32_t *drv)
-{
-    drv[4] = EXIT_CODE_GLOBAL_SUCCESS;
-        
+{        
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
@@ -919,7 +917,7 @@ err_t fat_rename(char *path, char *new_name)
     memcpy(&new_path[index], new_name, strlen(new_name) + 1);
 
     uint32_t ignore;    
-    if(fat_traverse(new_path, &ignore, &ignore) != MAX)
+    if(fat_traverse(new_path, &ignore, (uint8_t *) &ignore) != MAX)
     { 
         kfree(new_path); 
         return EXIT_CODE_FS_FILE_EXISTS; 

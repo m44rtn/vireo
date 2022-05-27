@@ -33,6 +33,11 @@ SOFTWARE.
 
 #define FS_TYPE_ISO     0x96
 
+#define FAT_FILE_ATTRIB_FILE        0x00
+#define FAT_FILE_ATTRIB_READONLY    0x01
+#define FAT_FILE_ATTRIB_SYSTEM      0x04
+#define FAT_FILE_ATTRIB_DIR         0x10
+
 typedef void file_t;
 
 // returns the filesystem type of the drive specified
@@ -42,7 +47,7 @@ uint8_t fs_get_filesystem(char *_drive);
 file_t *fs_read_file(char *_path, size_t *_o_size, err_t *err);
 
 // writes file to _path
-err_t fs_write_file(char *_path, file_t *_file, size_t _size);
+err_t fs_write_file(char *_path, file_t *_file, size_t _size, uint8_t _attrib);
 
 // removes file at _path
 err_t fs_delete_file(char *_path);

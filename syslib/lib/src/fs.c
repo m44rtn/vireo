@@ -30,6 +30,7 @@ typedef struct fs_t
     file_t *f;
     size_t size;
     char *new_name;
+    uint8_t attrib;
 } __attribute__((packed)) fs_t;
 
 uint8_t fs_get_filesystem(char *_drive)
@@ -57,13 +58,14 @@ file_t *fs_read_file(char *_path, size_t *_o_size, err_t *err)
     return (file_t *) req.hdr.response_ptr;
 }
 
-err_t fs_write_file(char *_path, file_t *_file, size_t _size)
+err_t fs_write_file(char *_path, file_t *_file, size_t _size, uint8_t _attrib)
 {
     fs_t req = {
         .hdr.system_call = SYSCALL_FS_WRITE,
         .path = _path,
         .f = _file,
-        .size = _size
+        .size = _size,
+        .attrib = _attrib,
     };
     asm_syscall(&req);
 

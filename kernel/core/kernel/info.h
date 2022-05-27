@@ -26,11 +26,11 @@ SOFTWARE.
 
 /* this is always the build number for next build. 
 current binary build = [BUILD] - 1 */
-#define BUILD 4911
+#define BUILD 4927
 
 #define MAJOR 0
 #define MINOR 1  
-#define REV (char *) "-pre1"
+#define REV (char *) "-pre2"
 
 #define BUILDDATE    __DATE__
 #define BUILDTIME    __TIME__

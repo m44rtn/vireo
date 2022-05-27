@@ -329,7 +329,7 @@ uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t 
 
 	for(uint32_t i = 0; i < *(pindex); ++i)
 	{
-		if((strindex = strindex + find_in_str(&s[strindex], delim)) == MAX)
+		if((strindex = strindex + find_in_str((char *) (&s[strindex]), delim)) == MAX)
 			break;
 
 		strindex = strindex + strlen(delim);
@@ -343,7 +343,7 @@ uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t 
 		return 0;
 	}
 
-	uint32_t next = find_in_str(&s[strindex], delim);
+	uint32_t next = find_in_str((char *) (&s[strindex]), delim);
 
 	if(next == MAX)
 	{

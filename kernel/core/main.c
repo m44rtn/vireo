@@ -161,37 +161,7 @@ void main(void)
 #ifndef NO_DEBUG_INFO /* you can define NO_DEBUG_INFO in types.h and it'll make all modules quiet */
     info_print_full_version();    
     print((char*)"\n");
-#endif
-
-    //kernel_execute_config();
-    size_t s;
-
-    // Testing only
-    file_t *f = fs_read_file((char *)"CD0/TEST/BREAKER.ELF", &s);
-    err_t err = fs_write_file((char *)"HD0P0/TEST/CONWAY.ELF", f, s);
-    // print_value("saved file with exit code: %x\n", err);
-    vfree(f);
-
-    //fs_rename_file((char *)"HD0P0/TEST/CONWAY.ELF", (char *)"BREAKER.ELF");
-
-    // TODO: test conway and drv on HD0P0 using BREAKER
-    // (it currently uses these files on CD0)
-    f = fs_read_file((char *) "CD0/TEST/CONWAY.ELF", &s);
-    err = fs_write_file((char *)"HD0P0/TEST/BREAKER.ELF", f, s);
-    // print_value("saved file with exit code: %x\n", err);
-    vfree(f);
-
-    err = fs_delete_file((char *)"HD0P0/TEST/BREAKER.ELF");
-    // print_value("deleted file with exit code: %x\n", err);
-    err = fs_delete_file((char *)"HD0P0/TEST");
-
-    // print_value("deleted file with exit code: %x\n", err);
-
-    // f = fs_read_file((char *)"CD0/TEST/DRV.DRV", &s);
-    // err = fs_write_file((char *)"HD0P0/DRV.DRV", f, s);
-    // //print_value("saved file with exit code: %x\n", err);
-    // vfree(f);
-    
+#endif    
     kernel_execute_config();
 
     loop();

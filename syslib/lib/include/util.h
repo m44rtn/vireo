@@ -113,6 +113,6 @@ unsigned char nth_bit(uint32_t dword, uint8_t size);
 //      s, original string
 //      delim, string specifying the characters that seperate a part (delimiter)
 //      pindex, pointer to uint32_t (used internally) / specifies which part is wanted
-uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t *pindex)
+uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t *pindex);
 
 #endif

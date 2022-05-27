@@ -47,6 +47,7 @@ typedef struct fs_t
     file_t *f;
     size_t size;
     char *new_name;
+    uint8_t attrib;
 } __attribute__((packed)) fs_t;
 
 void fs_api(void *req)
@@ -103,7 +104,7 @@ void fs_api(void *req)
             drv[1] = (uint32_t) fs->path;
             drv[2] = (uint32_t) fs->f;
             drv[3] = (uint32_t) fs->size;
-            drv[4] = FAT_FILE_ATTRIB_FILE; // FIXME, should be configured by the user...
+            drv[4] = (uint32_t) fs->attrib;
             driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
             
             fs->hdr.exit_code = (uint8_t) drv[4];
@@ -169,13 +170,14 @@ file_t *fs_read_file(char *fpath, size_t *o_size)
     return req.hdr.response_ptr;
 }
 
-err_t fs_write_file(char *fpath, file_t *file, size_t fsize)
+err_t fs_write_file(char *fpath, file_t *file, size_t fsize, uint8_t attrib)
 {
     fs_t req = {
         .hdr.system_call = SYSCALL_FS_WRITE,
         .path = fpath,
         .f = file,
         .size = fsize,
+        .attrib = attrib,
     };
 
     fs_api(&req);
