@@ -365,18 +365,18 @@ uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename
 	uint32_t i = 0;
 
 	*(fsize) = 0;
-
+	
 	while(bfr_size)
 	{
 		direntry_t *entry = (direntry_t *) &b[i];
-		size_t size = (entry->DR_len);
+		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
 		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
 
 		if(!size)
 			continue;
 		
 		if(strlen(file) >= len)
-			if(!strcmp_until(filename, (char *) ((char *)&(entry->ident_len) + sizeof(uint8_t)), len))
+			if(!strcmp_until(filename, file, len))
 			{
 				*(fsize) = (entry->size);
 				return (entry->lba_extend);
@@ -673,7 +673,9 @@ void reverse_path(char *path)
 		current = strtok(NULL, "/");
 	}
 
-	memcpy(&path[0], &new[0], strlen(new));
+	new[len] = '\0';
+	memcpy(&path[0], &new[0], strlen(new) + 1);
+
 	kfree(backup);
 	kfree(new);
 }
