@@ -188,7 +188,19 @@ err_t fs_rename_file(char *fpath, char *new_name)
     fs_t req = {
         .hdr.system_call = SYSCALL_FS_RENAME,
         .path = fpath,
-        .new_name = new_name
+        .new_name = new_name,
+    };
+
+    fs_api(&req);
+    
+    return req.hdr.exit_code;
+}
+
+err_t fs_delete_file(char *fpath)
+{
+    fs_t req = {
+        .hdr.system_call = SYSCALL_FS_DELETE,
+        .path = fpath,
     };
 
     fs_api(&req);

@@ -66,6 +66,11 @@ drv[4] (parameter4) --> (returns) error code
 */
 
 #define FS_COMMAND_DELETE 0x13
-/* TBD */
+/*
+drv[1] (parameter1) --> old path (+ old filename)
+drv[4] (parameter4) --> (returns) error code
+
+    WARNING: this function will not care about if the file is write protected (it will delete it anyway)
+*/
 
 #endif
