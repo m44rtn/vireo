@@ -366,11 +366,13 @@ uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename
 
 	*(fsize) = 0;
 	
-	while(bfr_size)
+	while(i < bfr_size)
 	{
 		direntry_t *entry = (direntry_t *) &b[i];
 		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
 		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
+
+		i += (size) ? size : sizeof(direntry_t);
 
 		if(!size)
 			continue;
@@ -382,8 +384,7 @@ uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename
 				return (entry->lba_extend);
 			}
 
-		bfr_size -= size;
-		i += size;
+		
 	}
 
 	return 0;
