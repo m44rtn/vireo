@@ -181,14 +181,9 @@ void fat_handler(uint32_t *drv)
             drv[4] = (uint32_t) fat_write((char *) drv[1], (uint16_t *) drv[2], (size_t) drv[3], (uint8_t) drv[4]);      
         break;
 
-        // case FS_COMMAND_RENAME:
-        //     gErrorCode = FAT_setDrivePartitionActive((const char *) drv[1]);
-
-        //     if(gErrorCode == EXIT_CODE_FS_UNSUPPORTED_DRIVE)
-        //         break;
-
-        //     FAT_rename((char *) drv[1], (char *) drv[2]);      
-        // break;
+        case FS_COMMAND_RENAME:
+            drv[4] = (uint32_t) fat_rename((char *) drv[1], (char *) drv[2]);      
+        break;
 
         default:
             drv[4] = EXIT_CODE_GLOBAL_UNSUPPORTED;
@@ -700,7 +695,7 @@ static err_t fat_write_new(uint8_t disk, uint8_t part, char *filename, uint32_t 
 }
 
 static void fat_overwrite_dir_entry(uint8_t disk, uint8_t part, uint32_t dir_part_cluster, uint32_t dir_entry_index,
-                                size_t filesize, uint8_t attrib)
+                                char *filename, size_t filesize, uint8_t attrib)
 {
     uint32_t cluster_size = fat_get_cluster_size(disk, part);
     uint32_t sectclust = cluster_size / FAT32_SECTOR_SIZE;
@@ -714,6 +709,9 @@ static void fat_overwrite_dir_entry(uint8_t disk, uint8_t part, uint32_t dir_par
 
     dir_part[dir_entry_index].fSize = filesize;
     dir_part[dir_entry_index].attrib = attrib;
+
+    if(filename)
+        memcpy(&dir_part[dir_entry_index].name[0], filename, TOTAL_FILENAME_LEN);
 
     write(disk, lba, sectclust, (uint8_t *) b);
     vfree(b);
@@ -785,7 +783,7 @@ static void fat_remove_clusters(uint8_t disk, uint8_t part, uint32_t from_cluste
 static err_t fat_write_existing(uint8_t disk, uint8_t part, uint32_t dir_part_cluster, FAT32_DIR *entry, uint32_t dir_entry_index, file_t *buffer, 
                                 size_t filesize, uint8_t attrib)
 {
-    fat_overwrite_dir_entry(disk, part, dir_part_cluster, dir_entry_index, filesize, attrib);
+    fat_overwrite_dir_entry(disk, part, dir_part_cluster, dir_entry_index, NULL, filesize, attrib);
 
     uint32_t n_clusters_written = 0;
     uint32_t cluster = (uint32_t) ((entry->clHi << 16u) | entry->clLo);
@@ -822,46 +820,81 @@ static err_t fat_write_existing(uint8_t disk, uint8_t part, uint32_t dir_part_cl
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-err_t fat_write(const char *path, file_t *buffer, size_t file_size, uint8_t attrib)
+static err_t fat_check_file_exists(uint8_t disk, uint8_t part, const char *path, char *filename, FAT32_DIR *dir_entry, uint32_t *dir_cluster, uint32_t *dir_part_cluster, uint32_t *dir_index)
 {
     char *working_path = create_backup_str(path);
-
-    uint8_t disk, part;
-    fat_get_disk_from_path(working_path, &disk, &part);
-
+    
     if(!working_path)
         return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
-        
-    char filename[TOTAL_FILENAME_LEN + 1];
-    
+
     // remove last part of the working path (file to store)
     // and move it to the filename buffer
-    fat_get_last_from_path(&filename[0], working_path);
+    fat_get_last_from_path(filename, working_path);
 
     // get the cluster of the directory to save the file in
     size_t dir_size;
     uint8_t dir_attrib;
-    uint32_t dir_cluster = fat_traverse(working_path, &dir_size, &dir_attrib);
+    *dir_cluster = fat_traverse(working_path, &dir_size, &dir_attrib);
 
-    if(dir_cluster == MAX)
+    if(*dir_cluster == MAX)
         return EXIT_CODE_FS_FILE_NOT_FOUND;
     
-    // check if file already exists
-    FAT32_DIR dir_entry;
-    uint32_t dir_part_cluster;
-    uint32_t dir_index = fat_find_in_dir(disk, part, &filename[0], dir_cluster, &dir_entry, &dir_part_cluster);
-
-    // if the file was found and it is read-only then do nothing
-    if(dir_index != MAX && (dir_entry.attrib & FAT_DIR_ATTRIB_READ_ONLY))
+    if((dir_attrib & FAT_DIR_ATTRIB_READ_ONLY))
         return EXIT_CODE_FS_FILE_READ_ONLY;
     
-    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    // check if file already exists
+    *dir_index = fat_find_in_dir(disk, part, filename, *dir_cluster, dir_entry, dir_part_cluster);
+
+    // if the file was found and it is read-only then do nothing
+    if(*dir_index != MAX && (dir_entry->attrib & FAT_DIR_ATTRIB_READ_ONLY))
+        return EXIT_CODE_FS_FILE_READ_ONLY;
+    
+    kfree(working_path);
+    
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+err_t fat_write(const char *path, file_t *buffer, size_t file_size, uint8_t attrib)
+{
+    uint8_t disk, part;
+    fat_get_disk_from_path(path, &disk, &part);
+        
+    char filename[TOTAL_FILENAME_LEN + 1];
+    FAT32_DIR dir_entry;
+    uint32_t dir_cluster, dir_part_cluster, dir_index;
+
+    err_t err = fat_check_file_exists(disk, part, path, &filename[0], &dir_entry, &dir_cluster, &dir_part_cluster, &dir_index);
+
+    if(err)
+        return err;
+
     if(dir_index == MAX)
         err = fat_write_new(disk, part, &filename[0], dir_cluster, buffer, file_size, attrib);
     else
        err = fat_write_existing(disk, part, dir_part_cluster, &dir_entry, dir_index, buffer, file_size, attrib);
 
-    kfree(working_path);
-
     return err;
+}
+
+err_t fat_rename(char *path, char *new_name)
+{
+    uint8_t disk, part;
+    fat_get_disk_from_path(path, &disk, &part);
+        
+    char filename[TOTAL_FILENAME_LEN + 1];
+    FAT32_DIR dir_entry;
+    uint32_t dir_cluster, dir_part_cluster, dir_index;
+
+    err_t err = fat_check_file_exists(disk, part, path, &filename[0], &dir_entry, &dir_cluster, &dir_part_cluster, &dir_index);
+
+    if(err)
+        return err;
+    
+    size_t name_len = strlen(new_name);
+    memcpy(&filename[0], new_name, name_len + 1);
+
+    fat_filename_fatcompat(&filename[0]);
+
+    fat_overwrite_dir_entry(disk, part, dir_part_cluster, dir_index, &filename[0], dir_entry.fSize, dir_entry.attrib);
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }

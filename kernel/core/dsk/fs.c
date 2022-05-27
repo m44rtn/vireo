@@ -182,3 +182,16 @@ err_t fs_write_file(char *fpath, file_t *file, size_t fsize)
     
     return req.hdr.exit_code;
 }
+
+err_t fs_rename_file(char *fpath, char *new_name)
+{
+    fs_t req = {
+        .hdr.system_call = SYSCALL_FS_RENAME,
+        .path = fpath,
+        .new_name = new_name
+    };
+
+    fs_api(&req);
+    
+    return req.hdr.exit_code;
+}

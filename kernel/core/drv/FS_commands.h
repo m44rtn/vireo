@@ -61,7 +61,7 @@ drv[4] (parameter4) --> (returns) error code
 #define FS_COMMAND_RENAME 0x12
 /*
 drv[1] (parameter1) --> old path (+ old filename)
-drv[2] (parameter2) --> new filename
+drv[2] (parameter2) --> new filename (excluding path!)
 drv[4] (parameter4) --> (returns) error code
 */
 
