@@ -25,7 +25,8 @@ SOFTWARE.
 #include "diskio.h"
 
 #include "../hardware/driver.h"
-#include "../hardware/pci.h"
+
+#include "../drv/COMMANDS.H"
 
 #include "../include/types.h"
 #include "../dsk/diskdefines.h"
@@ -42,6 +43,8 @@ SOFTWARE.
 
 #define MBR_PARTENTRY_START 0x1BE
 #define MBR_PARTENTRY_SIZE  16
+
+#define MBR_MAX_PARTITIONS  4 // per disk
 
 typedef struct /* only the mbr info that's interesting to us */
 {
@@ -66,32 +69,37 @@ static void MBR_printAll(void);
 
 static uint8_t MBR_getIDEDrives(uint8_t *drives);
 
-/* enumerates the MBRs of all present (only IDE for now)  disks in the system */
+/* enumerates the MBRs of all present (only IDE for now) harddisks in the system */
 void MBR_enumerate(void)
 {
     uint32_t *mbr_entry;
     uint8_t *mbr, disks;
     uint8_t i, j, error;
 
-    nDisks = disks = MBR_getIDEDrives(diskio_reportDrives());
+    memset(&DISKS[0], sizeof(MBR) * MAX_DRIVES, 0xFF);
+
+    uint8_t *drives = diskio_reportDrives();
+    nDisks = disks = MBR_getIDEDrives(drives);
 
     if(nDisks < 1)
-      return;
+        return;
 
-    mbr = (uint8_t *) kmalloc(512);
+    mbr = (uint8_t *) kmalloc(DEFAULT_SECTOR_SIZE);
 
     /* this is IDE only, if floppy's are introduced this should be moved
-      to a seperate function */
+        to a seperate function */
     for(i = 0; i < disks; ++i)
     {
+        if(drives[i] != DRIVE_TYPE_IDE_PATA)
+            continue;
         
         error = read(DISKS[i].disk, 0U, 1U, mbr);
         
         if(error)
-          return;
+            break;
 
         // read all partition entries
-        for(j = 0; j < 4; ++j)
+        for(j = 0; j < MBR_MAX_PARTITIONS; ++j)
         {
             mbr_entry = (uint32_t *) &mbr[MBR_PARTENTRY_START + j*MBR_PARTENTRY_SIZE];
 
@@ -103,48 +111,76 @@ void MBR_enumerate(void)
     }
 
     kfree(mbr);
+    kfree(drives);
+
+    mbr_initialize_fs_drivers();
 
     #ifndef NO_DEBUG_INFO
-    MBR_printAll();
+    if(!error)
+        MBR_printAll();
     #endif
+}
+
+void mbr_initialize_fs_drivers(void)
+{
+    uint32_t drv[5];
+
+    for(uint32_t disk = 0; disk < MAX_DRIVES; ++disk)
+        for(uint8_t part = 0; part < MBR_MAX_PARTITIONS; ++part)
+        {
+            uint8_t type = DISKS[disk].mbr_entry_t[part].type;
+
+            if(!type || type == 0xFF)
+                continue;
+
+            print_value("fs type: %x\n", type);
+
+            driver_addInternalDriver((type | DRIVER_TYPE_FS));
+            
+            drv[0] = DRV_COMMAND_INIT;
+            drv[1] = disk;
+            drv[2] = part;
+            drv[3] = type;
+            driver_exec_int((type | DRIVER_TYPE_FS), &drv[0]);
+        }
 }
 
 uint32_t MBR_getStartLBA(uint8_t disk, uint8_t partition)
 {
-  return DISKS[disk].mbr_entry_t[partition].start_LBA;
+    return DISKS[disk].mbr_entry_t[partition].start_LBA;
 }
 
 uint32_t mbr_get_sector_count(uint8_t disk, uint8_t partition)
 {
-  return DISKS[disk].mbr_entry_t[partition].n_sectors;
+    return DISKS[disk].mbr_entry_t[partition].n_sectors;
 }
 
 uint8_t mbr_get_type(uint8_t disk, uint8_t partition)
 {
-  return DISKS[disk].mbr_entry_t[partition].type;
+    return DISKS[disk].mbr_entry_t[partition].type;
 }
 
 #ifndef NO_DEBUG_INFO
 static void MBR_printAll(void)
 {
-  uint8_t i, j;
-  for(i = 0; i < nDisks; ++i)
-  {
+    uint8_t i, j;
+    for(i = 0; i < nDisks; ++i)
+    {
     for(j = 0; j < 4; ++j)
     {
-      if(!DISKS[i].mbr_entry_t[j].start_LBA)
+        if(!DISKS[i].mbr_entry_t[j].start_LBA)
         continue;
 
-      print_value("[PARTITIONS] HD%i", DISKS[i].disk);
-      print_value("p%i: ", j);
-      print_value("lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
-      print_value("active: %x, ", DISKS[i].mbr_entry_t[j].active);
-      print_value("sectors: %i, ", DISKS[i].mbr_entry_t[j].n_sectors);
-      print_value("type: %x\n", DISKS[i].mbr_entry_t[j].type);
+        print_value("[PARTITIONS] HD%i", DISKS[i].disk);
+        print_value("p%i: ", j);
+        print_value("lba %i, ", DISKS[i].mbr_entry_t[j].start_LBA);
+        print_value("active: %x, ", DISKS[i].mbr_entry_t[j].active);
+        print_value("sectors: %i, ", DISKS[i].mbr_entry_t[j].n_sectors);
+        print_value("type: %x\n", DISKS[i].mbr_entry_t[j].type);
     }
-  }
+    }
 
-  print("\n");
+    print("\n");
 }
 #endif
 

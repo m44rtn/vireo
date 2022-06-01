@@ -143,15 +143,6 @@ void init_env(void)
     MBR_enumerate();
     cd_init();
 
-    uint32_t drv[5];
-    // TODO: get a function to do this
-    // ----------> One way would be to let MBR handle this stuff
-    driver_addInternalDriver((0x0B | DRIVER_TYPE_FS));
-    drv[0] = DRV_COMMAND_INIT;
-    drv[1] = 0;
-    drv[2] = 0;
-    drv[3] = 0x0B;
-    driver_exec_int((0x0B | DRIVER_TYPE_FS), &drv[0]);
 }
 
 void main(void)

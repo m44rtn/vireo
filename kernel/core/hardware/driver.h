@@ -36,8 +36,8 @@ struct DRIVER
     unsigned int interface; // function pointer to handler function
 } __attribute__ ((packed));
 
-#define DRIVER_TYPE_PCI             0x01 << 24
-#define DRIVER_TYPE_FS              0x02 << 24
+#define DRIVER_TYPE_PCI             0x01u << 24u
+#define DRIVER_TYPE_FS              0x02u << 24u
 
 #define DRIVER_CODE_IDECONTROLLER   DRIVER_TYPE_PCI | 0x0101 /* PCI class 0x01 and subclass 0x01 are for IDE controllers */
 

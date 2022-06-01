@@ -129,13 +129,20 @@ void driver_exec_int(uint32_t type, uint32_t *data)
     for(i = 0; i < DRIVER_INTERNAL_MAX_SUPPORTED; ++i)
         if(drv_list[i].type == type)
             break;
-    
-    dbg_assert(!(i >= DRIVER_INTERNAL_MAX_SUPPORTED));
+
     if(i >= DRIVER_INTERNAL_MAX_SUPPORTED)     
         return;
     
-
     EXEC_CALL_FUNC(drv_list[i].driver, (uint32_t *) data);
+}
+
+static bool_t driver_check_exists(uint32_t id)
+{
+    for(uint8_t i = 0; i < DRIVER_INTERNAL_MAX_SUPPORTED; ++i)
+        if(drv_list[i].type == id)
+            return TRUE;
+    
+    return FALSE;
 }
 
 /* identifier: for example (FS_TYPE_FAT | DRIVER_TYPE_FS) 
@@ -147,14 +154,17 @@ void driver_addInternalDriver(uint32_t identifier)
 {
     struct DRIVER_SEARCH drv = {DRIVER_STRUCT_HEXSIGN, "VIREODRV", 0};
     uint32_t *driver_loc;
+
+    if(driver_check_exists(identifier))
+        return;
     
     // find the associated driver
     drv.type = identifier;
     driver_loc = memsrch((void *) &drv, sizeof(struct DRIVER_SEARCH), memory_getKernelStart(), memory_getMallocStart());
     
-    dbg_assert((uint32_t)driver_loc);
-    dbg_assert(cur_devices != DRIVER_INTERNAL_MAX_SUPPORTED);
-    
+    if(!driver_loc || (cur_devices >= DRIVER_INTERNAL_MAX_SUPPORTED))
+        return;
+        
     // save the information on our driver
     drv_list[cur_devices].device = 0;
     drv_list[cur_devices].type = identifier;
