@@ -133,8 +133,6 @@ void mbr_initialize_fs_drivers(void)
             if(!type || type == 0xFF)
                 continue;
 
-            print_value("fs type: %x\n", type);
-
             driver_addInternalDriver((type | DRIVER_TYPE_FS));
             
             drv[0] = DRV_COMMAND_INIT;

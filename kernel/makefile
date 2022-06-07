@@ -6,7 +6,7 @@ VM_NAME  := "BirdOS"
 BINARY_NAME := vireo.sys
 
 # any modules/objects not to be included in the final build
-OBJIGNORE := core/misc/conway.o
+OBJIGNORE := #
 
 SRCFILES = $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
