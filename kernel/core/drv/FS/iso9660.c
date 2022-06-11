@@ -313,6 +313,9 @@ uint32_t iso_traverse(char *path, size_t *fsize)
 	if(find_in_str(p, ".") == MAX)
 		dir_lba = iso_path_to_dir_lba(drive, p);
 	
+	if(dir_lba == MAX)
+		dir_lba = (info->rootdir_lba);
+
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize);
 	
 	iso_free_bfr(p);
