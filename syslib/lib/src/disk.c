@@ -82,3 +82,11 @@ err_t disk_absolute_write(char *_drive, uint32_t _lba, void *_bfr, size_t _bfr_s
 
     return req.hdr.exit_code;
 }
+
+char *disk_get_bootdisk(void)
+{
+    syscall_hdr_t hdr = {.system_call = SYSCALL_DISK_GET_BOOTDISK};
+    asm_syscall(&hdr);
+
+    return (char *) hdr.response_ptr;
+}

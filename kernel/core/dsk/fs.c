@@ -147,6 +147,22 @@ void fs_api(void *req)
             break;
         }
 
+        case SYSCALL_FS_MKDIR:
+        {
+            uint8_t disk_type = drive_type(fs->path);
+            uint32_t driver_type = FS_TYPE_FAT32; // FIXME: should use MBR type
+
+            if(disk_type == DRIVE_TYPE_IDE_PATAPI)
+            { fs->hdr.exit_code = EXIT_CODE_GLOBAL_UNSUPPORTED; break; }
+
+            drv[0] = FS_COMMAND_MKDIR;
+            drv[1] = (uint32_t) fs->path;
+            driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
+            
+            fs->hdr.exit_code = (uint8_t) drv[4];
+
+            break;
+        }
 
         default:
             fs->hdr.exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;

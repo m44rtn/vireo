@@ -24,6 +24,7 @@ SOFTWARE.
 #include "diskio.h"
 
 #include "mbr.h"
+#include "bootdisk.h"
 
 #include "../include/types.h"
 #include "../dsk/diskdefines.h"
@@ -176,6 +177,15 @@ void diskio_api(void *req)
             c->hdr.exit_code = write(drive, lba, c->nlba, (uint8_t *) c->buffer);
             break;
         }
+
+        case SYSCALL_DISK_GET_BOOTDISK:
+            hdr->response_ptr = evalloc(DISK_ID_MAX_SIZE, prog_get_current_running());
+
+            char *id = bootdisk();
+            memcpy(hdr->response_ptr, id, strlen(id));
+            
+            hdr->exit_code = EXIT_CODE_GLOBAL_SUCCESS;
+        break;
 
         default:
             hdr->exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;

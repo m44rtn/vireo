@@ -27,7 +27,8 @@ SOFTWARE.
 #include "types.h"
 #include "call.h"
 
-#define DISK_ID_MAX_SIZE        8
+#define DISK_ID_MAX_SIZE        8 // bytes
+#define DISK_SECTOR_SIZE        512 //bytes
 
 typedef struct disk_info_t
 {
@@ -52,7 +53,10 @@ partition_info_t *disk_get_partition_info(char *_id);
 // returns the buffer of SECTOR_SIZE * _sctrs read at _lba (or NULL if fail)
 void *disk_absolute_read(char *_drive, uint32_t _lba, uint32_t _sctrs);
 
-// writes _bfr_size / SECTOR_SIZE bytes to _lba from _bfr  
+// writes (_bfr_size / SECTOR_SIZE + (_bfr_size % SECTOR_SIZE != 0)) sectors from _bfr, starting at _lba 
 err_t disk_absolute_write(char *_drive, uint32_t _lba, void *_bfr, size_t _bfr_size);
+
+// returns the bootdisk (e.g., HD0P0 or CD0)
+char *disk_get_bootdisk(void);
 
 #endif // __DISK_H__
