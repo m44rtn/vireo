@@ -51,6 +51,7 @@ SOFTWARE.
 #define SYSCALL_PARTITION_INFO          0x0301
 #define SYSCALL_DISK_ABS_READ           0x0302
 #define SYSCALL_DISK_ABS_WRITE          0x0303
+#define SYSCALL_DISK_GET_BOOTDISK       0x0304
 
 // filesystem (0x0400-0x04ff)
 #define SYSCALL_GET_FS                  0x0400
@@ -58,6 +59,7 @@ SOFTWARE.
 #define SYSCALL_FS_WRITE                0x0402
 #define SYSCALL_FS_DELETE               0x0403
 #define SYSCALL_FS_RENAME               0x0404
+#define SYSCALL_FS_MKDIR                0x0405
 
 // program (0x0500-0x05ff)
 #define SYSCALL_GET_PROGRAM_INFO        0x0500

@@ -94,3 +94,14 @@ err_t fs_rename_file(char *_path, char *_new_name)
 
     return req.hdr.exit_code;
 }
+
+err_t fs_mkdir(char *_path)
+{
+    fs_t req = {
+        .hdr.system_call = SYSCALL_FS_MKDIR,
+        .path = _path,
+    };
+    asm_syscall(&req);
+
+    return req.hdr.exit_code;
+}

@@ -38,6 +38,12 @@ SOFTWARE.
 #define FAT_FILE_ATTRIB_SYSTEM      0x04
 #define FAT_FILE_ATTRIB_DIR         0x10
 
+#define EXIT_CODE_FS_UNSUPPORTED_DRIVE     0x10
+#define EXIT_CODE_FS_FILE_NOT_FOUND        0x11
+#define EXIT_CODE_FS_FILE_READ_ONLY        0x12
+#define EXIT_CODE_FS_FILE_EXISTS           0x13
+#define EXIT_CODE_FS_NO_SPACE              0x14
+
 typedef void file_t;
 
 // returns the filesystem type of the drive specified
@@ -54,5 +60,8 @@ err_t fs_delete_file(char *_path);
 
 // renames file at _path to _new_name
 err_t fs_rename_file(char *_path, char *_new_name);
+
+// creates directories along the path that don't exist
+err_t fs_mkdir(char *_path);
 
 #endif // __FS_H__
