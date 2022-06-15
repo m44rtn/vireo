@@ -48,7 +48,7 @@ SOFTWARE.
 #include "../main.h"
 
 #define CONFIG_FILE_PATH_LEN    512 // bytes, maximum
-#define DEFAULT_CONFIG_FILE_LOC "/BOOT/CONFIG"
+#define DEFAULT_CONFIG_FILE_LOC "/CONFIG"
 
 #define KERNEL_REV_MAX_SIZE     8
 
@@ -205,10 +205,14 @@ void kernel_execute_config(void)
     memcpy(config_file, disk, strlen(disk));
     memcpy(&config_file[strlen(config_file)], (char *) DEFAULT_CONFIG_FILE_LOC, strlen(DEFAULT_CONFIG_FILE_LOC));
 
+    print_value("filename:   %s\n", config_file);
+
     // read config file
     size_t size = 0;
     file_t *f = fs_read_file(config_file, &size);
     kfree(config_file);
+
+    print_value("f:   0x%x\n", f);
 
     // parse config file
     char *program = kernel_parse_config(f, size);
