@@ -54,7 +54,7 @@ SOFTWARE.
 #define MEMORY_TABLE_LENGTH    128U  // entries
 #define MEMORY_BLOCK_SIZE      512U // bytes
 
-#define MEMORY_MALLOC_SPACE     (MEMORY_BLOCK_SIZE * MEMORY_TABLE_LENGTH)
+#define MEMORY_MALLOC_SPACE     MEMORY_MALLOC_MEMSTRT - (MEMORY_BLOCK_SIZE * (MEMORY_TABLE_LENGTH + 1))
 
 #define MEMORY_VMALLOC_STAT_ALLOCT      1<<7
 #define MEMORY_VMALLOC_STAT_READONLY    1<<6
@@ -208,7 +208,6 @@ void *kmalloc(size_t size)
     uint32_t location;
     uint8_t loc, available = 0;
     uint8_t index;
-    int8_t mallocd_index;
 
     uint8_t blocks = (uint8_t) (HOW_MANY(size, MEMORY_BLOCK_SIZE));
 
@@ -230,19 +229,12 @@ void *kmalloc(size_t size)
         return (void *) NULL;
 
     /* calc the index for the memory table */
-    loc = (uint8_t) (loc - blocks + 1);
+    loc = (uint8_t) (loc - (blocks - 1));
     index = loc;
 
-    mallocd_index = (int8_t) ((index - 1 < 0)? -1 : (index - 1));
-
     /* store the information in the memory table */
-    if(mallocd_index <= -1)
-        memory_update_table(0, MEMORY_MALLOC_MEMSTRT, blocks);
-    else
-    {
-        location = (uint32_t) (memory_t[mallocd_index].loc + (memory_t[mallocd_index].size * MEMORY_BLOCK_SIZE));
-        memory_update_table(index, location, blocks);
-    }
+    location = (uint32_t) (MEMORY_MALLOC_SPACE + (loc * MEMORY_BLOCK_SIZE));
+    memory_update_table(index, location, blocks);
 
     /* all done! :) */
     return (void *) memory_t[index].loc;
