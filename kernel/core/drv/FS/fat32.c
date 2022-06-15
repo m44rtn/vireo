@@ -187,6 +187,10 @@ void fat_handler(uint32_t *drv)
             drv[4] = (uint32_t) fat_delete((char *) drv[1]);      
         break;
 
+        case FS_COMMAND_MKDIR:
+            fat_mkdir((char *) drv[1]);
+        break;
+
         default:
             drv[4] = EXIT_CODE_GLOBAL_UNSUPPORTED;
         break;
@@ -450,15 +454,23 @@ static void fat_filename_fatcompat(char *filename)
 
     uint8_t dot_index = (uint8_t) (find_in_str(original_name, "."));
 
-    dot_index = (dot_index == (uint8_t)MAX) ? FILE_NAME_LEN : dot_index;
-    uint8_t n_spaces = (uint8_t) (TOTAL_FILENAME_LEN - dot_index - FILE_EXT_LEN);
+    // Ignore the dot when it is the first thing we see 
+    // (in cases of files like '.', '..' or even '.config')
+    if(dot_index == 0)
+        dot_index = (uint8_t) strlen(&original_name[0]);
+
+    dot_index = (dot_index == (uint8_t)MAX) ? (uint8_t) strlen(&original_name[0]) : dot_index;
+    uint8_t n_spaces = (uint8_t) (TOTAL_FILENAME_LEN - dot_index);
 
     memcpy(filename, &original_name[0], dot_index);
     
     for(uint8_t i = 0; i < n_spaces; ++i)
         filename[i + dot_index] = ' ';
     
-    memcpy(&filename[FILE_NAME_LEN], &original_name[dot_index + 1], FILE_EXT_LEN);
+    // copy the file extension if it exists
+    if(original_name[dot_index + 1] != '\0')
+        memcpy(&filename[FILE_NAME_LEN], &original_name[dot_index + 1], FILE_EXT_LEN);
+    
     filename[TOTAL_FILENAME_LEN] = '\0';
 }
 
@@ -959,4 +971,74 @@ err_t fat_delete(char *path)
     fat_remove_clusters(disk, part, cluster, FALSE);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+static void fat_create_dir(uint8_t disk, uint8_t part, uint32_t cluster_parent, char *path)
+{
+    
+    FAT32_DIR *dir = evalloc(FAT32_SECTOR_SIZE, PID_DRIVER);
+
+    // fat_mkdir appends a slash, it is something
+    // the rest of the driver does not like.
+    char *actual_path = create_backup_str(path);
+    actual_path[strlen(actual_path) - 1] = '\0';
+
+    // create standard directory entries
+    dir[0].name[0] = '.';
+    fat_filename_fatcompat(&dir[0].name[0]);
+    
+    // the starting_cluster of this directory will
+    // be the first free cluster found
+    uint32_t cl = 0;
+    fat_find_empty_cluster(disk, part, &cl);
+
+    dir[0].clLo = (uint16_t) (cl & 0xFFFF);
+    dir[0].clHi = (uint16_t) ((cl << 16) & 0xFFFF);
+    dir[0].attrib = FAT_DIR_ATTRIB_DIRECTORY;
+
+    dir[1].name[0] = '.';
+    dir[1].name[1] = '.';
+    fat_filename_fatcompat(&dir[1].name[0]);
+
+    dir[1].clLo = (uint16_t) (cluster_parent & 0xFFFF);
+    dir[1].clHi = (uint16_t) ((cluster_parent << 16) & 0xFFFF);
+    dir[1].attrib = FAT_DIR_ATTRIB_DIRECTORY;
+
+    fat_write(actual_path, dir, FAT32_SECTOR_SIZE, FAT_DIR_ATTRIB_DIRECTORY);
+    
+    kfree(actual_path);
+    vfree(dir);
+}
+
+void fat_mkdir(char *path)
+{
+    char *checking_path = evalloc(FAT32_SECTOR_SIZE, PID_DRIVER);
+    char filename[TOTAL_FILENAME_LEN + 1 + 1];
+    uint32_t path_loc = 0, pindex = 0, old_cluster = 0, cluster = 0;
+
+    uint8_t disk, part;
+    fat_get_disk_from_path(path, &disk, &part);
+
+    while(str_get_part(&filename[0], path, "/", &pindex))
+    {
+        old_cluster = cluster;
+        size_t len = strlen(&filename[0]);
+        memcpy(&checking_path[path_loc], &filename[0], len);
+        
+        size_t s;
+        uint8_t attrib;
+
+        cluster = fat_traverse(checking_path, &s, &attrib);
+
+        checking_path[path_loc + len] = '/';
+        path_loc = path_loc + len + 1; 
+
+        if(cluster != MAX)
+            continue;
+
+        // dir does not exist
+        fat_create_dir(disk, part, old_cluster, checking_path);
+    }
+
+    vfree(checking_path);
 }

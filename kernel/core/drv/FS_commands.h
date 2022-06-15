@@ -73,4 +73,12 @@ drv[4] (parameter4) --> (returns) error code
     WARNING: this function will not care about if the file is write protected (it will delete it anyway)
 */
 
+#define FS_COMMAND_MKDIR 0x14
+/*
+drv[1] (parameter1) --> full path to new directory
+drv[4] (parameter4) --> (returns) error code
+
+    will create all directories in the path if they do not exist
+*/
+
 #endif
