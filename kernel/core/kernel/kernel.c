@@ -179,7 +179,8 @@ char *kernel_parse_config(file_t *f, size_t fsize)
 
         if(line[0] == '#')
             continue;
-        
+        else if(line[0] < '/' || line[0] > 'z')
+            continue;
         else
             break;
     }
@@ -205,14 +206,12 @@ void kernel_execute_config(void)
     memcpy(config_file, disk, strlen(disk));
     memcpy(&config_file[strlen(config_file)], (char *) DEFAULT_CONFIG_FILE_LOC, strlen(DEFAULT_CONFIG_FILE_LOC));
 
-    print_value("filename:   %s\n", config_file);
-
     // read config file
     size_t size = 0;
+
+    // FIXME: f is not freed before launching the program
     file_t *f = fs_read_file(config_file, &size);
     kfree(config_file);
-
-    print_value("f:   0x%x\n", f);
 
     // parse config file
     char *program = kernel_parse_config(f, size);
