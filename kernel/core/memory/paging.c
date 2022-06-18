@@ -150,8 +150,11 @@ void *valloc(PAGE_REQ *req)
 // easy valloc()
 void *evalloc(size_t size, pid_t pid)
 {
-    uint8_t attr = (!pid) ? PAGE_REQ_ATTR_READ_WRITE | PAGE_REQ_ATTR_SUPERVISOR : 
-                            PAGE_REQ_ATTR_READ_WRITE;
+    if(!size)
+        return NULL;
+
+    uint8_t attr = (!pid) ? PAGE_REQ_ATTR_READ_WRITE : 
+                            PAGE_REQ_ATTR_READ_WRITE | PAGE_REQ_ATTR_SUPERVISOR;
     PAGE_REQ req = {
         .pid = pid,
         .size = size,
@@ -165,6 +168,15 @@ void *evalloc(size_t size, pid_t pid)
 
 void vfree(void *ptr)
 {
+    dbg_assert(ptr);
+
+    if(!ptr)
+        return;
+
+    // check if the pointer is kernel memory (kmalloc)
+    if(ptr < memory_getMallocStart())
+        kfree(ptr);
+
     uint32_t d_index, t_index,
             page_id = ((uint32_t) ptr) / PAGING_PAGE_SIZE;
     uint32_t *ptable;
@@ -172,13 +184,11 @@ void vfree(void *ptr)
     d_index = page_id / PAGING_TABLE_SIZE;
     t_index = page_id % PAGING_TABLE_SIZE;
 
-    /* make page supervisor only 
-    TODO/FIXME: do not! 
-    */
+    /* make page supervisor only */
     ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
     ptable[t_index] = ptable[t_index] & ~(PAGE_REQ_ATTR_SUPERVISOR<<1);
     
-     /* remove the contents */
+    /* remove the contents */
     memset((void *)ptr, PAGING_PAGE_SIZE * shadow_t[page_id].npages, 0x00);
 
     //* update our shadow map (RESV PID means unallocated) */
