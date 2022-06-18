@@ -176,6 +176,8 @@ void vfree(void *ptr)
     // check if the pointer is kernel memory (kmalloc)
     if(ptr < memory_getMallocStart())
         kfree(ptr);
+    
+    //print_value("[VIREO] vfree(): ptr: 0x%x\n", ptr);
 
     uint32_t d_index, t_index,
             page_id = ((uint32_t) ptr) / PAGING_PAGE_SIZE;
@@ -186,7 +188,7 @@ void vfree(void *ptr)
 
     /* make page supervisor only */
     ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
-    ptable[t_index] = ptable[t_index] & ~(PAGE_REQ_ATTR_SUPERVISOR<<1);
+    ptable[t_index] = ptable[t_index];
     
     /* remove the contents */
     memset((void *)ptr, PAGING_PAGE_SIZE * shadow_t[page_id].npages, 0x00);
