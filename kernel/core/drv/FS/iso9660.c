@@ -686,7 +686,7 @@ void reverse_path(char *path)
 
 uint16_t *iso_read_drive(uint8_t drive, uint32_t lba, uint32_t sctr_read)
 {
-	uint16_t *buf = iso_allocate_bfr(ISO_SECTOR_SIZE * sctr_read);
+	uint16_t *buf = evalloc(ISO_SECTOR_SIZE * sctr_read, PID_DRIVER);
 
 	// check if we got a null pointer back
 	if(!buf)
