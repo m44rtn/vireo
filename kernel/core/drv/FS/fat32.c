@@ -256,7 +256,7 @@ err_t fat_init(uint8_t disk, uint8_t part)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
     
     uint32_t startLBA = MBR_getStartLBA(disk, part);
-    void *buf = kmalloc(512);
+    void *buf = kmalloc(FAT32_SECTOR_SIZE);
 
     if(!buf)
         return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
@@ -827,6 +827,8 @@ static err_t fat_write_existing(uint8_t disk, uint8_t part, uint32_t dir_part_cl
 
     while((result = fat_read_fat(disk, part, cluster, &last_fat_sector, fat_table_buffer)) < FAT_CORRUPT_CLUSTER)
         cluster = result;
+    
+    kfree(fat_table_buffer);
     
     // update fat with new
     uint32_t new_cluster = 0;
