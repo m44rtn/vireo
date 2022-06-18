@@ -147,6 +147,9 @@ void memory_api(void *req)
         case SYSCALL_VFREE:
         {
             vfree_t *v = (vfree_t *) req;
+            
+            dbg_assert(v);
+            
             vfree(v->ptr);
             break;
         }
