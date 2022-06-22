@@ -230,7 +230,7 @@ void kernel_execute_config(void)
     }
 
     kfree(disk);
-    prog_launch_binary(program);
 
-    debug_print_error("Could not execute program in CONFIG");
+    if(prog_launch_binary(program))
+        debug_print_error("Could not execute program in CONFIG");
 }
