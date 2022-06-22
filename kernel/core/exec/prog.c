@@ -57,14 +57,13 @@ typedef struct
   void *stck;
   size_t size;     // FIXME: currently file size not size in memory
   char *filename;
-  return_t ret_addr;
 } __attribute__((packed)) prog_info_t;
 
 typedef struct api_new_program_t
 {
     syscall_hdr_t hdr;
     char *path;
-    return_t ret_addr;
+    return_t ret_addr; // FIXME: ignored
 } __attribute__((packed)) api_new_program_t;
 
 typedef struct terminate_t
@@ -111,7 +110,7 @@ uint32_t prog_find_free_index(void)
     return i;
 }
 
-void prog_launch_binary(char *filename, return_t ret_addr)
+err_t prog_launch_binary(char *filename)
 {
     if(!prog_info)
         prog_init();
@@ -120,7 +119,7 @@ void prog_launch_binary(char *filename, return_t ret_addr)
     uint32_t free_index = prog_find_free_index();
 
     if(free_index == MAX)
-        return;
+        return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
 
     size_t size = 0;
 
@@ -129,13 +128,12 @@ void prog_launch_binary(char *filename, return_t ret_addr)
     file_t *elf = f;
 
     if(!f)
-        return;
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 
     // save all known information about the program
     prog_info[free_index].size = size; // file size (not size in memory)
     prog_info[free_index].started_by = current_running_pid;
     prog_info[free_index].filename = filename; // FIXME: could point to an unkown program's memory
-    prog_info[free_index].ret_addr = ret_addr;
     prog_info[free_index].pid = task_new_pid();
     prog_info[free_index].stck = (void *) (((uint32_t)evalloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
 
@@ -150,6 +148,7 @@ void prog_launch_binary(char *filename, return_t ret_addr)
     current_running_pid = prog_info[free_index].pid;
 
     asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck);
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
 uint32_t prog_find_info_index(const pid_t pid)
@@ -197,7 +196,6 @@ void prog_terminate(pid_t pid, bool_t stay)
     // set new pid to the pid of the program that ran before this program
     // or, in the case that terminate is being called by another program, keep using the current pid
     current_running_pid = (is_running) ? prog_info[pid_index].started_by : current_running_pid;
-    return_t ret_addr = prog_info[pid_index].ret_addr;
     
     // in case of TERMINATE_STAY, do not release the resources of the program
     if(!stay)
@@ -209,12 +207,7 @@ void prog_terminate(pid_t pid, bool_t stay)
     // if the current program is terminating another program
     // then we don't need to go back to the program before the current program.
     if(is_running)
-    {
         pid_index = prog_find_info_index(current_running_pid);
-
-        // FIXME?: `wipes` pervious stack pointer of that program
-        asm_exec_call((void *) ret_addr, prog_info[pid_index].stck);
-    }
 }
 
 void prog_api(void *req)
@@ -249,7 +242,7 @@ void prog_api(void *req)
         case SYSCALL_PROGRAM_START_NEW:
         {
             api_new_program_t *n = req;
-            prog_launch_binary((n->path), (n->ret_addr));
+            n->hdr.exit_code = prog_launch_binary((n->path));
             break;
         }
 
