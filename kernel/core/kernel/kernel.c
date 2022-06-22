@@ -232,5 +232,5 @@ void kernel_execute_config(void)
     kfree(disk);
 
     if(prog_launch_binary(program))
-        debug_print_error("Could not execute program in CONFIG");
+        debug_print_error("Error executing program in CONFIG");
 }
