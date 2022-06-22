@@ -242,6 +242,10 @@ err_t driver_add_external_driver(uint32_t type, char *path)
 
     // read binary file
     file_t *f = fs_read_file(path, &size);
+
+    if(!f)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
     file_t *elf = f;
 
     err_t err = 0;
