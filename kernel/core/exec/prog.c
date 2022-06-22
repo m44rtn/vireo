@@ -147,8 +147,7 @@ err_t prog_launch_binary(char *filename)
 
     current_running_pid = prog_info[free_index].pid;
 
-    asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck);
-    return EXIT_CODE_GLOBAL_SUCCESS;
+    return asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck);
 }
 
 uint32_t prog_find_info_index(const pid_t pid)

@@ -24,8 +24,10 @@ SOFTWARE.
 #ifndef __ASM_FUNCTIONS_H__
 #define __ASM_FUNCTIONS_H__
 
+#include "../include/types.h"
+
 extern void EXEC_CALL_FUNC(unsigned int *ptr, unsigned int *data);
-extern void asm_exec_call(void *ptr, void *stack);
+extern err_t asm_exec_call(void *ptr, void *stack);
 extern void asm_exec_isr(void *ptr);
 
 #endif

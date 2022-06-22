@@ -77,11 +77,6 @@ push DWORD [.bptr]
 
 call edi
 
-; FIXME: status code is returned in
-; register (I believe EDX, should check)
-;       pop function return (status code) off the stack
-; pop eax
-
 pop ebp
 pop esp
 
