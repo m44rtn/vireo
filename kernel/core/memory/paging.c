@@ -174,7 +174,7 @@ void vfree(void *ptr)
         return;
 
     // check if the pointer is kernel memory (kmalloc)
-    if(ptr < memory_getMallocStart())
+    if(((uint32_t) ptr) < memory_getMallocStart())
         kfree(ptr);
     
     //print_value("[VIREO] vfree(): ptr: 0x%x\n", ptr);
