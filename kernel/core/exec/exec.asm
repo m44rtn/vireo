@@ -60,38 +60,30 @@ asm_exec_call:
 ;       - pointer to new stack [stack + 4]
 ;	ouput: n/a
 
-mov [.stack], esp
-mov [.bptr], ebp
-
-mov ebp, esp
+mov DWORD [.stack], esp
+mov DWORD [.bptr], ebp
 
 ; function to call
-mov eax, DWORD [ebp + 4]
+mov eax, DWORD [esp + 4]
 mov edi, eax
 
 ; new stack
-mov eax, DWORD [ebp + 8]
+mov eax, DWORD [esp + 8]
 mov esp, eax
 
 ; store old stack and esp
-push DWORD [.bptr]
 push DWORD [.stack]
+push DWORD [.bptr]
 
 call edi
 
-; pop function return (status code) off the stack
-pop eax
+; FIXME: status code is returned in
+; register (I believe EDX, should check)
+;       pop function return (status code) off the stack
+; pop eax
 
-; FIXME: what if program does not return a status code?
-pop esp
 pop ebp
-
-; previous values used for stack and binary pointers
-; are not popped of the stack, therefore we artificially
-; do that here
-mov eax, [esp]
-mov [esp + 8], eax 
-add esp, 8
+pop esp
 
 ret
 
