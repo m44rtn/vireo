@@ -95,9 +95,6 @@ void init_env(void)
 
     exit_code = screen_basic_init();
 
-    if(exit_code != EXIT_CODE_GLOBAL_SUCCESS)
-        while(1);
-
     exit_code = loader_detect();
     if(exit_code == EXIT_CODE_GLOBAL_NOT_IMPLEMENTED)
         debug_print_warning((char *) "WARNING: Support for current bootloader not implemented");
