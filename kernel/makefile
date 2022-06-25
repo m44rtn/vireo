@@ -2,7 +2,7 @@ PROJDIRS := core
 
 # called OBJDIR but is actually the BINARY_NAME dir
 OBJDIR   := bin
-VM_NAME  := "BirdOS"
+VM_NAME  := "Vireo"
 BINARY_NAME := vireo.sys
 
 # any modules/objects not to be included in the final build
