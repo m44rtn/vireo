@@ -32,13 +32,13 @@ WARNINGS := -Wall -Wextra -pedantic -Wshadow \
 	    -Wno-long-long -Wconversion -Wstrict-prototypes
 
 CCFLAGS := -nostdlib -ffreestanding -g -std=c99 $(WARNINGS)
-ASFLAGS := -w all -f elf32 #--fatal-warnings
+ASFLAGS := -w all -f elf32
 
 CC := i686-elf-gcc
 LD := i686-elf-ld
 AC := nasm
 
-.PHONY: all clean todo run assembly iso
+.PHONY: m all clean todo run iso
 
 m: all iso
 
