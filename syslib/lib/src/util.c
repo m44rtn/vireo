@@ -117,28 +117,28 @@ char *create_backup_str(const char *str)
 char* hexstr(unsigned int value, uint8_t digit_amount)
 {
 	unsigned int tempval = value;
-	char *outputstr = (char *) &utilPool;
-	int8_t i;
-	uint32_t digits = hex_digit_count(value);
+	char *outputstr = &utilPool[0];
+	uint8_t digits = digit_amount && hex_digit_count(value) >= digit_amount ? 
+					  digit_amount : 
+					  (uint8_t) hex_digit_count(value);
+	char chrIndex;
 
-	uint8_t chrIndex;
-	const char* hexDig = "0123456789ABCDEF";
-
-	for(i = (int8_t) (digits - 1); i >= 0; i--){
+	for(uint8_t i = digits; i > 0; i--){
 		chrIndex = tempval & 0x0000000F;
+		chrIndex = (char) (chrIndex > 9 ? (chrIndex - 10) + 'A' : chrIndex + '0');
 		
-		outputstr[i] = hexDig[chrIndex];
+		outputstr[i - 1] = chrIndex;
 		tempval = tempval >> 4;
 	}
 
 	outputstr[digits] = '\0';
-	
+		
 	return outputstr;
 }
 
 char *intstr(uint32_t value) 
 {          
-	char *ReturnString = (char *) &utilPool;
+	char *ReturnString = (char *) &utilPool[0];
 	int i = (int) digit_count(value);
 	uint32_t NullChar = digit_count(value);
 	
@@ -274,6 +274,7 @@ void str_add_val(char *str, const char *format, uint32_t value)
 {
 	size_t length = strlen(format);
 	uint32_t val_index = str_find_val(format);
+	size_t val_len = 0;
 
 	memcpy(str, format, val_index);
 
@@ -285,28 +286,34 @@ void str_add_val(char *str, const char *format, uint32_t value)
 		case 'x':
 		{
 			char *s = hexstr(value, HEX_DIGITS_USE_DEFAULT);
-			memcpy(&str[val_index], s, strlen(s));		
+			val_len = strlen(s);
+			memcpy(&str[val_index], s, val_len);		
 			break;
 		}
 
 		case 'i':
 		{
 			char *s = intstr(value);
-			memcpy(&str[val_index], s, strlen(s));
+			val_len = strlen(s);
+			memcpy(&str[val_index], s, val_len);
 			break;
 		}
 
 		case 's':
-			memcpy(&str[val_index], (char *) value, strlen((const char *) value));	
+			val_len = strlen((const char *) value);
+			memcpy(&str[val_index], (char *) value, val_len);	
 		break;
 		
 		case 'c':
+			val_len = 1;
 			str[val_index] = (char) value;
 		break;	
 	}
 
-	memcpy(&str[strlen(str)], (void *) &format[val_index + 2], strlen(&format[val_index + 2]));
-	str[strlen(str)] = '\0';
+	val_len = val_len + val_index;
+
+	memcpy(&str[val_len], (void *) &format[val_index + 2], strlen(&format[val_index + 2]));
+	str[strlen(&format[val_index + 2]) + val_len] = '\0';
 }
 
 uint8_t nth_bit(uint32_t dword, uint8_t size)
