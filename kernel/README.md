@@ -15,7 +15,7 @@ To build the Vireo-II kernel you will at least need GNU make, gcc-i686 (cross co
 ### Makefile commands
 - To build the kernel and create a .iso file simply run `make` with no arguments
 - Run `make all` to only build the kernel binary (./bin/vireo.sys)
-- Run `make iso` to only create an iso image using an already built kernel binary (vireo.iso)
+- Run `make iso` to only create an iso image using an already built kernel binary (../vireo.iso)
 - Run `make run` or `make run-old` to launch a Virtualbox VM named "Vireo" (preexisting) with debugging enabled
 - Run `make clean` to remove all core/*.o files
 - Run `make map` to create a .map file for debugging purposes (kernel.map)

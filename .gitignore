@@ -10,3 +10,7 @@ test/
 
 *.o
 *.elf
+*.sys
+
+bootdisk/syslib/include/*
+bootdisk/syslib/libvireo_sys.a
