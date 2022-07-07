@@ -11,6 +11,7 @@ test/
 *.o
 *.elf
 *.sys
+*.drv
 
 bootdisk/syslib/include/*
 bootdisk/syslib/libvireo_sys.a
