@@ -29,6 +29,7 @@ SOFTWARE.
 #include "../include/types.h"
 #include "../include/exit_code.h"
 
+#include "../exec/prog.h"
 #include "../exec/exec.h"
 #include "../exec/task.h"
 #include "../exec/elf.h"
@@ -282,12 +283,15 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     ext_drv_list[index].type = type;
     ext_drv_list[index].stack = evalloc(PROG_DEFAULT_STACK_SIZE, PID_DRIVER);
 
+    prog_set_status_drv_running();
+
     // initialize the  driver by calling its main()
     // this is not the right function to use since this function does not change
     // stack pointers, which means that the driver uses the stack of whatever program was
     // running at the time of calling
     // FIXME: change stacks
     EXEC_CALL_FUNC(ext_drv_list[index].start, NULL); // (((uint32_t)ext_drv_list[index].stack) + PROG_DEFAULT_STACK_SIZE)
+    prog_set_status_prog_running();
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }

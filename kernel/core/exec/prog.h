@@ -32,6 +32,10 @@ void prog_api(void *req);
 err_t prog_launch_binary(char *filename);
 uint8_t prog_pid_exists(const pid_t pid);
 uint32_t prog_find_free_index(void);
+
+void prog_set_status_drv_running(void);
+void prog_set_status_prog_running(void);
+
 pid_t prog_get_current_running(void);
 const char *prog_get_filename(pid_t pid);
 void prog_terminate(pid_t pid, bool_t stay);

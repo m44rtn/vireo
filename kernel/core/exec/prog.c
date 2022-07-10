@@ -49,6 +49,8 @@ SOFTWARE.
 #define PROG_TERMINATE          0
 #define PROG_TERMINATE_STAY     1
 
+#define PROG_FLAG_DRV_RUNNING   1 << 0
+
 typedef struct
 {
   pid_t pid;
@@ -82,6 +84,7 @@ typedef struct program_info_t
 
 prog_info_t *prog_info = NULL;
 pid_t current_running_pid = PID_KERNEL;
+uint8_t prog_flags = 0;
 
 /// ----- ///
 void prog_init(void);
@@ -166,6 +169,16 @@ uint32_t prog_find_info_index(const pid_t pid)
     return i;
 }
 
+void prog_set_status_drv_running(void)
+{
+    prog_flags |= PROG_FLAG_DRV_RUNNING;
+}
+
+void prog_set_status_prog_running(void)
+{
+    prog_flags = 0;
+}
+
 uint8_t prog_pid_exists(const pid_t pid)
 {
     return (prog_find_info_index(pid) == MAX) ? FALSE : TRUE;
@@ -173,7 +186,7 @@ uint8_t prog_pid_exists(const pid_t pid)
 
 pid_t prog_get_current_running(void)
 {
-    return current_running_pid;
+    return (prog_flags & PROG_FLAG_DRV_RUNNING) ? PID_DRIVER : current_running_pid;
 }
 
 const char *prog_get_filename(pid_t pid)
