@@ -46,6 +46,7 @@ SOFTWARE.
 #include "../drv/COMMANDS.H"
 
 #include "../dsk/fs.h"
+#include "../drv/FS_commands.h"
 
 #ifndef NO_DEBUG_INFO
     #include "../screen/screen_basic.h"
@@ -72,7 +73,7 @@ typedef struct
     uint32_t device;
     uint32_t type;
     uint32_t *driver;
-} __attribute__((packed)) int_driver_list_t ;
+} __attribute__((packed)) int_driver_list_t;
 
 typedef struct ext_driver_list_t
 {
@@ -80,11 +81,13 @@ typedef struct ext_driver_list_t
     void *start;  // pointer to the starting function of the binary
     void *binary; // pointer to start of binary
     void *stack;
+    char bin_name[FAT_MAX_FILENAME_LEN];
 } __attribute__((packed)) ext_driver_list_t;
 
 typedef struct driver_info_t
 {
     uint32_t type;
+    char bin_name[FAT_MAX_FILENAME_LEN];
 } __attribute__((packed)) driver_info_t;
 
 typedef struct driver_call_t
@@ -240,6 +243,19 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     if(index == MAX)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 
+    // TODO: move to util.c?
+    uint32_t filename_index = 0;
+    uint32_t  i;
+    while((i = find_in_str(&path[filename_index], "/")) != MAX)
+        filename_index += (i + 1);
+
+    size_t filename_len = strlen(&path[filename_index]);
+    filename_len = filename_len  > FAT_MAX_FILENAME_LEN ?
+                   FAT_MAX_FILENAME_LEN : filename_len; 
+
+    // store binary-/filename
+    memcpy(&ext_drv_list[index].bin_name[0], &path[filename_index], filename_len);
+
     // read binary file
     file_t *f = fs_read_file(path, &size);
 
@@ -301,10 +317,13 @@ void driver_api(void *req)
     {
         case SYSCALL_DRIVER_GET_LIST:
         {
-            driver_info_t *list = evalloc(DRIVER_EXTERNAL_MAX_SUPPORTED, PID_DRIVER);
+            driver_info_t *list = evalloc(DRIVER_EXTERNAL_LIST_SIZE, PID_DRIVER);
             
             for(uint32_t i = 0; i < DRIVER_EXTERNAL_MAX_SUPPORTED; ++i)
+            {
                 list[i].type = ext_drv_list[i].type;
+                memcpy(&list[i].bin_name[0], &ext_drv_list[i].bin_name[0], FAT_MAX_FILENAME_LEN);
+            } 
 
             call->hdr.exit_code = EXIT_CODE_GLOBAL_SUCCESS;
             call->hdr.response_ptr = list;

@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include "types.h"
 #include "call.h"
+#include "fs.h"
 
 #define DRIVER_MAX_NAME_SIZE    32
 
@@ -37,7 +38,8 @@ typedef uint32_t driver_t;
 
 typedef struct driver_info_t
 {
-    driver_t type;
+    uint32_t type;
+    char bin_name[FS_FAT_MAX_FILENAME_LEN];
 } __attribute__((packed)) driver_info_t;
 
 // returns information on current (registered) drivers

@@ -27,6 +27,8 @@ SOFTWARE.
 #include "types.h"
 #include "call.h"
 
+#define FS_FAT_MAX_FILENAME_LEN 11
+
 #define FS_TYPE_FAT12   0x01
 #define FS_TYPE_FAT16   0x04
 #define FS_TYPE_FAT32   0x0B
