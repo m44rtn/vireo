@@ -65,8 +65,6 @@ SOFTWARE.
 #define FAT_DIR_ATTRIB_ARCHIVE      0x20
 #define FAT_DIR_ATTRIB_LFN          0x3F
 
-#define FAT_DRIVER_FLAG_INIT_RAN    1 /* init has ran succesfully before */
-
 #define FILE_EXT_LEN                3u
 #define FILE_NAME_LEN               8u
 #define TOTAL_FILENAME_LEN          (FILE_NAME_LEN + FILE_EXT_LEN)
@@ -148,16 +146,11 @@ fs_info_t partition_info[FAT_MAX_PARTITIONS];
 /* the indentifier for drivers + information about our driver */
 struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT32 | DRIVER_TYPE_FS), (uint32_t) (fat_handler)};
 
-volatile uint16_t fat_flags = 0;
-
 void fat_handler(uint32_t *drv)
 {        
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
-            if(!flag_check(fat_flags, FAT_DRIVER_FLAG_INIT_RAN))
-                break;
-
             drv[4] = fat_init((uint8_t) drv[1], (uint8_t) drv[2]);
         break;
 
@@ -292,8 +285,6 @@ err_t fat_init(uint8_t disk, uint8_t part)
     print_value("[FAT_DRIVER] Volume name: %s\n", (uint32_t) &info_entry->ebpb->volName[0]); // FIXME does not contain '\0' so keeps printing until 0 is found...
     print("\n");
     #endif
-
-    fat_flags |= FAT_DRIVER_FLAG_INIT_RAN;
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
