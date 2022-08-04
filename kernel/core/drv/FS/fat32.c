@@ -181,7 +181,7 @@ void fat_handler(uint32_t *drv)
         break;
 
         case FS_COMMAND_MKDIR:
-            fat_mkdir((char *) drv[1]);
+            drv[4] = (uint32_t) fat_mkdir((char *) drv[1]);
         break;
 
         default:
@@ -1003,9 +1003,13 @@ static void fat_create_dir(uint8_t disk, uint8_t part, uint32_t cluster_parent, 
     vfree(dir);
 }
 
-void fat_mkdir(char *path)
+err_t fat_mkdir(char *path)
 {
     char *checking_path = evalloc(FAT32_SECTOR_SIZE, PID_DRIVER);
+
+    if(!checking_path)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+
     char filename[TOTAL_FILENAME_LEN + 1 + 1];
     uint32_t path_loc = 0, pindex = 0, old_cluster = 0, cluster = 0;
 
@@ -1034,4 +1038,11 @@ void fat_mkdir(char *path)
     }
 
     vfree(checking_path);
+
+    // if the cluster was never MAX, the file was found
+    // meaning it already exists.
+    if(cluster != MAX)
+        return EXIT_CODE_FS_FILE_EXISTS;
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
