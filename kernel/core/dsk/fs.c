@@ -76,7 +76,7 @@ void fs_api(void *req)
         case SYSCALL_FS_READ:
         {
             uint8_t disk_type = drive_type(fs->path);
-            uint32_t driver_type = (disk_type == DRIVE_TYPE_IDE_PATAPI) ? FS_TYPE_ISO : FS_TYPE_FAT32;
+            uint32_t driver_type = (disk_type == DRIVE_TYPE_IDE_PATAPI) ? FS_TYPE_ISO : FS_TYPE_FAT32; // FIXME: should use MBR type
 
             drv[0] = FS_COMMAND_READ;
             drv[1] = (uint32_t) fs->path;
