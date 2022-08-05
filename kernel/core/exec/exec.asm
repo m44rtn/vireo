@@ -71,7 +71,7 @@ mov edi, eax
 mov eax, DWORD [esp + 8]
 mov esp, eax
 
-; store old stack and esp
+; store old stack and eip
 push DWORD [.stack]
 push DWORD [.bptr]
 
