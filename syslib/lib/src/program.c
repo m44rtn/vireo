@@ -58,14 +58,6 @@ err_t program_start_new(const char *_path, function_t _ret_addr)
     return req.hdr.exit_code;
 }
 
-err_t program_terminate(void)
-{
-    syscall_hdr_t hdr = {.system_call = SYSCALL_PROGRAM_TERMINATE};
-    asm_syscall(&hdr);
-
-    return hdr.exit_code;
-}
-
 err_t program_terminate_pid(pid_t _pid)
 {
     terminate_t req = {

@@ -64,9 +64,8 @@ SOFTWARE.
 // program (0x0500-0x05ff)
 #define SYSCALL_GET_PROGRAM_INFO        0x0500
 #define SYSCALL_PROGRAM_START_NEW       0x0501
-#define SYSCALL_PROGRAM_TERMINATE       0x0502
-#define SYSCALL_PROGRAM_TERMINATE_PID   0x0503
-#define SYSCALL_PROGRAM_TERMINATE_STAY  0x0504 // terminate stay resident
+#define SYSCALL_PROGRAM_TERMINATE_PID   0x0502
+#define SYSCALL_PROGRAM_TERMINATE_STAY  0x0503 // terminate stay resident
 
 // driver (0x0a00-0x0aff)
 #define SYSCALL_DRIVER_GET_LIST         0x0a00

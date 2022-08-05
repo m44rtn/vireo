@@ -49,12 +49,16 @@ SOFTWARE.
 #define PROG_TERMINATE          0
 #define PROG_TERMINATE_STAY     1
 
+#define PROG_FLAG_TERMINATE_STAY PROG_TERMINATE_STAY
+
 #define PROG_FLAG_DRV_RUNNING   1 << 0
 
 typedef struct
 {
   pid_t pid;
   pid_t started_by;
+  char flags;
+  void *binary_start;
   void *rel_start; // relative start address
   void *stck;
   size_t size;     // FIXME: currently file size not size in memory
@@ -134,6 +138,7 @@ err_t prog_launch_binary(char *filename)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 
     // save all known information about the program
+    prog_info[free_index].binary_start = f;
     prog_info[free_index].size = size; // file size (not size in memory)
     prog_info[free_index].started_by = current_running_pid;
     prog_info[free_index].filename = filename; // FIXME: could point to an unkown program's memory
@@ -149,8 +154,12 @@ err_t prog_launch_binary(char *filename)
         prog_info[free_index].rel_start = f; // start of file (in case of flat binary)
 
     current_running_pid = prog_info[free_index].pid;
+    
+    err = asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck);
 
-    return asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck);
+    prog_terminate(current_running_pid, (prog_info[free_index].flags & PROG_FLAG_TERMINATE_STAY));
+
+    return err;
 }
 
 uint32_t prog_find_info_index(const pid_t pid)
@@ -198,8 +207,8 @@ const char *prog_get_filename(pid_t pid)
 void prog_terminate(pid_t pid, bool_t stay)
 {
     // is the program we are terminating the current program running?
+    // (if not, another program is terminating this program)
     uint8_t is_running = (pid == current_running_pid);
-    
     uint32_t pid_index = prog_find_info_index(pid);
     
     if(pid_index == MAX) 
@@ -208,18 +217,19 @@ void prog_terminate(pid_t pid, bool_t stay)
     // set new pid to the pid of the program that ran before this program
     // or, in the case that terminate is being called by another program, keep using the current pid
     current_running_pid = (is_running) ? prog_info[pid_index].started_by : current_running_pid;
-    
-    // in case of TERMINATE_STAY, do not release the resources of the program
-    if(!stay)
+
+    if(stay)
     {
-        paging_rel_resources(pid);
-        memset((void *) &prog_info[pid_index], sizeof(prog_info_t), 0xFF);
+        prog_info[pid_index].flags |= PROG_FLAG_TERMINATE_STAY;
+        return;
     }
 
-    // if the current program is terminating another program
-    // then we don't need to go back to the program before the current program.
-    if(is_running)
-        pid_index = prog_find_info_index(current_running_pid);
+    // remove information in internal program list
+    memset((void *) &prog_info[pid_index], sizeof(prog_info_t), 0xFF);
+    
+    // free binary and stack memory
+    vfree((void *) ((uint32_t) prog_info[pid_index].stck) - (PAGE_SIZE + 1));
+    vfree(prog_info[pid_index].binary_start);
 }
 
 void prog_api(void *req)
@@ -258,14 +268,13 @@ void prog_api(void *req)
             break;
         }
 
-        case SYSCALL_PROGRAM_TERMINATE:
-            prog_terminate(current_running_pid, PROG_TERMINATE);
-        break;
-
         case SYSCALL_PROGRAM_TERMINATE_PID:
         {
             api_terminate_t *t = req;
             pid_t pid = (t->pid);
+
+            if(pid == current_running_pid)
+                { hdr->exit_code = EXIT_CODE_GLOBAL_UNSUPPORTED; break; }
 
             if(pid == PID_KERNEL || pid == PID_RESV)
             { hdr->exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
