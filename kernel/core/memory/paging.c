@@ -188,11 +188,12 @@ void vfree(void *ptr)
 
     /* make page supervisor only */
     ptable = (uint32_t *) (page_dir[d_index] & PAGING_ADDR_MSK);
-    ptable[t_index] = ptable[t_index];
+    ptable[t_index] = ptable[t_index] & ~(PAGE_REQ_ATTR_SUPERVISOR << 1);
     
     /* remove the contents */
     memset((void *)ptr, PAGING_PAGE_SIZE * shadow_t[page_id].npages, 0x00);
 
+    dbg_assert(page_id);
     //* update our shadow map (RESV PID means unallocated) */
     for(uint32_t i = 0; i < shadow_t[page_id].npages; i++)
         shadow_t[page_id + i].pid = PID_RESV;
