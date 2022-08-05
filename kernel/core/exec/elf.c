@@ -150,8 +150,11 @@ void *elf_parse_binary(void **ptr, pid_t pid, err_t *_err)
     elf_header_t *hdr = (elf_header_t *) *ptr;
 
     if(!(*ptr))
+    {
+        *_err = EXIT_CODE_GLOBAL_GENERAL_FAIL;
         return NULL;
-
+    }
+    
     void *entry = (void *) hdr->entry;
     
     uint8_t err;
