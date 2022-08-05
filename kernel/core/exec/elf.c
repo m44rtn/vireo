@@ -154,12 +154,14 @@ void *elf_parse_binary(void **ptr, pid_t pid, err_t *_err)
         *_err = EXIT_CODE_GLOBAL_GENERAL_FAIL;
         return NULL;
     }
-    
+
     void *entry = (void *) hdr->entry;
     
-    uint8_t err;
-    if((err = elf_check_errors(hdr)))
-        *_err = err;
+    if((*_err = elf_check_errors(hdr)))
+    {
+        vfree(*ptr);
+        return NULL;
+    }
     
     void *nptr = elf_load_binary(*ptr, pid);
     vfree(*ptr);
