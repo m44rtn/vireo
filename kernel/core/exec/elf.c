@@ -117,27 +117,51 @@ static uint8_t elf_check_errors(elf_header_t *hdr)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+static size_t elf_calc_size_in_memory(const elf_program_t *prog, const uint32_t phnum, uint32_t *npages)
+{
+    size_t s = 0;
+    *npages = 0;
+
+    uint32_t last_paddr = 0;
+    size_t last_memsize = 0;
+
+    for(uint32_t i = 0; i < phnum; ++i)
+    {
+        if((prog[i].type) != ELF_PTYPE_LOAD)
+            continue;
+
+        last_paddr = prog[i].paddr;
+
+        (*npages) = (*npages) + (prog[i].paddr / PAGE_SIZE); // FIXME: incorrect
+        
+        last_memsize = prog[i].memsize;
+        s = s + last_memsize;
+    }
+
+    *(npages) = ((last_paddr + last_memsize) / PAGE_SIZE) + (last_memsize % PAGE_SIZE != 0);
+    return s;
+}
+
 static void *elf_load_binary(void *file, pid_t pid)
 {
     const elf_header_t *hdr = (elf_header_t *) file;
     const elf_program_t *prog = (elf_program_t *) (((uint32_t)file) + (hdr->phoff));
 
-    void *ptr = 0;
+    uint32_t npages;
+    size_t size = elf_calc_size_in_memory(prog, hdr->phnum, &npages);
 
+    void *ptr = evalloc(npages * PAGE_SIZE, pid);
+
+    if(!ptr)
+        return NULL;
+
+    char *loc = ptr;
     for(uint32_t i = 0; i < (hdr->phnum); ++i)
     {
         if((prog[i].type) != ELF_PTYPE_LOAD)
             continue;
         
-        // allocate page for program thing
-        PAGE_REQ req = {
-            .pid = pid,
-            .attr = PAGE_REQ_ATTR_READ_WRITE,
-            .size = prog[i].memsize
-        };
-        char *loc = valloc(&req);
-        ptr = (!ptr) ? loc : ptr;
-
+        loc = loc + prog[i].paddr;        
         memcpy(loc, (void *) (((uint32_t)file) + prog[i].offset), prog[i].file_size);
     }
 
@@ -154,8 +178,6 @@ void *elf_parse_binary(void **ptr, pid_t pid, err_t *_err)
         *_err = EXIT_CODE_GLOBAL_GENERAL_FAIL;
         return NULL;
     }
-
-    void *entry = (void *) hdr->entry;
     
     if((*_err = elf_check_errors(hdr)))
     {
@@ -163,6 +185,7 @@ void *elf_parse_binary(void **ptr, pid_t pid, err_t *_err)
         return NULL;
     }
     
+    void *entry = (void *) hdr->entry;
     void *nptr = elf_load_binary(*ptr, pid);
     vfree(*ptr);
     
