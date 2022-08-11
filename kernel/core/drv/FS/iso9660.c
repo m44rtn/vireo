@@ -421,14 +421,6 @@ size_t iso_get_dir_size(uint8_t drive, uint32_t dir_lba)
 	return size;
 }
 
-static uint8_t check_parent(char *filename, pathtable_t *p)
-{
-	if(strcmp_until(filename, ((char *) p) + sizeof(pathtable_t), strlen(filename)))
-		return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-
-	return EXIT_CODE_GLOBAL_SUCCESS;
-}
-
 static uint32_t iso_read_path_table_buffer(uint8_t *buffer, size_t buffer_size, const char *filename, uint16_t *entry, uint16_t *o_parent_entry)
 {
 	uint32_t read_bytes = 0;
@@ -450,14 +442,14 @@ static uint32_t iso_read_path_table_buffer(uint8_t *buffer, size_t buffer_size, 
 		// compare string
 		if((*(entry) >= minimum_entry) && (filename_len == ident_len) && !strcmp_until(str, filename, ident_len))
 		{
-			*o_parent_entry = (p->parent) - 1;
+			*o_parent_entry = (uint16_t) ((p->parent) - 1);
 			return p->lba;
 		}
 		
 		// add amount of bytes read: base entry size, length of the identifier and padding byte 
 		read_bytes = (uint32_t) (read_bytes + sizeof(pathtable_t) + ident_len + (ident_len % 2 == 1));
 
-		*entry = *(entry) + 1;
+		*entry = (uint16_t) (*(entry) + 1);
 	}
 
 	return MAX;
@@ -484,10 +476,10 @@ static uint32_t iso_find_in_path_table(uint8_t drive, const char *filename, uint
 		size_t s = (path_table_size > PAGE_SIZE) ? PAGE_SIZE : path_table_size;
 
 		// set the minimum entry number of the next directory name in the path table
-		uint16_t e = (((int32_t)minimum_entry - (int32_t)entry) > 0) ? minimum_entry - entry : 0;
+		uint16_t e = ((uint16_t) (((int32_t)minimum_entry - (int32_t)entry) > 0)) ? (uint16_t) (minimum_entry - entry) : (uint16_t) 0;
 		
 		dir_lba = iso_read_path_table_buffer(buffer, s, filename, &e, o_parent_entry);
-		entry = entry + e;
+		entry = (uint16_t) (entry + e);
 		
 		if(dir_lba != MAX)
 			break;
@@ -513,8 +505,6 @@ static bool_t iso_check_pathtable_parents(uint8_t drive, const char *parents_pat
 
 	uint32_t part = 0;
 	bool_t result = true;
-
-	const cd_info_t *info = (cd_info_t *) cd_info_ptr;
 
 	while(str_get_part(parent_name, parents_path, "/", &part))
 	{
