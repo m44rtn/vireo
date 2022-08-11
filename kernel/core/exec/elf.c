@@ -148,7 +148,7 @@ static void *elf_load_binary(void *file, pid_t pid)
     const elf_program_t *prog = (elf_program_t *) (((uint32_t)file) + (hdr->phoff));
 
     uint32_t npages;
-    size_t size = elf_calc_size_in_memory(prog, hdr->phnum, &npages);
+    /*size_t size =*/ elf_calc_size_in_memory(prog, hdr->phnum, &npages); // returned size can be used by prog.c
 
     void *ptr = evalloc(npages * PAGE_SIZE, pid);
 
