@@ -55,7 +55,8 @@ SOFTWARE.
 
 #define IDE_DRIVER_VERSION_STRING "[IDE_DRIVER] Vireo Internal PIO IDE/ATA Driver\n"
 
-#define DEFAULT_SECTOR_SIZE         512 // bytes
+#define DEFAULT_SECTOR_SIZE         512     // bytes
+#define DEFAULT_ATAPI_SECTOR_SIZE   2048    // bytes
 
 /* defines for ata_info_t */
 #define ATA_INFO_PRIMARY    0x00
@@ -376,7 +377,8 @@ static void IDE_enumerate(void)
 
     bar = pciGetBar(PCI_controller, PCI_BAR3) & 0xFFFFFFFC;
     s_ctrl_port = (uint16_t) (bar + 0x376U*(!bar)) & 0xFFFFU;
-
+    
+    // TODO: check whether in Legacy or Native mode before doing this
     if(pciGetReg0(PCI_controller) == 0x24CB8086)
     {
         // this controller (8086:24cb) does not seem to report its control block correctly.
@@ -407,12 +409,6 @@ static uint8_t IDE_getDriveType(uint16_t port, uint8_t slavebit)
 
     if(hi == 0xEB && lo == 0x14)
         type = DRIVE_TYPE_IDE_PATAPI;
-
-    // TODO: the code that is commented out below
-    // can be removed after issue #26 is resolved
-    // (https://github.com/m44rtn/vireo-kernel/issues/26)
-    // else if(!(hi == 0 && lo == 0))
-    //     return DRIVE_TYPE_UNKNOWN;
 
     /* send the IDENTIFY command in case of PATA (not connected is also hi == lo == 0) */
     if(type == DRIVE_TYPE_IDE_PATA) outb((uint32_t) port_comstat, ATA_IDENTIFY);
@@ -550,11 +546,9 @@ static uint8_t IDE_writePIO28(uint8_t drive, uint32_t start, uint8_t sctrwrite, 
 static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwrite, uint16_t *buf)
 {
     uint8_t read_command[12] = {ATAPI_COMMAND_READ,0,0,0,0,0,0,0,0,0,0};
-    uint16_t byteCount = (uint16_t) 2048U;
     uint16_t port = IDE_getPort(drive);
     uint8_t slavebit = IDE_getSlavebit(drive);
     uint8_t status;
-    uint32_t  i = 0;
 
     if(drive > 3)
         return EXIT_CODE_IDE_ERROR_READING_DRIVE;
@@ -567,13 +561,13 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     //IDE_wait();
 
     outb(port | ATA_PORT_FEATURES, 0U);
-    outb(port | ATA_PORT_LBAMID, (uint8_t) (2048 & 0xFF));
-    outb(port | ATA_PORT_LBAHI, (uint8_t) (2048 >> 8U));
+    outb(port | ATA_PORT_LBAMID, (uint8_t) (DEFAULT_ATAPI_SECTOR_SIZE & 0xFF));
+    outb(port | ATA_PORT_LBAHI, (uint8_t) (DEFAULT_ATAPI_SECTOR_SIZE >> 8U));
 
     outb(port | ATA_PORT_COMSTAT, ATAPI_COMMAND_PACKET);
   
     while(inb(port | ATA_PORT_COMSTAT) & 0x80) __asm__ __volatile__("pause");
-    while(!(status = inb(port | ATA_PORT_COMSTAT) & 0x08) && !(status & 0x1)) 
+    while(!(status = inb(port | ATA_PORT_COMSTAT) & ATA_STAT_DRQ)) 
         __asm__ __volatile__("pause");
 
     /* error */
@@ -587,22 +581,24 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     read_command[9] = (uint8_t) sctrwrite;
 
     outsw(port, 6, (uint16_t *) &read_command);
-    
-    while(!(ide_flags & IDE_FLAG_IRQ) && i++ < 100000)
-        __asm__ __volatile__("pause");
+
+    while(!(ide_flags & IDE_FLAG_IRQ))
+            __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
     
-    // not used right now (will be in the future TODO)
-    // uint32_t size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
-    
-    insw(port, (uint32_t) ((uint32_t)(sctrwrite * byteCount) / (uint32_t)sizeof(uint16_t)), buf);
-    
-    /* wait for BUSY and DRQ to clear */
-    i = 0;
-    while((inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ)) && i++ < 100000)
-        __asm__ __volatile__("pause");
-    IDEClearFlagBit(IDE_FLAG_IRQ);
-    
+    uint32_t size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
+
+    while((inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ)))
+    {        
+        insw(port, (uint32_t) size, buf);
+
+        buf += size;
+        
+        while(!(ide_flags & IDE_FLAG_IRQ))
+            __asm__ __volatile__("pause");
+        IDEClearFlagBit(IDE_FLAG_IRQ);
+    }
+        
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
