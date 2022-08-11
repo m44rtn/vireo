@@ -128,7 +128,7 @@ char* hexstr(unsigned int value, uint8_t digit_amount)
 {
 	unsigned int tempval = value;
 	char *outputstr = (char *) &utilPool[0];
-	uint32_t digits = (!digit_amount || digit_amount < hex_digit_count(value))? hex_digit_count(value) : digit_amount;
+	uint8_t digits = (!digit_amount || digit_amount < hex_digit_count(value))? (uint8_t) hex_digit_count(value) : digit_amount;
 
 	uint8_t chrIndex;
 	const char* hexDig = "0123456789ABCDEF";
@@ -309,7 +309,7 @@ void str_add_val(char *str, const char *format, uint32_t value)
 	uint32_t val_index = str_find_val(format);
 	size_t val_len = 0;
 
-	memcpy(str, format, val_index);
+	memcpy(str, (void *) (format), val_index);
 
 	if(val_index >= length)
 		return;
