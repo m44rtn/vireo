@@ -82,5 +82,8 @@ void insw(uint16_t port, uint32_t size, uint16_t *buffer)
 	uint16_t value;
 
 	for(i = 0; i < size; ++i)
-		buffer[i] = inw(port);
+	{
+		__asm__ __volatile__ ("inw %1, %0" : "=a" (value) : "dN" (port) );
+		buffer[i] = value;
+	}
 }
