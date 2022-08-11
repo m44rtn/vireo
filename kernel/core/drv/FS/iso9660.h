@@ -43,7 +43,7 @@ unsigned int *iso_search_in_path_table(unsigned char drive, char *filename, unsi
 unsigned int *iso_find_index(unsigned char drive, unsigned short index);
 
 unsigned short iso_search_path_table(const char *file, unsigned char drive, unsigned int start_lba, unsigned int *b_ptr);
-unsigned int iso_path_to_dir_lba(unsigned char drive, char *path);
+unsigned int iso_path_to_dir_lba(unsigned char drive, const char *path);
 
 void iso_clean_path_reverse(char *p);
 void reverse_path(char *path);
