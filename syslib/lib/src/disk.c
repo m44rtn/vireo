@@ -71,7 +71,7 @@ void *disk_absolute_read(char *_drive, uint32_t _lba, uint32_t _sctrs)
 err_t disk_absolute_write(char *_drive, uint32_t _lba, void *_bfr, size_t _bfr_size)
 {
     disk_syscall_t req = {
-        .hdr.system_call = SYSCALL_DISK_ABS_READ,
+        .hdr.system_call = SYSCALL_DISK_ABS_WRITE,
         .drive = _drive,
         .lba = _lba,
         .buffer = _bfr,
