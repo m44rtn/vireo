@@ -139,7 +139,7 @@ void diskio_api(void *req)
             disk_syscall_t *c = (disk_syscall_t *) req;
 
             if(c->buffer < (void *) memory_get_malloc_end() /* (end of kernel space) */) 
-                { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
+                { c->hdr.exit_code = EXIT_CODE_GLOBAL_RESERVED; break; }
 
             uint16_t id = drive_convert_drive_id((const char *) c->drive);
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
@@ -160,11 +160,11 @@ void diskio_api(void *req)
         {
             // TODO: make function
             disk_syscall_t *c = (disk_syscall_t *) req;
-
-            if(c->buffer_size < (c->nlba * DEFAULT_SECTOR_SIZE))
+            
+            if(c->buffer_size == 0)
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
             if(c->buffer < (void *) memory_get_malloc_end() /* (end of kernel space) */) 
-                { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break; }
+                { c->hdr.exit_code = EXIT_CODE_GLOBAL_RESERVED; break; }
             if(drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI)
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_UNSUPPORTED; break; }
 
@@ -173,8 +173,9 @@ void diskio_api(void *req)
             uint8_t part = (uint8_t) (id & 0xFF);
 
             uint32_t lba = c->lba + MBR_getStartLBA(drive, part);
+            uint32_t nlba = (c->buffer_size / DEFAULT_SECTOR_SIZE) + ((c->buffer_size % DEFAULT_SECTOR_SIZE) != 0);
 
-            c->hdr.exit_code = write(drive, lba, c->nlba, (uint8_t *) c->buffer);
+            c->hdr.exit_code = write(drive, lba, nlba, (uint8_t *) c->buffer);
             break;
         }
 
@@ -254,9 +255,6 @@ uint8_t read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsig
 
     driver_exec_int((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
 
-    if(drv[4] == NULL)
-        return (uint8_t) drv[1];
-
     kfree(drv);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
@@ -275,9 +273,6 @@ uint8_t write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, uns
     drv[4] = (uint32_t) (buf);
 
     driver_exec_int((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
-
-    if(drv[4] == NULL)
-        return (uint8_t) drv[1];
 
     kfree(drv);
 
