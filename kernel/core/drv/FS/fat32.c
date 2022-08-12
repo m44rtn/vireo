@@ -439,7 +439,10 @@ static void fat_filename_fatcompat(char *filename)
     // length of this buffer is total filename length possible for
     // FAT32 (NO LFN), plus a dot seperator and null terminator
     char original_name[TOTAL_FILENAME_LEN + 1 + 1];
-    memcpy(&original_name[0], filename, TOTAL_FILENAME_LEN + 1);
+    memset(&original_name[0], TOTAL_FILENAME_LEN + 1 + 1, 0);
+
+    size_t original_name_len = strlen(filename);
+    memcpy(&original_name[0], filename, original_name_len);
 
     original_name[TOTAL_FILENAME_LEN + 1] = '\0';
 
