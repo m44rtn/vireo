@@ -49,12 +49,12 @@ SOFTWARE.
 
 // 1  MiB - 1 byte reserved for kernel (0x100000 thru 0x1fffff)
 #define MEMORY_KERNELSTRT         0x100000
-#define MEMORY_MALLOC_MEMSTRT     0x200000
+#define MEMORY_KMALLOC_END     0x200000
 
 #define MEMORY_TABLE_LENGTH    128U  // entries
 #define MEMORY_BLOCK_SIZE      512U // bytes
 
-#define MEMORY_MALLOC_SPACE     MEMORY_MALLOC_MEMSTRT - (MEMORY_BLOCK_SIZE * (MEMORY_TABLE_LENGTH + 1))
+#define MEMORY_MALLOC_SPACE     MEMORY_KMALLOC_END - (MEMORY_BLOCK_SIZE * (MEMORY_TABLE_LENGTH + 1))
 
 #define MEMORY_VMALLOC_STAT_ALLOCT      1<<7
 #define MEMORY_VMALLOC_STAT_READONLY    1<<6
@@ -101,7 +101,7 @@ typedef struct api_mem_info_t
 // -- end api stuff
 
 /* I'm sorry for this ugly define line here */
-#define MEMORY_VIRTUAL_TABLES  MEMORY_MALLOC_MEMSTRT + (MEMORY_BLOCK_SIZE * MEMORY_TABLE_LENGTH)
+#define MEMORY_VIRTUAL_TABLES  MEMORY_KMALLOC_END + (MEMORY_BLOCK_SIZE * MEMORY_TABLE_LENGTH)
 /* ---- */
 
 extern void start(void);
@@ -286,12 +286,12 @@ uint32_t memory_getKernelStart(void)
 
 uint32_t memory_getMallocStart(void)
 {
-    return (uint32_t) MEMORY_MALLOC_MEMSTRT;
+    return (uint32_t) MEMORY_MALLOC_SPACE;
 }
 
 uint32_t memory_get_malloc_end(void)
 {
-    return (uint32_t) MEMORY_MALLOC_MEMSTRT + MEMORY_MALLOC_SPACE;
+    return (uint32_t) MEMORY_KMALLOC_END;
 }
 
 uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
@@ -340,7 +340,7 @@ static void memory_create_temp_mmap(void)
     temp_memory_map[0].loc_end   = (uint32_t) STACK_TOP;
 
     /* kernel flows through malloc memory */
-    dbg_assert((((uint32_t) STACK_TOP) <= MEMORY_MALLOC_MEMSTRT));
+    dbg_assert((((uint32_t) STACK_TOP) <= MEMORY_KMALLOC_END));
     
 
     /* and here is the grub memory info */
