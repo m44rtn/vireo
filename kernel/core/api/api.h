@@ -45,7 +45,7 @@ typedef struct
 void api_init(void);
 void *api_dispatcher(void *eip, void *req);
 api_space_t api_get_free_space(void);
-api_space_t api_free_space_request(uint32_t handler);
+api_space_t api_handle_space_request(uint32_t handler);
 void api_api(void *req);
 
 extern void api_dispatcher_start(void);

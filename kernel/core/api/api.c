@@ -178,7 +178,34 @@ api_space_t api_get_free_space(void)
     return (api_space_t) MAX;
 }
 
-api_space_t api_free_space_request(uint32_t handler)
+static api_space_t api_handle_prog_space_request(api_space_t space, pid_t pid)
+{
+    const char *file = prog_get_filename(pid);
+
+     // find the filename in the path
+    uint32_t i = find_in_str((char *) &file[strlen(file) - 12], "/");
+    i = (i == MAX) ? strlen(file) - 12 : i + strlen(file) - 12;
+    
+    // copy filename to api_spaces.filename
+    memcpy(&api_spaces[space].filename[0], (void *) &file[i + 1], strlen(&file[i + 1]));
+
+    return (api_space_t) (space * API_SYSCALL_SEGMENT_SIZE);
+}
+
+static api_space_t api_handle_driver_space_request(api_space_t space)
+{
+    char *file = kmalloc(FAT_MAX_FILENAME_LEN);
+        
+    if(driver_external_get_running_filename(file))
+        return (api_space_t) MAX;
+    
+    memcpy(&api_spaces[space].filename[0], (void *) file, FAT_MAX_FILENAME_LEN);
+    kfree(file);
+
+    return (api_space_t) (space * API_SYSCALL_SEGMENT_SIZE);
+}
+
+api_space_t api_handle_space_request(uint32_t handler)
 {
     api_space_t space = api_get_free_space();
             
@@ -187,16 +214,11 @@ api_space_t api_free_space_request(uint32_t handler)
     
     api_spaces[space].api_handler = handler;
 
-    const char *file = prog_get_filename(prog_get_current_running());
-            
-    // find the filename in the path
-    uint32_t i = find_in_str((char *) &file[strlen(file) - 12], "/");
-    i = (i == MAX) ? strlen(file) - 12 : i + strlen(file) - 12;
-    
-    // copy filename to api_spaces.filename
-    memcpy(&api_spaces[space].filename[0], (void *) &file[i + 1], strlen(&file[i + 1]));
+    pid_t current = prog_get_current_running();
 
-    return (api_space_t) (space * API_SYSCALL_SEGMENT_SIZE);
+    return (current == PID_DRIVER) ? 
+           api_handle_driver_space_request(space) :
+           api_handle_prog_space_request(space, current);
 }
 
 void api_api(void *req)
@@ -221,7 +243,7 @@ void api_api(void *req)
         case SYSCALL_REQUEST_API_SPACE:
         {
             api_request_t *a = req;
-            a->hdr.response = api_free_space_request(a->handler);
+            a->hdr.response = api_handle_space_request(a->handler);
             break;
         }
 
