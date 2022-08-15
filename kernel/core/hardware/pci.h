@@ -39,6 +39,7 @@ unsigned int *pciGetAllDevices(void);
 unsigned int pciGetInfo(unsigned int device);
 unsigned int pciGetReg0(unsigned int device);
 unsigned int pciGetDeviceByReg0(unsigned int Reg0);
+unsigned int pci_get_device_index(unsigned int device);
 
 unsigned int pciGetBar(unsigned int device, unsigned char bar);
 
