@@ -91,7 +91,6 @@ void init_env(void)
     GDT_ACCESS access;
     GDT_FLAGS flags;
     uint8_t exit_code;
-    uint32_t *drvcmd, *devicelist, device; /* for the driver inits and such */
 
     exit_code = screen_basic_init();
 
@@ -119,20 +118,6 @@ void init_env(void)
     pci_init();
 
     driver_init();
-
-    /* the kernel should actually detect anything that has a driver and init them,
-    but until that's implemented this'll live here */
-    devicelist = pciGetDevices(0x01, 0x01);
-    device = devicelist[1];
-    kfree(devicelist);
-
-    // initialize IDE driver
-    drvcmd = kmalloc(DRIVER_COMMAND_PACKET_LEN * sizeof(uint32_t *));
-    drvcmd[0] = DRV_COMMAND_INIT;
-    drvcmd[1] = (uint32_t) device;
-
-    driver_exec_int(pciGetInfo(device) | DRIVER_TYPE_PCI, drvcmd);
-    kfree(drvcmd);
 
     /* after all disk drivers have been initialized this one should be called */
     diskio_init();

@@ -204,6 +204,13 @@ static void driver_search_pciAll(void)
             /* store the address of the driver's handler */
             drv_list[cur_devices].driver = (uint32_t *) *( (uint32_t*) ((uint32_t)driver_loc + sizeof(struct DRIVER_SEARCH))); /* I'm sorry */
             
+            // execute initialization routine of the driver
+            uint32_t drvcmd[DRIVER_COMMAND_PACKET_LEN];
+            drvcmd[0] = DRV_COMMAND_INIT;
+            drvcmd[1] = (uint32_t) drv_list[cur_devices].device;
+
+            driver_exec_int(info | DRIVER_TYPE_PCI, drvcmd);
+
             #ifndef NO_DEBUG_INFO
             print_value( "[DRIVER SUBSYSTEM] Found driver for device %x @ ", pciGetReg0(drv_list[cur_devices].device));
             print_value( "0x%x\n", (uint32_t) drv_list[cur_devices].driver);
