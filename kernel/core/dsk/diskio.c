@@ -138,14 +138,15 @@ void diskio_api(void *req)
             // TODO: make function
             disk_syscall_t *c = (disk_syscall_t *) req;
 
-            if(c->buffer < (void *) memory_get_malloc_end() /* (end of kernel space) */) 
-                { c->hdr.exit_code = EXIT_CODE_GLOBAL_RESERVED; break; }
-
             uint16_t id = drive_convert_drive_id((const char *) c->drive);
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
             uint8_t part = (uint8_t) (id & 0xFF);
 
             uint8_t *b = evalloc(c->nlba * DEFAULT_SECTOR_SIZE, prog_get_current_running());
+            
+            if(!b)
+                { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; break; }
+            
             uint32_t lba = (drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI) ? c->lba : c->lba + MBR_getStartLBA(drive, part);
 
             c->hdr.exit_code = read(drive, lba, c->nlba, b);
