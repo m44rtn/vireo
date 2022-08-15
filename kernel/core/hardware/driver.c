@@ -103,6 +103,8 @@ int_driver_list_t drv_list[DRIVER_INTERNAL_MAX_SUPPORTED];
 ext_driver_list_t *ext_drv_list = NULL;
 uint8_t cur_devices = 0;
 
+uint32_t current_running_driver = 0;
+
 static void driver_search_pciAll(void);
 
 /* An internal driver command 'packet' is an array of five uint32_t's. 
@@ -291,6 +293,7 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     ext_drv_list[index].stack = evalloc(PROG_DEFAULT_STACK_SIZE, PID_DRIVER);
 
     prog_set_status_drv_running();
+    current_running_driver = type;
 
     // initialize the  driver by calling its main()
     // this is not the right function to use since this function does not change
@@ -298,6 +301,8 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     // running at the time of calling
     // FIXME: change stacks
     EXEC_CALL_FUNC(ext_drv_list[index].start, NULL); // (((uint32_t)ext_drv_list[index].stack) + PROG_DEFAULT_STACK_SIZE)
+    
+    current_running_driver = 0;
     prog_set_status_prog_running();
 
     return EXIT_CODE_GLOBAL_SUCCESS;
@@ -315,6 +320,18 @@ void driver_remove_external_driver(uint32_t type)
 
     // empty the entry of this driver
     memset(&ext_drv_list[index], sizeof(ext_driver_list_t), 0);
+}
+
+err_t driver_external_get_running_filename(char *out)
+{
+    if(prog_get_current_running() != PID_DRIVER || !current_running_driver)
+        return EXIT_CODE_GLOBAL_INVALID;
+
+    uint32_t index = driver_ext_find_index(current_running_driver);
+
+    memcpy(out, &ext_drv_list[index].bin_name[0], FAT_MAX_FILENAME_LEN);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
 void driver_api(void *req)

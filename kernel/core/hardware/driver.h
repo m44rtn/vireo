@@ -52,5 +52,6 @@ void driver_api(void *req);
 err_t driver_add_external_driver(uint32_t type, char *path);
 void driver_remove_external_driver(uint32_t type);
 err_t driver_ext_exec(uint32_t type, uint32_t *params);
+err_t driver_external_get_running_filename(char *out);
 
 #endif
