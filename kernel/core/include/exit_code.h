@@ -37,6 +37,7 @@ SOFTWARE.
 
 #define EXIT_CODE_GLOBAL_NOT_INITIALIZED    0x0C
 
+#define EXIT_CODE_GLOBAL_INVALID            0x0E
 #define EXIT_CODE_GLOBAL_RESERVED           0x0F
 /* 0x00 - 0x0F are reserved for global exit_codes used by the kernel*/
 
