@@ -24,6 +24,14 @@ SOFTWARE.
 #ifndef __FS_TYPES_H__
 #define __FS_TYPES_H__
 
+#define FAT_MAX_FILENAME_LEN        11
+
+#define FAT_FILE_ATTRIB_FILE        0x00
+#define FAT_FILE_ATTRIB_READONLY    0x01
+#define FAT_FILE_ATTRIB_HIDDEN      0x02
+#define FAT_FILE_ATTRIB_SYSTEM      0x04
+#define FAT_FILE_ATTRIB_DIR         0x10
+
 #define FS_TYPE_FAT12   0x01
 #define FS_TYPE_FAT16   0x04
 #define FS_TYPE_FAT32   0x0B

@@ -24,12 +24,7 @@ SOFTWARE.
 #ifndef __FAT_COMMANDS_H__
 #define __FAT_COMMANDS_H__
 
-#define FAT_MAX_FILENAME_LEN        11
 
-#define FAT_FILE_ATTRIB_FILE        0x00
-#define FAT_FILE_ATTRIB_READONLY    0x01
-#define FAT_FILE_ATTRIB_SYSTEM      0x04
-#define FAT_FILE_ATTRIB_DIR         0x10
 
 /*#define   FS_COMMAND_INIT    0x00
 ---- (not defined since COMMANDS.H already defines INIT)
