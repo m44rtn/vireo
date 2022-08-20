@@ -47,7 +47,7 @@ SOFTWARE.
 #include "../drv/COMMANDS.H"
 
 #include "../dsk/fs.h"
-#include "../drv/FS_commands.h"
+#include "../drv/FS_TYPES.H"
 
 #ifndef NO_DEBUG_INFO
     #include "../screen/screen_basic.h"
