@@ -35,6 +35,7 @@ SOFTWARE.
 #include "../dsk/fs.h"
 
 #include "../memory/paging.h"
+#include "../memory/memory.h"
 
 #include "../kernel/panic.h"
 
@@ -103,6 +104,12 @@ void prog_init(void)
         really_easy_panic(PANIC_TYPE_EXCEPTION, "PROGRAM_EXECUTION_UNSUPPORTED");
 
     memset((void *) prog_info, PROG_INFO_TABLE_SIZE, 0xFF);
+
+    extern void start(void);
+    prog_info[0].rel_start = start;
+    prog_info[0].binary_start = 0x100000;
+    prog_info[0].filename = "VIREO.SYS";
+    prog_info[0].pid = PID_KERNEL;
 }
 
 uint32_t prog_find_free_index(void)
@@ -124,6 +131,8 @@ err_t prog_launch_binary(char *filename)
 
     // find free index in prog_info
     uint32_t free_index = prog_find_free_index();
+
+    dbg_assert(free_index);
 
     if(free_index == MAX)
         return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
@@ -210,6 +219,8 @@ void prog_terminate(pid_t pid, bool_t stay)
     // (if not, another program is terminating this program)
     uint8_t is_running = (pid == current_running_pid);
     uint32_t pid_index = prog_find_info_index(pid);
+
+    dbg_assert(pid_index);
     
     if(pid_index == MAX) 
         return;
