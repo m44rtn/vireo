@@ -73,7 +73,7 @@ SOFTWARE.
 // supported file flags
 #define FF_HIDDEN               1 << 0
 #define FF_DIRECTORY            1 << 1
-#define FF_NOT_FINAL_DIR        1 << 7
+#define FF_NOT_FINAL_DIR        1 << 7 // TODO: support does not exist yet
 
 // for functions
 #define RESET					1
