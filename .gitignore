@@ -1,5 +1,6 @@
 .vscode
 kernel/bin
+syslib/bin
 
 kernel/grub/boot/vireo.sys
 
