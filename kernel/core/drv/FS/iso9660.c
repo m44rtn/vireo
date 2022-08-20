@@ -285,8 +285,80 @@ void iso_free_bfr(void *ptr)
 		kfree(ptr);
 }
 
+static uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename, size_t *fsize, direntry_t *out_entry)
+{
+	uint8_t *b = (uint8_t *) bfr;
+	uint32_t len = strlen((char *) filename);
+	uint32_t i = 0;
+
+	*(fsize) = 0;
+	
+	while(i < bfr_size)
+	{
+		direntry_t *entry = out_entry = (direntry_t *) &b[i];
+		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
+		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
+
+		i += (size) ? size : sizeof(direntry_t);
+
+		if(!size)
+			continue;
+		
+		if(strlen(file) >= len)
+			if(!strcmp_until(filename, file, len))
+			{
+				*(fsize) = (entry->size);
+				return (entry->lba_extend);
+			}
+
+		
+	}
+
+	return 0;
+}
+
+static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *filename, size_t *fsize, direntry_t *out_entry)
+{
+	uint32_t flba; // file lba
+	uint32_t *bfr;
+	direntry_t entry;
+
+	size_t size = iso_get_dir_size(drive, dir_lba);
+	size_t bfr_size = iso_alloc_dir_buffer(size, &bfr);
+
+	if(!bfr || !bfr_size)
+	{gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return 0;}
+	
+	uint32_t nlba = size / ISO_SECTOR_SIZE + ((size % ISO_SECTOR_SIZE) != 0);
+	const uint32_t to_read = (bfr_size / ISO_SECTOR_SIZE);
+
+	// when the buffer is bigger than the sector size,
+	// it means we have enough space to read the entire directory in one go
+	// instead of multiple small ones
+	if(bfr_size > ISO_SECTOR_SIZE)
+		nlba = 1;
+
+	while(nlba)
+	{
+		read(drive, dir_lba, to_read, (uint8_t *) bfr);
+		flba = iso_search_dir_bfr(bfr, bfr_size, filename, fsize, &entry);
+
+		if(flba || !(nlba--))
+			break;
+
+		iso_free_bfr(bfr);
+		dir_lba++;
+	}
+
+	if(out_entry)
+		memcpy(out_entry, &entry, sizeof(direntry_t));
+
+	iso_free_bfr(bfr);
+	return flba;
+}
+
 // use this function to convert a path into the lba of the file
-uint32_t iso_traverse(char *path, size_t *fsize)
+static uint32_t iso_traverse(char *path, size_t *fsize, direntry_t *entry)
 {
 	// convert drive identifier (e.g. 'CD0') to something useful
 	uint8_t drive = (uint8_t) ((drive_convert_drive_id((const char *) path)) >> DISKIO_DISK_NUMBER);
@@ -317,81 +389,12 @@ uint32_t iso_traverse(char *path, size_t *fsize)
 	if(dir_lba == MAX)
 		dir_lba = (info->rootdir_lba);
 
-	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize);
+	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize, entry);
 	
 	iso_free_bfr(p);
 	iso_free_bfr(filename);
 
 	return flba;
-}
-
-uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *filename, size_t *fsize)
-{
-	uint32_t flba; // file lba
-	uint32_t *bfr;
-
-	size_t size = iso_get_dir_size(drive, dir_lba);
-	size_t bfr_size = iso_alloc_dir_buffer(size, &bfr);
-
-	if(!bfr || !bfr_size)
-	{gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return 0;}
-	
-	uint32_t nlba = size / ISO_SECTOR_SIZE + ((size % ISO_SECTOR_SIZE) != 0);
-	const uint32_t to_read = (bfr_size / ISO_SECTOR_SIZE);
-
-	// when the buffer is bigger than the sector size,
-	// it means we have enough space to read the entire directory in one go
-	// instead of multiple small ones
-	if(bfr_size > ISO_SECTOR_SIZE)
-		nlba = 1;
-
-	while(nlba)
-	{
-		read(drive, dir_lba, to_read, (uint8_t *) bfr);
-		flba = iso_search_dir_bfr(bfr, bfr_size, filename, fsize);
-
-		if(flba || !(nlba--))
-			break;
-
-		iso_free_bfr(bfr);
-		dir_lba++;
-	}
-
-	iso_free_bfr(bfr);
-
-	return flba;
-}
-
-uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *filename, size_t *fsize)
-{
-	uint8_t *b = (uint8_t *) bfr;
-	uint32_t len = strlen((char *) filename);
-	uint32_t i = 0;
-
-	*(fsize) = 0;
-	
-	while(i < bfr_size)
-	{
-		direntry_t *entry = (direntry_t *) &b[i];
-		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
-		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
-
-		i += (size) ? size : sizeof(direntry_t);
-
-		if(!size)
-			continue;
-		
-		if(strlen(file) >= len)
-			if(!strcmp_until(filename, file, len))
-			{
-				*(fsize) = (entry->size);
-				return (entry->lba_extend);
-			}
-
-		
-	}
-
-	return 0;
 }
 
 size_t iso_alloc_dir_buffer(size_t dir_size, uint32_t **ret_addr)
@@ -707,7 +710,7 @@ uint16_t *iso_read_drive(uint8_t drive, uint32_t lba, uint32_t sctr_read)
 void iso_read(char * path, uint32_t *drv)
 {
 	size_t fsize = 0;
-    uint32_t flba = iso_traverse(path, &fsize);
+    uint32_t flba = iso_traverse(path, &fsize, NULL);
 	
 	uint32_t nlba = (fsize / ISO_SECTOR_SIZE) + ((fsize % ISO_SECTOR_SIZE) != 0);
 	uint8_t drive = (uint8_t) (drive_convert_drive_id((const char *) path) >> DISKIO_DISK_NUMBER);
