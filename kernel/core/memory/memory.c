@@ -68,7 +68,8 @@ typedef struct
 
 typedef struct
 {
-    uint32_t available_memory; /* in kibibytes */
+    uint32_t available_memory; /* in kilobytes */
+    uint32_t available_memory_bytes; /* in bytes */
     uint32_t *usable_memory;   /* is an array */
     uint32_t *end_of_kernel_memory; 
     uint32_t vmemory_table_size; /* in pages (aka in array length) */
@@ -178,7 +179,8 @@ uint8_t memory_init(void)
     infoStruct = loader_get_infoStruct();
     
     /* GRUB returns KB's but I like KiB's more, sorry */
-    memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory * 1.024);
+    memory_info_t.available_memory = (uint32_t) (infoStruct.total_memory);
+    memory_info_t.available_memory_bytes = memory_info_t.available_memory * 1000;
     
     #ifndef NO_DEBUG_INFO
     print_value("[MEMORY] Total memory: %i KiB\n", memory_info_t.available_memory);
@@ -276,7 +278,7 @@ void kfree(void *ptr)
 
 uint32_t memory_getAvailable(void)
 {
-    return memory_info_t.available_memory;
+    return memory_info_t.available_memory_bytes;
 }
 
 uint32_t memory_getKernelStart(void)
