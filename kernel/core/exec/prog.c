@@ -95,6 +95,7 @@ uint8_t prog_flags = 0;
 void prog_init(void);
 uint32_t prog_find_info_index(const pid_t pid);
 
+extern void start(void);
 void prog_init(void)
 {
     prog_info = evalloc(PROG_INFO_TABLE_SIZE, PID_KERNEL);
@@ -105,10 +106,9 @@ void prog_init(void)
 
     memset((void *) prog_info, PROG_INFO_TABLE_SIZE, 0xFF);
 
-    extern void start(void);
-    prog_info[0].rel_start = start;
-    prog_info[0].binary_start = 0x100000;
-    prog_info[0].filename = "VIREO.SYS";
+    prog_info[0].rel_start = (void *) ((uint32_t) start);
+    prog_info[0].binary_start = (void *) (0x100000u);
+    prog_info[0].filename = (char *) "VIREO.SYS";
     prog_info[0].pid = PID_KERNEL;
 }
 
