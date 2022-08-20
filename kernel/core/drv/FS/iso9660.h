@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __ISO9660_H__
 #define __ISO9660_H__
 
-#include "../FS_commands.h"
+#include "../FS_TYPES.H"
 
 void iso_handler(unsigned int *drv);
 

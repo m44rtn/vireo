@@ -25,7 +25,7 @@ SOFTWARE.
 #define __FS_H__
 
 #include "../include/types.h"
-#include "../drv/FS_commands.h"
+#include "../drv/FS_TYPES.H"
 
 void fs_api(void *req);
 file_t *fs_read_file(char *fpath, size_t *o_size);

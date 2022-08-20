@@ -85,18 +85,4 @@ drv[2] (parameter2) --> (returns) pointer to info structure containing file info
 drv[4] (parameter4) --> (returns) error code
 */
 
-typedef struct fs_file_info_t
-{
-    uint32_t first_cluster; // 0xFFFFFFFF if not applicable
-    uint32_t first_sector;
-    size_t file_size;
-    uint8_t file_type;      // in FAT32 format
-    uint32_t creation_date; // in FAT32 format
-    uint32_t creation_time; // in FAT32 format
-    uint32_t access_date;   // in FAT32 format
-    uint32_t modified_date; // in FAT32 format
-    uint32_t modified_time; // in FAT32 format
-} __attribute__((packed)) fs_file_info_t;
-
-
 #endif

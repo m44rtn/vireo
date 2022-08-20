@@ -25,7 +25,7 @@ SOFTWARE.
 #define __FAT_H__
 
 #include "../../include/types.h"
-#include "../FS_commands.h"
+#include "../FS_TYPES.H"
 
 void fat_handler(uint32_t *drv);
 err_t fat_init(uint8_t disk, uint8_t part);
