@@ -1056,12 +1056,6 @@ err_t fat_mkdir(char *path)
 
 fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
 {
-    // size_t fsize = 0;
-    // uint8_t attrib = 0;
-    // uint32_t cluster = fat_traverse(path, &fsize, &attrib);
-
-    // if(cluster == MAX)
-    // { *err = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
     uint8_t disk, part;
     fat_get_disk_from_path(path, &disk, &part);
 
