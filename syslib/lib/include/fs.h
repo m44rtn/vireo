@@ -46,6 +46,29 @@ SOFTWARE.
 #define EXIT_CODE_FS_FILE_EXISTS           0x13
 #define EXIT_CODE_FS_NO_SPACE              0x14
 
+// FAT time and date offsets
+#define FAT_SECOND_OFFSET		0
+#define FAT_MINUTE_OFFSET		5
+#define FAT_HOUR_OFFSET			11
+
+#define FAT_DAY_OFFSET		    0
+#define FAT_MONTH_OFFSET		5
+#define FAT_YEAR_OFFSET			9
+
+typedef struct fs_file_info_t
+{
+    uint32_t first_cluster; // 0xFFFFFFFF if not applicable
+    uint32_t first_sector;
+    size_t file_size;
+    uint8_t file_type;      // in FAT32 format
+    uint32_t creation_date; // in FAT32 format
+    uint32_t creation_time; // in FAT32 format
+    uint32_t access_date;   // in FAT32 format
+    uint32_t modified_date; // in FAT32 format
+    uint32_t modified_time; // in FAT32 format
+} __attribute__((packed)) fs_file_info_t;
+
+
 typedef void file_t;
 
 // returns the filesystem type of the drive specified
@@ -63,7 +86,12 @@ err_t fs_delete_file(char *_path);
 // renames file at _path to _new_name
 err_t fs_rename_file(char *_path, char *_new_name);
 
-// creates directories along the path that don't exist
+// creates directories that don't exist, along the path
 err_t fs_mkdir(char *_path);
+
+// returns a pointer to an fs_file_info_t struct containing
+// information about the file pointed to by _path, while returning
+// the exit code in *_err.
+fs_file_info_t *fs_file_get_info(char *_path, err_t *_err);
 
 #endif // __FS_H__

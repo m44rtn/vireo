@@ -105,3 +105,15 @@ err_t fs_mkdir(char *_path)
 
     return req.hdr.exit_code;
 }
+
+fs_file_info_t *fs_file_get_info(char *_path, err_t *_err)
+{
+    fs_t req = {
+        .hdr.system_call = SYSCALL_FS_GET_FILE_INFO,
+        .path = _path,
+    };
+    asm_syscall(&req);
+
+    *_err = req.hdr.exit_code;
+    return req.hdr.response_ptr;
+}
