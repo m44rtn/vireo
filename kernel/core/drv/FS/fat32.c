@@ -185,7 +185,7 @@ void fat_handler(uint32_t *drv)
         break;
 
         case FS_COMMAND_GET_FILE_INFO:
-            drv[2] = (uint32_t) fat_get_file_info((char *) drv[1], (err_t *) &drv[2]);
+            drv[2] = (uint32_t) fat_get_file_info((char *) drv[1], (err_t *) &drv[4]);
         break;
 
         default:
