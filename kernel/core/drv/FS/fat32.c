@@ -73,7 +73,7 @@ SOFTWARE.
 #define FAT_LAST_CLUSTER            0x0FFFFFFF
 #define FAT_EMPTY_CLUSTER           0x00
 
-#define DIR_UNUSED_ENTRY     0xE5
+#define DIR_UNUSED_ENTRY            0xE5
 
 typedef struct 
 {
@@ -182,6 +182,10 @@ void fat_handler(uint32_t *drv)
 
         case FS_COMMAND_MKDIR:
             drv[4] = (uint32_t) fat_mkdir((char *) drv[1]);
+        break;
+
+        case FS_COMMAND_GET_FILE_INFO:
+            drv[2] = (uint32_t) fat_get_file_info((char *) drv[1], (err_t *) &drv[2]);
         break;
 
         default:
@@ -1048,4 +1052,50 @@ err_t fat_mkdir(char *path)
         return EXIT_CODE_FS_FILE_EXISTS;
 
     return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
+{
+    // size_t fsize = 0;
+    // uint8_t attrib = 0;
+    // uint32_t cluster = fat_traverse(path, &fsize, &attrib);
+
+    // if(cluster == MAX)
+    // { *err = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
+    uint8_t disk, part;
+    fat_get_disk_from_path(path, &disk, &part);
+
+    char filename[FAT_MAX_FILENAME_LEN + 1];
+    FAT32_DIR dir_entry;
+
+    // ignored
+    uint32_t dir_cluster, dir_index;
+
+    *err = fat_check_file_exists(disk, part, path, &filename[0], &dir_entry, &dir_cluster, &dir_cluster, &dir_index);
+    
+    if(*err)
+        return NULL;
+        
+    fs_file_info_t *file_info = evalloc(sizeof(fs_file_info_t), PID_DRIVER);
+    
+    if(file_info == NULL)
+    { *err = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
+
+    file_info->file_size = dir_entry.fSize;
+    file_info->file_type = dir_entry.attrib;
+    file_info->first_cluster = (uint32_t) ((dir_entry.clHi << 16) | dir_entry.clLo);
+    file_info->first_sector = fat_cluster_lba(disk, part, file_info->first_cluster);
+    
+    // These dates are currently returned, while
+    // the driver itself does not support changing these dates
+    // when doing file operations, currently.
+    file_info->creation_date = dir_entry.cDate;
+    file_info->creation_time = dir_entry.cTime;
+
+    file_info->access_date = dir_entry.aDate;
+
+    file_info->modified_date = dir_entry.mDate;
+    file_info->modified_time = dir_entry.mTime;
+    
+    return file_info;
 }

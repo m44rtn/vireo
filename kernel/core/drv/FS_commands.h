@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __FAT_COMMANDS_H__
 #define __FAT_COMMANDS_H__
 
-
+#include "../include/types.h"
 
 /*#define   FS_COMMAND_INIT    0x00
 ---- (not defined since COMMANDS.H already defines INIT)
@@ -77,5 +77,26 @@ drv[4] (parameter4) --> (returns) error code
 
     will create all directories in the path if they do not exist
 */
+
+#define FS_COMMAND_GET_FILE_INFO 0x15
+/*
+drv[1] (parameter1) --> path to the new file
+drv[2] (parameter2) --> (returns) pointer to info structure containing file info*
+drv[4] (parameter4) --> (returns) error code
+*/
+
+typedef struct fs_file_info_t
+{
+    uint32_t first_cluster; // 0xFFFFFFFF if not applicable
+    uint32_t first_sector;
+    size_t file_size;
+    uint8_t file_type;      // in FAT32 format
+    uint32_t creation_date; // in FAT32 format
+    uint32_t creation_time; // in FAT32 format
+    uint32_t access_date;   // in FAT32 format
+    uint32_t modified_date; // in FAT32 format
+    uint32_t modified_time; // in FAT32 format
+} __attribute__((packed)) fs_file_info_t;
+
 
 #endif

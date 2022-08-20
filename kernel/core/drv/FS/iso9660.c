@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -75,6 +75,13 @@ SOFTWARE.
 #define FF_DIRECTORY            1 << 1
 #define FF_NOT_FINAL_DIR        1 << 7 // TODO: support does not exist yet
 
+// date and time defines
+#define MINUTE_OFFSET			8
+#define HOUR_OFFSET				16
+
+#define MONTH_OFFSET			8
+#define YEAR_OFFSET				16
+
 // for functions
 #define RESET					1
 #define NO_RESET				0
@@ -144,6 +151,10 @@ void iso_handler(uint32_t * drv)
 
 		case FS_COMMAND_READ:
 			iso_read((char *) drv[1], drv);
+		break;
+
+		case FS_COMMAND_GET_FILE_INFO:
+			drv[2] = (uint32_t) iso_get_file_info((char *) drv[1]);
 		break;
 
 		default:
@@ -358,7 +369,7 @@ static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *file
 }
 
 // use this function to convert a path into the lba of the file
-static uint32_t iso_traverse(char *path, size_t *fsize, direntry_t *entry)
+static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 {
 	// convert drive identifier (e.g. 'CD0') to something useful
 	uint8_t drive = (uint8_t) ((drive_convert_drive_id((const char *) path)) >> DISKIO_DISK_NUMBER);
@@ -724,4 +735,72 @@ void iso_read(char * path, uint32_t *drv)
 
 	drv[2] = (uint32_t) bfr;
 	drv[3] = fsize;
+}
+
+static uint8_t iso_convert_fileflags_to_fat_filetype(uint8_t file_flags)
+{
+	uint8_t fat_type = 0;
+
+	if(file_flags & FF_HIDDEN)
+		fat_type |= FAT_FILE_ATTRIB_HIDDEN;
+	
+	if(file_flags & FF_DIRECTORY)
+		fat_type |= FAT_FILE_ATTRIB_DIR;
+	
+	// because Vireo doesn't support writing to ATAPI anyway:
+	file_flags |= FAT_FILE_ATTRIB_READONLY;
+
+	return file_flags;
+}
+
+static uint16_t iso_convert_date_to_fat_date(uint32_t date)
+{
+	uint8_t day   = (uint8_t) (((date & 0xFF)) & 0x1F);
+	uint8_t month = (uint8_t) ((date >> MONTH_OFFSET) & 0xF);
+
+	// ISO9660 years are counted since 1900, while FAT years
+	// are counted since 1980. Therefore, the first 80 years must be subtracted
+	// from the value
+	uint8_t year  = (uint8_t) (((date >> YEAR_OFFSET) - 80) & 0xFF);
+
+	return (uint16_t) (day | (month << FAT_MONTH_OFFSET) | (year << FAT_YEAR_OFFSET));
+}
+
+static uint16_t iso_convert_time_to_fat_time(uint32_t time)
+{
+	uint8_t sec = (uint8_t) (((time & 0xFF) / 2) & 0x1F);
+	uint8_t min = (uint8_t) ((time >> MINUTE_OFFSET) & 0x3F);
+	uint8_t h   = (uint8_t) ((time >> HOUR_OFFSET) & 0x1F);
+
+	return (uint16_t) (sec | (min << FAT_MINUTE_OFFSET) | (h << FAT_HOUR_OFFSET));
+}
+
+fs_file_info_t *iso_get_file_info(const char *path)
+{
+	size_t fsize;
+	direntry_t entry;
+
+	uint32_t flba = iso_traverse(path, &fsize, &entry);
+
+	if(!flba)
+	{ gerror = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
+
+	fs_file_info_t *info = evalloc(sizeof(fs_file_info_t), PID_DRIVER);
+	
+	if(!info)
+	{ gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
+	
+	info->file_size = fsize;
+	info->first_sector = flba;
+	info->first_cluster = MAX; // not applicable
+
+	info->file_type = iso_convert_fileflags_to_fat_filetype(entry.file_flags);
+
+	uint32_t date = (uint32_t) (entry.datetime[2] | (entry.datetime[1] << 8) | (entry.datetime[0] << 16));
+	info->creation_date = iso_convert_date_to_fat_date(date);
+	
+	uint32_t time = (uint32_t) (entry.datetime[5] | (entry.datetime[4] << 8) | (entry.datetime[3] << 16));
+	info->creation_time = iso_convert_time_to_fat_time(time);
+
+	return info;
 }

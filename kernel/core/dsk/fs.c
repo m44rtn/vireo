@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -164,6 +164,21 @@ void fs_api(void *req)
             break;
         }
 
+        case SYSCALL_FS_GET_FILE_INFO:
+        {
+            uint8_t disk_type = drive_type(fs->path);
+            uint32_t driver_type = (disk_type == DRIVE_TYPE_IDE_PATAPI) ? FS_TYPE_ISO : FS_TYPE_FAT32; // FIXME: should use MBR type
+
+            drv[0] = FS_COMMAND_GET_FILE_INFO;
+            drv[1] = (uint32_t) fs->path;
+            driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
+            
+            fs->hdr.response_ptr = (void *) drv[2];
+            fs->hdr.response_size = sizeof(fs_file_info_t);
+            fs->hdr.exit_code = (uint8_t) drv[4];
+        }
+        break;
+
         default:
             fs->hdr.exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
         break;
@@ -224,4 +239,17 @@ err_t fs_delete_file(char *fpath)
     fs_api(&req);
     
     return req.hdr.exit_code;
+}
+
+fs_file_info_t *fs_get_file_info(char *fpath, err_t *err)
+{
+    fs_t req = {
+        .hdr.system_call = SYSCALL_FS_GET_FILE_INFO,
+        .path = fpath,
+    };
+
+    fs_api(&req);
+
+    *err = req.hdr.exit_code;
+    return (fs_file_info_t *) req.hdr.response_ptr;
 }

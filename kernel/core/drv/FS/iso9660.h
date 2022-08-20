@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@ SOFTWARE.
 
 #ifndef __ISO9660_H__
 #define __ISO9660_H__
+
+#include "../FS_commands.h"
 
 void iso_handler(unsigned int *drv);
 
@@ -47,5 +49,6 @@ void reverse_path(char *path);
 
 unsigned short *iso_read_drive(unsigned char drive, unsigned int lba, unsigned int sctr_read);
 void iso_read(char * path, unsigned int *drv);
+fs_file_info_t *iso_get_file_info(const char *path);
 
 #endif

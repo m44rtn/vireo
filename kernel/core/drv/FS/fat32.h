@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ SOFTWARE.
 #define __FAT_H__
 
 #include "../../include/types.h"
+#include "../FS_commands.h"
 
 void fat_handler(uint32_t *drv);
 err_t fat_init(uint8_t disk, uint8_t part);
@@ -33,5 +34,6 @@ err_t fat_write(const char *path, file_t *buffer, size_t file_size, uint8_t attr
 err_t fat_rename(char *path, char *new_name);
 err_t fat_delete(char *path);
 err_t fat_mkdir(char *path);
+fs_file_info_t *fat_get_file_info(const char *path, err_t *err);
 
 #endif

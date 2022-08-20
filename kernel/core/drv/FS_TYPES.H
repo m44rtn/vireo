@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,5 +37,14 @@ SOFTWARE.
 #define FS_TYPE_FAT32   0x0B
 
 #define FS_TYPE_ISO     0x96
+
+// FAT time and date offsets
+#define FAT_SECOND_OFFSET		0
+#define FAT_MINUTE_OFFSET		5
+#define FAT_HOUR_OFFSET			11
+
+#define FAT_DAY_OFFSET		    0
+#define FAT_MONTH_OFFSET		5
+#define FAT_YEAR_OFFSET			9
 
 #endif

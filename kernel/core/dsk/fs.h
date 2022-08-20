@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@ SOFTWARE.
 #define __FS_H__
 
 #include "../include/types.h"
+#include "../drv/FS_commands.h"
 
 void fs_api(void *req);
 file_t *fs_read_file(char *fpath, size_t *o_size);
@@ -32,5 +33,6 @@ file_t *fs_read_file(char *fpath, size_t *o_size);
 err_t fs_write_file(char *fpath, file_t *file, size_t fsize, uint8_t attrib);
 err_t fs_rename_file(char *fpath, char *new_name);
 err_t fs_delete_file(char *fpath);
+fs_file_info_t *fs_get_file_info(char *fpath, err_t *err);
 
 #endif
