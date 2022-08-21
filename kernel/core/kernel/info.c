@@ -29,6 +29,10 @@ SOFTWARE.
 #include "../util/util.h"
 #include "../memory/memory.h"
 
+#include "../exec/prog.h"
+
+#define MAX_INFO_STR_LEN    128
+
 // Version str format: Vireo-[version] build [BUILD_NUMBER] (v[MAJOR].[MINOR][REVISION])
 #define INFO_VER_STR_START  "Vireo-II build "
 
@@ -58,7 +62,11 @@ void info_print_panic_version(void)
 
 char *info_make_version_str(void)
 {
-    char *str = kmalloc(512);
+    char *str = evalloc(MAX_INFO_STR_LEN, prog_get_current_running());
+    
+    if(!str)
+        return NULL;
+
     memset(str, 512, 0); // FIXME: buffer is filled with 0x20 if memset is not used
     str_add_val(str, INFO_VER_STR_START "%i (", BUILD);
 
