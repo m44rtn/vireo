@@ -169,9 +169,9 @@ void *evalloc(size_t size, pid_t pid)
 void vfree(void *ptr)
 {
     dbg_assert(ptr);
-    dbg_assert(ptr < memory_getAvailable());
+    dbg_assert((uint32_t)ptr < memory_getAvailable());
 
-    if(!ptr || ptr > memory_getAvailable())
+    if(!ptr || (uint32_t)ptr > memory_getAvailable())
         return;
 
     // check if the pointer is kernel memory (kmalloc)
