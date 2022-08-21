@@ -23,6 +23,8 @@ SOFTWARE.
 
 #include "util.h"
 
+#include "../dbg/dbg.h"
+
 #include "../include/types.h"
 #include "../include/exit_code.h"
 
@@ -205,8 +207,7 @@ unsigned int hex_digit_count(uint32_t value)
 
 void memset(void *start, size_t size, unsigned char val)
 {
-	if(!start)
-		return;
+	dbg_assert(start);
 
 	uint8_t *s = start;
 
