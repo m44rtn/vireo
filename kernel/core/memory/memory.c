@@ -150,6 +150,11 @@ void memory_api(void *req)
             vfree_t *v = (vfree_t *) req;
             
             dbg_assert(v);
+
+            if((uint32_t)v->ptr < MEMORY_KMALLOC_END)
+                { v->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break;}
+            if((uint32_t)v->ptr > memory_getAvailable())
+                { v->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break;}
             
             vfree(v->ptr);
             break;

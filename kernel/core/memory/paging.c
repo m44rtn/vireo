@@ -171,6 +171,8 @@ void vfree(void *ptr)
     dbg_assert(ptr);
     dbg_assert((uint32_t)ptr < memory_getAvailable());
 
+    ptr = (void *) ((uint32_t)ptr & PAGING_ADDR_MSK);
+
     if(!ptr || (uint32_t)ptr > memory_getAvailable())
         return;
 
