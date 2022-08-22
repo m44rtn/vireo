@@ -853,6 +853,7 @@ static err_t fat_check_file_exists(uint8_t disk, uint8_t part, const char *path,
     size_t dir_size;
     uint8_t dir_attrib;
     *dir_cluster = fat_traverse(working_path, &dir_size, &dir_attrib);
+    kfree(working_path);
     
     if(*dir_cluster == MAX)
         return EXIT_CODE_FS_FILE_NOT_FOUND;
@@ -862,8 +863,6 @@ static err_t fat_check_file_exists(uint8_t disk, uint8_t part, const char *path,
     
     // check if file already exists
     *dir_index = fat_find_in_dir(disk, part, filename, *dir_cluster, dir_entry, dir_part_cluster);
-   
-    kfree(working_path);
 
     // if the file was found and it is read-only then do nothing
     if(*dir_index != MAX && (dir_entry->attrib & FAT_DIR_ATTRIB_READ_ONLY))
@@ -871,8 +870,6 @@ static err_t fat_check_file_exists(uint8_t disk, uint8_t part, const char *path,
     
     if(*dir_index == MAX)
         return EXIT_CODE_FS_FILE_NOT_FOUND;
-    
-    kfree(working_path);
     
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
