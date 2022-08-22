@@ -723,7 +723,12 @@ void iso_read(char * path, uint32_t *drv)
     uint32_t flba = iso_traverse(path, &fsize, NULL);
 
 	if(!flba)
-	{ gerror = EXIT_CODE_FS_FILE_NOT_FOUND; return; }
+	{ 
+		gerror = EXIT_CODE_FS_FILE_NOT_FOUND; 
+		drv[2] = NULL; 
+		drv[3] = 0; 
+		return; 
+	}
 	
 	uint32_t nlba = (fsize / ISO_SECTOR_SIZE) + ((fsize % ISO_SECTOR_SIZE) != 0);
 	uint8_t drive = (uint8_t) (drive_convert_drive_id((const char *) path) >> DISKIO_DISK_NUMBER);
