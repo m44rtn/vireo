@@ -196,7 +196,7 @@ static api_space_t api_handle_driver_space_request(api_space_t space)
     char *file = kmalloc(FAT_MAX_FILENAME_LEN);
         
     if(driver_external_get_running_filename(file))
-        return (api_space_t) MAX;
+    { kfree(file); return (api_space_t) MAX; }
     
     memcpy(&api_spaces[space].filename[0], (void *) file, FAT_MAX_FILENAME_LEN);
     kfree(file);
