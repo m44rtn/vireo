@@ -28,6 +28,7 @@ SOFTWARE.
 
 #define PROG_DEFAULT_STACK_SIZE 4096    // bytes
 
+void prog_init(void);
 void prog_api(void *req);
 err_t prog_launch_binary(char *filename);
 uint8_t prog_pid_exists(const pid_t pid);
