@@ -21,14 +21,13 @@ jmp api_dispatcher_return
 
 global api_dispatcher_return
 api_dispatcher_return:
-pop DWORD [.instrptr]
 
 ; return
 push ss
 push esp
 pushfd
 push cs
-push DWORD [.instrptr]
+push eax
 iretd
 
 .instrptr dd 0x00
