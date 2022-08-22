@@ -125,6 +125,9 @@ void init_env(void)
     MBR_enumerate();
     cd_init();
 
+    prog_init();
+    api_init();
+
 }
 
 void main(void)

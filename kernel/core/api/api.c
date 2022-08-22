@@ -100,8 +100,7 @@ void *api_dispatcher(void *eip, void *req)
     syscall_hdr_t *hdr = (syscall_hdr_t *)req;
     response_hdr_t *out = (response_hdr_t *)req;
 
-    if(!api_spaces)
-        api_init();
+    dbg_assert(api_spaces);
 
     uint8_t spaces_index = (uint8_t) ((hdr->system_call & 0xFF00) / API_SYSCALL_SEGMENT_SIZE);
     

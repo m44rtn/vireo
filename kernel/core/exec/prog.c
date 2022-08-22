@@ -126,8 +126,7 @@ uint32_t prog_find_free_index(void)
 
 err_t prog_launch_binary(char *filename)
 {
-    if(!prog_info)
-        prog_init();
+    dbg_assert(prog_info);
 
     // find free index in prog_info
     uint32_t free_index = prog_find_free_index();
@@ -247,8 +246,7 @@ void prog_api(void *req)
 {
     syscall_hdr_t *hdr = req;
 
-    if(!prog_info)
-        prog_init();
+    dbg_assert(prog_info);
 
     hdr->exit_code = EXIT_CODE_GLOBAL_SUCCESS;
 
