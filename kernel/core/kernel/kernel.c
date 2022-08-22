@@ -84,10 +84,9 @@ void kernel_api_handler(void *req)
             // full version string
             char *str = info_make_version_str();
             
-            hdr->response_ptr = evalloc(strlen(str) + 1, prog_get_current_running());
+            hdr->response_ptr = str;
             hdr->response_size = strlen(str) + 1;
             memcpy((hdr->response_ptr), str, strlen(str) + 1);
-            kfree(str);
             break;
         }
 
