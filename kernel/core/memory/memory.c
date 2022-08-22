@@ -192,7 +192,7 @@ uint8_t memory_init(void)
     /* TODO: if not exists, try int 15h (v86) */
     memory_create_temp_mmap();
     
-    memset((void *) &memory_t, sizeof(MEMORY_TABLE)*128, 0);
+    memset((void *) &memory_t[0], sizeof(MEMORY_TABLE)*MEMORY_TABLE_LENGTH, 0);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
@@ -255,6 +255,9 @@ void kfree(void *ptr)
     uint8_t i;
     uint8_t len;
 
+    dbg_assert(ptr);
+    dbg_assert(ptr < MEMORY_KMALLOC_END);
+
     if(ptr == NULL)
         return;
     
@@ -264,16 +267,14 @@ void kfree(void *ptr)
         if(memory_t[i].loc == (uint32_t) ptr)
             break;
 
+    dbg_assert(i < MEMORY_TABLE_LENGTH);
+
     size_t s = memory_t[i].size;
 
     len = (uint8_t) (i + s);
-    for(i = i; i < len; i++)
-    {
-        memory_t[i].loc  = 0;
-        memory_t[i].size = 0;
-    }
 
     memset(ptr, s * MEMORY_BLOCK_SIZE, 0);
+    memset(&memory_t[i], sizeof(MEMORY_TABLE) * s, 0);
 }
 
 uint32_t memory_getAvailable(void)
