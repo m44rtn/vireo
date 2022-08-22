@@ -645,7 +645,6 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 		return ret;
 	}
 	
-	iso_free_bfr(b);
 	return NULL;
 }
 
