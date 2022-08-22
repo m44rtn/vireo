@@ -92,7 +92,6 @@ pid_t current_running_pid = PID_KERNEL;
 uint8_t prog_flags = 0;
 
 /// ----- ///
-void prog_init(void);
 uint32_t prog_find_info_index(const pid_t pid);
 
 extern void start(void);
