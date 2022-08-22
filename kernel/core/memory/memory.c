@@ -258,10 +258,9 @@ void *kmalloc(size_t size)
 void kfree(void *ptr)
 {
     uint8_t i;
-    uint8_t len;
 
     dbg_assert(ptr);
-    dbg_assert(ptr < MEMORY_KMALLOC_END);
+    dbg_assert((uint32_t)ptr < MEMORY_KMALLOC_END);
 
     if(ptr == NULL)
         return;
@@ -275,8 +274,6 @@ void kfree(void *ptr)
     dbg_assert(i < MEMORY_TABLE_LENGTH);
 
     size_t s = memory_t[i].size;
-
-    len = (uint8_t) (i + s);
 
     memset(ptr, s * MEMORY_BLOCK_SIZE, 0);
     memset(&memory_t[i], sizeof(MEMORY_TABLE) * s, 0);
