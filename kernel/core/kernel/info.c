@@ -67,7 +67,6 @@ char *info_make_version_str(void)
     if(!str)
         return NULL;
 
-    memset(str, MAX_INFO_STR_LEN, 0); // FIXME: buffer is filled with 0x20 if memset is not used
     str_add_val(str, INFO_VER_STR_START "%i (", BUILD);
 
     uint32_t i = strlen(str);
