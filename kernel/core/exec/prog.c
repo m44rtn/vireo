@@ -62,7 +62,7 @@ typedef struct
   void *binary_start;
   void *rel_start; // relative start address
   void *stck;
-  size_t size;     // FIXME: currently file size not size in memory
+  size_t size;
   char *filename;
 } __attribute__((packed)) prog_info_t;
 
@@ -146,14 +146,14 @@ err_t prog_launch_binary(char *filename)
 
     // save all known information about the program
     prog_info[free_index].binary_start = f;
-    prog_info[free_index].size = size; // file size (not size in memory)
+    prog_info[free_index].size = size; // file size (= size in memory for flat binaries)
     prog_info[free_index].started_by = current_running_pid;
     prog_info[free_index].filename = filename; // FIXME: could point to an unkown program's memory
     prog_info[free_index].pid = task_new_pid();
     prog_info[free_index].stck = (void *) (((uint32_t)evalloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
 
     err_t err = 0;
-    void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err);
+    void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err, &prog_info[free_index].size);
 
     if(!err)
         prog_info[free_index].rel_start = (void *) ((uint32_t)rel_addr | (uint32_t)(elf));

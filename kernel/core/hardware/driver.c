@@ -277,7 +277,8 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     file_t *elf = f;
 
     err_t err = 0;
-    void *rel_addr = elf_parse_binary(&elf, PID_DRIVER, &err);
+    size_t ignore;
+    void *rel_addr = elf_parse_binary(&elf, PID_DRIVER, &err, &ignore);
 
     // add information to the driver list based on the type of binary (elf, flat)
     if(!err)
