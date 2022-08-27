@@ -131,7 +131,7 @@ void memory_api(void *req)
         {
             api_mem_info_t *mem = (api_mem_info_t *) evalloc(sizeof(api_mem_info_t), prog_get_current_running());
             mem->memory_space_kb = memory_info_t.available_memory;
-            mem->program_space_start = NULL; // TODO: either fix or remove
+            mem->program_space_start = MEMORY_KMALLOC_END;
             
             hdr->response_ptr = mem;
             hdr->response_size = sizeof(api_mem_info_t);
