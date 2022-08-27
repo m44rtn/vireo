@@ -30,8 +30,6 @@ SOFTWARE.
 
 #include "../screen/screen_basic.h"
 
-// FIXME: make this nice some day
-
 /* panic with CPU state */
 void panic(const char *type, const char *error)
 {
