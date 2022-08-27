@@ -220,8 +220,6 @@ void diskio_init(void)
     drv[1] = (uint32_t) (drives);
     driver_exec_int(pciGetInfo(IDE_ctrl) | DRIVER_TYPE_PCI, drv); 
 
-    // FIXME: this is the incorrect way to init drive_info_t (assumes for example that there will 
-    // be 4 drives returned by the IDE driver, while this is usually not the case)
     for(i = 0; i < DISKIO_MAX_DRIVES; ++i)
     {
         // disks are returned in order with their type being stored at the 
