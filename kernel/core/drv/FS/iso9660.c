@@ -184,7 +184,7 @@ static cd_info_t *iso_find_free_cd_info_entry(void)
 	for(uint8_t i = 0; i < CD_INFO_ENTRIES; ++i)
 		if(cd_info_ptr[i].drive == 0xFF)
 			return &cd_info_ptr[i]; 
-			
+
 	VERIFY_NOT_REACHED();
 	return NULL;
 }
@@ -367,6 +367,10 @@ static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *file
 	direntry_t entry;
 
 	size_t size = iso_get_dir_size(drive, dir_lba);
+
+	if(size == MAX)
+		return MAX;
+
 	size_t bfr_size = iso_alloc_dir_buffer(size, &bfr);
 
 	if(!bfr || !bfr_size)
@@ -459,7 +463,12 @@ size_t iso_alloc_dir_buffer(size_t dir_size, uint32_t **ret_addr)
 
 size_t iso_get_dir_size(uint8_t drive, uint32_t dir_lba)
 {
-	direntry_t *dir = (direntry_t *) iso_read_drive(drive, dir_lba, 1);
+	direntry_t *dir = (direntry_t *) evalloc(ISO_SECTOR_SIZE, PID_DRIVER);
+
+	if(!dir)
+		{ gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return MAX; }
+
+	read(drive, dir_lba, 1, (uint8_t *) dir);
 		
 	size_t size = (dir->size);
 	iso_free_bfr((uint32_t *) dir);
@@ -643,12 +652,15 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 	uint16_t i = 0;
 
 	const cd_info_t *info = iso_get_cd_info_entry(drive);
-	uint8_t * b = NULL;
+	uint8_t * b = evalloc(ISO_SECTOR_SIZE, PID_DRIVER);
+
+	if(!b)
+		return NULL;
 
 	// do while the current sector does not equal the max sectors of the path table
 	while(lba < (info->path_table_size)) // was: (lba * ISO_SECTOR_SIZE) < (info->path_table_size)
 	{
-		b = (uint8_t *) iso_read_drive(drive, (info->path_table_lba) + lba, 1);
+		read(drive, (info->path_table_lba) + lba, 1, b);
 		uint16_t read = iso_count_index(&i, index, b);
 
 		// if we are at the end of the current buffer, update the total
@@ -658,12 +670,11 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 			total = (uint16_t) (total + i); 
 			i = 0; 
 			lba++; 
-			iso_free_bfr(b);
 			continue; 
 		}
 		
 		if((total + i) != index)
-		{ iso_free_bfr(b); continue; }
+		 	continue;
 		
 		// if we get here we found what we were looking for
 		pathtable_t *t = (pathtable_t *) &b[read];
@@ -674,9 +685,11 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 		
 		memcpy((char *) ret, (char *) &b[read], len);
 		iso_free_bfr(b);
+
 		return ret;
 	}
 	
+	iso_free_bfr(b);
 	return NULL;
 }
 
@@ -730,31 +743,12 @@ void reverse_path(char *path)
 	kfree(new);
 }
 
-uint16_t *iso_read_drive(uint8_t drive, uint32_t lba, uint32_t sctr_read)
-{
-	// FIXME!!! use read directly for all functions instead of this
-	// a function should allocate its own buffer
-	uint16_t *buf = evalloc(ISO_SECTOR_SIZE * sctr_read, PID_DRIVER);
-
-	// check if we got a null pointer back
-	if(!buf)
-	{
-		gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
-		return NULL;
-	}
-
-	// read the drive
-	read(drive, lba, sctr_read, (uint8_t *) buf);
-
-	return buf;
-}
-
 void iso_read(char * path, uint32_t *drv)
 {
 	size_t fsize = 0;
     uint32_t flba = iso_traverse(path, &fsize, NULL);
 
-	if(!flba)
+	if(!flba || flba == MAX)
 	{ 
 		gerror = EXIT_CODE_FS_FILE_NOT_FOUND; 
 		drv[2] = NULL; 
@@ -765,10 +759,18 @@ void iso_read(char * path, uint32_t *drv)
 	uint32_t nlba = (fsize / ISO_SECTOR_SIZE) + ((fsize % ISO_SECTOR_SIZE) != 0);
 	uint8_t drive = (uint8_t) (drive_convert_drive_id((const char *) path) >> DISKIO_DISK_NUMBER);
 
-	uint16_t *bfr = NULL;
+	uint8_t *bfr = evalloc(fsize, PID_DRIVER);
+
+	if(!bfr)
+	{
+		gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; 
+		drv[2] = NULL; 
+		drv[3] = 0; 
+		return; 
+	}
 
 	if(nlba)
-		bfr = iso_read_drive(drive, flba, nlba);
+		read(drive, flba, nlba, bfr);
 	else
 		gerror = EXIT_CODE_FS_FILE_NOT_FOUND;
 
