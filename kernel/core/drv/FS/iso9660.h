@@ -30,7 +30,7 @@ void iso_handler(unsigned int *drv);
 
 void iso_init(unsigned char drive);
 void iso_search_descriptor(unsigned char drive, unsigned char * buffer, unsigned char type);
-void iso_save_pvd_data(unsigned char * pvd);
+void iso_save_pvd_data(uint8_t * pvd, void *info_ptr);
 
 void * iso_allocate_bfr(unsigned int size);
 void iso_free_bfr(void *ptr);

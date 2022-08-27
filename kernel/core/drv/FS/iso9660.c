@@ -53,6 +53,7 @@ SOFTWARE.
 
 #define ISO_SECTOR_SIZE			2048 // bytes
 #define CD_INFO_SIZE            512  // bytes
+#define CD_INFO_ENTRIES			CD_INFO_SIZE / sizeof(cd_info_t)
 #define VOL_IDENT_SIZE          32   // bytes
 
 #define FIRST_DESCRIPTOR_LBA	0x10
@@ -135,7 +136,7 @@ struct DRIVER ISO_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_ISO | D
 uint32_t atapi_devices  = 0;
 uint8_t n_atapi_devs    = 0;
 
-uint32_t *cd_info_ptr 	= NULL;
+cd_info_t *cd_info_ptr 	= NULL;
 
 uint8_t gerror;
 
@@ -146,7 +147,6 @@ void iso_handler(uint32_t * drv)
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
-			// FIXME: does not support multiple CD drives...
             iso_init((uint8_t) drv[1]);
         break;
 
@@ -167,6 +167,35 @@ void iso_handler(uint32_t * drv)
     
 }
 
+static cd_info_t *iso_get_cd_info_entry(uint8_t drive)
+{
+	cd_info_t *entry = NULL;
+
+	for(uint8_t i = 0; i < CD_INFO_ENTRIES; ++i)
+		if(cd_info_ptr[i].drive == drive)
+			return &cd_info_ptr[i]; 
+
+	//dbg_verify_not_reached();
+	return entry;
+}
+
+static cd_info_t *iso_find_free_cd_info_entry(void)
+{
+	for(uint8_t i = 0; i < CD_INFO_ENTRIES; ++i)
+		if(cd_info_ptr[i].drive == 0xFF)
+			return &cd_info_ptr[i]; 
+	
+	return NULL;
+}
+
+static void iso_allocate_cd_info(void)
+{
+	cd_info_ptr = iso_allocate_bfr(CD_INFO_SIZE);
+	dbg_assert(cd_info_ptr);
+
+	memset(cd_info_ptr, CD_INFO_SIZE, 0xFF);
+}
+
 void iso_init(uint8_t drive)
 {    
 	// do we know this drive already?
@@ -175,7 +204,7 @@ void iso_init(uint8_t drive)
 
 	// allocate a cd info buffer if we don't have one yet
 	if(cd_info_ptr == NULL)
-		cd_info_ptr = iso_allocate_bfr(CD_INFO_SIZE);
+		iso_allocate_cd_info();
 
 	uint8_t *buffer = (uint8_t *) iso_allocate_bfr(ISO_SECTOR_SIZE);
 
@@ -187,11 +216,11 @@ void iso_init(uint8_t drive)
 	iso_search_descriptor(drive, buffer, VD_TYPE_PRIMARY);
 	dbg_assert(buffer[0] == VD_TYPE_PRIMARY);
 
-	// save all interesting data
-	iso_save_pvd_data(buffer);
-
-	cd_info_t *info = (cd_info_t *) cd_info_ptr;
+	cd_info_t *info = iso_find_free_cd_info_entry();
 	info->drive = drive;
+
+	// save all interesting data
+	iso_save_pvd_data(buffer, info);
 
 	if(n_atapi_devs < IDE_DRIVER_MAX_DRIVES)
 		atapi_devices |= (1u << drive);
@@ -230,14 +259,14 @@ void iso_search_descriptor(uint8_t drive, uint8_t * buffer, uint8_t type)
 	}
 }
 
-void iso_save_pvd_data(uint8_t * pvd)
+void iso_save_pvd_data(uint8_t * pvd, void *info_ptr)
 {
     // since I don't want to use 882 bytes of my precious kernel space
     // for stuff I'm probably never going to use, I'm going to use pointers 
     // and array indexes for searching all the information I need (this is a warning
     // because it may get messy) :)
 
-	cd_info_t * info = (cd_info_t *) cd_info_ptr;
+	cd_info_t *info = info_ptr;
 	uint32_t * dword;
 	uint16_t * word;
 
@@ -392,7 +421,7 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 	// reverse path and remove everything we don't need anymore
 	iso_clean_path_reverse(p);
 
-	cd_info_t *info = (cd_info_t *) cd_info_ptr;
+	cd_info_t *info = iso_get_cd_info_entry(drive);
 	uint32_t dir_lba = (info->rootdir_lba);
 
 	// if there is only a file in the path, we do not have to search for directories
@@ -475,7 +504,7 @@ static uint32_t iso_find_in_path_table(uint8_t drive, const char *filename, uint
 {
 	void *buffer = iso_allocate_bfr(PAGE_SIZE);
 	
-	cd_info_t *info = (cd_info_t *) cd_info_ptr;
+	cd_info_t *info = iso_get_cd_info_entry(drive);
 	
 	size_t path_table_size = info->path_table_size;
 	uint32_t path_lba = info->path_table_lba;
@@ -612,7 +641,7 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 	uint16_t total = 0;
 	uint16_t i = 0;
 
-	const cd_info_t *info = (cd_info_t *) cd_info_ptr;
+	const cd_info_t *info = iso_get_cd_info_entry(drive);
 	uint8_t * b = NULL;
 
 	// do while the current sector does not equal the max sectors of the path table
