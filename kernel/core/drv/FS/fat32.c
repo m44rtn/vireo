@@ -286,7 +286,14 @@ err_t fat_init(uint8_t disk, uint8_t part)
     #ifndef NO_DEBUG_INFO
     print_value("[FAT_DRIVER] Drive: %i\n", (uint32_t) disk);
     print_value("[FAT_DRIVER] Partition: %i\n", (uint32_t) part);
-    print_value("[FAT_DRIVER] Volume name: %s\n", (uint32_t) &info_entry->ebpb->volName[0]); // FIXME does not contain '\0' so keeps printing until 0 is found...
+
+    char *volume_name = kmalloc(TOTAL_FILENAME_LEN + 1);
+    memcpy(volume_name, &info_entry->ebpb->volName[0], TOTAL_FILENAME_LEN);
+    volume_name[TOTAL_FILENAME_LEN] = '\0';
+
+    print_value("[FAT_DRIVER] Volume name: %s\n", (uint32_t) volume_name);
+    kfree(volume_name);
+
     print("\n");
     #endif
 
