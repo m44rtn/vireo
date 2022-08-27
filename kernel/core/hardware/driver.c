@@ -255,7 +255,6 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     if(index == MAX)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
 
-    // TODO: move to util.c?
     uint32_t filename_index = 0;
     uint32_t  i;
     while((i = find_in_str(&path[filename_index], "/")) != MAX)
@@ -302,8 +301,7 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     // this is not the right function to use since this function does not change
     // stack pointers, which means that the driver uses the stack of whatever program was
     // running at the time of calling
-    // FIXME: change stacks
-    EXEC_CALL_FUNC(ext_drv_list[index].start, NULL); // (((uint32_t)ext_drv_list[index].stack) + PROG_DEFAULT_STACK_SIZE)
+    EXEC_CALL_FUNC(ext_drv_list[index].start, NULL);
     
     current_running_driver = 0;
     prog_set_status_prog_running();
