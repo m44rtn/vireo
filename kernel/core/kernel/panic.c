@@ -66,7 +66,7 @@ void panic(const char *type, const char *error)
 }
 
 /* panic without cpu state --> mainly used for non-cpu-exceptions */
-void easy_panic(const char *type, const char *error, const char *file, const uint32_t line, uint32_t fptr)
+void easy_panic(const char *type, const char *error, const char *file, const uint32_t line, const char *function)
 {
     print("\n [KERNEL PANIC]\n");
     print_value(" Fatal %s: ", (uint32_t) type);
@@ -78,7 +78,7 @@ void easy_panic(const char *type, const char *error, const char *file, const uin
     print("\n Debug information:\n\t");
     print_value("file: %s\n\t", (uint32_t) file);
     print_value("line: %i\n\t", line);
-    print_value("fptr: 0x%x\n", (uint32_t) fptr);
+    print_value("function: %s()\n", (uint32_t) function);
 
     screen_basic_disable_cursor();
     screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
