@@ -169,14 +169,12 @@ void iso_handler(uint32_t * drv)
 
 static cd_info_t *iso_get_cd_info_entry(uint8_t drive)
 {
-	cd_info_t *entry = NULL;
-
 	for(uint8_t i = 0; i < CD_INFO_ENTRIES; ++i)
 		if(cd_info_ptr[i].drive == drive)
 			return &cd_info_ptr[i]; 
 
 	VERIFY_NOT_REACHED();
-	return entry;
+	return NULL;
 }
 
 static cd_info_t *iso_find_free_cd_info_entry(void)
