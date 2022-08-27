@@ -43,6 +43,8 @@ if(!(expression))                                                       \
         screen_print( ":ASSERT] ");                                     \
         screen_print(__FILE__);                                         \
         screen_print( ": ");                                            \
+        screen_print(__func__);                                         \
+        screen_print("(): ");                                           \
         screen_print(intstr(__LINE__));                                 \
         screen_print( ": Assertion Failed\n");                          \
         screen_set_color(SCREEN_COLOR_DEFAULT);                         \
