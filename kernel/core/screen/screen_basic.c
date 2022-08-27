@@ -293,7 +293,7 @@ void print_at(const char *str, uint32_t x, uint32_t y)
 	unsigned int i;  
 	unsigned int length = strlen((char *) str);
 
-	for(i = 0; i < length; i++, x++, y++){ 
+	for(i = 0; i < length; i++, x++){ 
 		screen_basic_putchar(x, y, str[i]);	
 	}
 }
