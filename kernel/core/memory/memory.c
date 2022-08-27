@@ -171,15 +171,10 @@ uint8_t memory_init(void)
     LOADER_INFO infoStruct;
     
     loader_type = loader_get_type();
-    
+    ASSERT(loader_type != LOADER_TYPE_UNKNOWN);
+
     /* we don't know this yet */
     memory_info_t.end_of_kernel_memory = NULL;
-
-    /* If the loader type is unknown, we won't get an info struct.
-       TODO: implement int 15h ax=0xe820
-       FIXME: remove not implemented exit code after implementing int 15h */
-    if(loader_type == LOADER_TYPE_UNKNOWN)
-        return EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
 
     infoStruct = loader_get_infoStruct();
     
@@ -193,8 +188,6 @@ uint8_t memory_init(void)
     print_value("[MEMORY] Memory map length: %i bytes\n\n", infoStruct.mmap_length);
     #endif
 
-    /* TODO: if exists, read memory map */
-    /* TODO: if not exists, try int 15h (v86) */
     memory_create_temp_mmap();
     
     memset((void *) &memory_t[0], sizeof(MEMORY_TABLE)*MEMORY_TABLE_LENGTH, 0);
