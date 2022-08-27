@@ -119,6 +119,7 @@ typedef struct
 
 typedef struct
 {
+	uint8_t drive;
 	uint32_t path_table_lba;
 	uint32_t path_table_size; // in sectors
 	uint32_t rootdir_lba;
@@ -189,6 +190,9 @@ void iso_init(uint8_t drive)
 	// save all interesting data
 	iso_save_pvd_data(buffer);
 
+	cd_info_t *info = (cd_info_t *) cd_info_ptr;
+	info->drive = drive;
+
 	if(n_atapi_devs < IDE_DRIVER_MAX_DRIVES)
 		atapi_devices |= (1u << drive);
 
@@ -196,7 +200,6 @@ void iso_init(uint8_t drive)
 	iso_free_bfr((uint32_t *) buffer);
 
 	#ifndef NO_DEBUG_INFO
-		cd_info_t * info = (cd_info_t *) cd_info_ptr;
 		print_value("[ISO9660 DRIVER] Vol. ident.: %s\n", (uint32_t) (info->volident));
 		print_value("[ISO9660 DRIVER] Vol. size (in 2048 byte blocks): %i\n", (uint32_t) (info->vol_size));
 		print_value("[ISO9660 DRIVER] Path table size (in bytes): %i\n", (uint32_t) (info->path_table_size));
@@ -204,7 +207,6 @@ void iso_init(uint8_t drive)
 		print_value("[ISO9660 DRIVER] Rootdir lba: %i\n", (uint32_t) (info->rootdir_lba));
         print("\n");
 	#endif
-	
 }
 
 void iso_search_descriptor(uint8_t drive, uint8_t * buffer, uint8_t type)
