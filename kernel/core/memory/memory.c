@@ -149,7 +149,7 @@ void memory_api(void *req)
         {
             vfree_t *v = (vfree_t *) req;
             
-            dbg_assert(v);
+            ASSERT(v);
 
             if((uint32_t)v->ptr < MEMORY_KMALLOC_END)
                 { v->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_RANGE; break;}
@@ -259,8 +259,8 @@ void kfree(void *ptr)
 {
     uint8_t i;
 
-    dbg_assert(ptr);
-    dbg_assert((uint32_t)ptr < MEMORY_KMALLOC_END);
+    ASSERT(ptr);
+    ASSERT((uint32_t)ptr < MEMORY_KMALLOC_END);
 
     if(ptr == NULL)
         return;
@@ -271,7 +271,7 @@ void kfree(void *ptr)
         if(memory_t[i].loc == (uint32_t) ptr)
             break;
 
-    dbg_assert(i < MEMORY_TABLE_LENGTH);
+    ASSERT(i < MEMORY_TABLE_LENGTH);
 
     size_t s = memory_t[i].size;
 
@@ -345,7 +345,7 @@ static void memory_create_temp_mmap(void)
     temp_memory_map[0].loc_end   = (uint32_t) STACK_TOP;
 
     /* kernel flows through malloc memory */
-    dbg_assert((((uint32_t) STACK_TOP) <= MEMORY_KMALLOC_END));
+    ASSERT((((uint32_t) STACK_TOP) <= MEMORY_KMALLOC_END));
     
 
     /* and here is the grub memory info */

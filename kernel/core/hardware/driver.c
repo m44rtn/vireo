@@ -121,7 +121,7 @@ void driver_init(void)
     driver_search_pciAll();
     ext_drv_list = evalloc(DRIVER_EXTERNAL_LIST_SIZE, PID_KERNEL);
 
-    dbg_assert(ext_drv_list);
+    ASSERT(ext_drv_list);
 
 #ifndef NO_DEBUG_INFO
     print( "\n");

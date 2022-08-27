@@ -125,12 +125,12 @@ uint32_t prog_find_free_index(void)
 
 err_t prog_launch_binary(char *filename)
 {
-    dbg_assert(prog_info);
+    ASSERT(prog_info);
 
     // find free index in prog_info
     uint32_t free_index = prog_find_free_index();
 
-    dbg_assert(free_index);
+    ASSERT(free_index);
 
     if(free_index == MAX)
         return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
@@ -218,7 +218,7 @@ void prog_terminate(pid_t pid, bool_t stay)
     uint8_t is_running = (pid == current_running_pid);
     uint32_t pid_index = prog_find_info_index(pid);
 
-    dbg_assert(pid_index);
+    ASSERT(pid_index);
     
     if(pid_index == MAX) 
         return;
@@ -245,7 +245,7 @@ void prog_api(void *req)
 {
     syscall_hdr_t *hdr = req;
 
-    dbg_assert(prog_info);
+    ASSERT(prog_info);
 
     hdr->exit_code = EXIT_CODE_GLOBAL_SUCCESS;
 
@@ -254,7 +254,7 @@ void prog_api(void *req)
         case SYSCALL_GET_PROGRAM_INFO:
         {
             api_prog_info_t *info = evalloc(sizeof(api_prog_info_t), current_running_pid);
-            dbg_assert(info);
+            ASSERT(info);
             
             uint32_t pid_index = prog_find_info_index(current_running_pid);
             

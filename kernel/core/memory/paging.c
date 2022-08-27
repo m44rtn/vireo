@@ -117,7 +117,7 @@ void *valloc(PAGE_REQ *req)
     uint32_t page_id, t_index, d_index;
 
     /* just checking... */
-    dbg_assert((uint32_t)page_dir);
+    ASSERT((uint32_t)page_dir);
 
     /* how many pages do we need? */
     npages = (uint16_t) (HOW_MANY((req->size), PAGING_PAGE_SIZE));
@@ -126,7 +126,7 @@ void *valloc(PAGE_REQ *req)
         return NULL;
 
     void * ptr = paging_find_free(npages);
-    dbg_assert(ptr);
+    ASSERT(ptr);
 
     page_id = ((uint32_t) ptr) >> 12;
     d_index = page_id >> 10; /* same as page_id / PAGING_TABLE_SIZE */
@@ -162,14 +162,14 @@ void *evalloc(size_t size, pid_t pid)
     };
     void *ptr = valloc(&req);
 
-    dbg_assert(ptr);
+    ASSERT(ptr);
     return ptr;
 }
 
 void vfree(void *ptr)
 {
-    dbg_assert(ptr);
-    dbg_assert((uint32_t)ptr < memory_getAvailable());
+    ASSERT(ptr);
+    ASSERT((uint32_t)ptr < memory_getAvailable());
 
     ptr = (void *) ((uint32_t)ptr & PAGING_ADDR_MSK);
 
@@ -196,7 +196,7 @@ void vfree(void *ptr)
     /* remove the contents */
     memset((void *)ptr, PAGING_PAGE_SIZE * shadow_t[page_id].npages, 0x00);
 
-    dbg_assert(page_id);
+    ASSERT(page_id);
     //* update our shadow map (RESV PID means unallocated) */
     for(uint32_t i = 0; i < shadow_t[page_id].npages; i++)
         shadow_t[page_id + i].pid = PID_RESV;

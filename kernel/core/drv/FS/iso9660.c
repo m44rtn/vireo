@@ -175,7 +175,7 @@ static cd_info_t *iso_get_cd_info_entry(uint8_t drive)
 		if(cd_info_ptr[i].drive == drive)
 			return &cd_info_ptr[i]; 
 
-	//dbg_verify_not_reached();
+	VERIFY_NOT_REACHED();
 	return entry;
 }
 
@@ -184,14 +184,15 @@ static cd_info_t *iso_find_free_cd_info_entry(void)
 	for(uint8_t i = 0; i < CD_INFO_ENTRIES; ++i)
 		if(cd_info_ptr[i].drive == 0xFF)
 			return &cd_info_ptr[i]; 
-	
+			
+	VERIFY_NOT_REACHED();
 	return NULL;
 }
 
 static void iso_allocate_cd_info(void)
 {
 	cd_info_ptr = iso_allocate_bfr(CD_INFO_SIZE);
-	dbg_assert(cd_info_ptr);
+	ASSERT(cd_info_ptr);
 
 	memset(cd_info_ptr, CD_INFO_SIZE, 0xFF);
 }
@@ -214,7 +215,7 @@ void iso_init(uint8_t drive)
 
 	// search and read the primary vol. desc.
 	iso_search_descriptor(drive, buffer, VD_TYPE_PRIMARY);
-	dbg_assert(buffer[0] == VD_TYPE_PRIMARY);
+	ASSERT(buffer[0] == VD_TYPE_PRIMARY);
 
 	cd_info_t *info = iso_find_free_cd_info_entry();
 	info->drive = drive;
@@ -247,14 +248,14 @@ void iso_search_descriptor(uint8_t drive, uint8_t * buffer, uint8_t type)
 		// read disk
 		uint8_t error = read(drive, lba, 0x01, buffer);
 
-		dbg_assert(!error); // asserts when drive is out of range
+		ASSERT(!error); // asserts when drive is out of range
 
 		if((buffer[0] == type) || (buffer[0] == VD_TYPE_TERMINATOR))
 			break;
 
 		++lba;
 
-		dbg_assert(lba != 0xFF);	// we don't want to read the whole CD until we 'find' what we
+		ASSERT(lba != 0xFF);	// we don't want to read the whole CD until we 'find' what we
 									// are looking for
 	}
 }
@@ -281,7 +282,7 @@ void iso_save_pvd_data(uint8_t * pvd, void *info_ptr)
 	// check if sector size is equal to standard sector size (this driver does not
 	// support ISO's that deviate from that sector size)
 	word = (uint16_t *) &pvd[PVD_BLOCK_SIZE];
-	dbg_assert(*(word) == ISO_SECTOR_SIZE);
+	ASSERT(*(word) == ISO_SECTOR_SIZE);
 
 	// store path table size (in sectors) and lba
 	dword = (uint32_t *) &pvd[PVD_PATHTABLE_SIZE];
@@ -312,7 +313,7 @@ void * iso_allocate_bfr(size_t size)
 	// req.size = size;
 
 	ptr = evalloc(size, PID_DRIVER);
-	dbg_assert(ptr);
+	ASSERT(ptr);
 	if(!ptr)
 		gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
 	
@@ -412,7 +413,7 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 	reverse_path(a);
 
 	uint32_t flen = find_in_str(a, "/");
-	dbg_assert(flen != MAX);
+	ASSERT(flen != MAX);
 
 	char *filename = iso_allocate_bfr(flen + 1);
 	memcpy(filename, a, flen);
@@ -576,7 +577,7 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, const char *path)
 {
 	char *filename = iso_allocate_bfr(ISO_MAX_FILENAME_LEN + 1);
 
-	dbg_assert(filename);
+	ASSERT(filename);
 
 	if(!filename)
 	{gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return 0;}
@@ -669,7 +670,7 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 		uint32_t len = (t->ident_len) + sizeof(pathtable_t);
 		uint32_t *ret = iso_allocate_bfr(len);
 		
-		dbg_assert(ret);
+		ASSERT(ret);
 		
 		memcpy((char *) ret, (char *) &b[read], len);
 		iso_free_bfr(b);

@@ -308,7 +308,7 @@ static void IDEDriverInit(uint32_t device)
     /* this is the PCI controller of a real life computer I use
         for testing. it has problems with this driver, so to remind me 
         to fix that someday, here an assert() */
-    //dbg_assert(!(pciGetReg0(PCI_controller) == 0x24CB8086));
+    //ASSERT(!(pciGetReg0(PCI_controller) == 0x24CB8086));
 
     /* get the ports for both primary and secondary */
     IDE_enumerate();

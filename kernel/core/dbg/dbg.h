@@ -29,21 +29,29 @@ SOFTWARE.
 #include "debug.h"
 
 #ifndef NDEBUG
-#define dbg_assert(expression)                                          \
+#define DBG_ASSERT(expression, msg)                                     \
     if(!(expression))                                                   \
     {                                                                   \
                                                                         \
     print( "[VIREO:ASSERT] ");                                          \
     screen_basic_set_screen_color(0x03);                                \
-    print_value( "%s:", (unsigned int) __FILE__);                       \
+    print_value( "%s: ", (unsigned int) __FILE__);                      \
     screen_basic_set_screen_color(0x07);                                \
-    print_value( "%i: Assertion Failed\n", (unsigned int) __LINE__);    \
+    print_value("%s(): ", (unsigned int) __func__);                     \
+    print_value( "%i: ", (unsigned int) __LINE__);                      \
+    print_value( "%s\n", (unsigned int) msg);                           \
     info_print_full_version();                                          \
                                                                         \
     while(1);                                                           \
-    }                                                     
+    }   
+
+#define ASSERT(expression) DBG_ASSERT(expression, "ASSERTION FAILED")
+#define VERIFY_NOT_REACHED() DBG_ASSERT(0, "VERIFY NOT REACHED FAILED")
 #else
-#define dbg_assert(ignore) (void) 0
+#define ASSERT(ignore, ignore2) (void) 0
+#define ASSERT(ignore) (void) 0
+#define VERIFY_NOT_REACHED(0) (void) 0
 #endif
 
 #endif
+

@@ -207,7 +207,7 @@ unsigned int hex_digit_count(uint32_t value)
 
 void memset(void *start, size_t size, unsigned char val)
 {
-	dbg_assert(start);
+	ASSERT(start);
 
 	uint8_t *s = start;
 

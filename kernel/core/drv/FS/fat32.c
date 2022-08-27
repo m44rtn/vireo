@@ -281,7 +281,7 @@ err_t fat_init(uint8_t disk, uint8_t part)
     uint16_t sector_size = info_entry->ebpb->bpb.bSector;
 
     /* only support 512 bytes per sector */
-    dbg_assert(sector_size == FAT32_SECTOR_SIZE);
+    ASSERT(sector_size == FAT32_SECTOR_SIZE);
     
     #ifndef NO_DEBUG_INFO
     print_value("[FAT_DRIVER] Drive: %i\n", (uint32_t) disk);
