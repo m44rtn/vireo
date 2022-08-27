@@ -24,8 +24,10 @@ SOFTWARE.
 #ifndef __DBG_H__
 #define __DBG_H__
 
+#include "../include/types.h"
 #include "../screen/screen_basic.h"
 #include "../kernel/info.h"
+#include "../kernel/panic.h"
 #include "debug.h"
 
 #ifndef NDEBUG
@@ -50,7 +52,7 @@ SOFTWARE.
 #else
 #define ASSERT(ignore, ignore2) (void) 0
 #define ASSERT(ignore) (void) 0
-#define VERIFY_NOT_REACHED(0) (void) 0
+#define VERIFY_NOT_REACHED() easy_panic(PANIC_TYPE_EXCEPTION, "VERIFY_NOT_REACHED_FAILED", __FILE__, __LINE__, __func__);
 #endif
 
 #endif
