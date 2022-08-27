@@ -101,7 +101,7 @@ void prog_init(void)
 
     // out of memory?
     if(!prog_info)
-        really_easy_panic(PANIC_TYPE_EXCEPTION, "PROGRAM_EXECUTION_UNSUPPORTED");
+        really_easy_panic(PANIC_TYPE_INIT_ERROR, "PROGRAM_EXECUTION_UNSUPPORTED");
 
     memset((void *) prog_info, PROG_INFO_TABLE_SIZE, 0xFF);
 
