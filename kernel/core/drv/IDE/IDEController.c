@@ -37,7 +37,6 @@ SOFTWARE.
 #include "../../screen/screen_basic.h"
 #endif
 
-/* TODO: remove me */
 #include "../../dbg/dbg.h"
 
 #include "../../hardware/pci.h"
@@ -150,8 +149,6 @@ uint16_t ide_flags = 0;
 struct DRIVER IDE_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
 
 // FIXME remove static declarations/prototypes and put all functions in .h
-// FIXME check in read/write functions if sctrwrite is not too big of a value (creates fault)
-
 
 static uint32_t ide_get_max_addr(uint8_t drive)
 {
@@ -304,11 +301,6 @@ static void IDEDriverInit(uint32_t device)
     uint16_t port;
 
     PCI_controller = device & (uint32_t)~(DRIVER_TYPE_PCI);
-
-    /* this is the PCI controller of a real life computer I use
-        for testing. it has problems with this driver, so to remind me 
-        to fix that someday, here an assert() */
-    //ASSERT(!(pciGetReg0(PCI_controller) == 0x24CB8086));
 
     /* get the ports for both primary and secondary */
     IDE_enumerate();
@@ -558,7 +550,6 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
     IDEClearFlagBit(IDE_FLAG_IRQ);
 
     outb(port | ATA_PORT_SELECT,  ((uint8_t)0xE0U) | ((uint8_t)(slavebit << 4U)) | ((((uint8_t)start >> 24U)) & 0x0F));
-    //IDE_wait();
 
     outb(port | ATA_PORT_FEATURES, 0U);
     outb(port | ATA_PORT_LBAMID, (uint8_t) (DEFAULT_ATAPI_SECTOR_SIZE & 0xFF));
