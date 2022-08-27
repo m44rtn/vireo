@@ -183,7 +183,6 @@ static cd_info_t *iso_find_free_cd_info_entry(void)
 		if(cd_info_ptr[i].drive == 0xFF)
 			return &cd_info_ptr[i]; 
 
-	VERIFY_NOT_REACHED();
 	return NULL;
 }
 
@@ -216,6 +215,10 @@ void iso_init(uint8_t drive)
 	ASSERT(buffer[0] == VD_TYPE_PRIMARY);
 
 	cd_info_t *info = iso_find_free_cd_info_entry();
+	
+	if(!info)
+	{ iso_free_bfr(buffer); gerror = EXIT_CODE_GLOBAL_GENERAL_FAIL; return; }
+
 	info->drive = drive;
 
 	// save all interesting data
