@@ -147,7 +147,10 @@ void diskio_api(void *req)
             if(!b)
                 { c->hdr.exit_code = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; break; }
             
-            uint32_t lba = (drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI) ? c->lba : c->lba + MBR_getStartLBA(drive, part);
+            uint32_t lba = c->lba;
+
+            if((drive_type(c->drive) == DRIVE_TYPE_IDE_PATAPI) && part != 0xFF)
+                lba = c->lba + MBR_getStartLBA(drive, part);
 
             c->hdr.exit_code = read(drive, lba, c->nlba, b);
 
@@ -173,7 +176,11 @@ void diskio_api(void *req)
             uint8_t drive =  (uint8_t) ((id >> 8) & 0xFF);
             uint8_t part = (uint8_t) (id & 0xFF);
 
-            uint32_t lba = c->lba + MBR_getStartLBA(drive, part);
+            uint32_t lba = c->lba;
+
+            if(part != 0xFF)
+                lba = lba +  + MBR_getStartLBA(drive, part);
+            
             uint32_t nlba = (c->buffer_size / DEFAULT_SECTOR_SIZE) + ((c->buffer_size % DEFAULT_SECTOR_SIZE) != 0);
 
             c->hdr.exit_code = write(drive, lba, nlba, (uint8_t *) c->buffer);
@@ -339,7 +346,7 @@ uint16_t drive_convert_drive_id(const char *id)
 
     // is there a partition specified?
     if(id[3] != DISKIO_DISKID_P)
-        return result;
+        return result | 0xFF;
 
     // if yes
     // get its number
