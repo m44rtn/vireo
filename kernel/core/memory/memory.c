@@ -131,7 +131,7 @@ void memory_api(void *req)
         {
             api_mem_info_t *mem = (api_mem_info_t *) evalloc(sizeof(api_mem_info_t), prog_get_current_running());
             mem->memory_space_kb = memory_info_t.available_memory;
-            mem->program_space_start = MEMORY_KMALLOC_END;
+            mem->program_space_start = (void *) MEMORY_KMALLOC_END;
             
             hdr->response_ptr = mem;
             hdr->response_size = sizeof(api_mem_info_t);
@@ -172,6 +172,9 @@ uint8_t memory_init(void)
     
     loader_type = loader_get_type();
     ASSERT(loader_type != LOADER_TYPE_UNKNOWN);
+
+    if(loader_type == LOADER_TYPE_UNKNOWN)
+        really_easy_panic(PANIC_TYPE_INIT_ERROR, "MEMORY_UNKNOWN");
 
     /* we don't know this yet */
     memory_info_t.end_of_kernel_memory = NULL;
