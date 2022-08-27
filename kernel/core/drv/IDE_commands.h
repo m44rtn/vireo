@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __IDE_COMMANDS_H__
 #define __IDE_COMMANDS_H__
 
-// TODO use COMMANDS.H first not reserved define
+#include "COMMANDS.H"
 
 /*#define IDE_COMMAND_INIT    0x00
 ---- (not defined since COMMANDS.H already defines INIT)
