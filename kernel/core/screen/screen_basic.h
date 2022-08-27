@@ -52,6 +52,7 @@ void screen_set_hexdigits(unsigned char value);
 
 void print(const char* text);
 void print_value(const char* text, unsigned int val);
+void print_at(const char *str, unsigned int x, unsigned int y);
 void screen_basic_clear_screen(void);
 
 char screen_basic_getchar(unsigned int x, unsigned int y);

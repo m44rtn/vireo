@@ -123,17 +123,7 @@ void screen_basic_api(void *req)
 
 		case SYSCALL_PRINT_AT:
 		{
-			uint16_t _x = SCRscreenData.cursorX, _y = SCRscreenData.cursorY;
-			
-			// set new cursor position and print
-			SCRscreenData.cursorX = (uint16_t) r->x;
-			SCRscreenData.cursorY = (uint16_t) r->y;
-			print(r->str);
-
-			// reset cursor positions to before syscall
-			SCRscreenData.cursorX = _x;
-			SCRscreenData.cursorY = _y;
-
+			print_at(r->str, r->x, r->y);
 			break;
 		}
 
@@ -296,6 +286,16 @@ void print(const char* str){
 		screen_basic_char_put_on_screen(str[i]);	
 	}
 
+}
+
+void print_at(const char *str, uint32_t x, uint32_t y)
+{
+	unsigned int i;  
+	unsigned int length = strlen((char *) str);
+
+	for(i = 0; i < length; i++, x++, y++){ 
+		screen_basic_putchar(x, y, str[i]);	
+	}
 }
 
 void screen_basic_clear_screen(void){
