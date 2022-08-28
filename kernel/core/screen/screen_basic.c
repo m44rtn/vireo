@@ -376,9 +376,15 @@ static void screen_basic_move_cursor_internal(void)
 
 static void screen_basic_linecheck(void)
 {
-	if(SCRscreenData.cursorY >= SCREEN_BASIC_HEIGHT - 1){
-		screen_basic_scroll(1);
+	if(SCRscreenData.cursorX >= SCREEN_BASIC_WIDTH)
+	{
+		SCRscreenData.cursorX = 0;
+		SCRscreenData.cursorY++;
 	}
+
+	if(SCRscreenData.cursorY >= SCREEN_BASIC_HEIGHT - 1)
+		screen_basic_scroll(1);
+
 }
 
 static void screen_basic_scroll(unsigned char line)
