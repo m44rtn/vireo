@@ -400,7 +400,7 @@ static void screen_basic_scroll(unsigned char line)
 		/* a signed integer will be fine for here */
 		vidmemloc[i] = vidmemloc[(int) (i + SCREEN_BASIC_WIDTH * SCREEN_BASIC_DEPTH * line)];
 	}
-	screen_basic_clear_line( (unsigned char) (SCREEN_BASIC_HEIGHT -  1 - line), (SCREEN_BASIC_HEIGHT - 1));
+	screen_basic_clear_line( (unsigned char) (SCREEN_BASIC_HEIGHT -  1 - line), (SCREEN_BASIC_HEIGHT));
 	
 	if((SCRscreenData.cursorY - line) < 0){
 		SCRscreenData.cursorY = 0;
