@@ -39,6 +39,8 @@ SOFTWARE.
 #define SCREEN_BASIC_FIRST_SCNLINE	0
 #define SCREEN_BASIC_LAST_SCNLINE	15
 
+#define SCREEN_BASIC_MARGIN_BELL	7 // characters, named after the margin bell on typewriters
+
 typedef struct SCREENDATA
 {
 	unsigned short cursorY;
@@ -82,7 +84,7 @@ uint8_t hexdigits = 0;
 static void screen_basic_char_put_on_screen(char c);
 static void screen_basic_move_cursor_internal(void);
 static void screen_basic_scroll(unsigned char line);
-static void screen_basic_linecheck(void);
+static void screen_basic_linecheck(char c);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
 
 /* TODO & FIXME: 
@@ -360,7 +362,7 @@ static void screen_basic_char_put_on_screen(char c){
 	}
 
 	screen_basic_move_cursor_internal();
-	screen_basic_linecheck();	
+	screen_basic_linecheck(c);	
 }
 
 static void screen_basic_move_cursor_internal(void)
@@ -374,10 +376,20 @@ static void screen_basic_move_cursor_internal(void)
 	outb(0x3D5, (uint8_t) (position & 0xFF));
 }
 
-static void screen_basic_linecheck(void)
+static void screen_basic_put_whitespace(uint32_t x_from, uint32_t x_to)
 {
-	if(SCRscreenData.cursorX >= SCREEN_BASIC_WIDTH)
+	for(; x_from < x_to; x_from++)
+		screen_basic_putchar(x_from, SCRscreenData.cursorY, ' ');
+}
+
+static void screen_basic_linecheck(char c)
+{
+
+	if(SCRscreenData.cursorX >= SCREEN_BASIC_WIDTH || (c == ' ' && SCRscreenData.cursorX >= (SCREEN_BASIC_WIDTH - SCREEN_BASIC_MARGIN_BELL)))
 	{
+		// clear remaining space after margin bell, just in case something was left there.
+		screen_basic_put_whitespace(SCRscreenData.cursorX, SCREEN_BASIC_WIDTH);
+
 		SCRscreenData.cursorX = 0;
 		SCRscreenData.cursorY++;
 	}
