@@ -29,5 +29,3 @@ pushfd
 push cs
 push eax
 iretd
-
-.instrptr dd 0x00
