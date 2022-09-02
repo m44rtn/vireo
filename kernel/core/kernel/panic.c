@@ -73,10 +73,14 @@ void easy_panic(const char *type, const char *error, const char *file, const uin
     /* kernel version string */
     info_print_panic_version();
 
-    print("\n Debug information:\n\t");
-    print_value("file: %s\n\t", (uint32_t) file);
-    print_value("line: %i\n\t", line);
-    print_value("function: %s()\n", (uint32_t) function);
+    screen_basic_set_screen_color((SCREEN_COLOR_BLACK << 4) | SCREEN_COLOR_CYAN);
+    print_value("\n %s :: ", (uint32_t) file);
+
+    screen_basic_set_screen_color((SCREEN_COLOR_BLACK << 4) | SCREEN_COLOR_YELLOW);
+    print_value("%i ", line);
+
+    screen_basic_set_screen_color((SCREEN_COLOR_BLACK << 4) | SCREEN_COLOR_GREEN);
+    print_value(":: %s()\n", (uint32_t) function);
 
     screen_basic_disable_cursor();
     screen_set_hexdigits(SCREEN_BASIC_HEX_DIGITS_USE_DEFAULT);
