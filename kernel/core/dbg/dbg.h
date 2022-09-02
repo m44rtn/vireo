@@ -50,8 +50,7 @@ SOFTWARE.
 #define ASSERT(expression) DBG_ASSERT(expression, "ASSERTION FAILED")
 #define VERIFY_NOT_REACHED() DBG_ASSERT(0, "VERIFY NOT REACHED FAILED")
 #else
-#define ASSERT(ignore, ignore2) (void) 0
-#define ASSERT(ignore) (void) 0
+#define ASSERT(ignore)
 #define VERIFY_NOT_REACHED() easy_panic(PANIC_TYPE_EXCEPTION, "VERIFY_NOT_REACHED_FAILED", __FILE__, __LINE__, __func__);
 #endif
 
