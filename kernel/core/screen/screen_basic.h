@@ -29,6 +29,23 @@ SOFTWARE.
 #define SCREEN_BASIC_HEIGHT         (unsigned char) 25
 #define SCREEN_BASIC_DEPTH          (unsigned char) 2
 
+#define SCREEN_COLOR_BLACK          0x00
+#define SCREEN_COLOR_BLUE           0x01
+#define SCREEN_COLOR_GREEN          0x02
+#define SCREEN_COLOR_CYAN           0x03
+#define SCREEN_COLOR_RED            0x04
+#define SCREEN_COLOR_MAGENTA        0x05
+#define SCREEN_COLOR_BROWN          0x06
+#define SCREEN_COLOR_LIGHT_GRAY     0x07
+#define SCREEN_COLOR_DARK_GRAY      0x08
+#define SCREEN_COLOR_LIGHT_BLUE     0x09
+#define SCREEN_COLOR_LIGHT_GREEN    0x0a
+#define SCREEN_COLOR_LIGHT_CYAN     0x0b
+#define SCREEN_COLOR_LIGHT_RED      0x0c
+#define SCREEN_COLOR_LIGHT_MAGENTA  0x0d
+#define SCREEN_COLOR_YELLOW         0x0e
+#define SCREEN_COLOR_WHITE          0x0f
+
 /* EXIT CODES */
 #define SCREEN_BASIC_EXIT_CODE_CURSOR_MOVE_FAIL     16
 
