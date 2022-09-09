@@ -52,7 +52,6 @@ SOFTWARE.
 #include "dsk/cd.h"
 
 #include "exec/exec.h"
-#include "exec/flat.h"
 #include "exec/elf.h"
 #include "exec/prog.h"
 

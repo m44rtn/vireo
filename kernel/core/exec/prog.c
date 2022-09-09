@@ -24,7 +24,6 @@ SOFTWARE.
 #include "prog.h"
 
 #include "elf.h"
-#include "flat.h"
 #include "task.h"
 #include "exec.h"
 
