@@ -35,7 +35,7 @@ SOFTWARE.
     if(!(expression))                                                   \
     {                                                                   \
                                                                         \
-    print( "[VIREO:ASSERT] ");                                          \
+    print( "\n[VIREO:ASSERT] ");                                        \
     screen_basic_set_screen_color(0x03);                                \
     print_value( "%s: ", (unsigned int) __FILE__);                      \
     screen_basic_set_screen_color(0x07);                                \
