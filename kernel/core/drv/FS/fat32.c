@@ -420,7 +420,7 @@ static uint32_t fat_find_in_dir(uint8_t disk, uint8_t part, const char *filename
     uint32_t last_fat_sector = 0;
     void *fat_table_buffer = kmalloc(FAT32_SECTOR_SIZE);
     
-    uint32_t index;
+    uint32_t index = MAX;
     
     while(cluster < FAT_CORRUPT_CLUSTER)
     {
