@@ -410,32 +410,17 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 {
 	// convert drive identifier (e.g. 'CD0') to something useful
 	uint8_t drive = (uint8_t) ((drive_convert_drive_id((const char *) path)) >> DISKIO_DISK_NUMBER);
-	
-	char *p = create_backup_str(path);
 
 	// save file name (TODO: can be seperate function)
-	char * a = create_backup_str(path);
-	reverse_path(a);
-
-	uint32_t flen = find_in_str(a, "/");
-	ASSERT(flen != MAX);
-
-	char *filename = iso_allocate_bfr(flen + 1);
-	memcpy(filename, a, flen);
-	filename[flen] = '\0';
-
-	// reverse path and remove everything we don't need anymore
-	iso_clean_path_reverse(p);
+	char * p = create_backup_str(path);
+	char *filename = iso_allocate_bfr(ISO_MAX_FILENAME_LEN + 1);
+	reverse_path(p, filename);
 
 	cd_info_t *info = iso_get_cd_info_entry(drive);
-	uint32_t dir_lba = (info->rootdir_lba);
+	uint32_t dir_lba = (p[0] == '\0') ? (info->rootdir_lba) : iso_path_to_dir_lba(drive, p);
 
-	// if there is only a file in the path, we do not have to search for directories
-	if(find_in_str(p, ".") == MAX && find_in_str(p, "/") != MAX)
-		dir_lba = iso_path_to_dir_lba(drive, p);
-	
 	if(dir_lba == MAX)
-		dir_lba = (info->rootdir_lba);
+		return MAX;
 
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize, entry);
 	
@@ -694,54 +679,64 @@ uint32_t *iso_find_index(uint8_t drive, uint16_t index)
 	return NULL;
 }
 
-void iso_clean_path_reverse(char *p)
-{	
-	if((drive_convert_drive_id(p) >> DISKIO_DISK_NUMBER) != 0xFF)
-		remove_from_str(p, strlen(DISKIO_DISKID_CD) + 2); // remove disk id, n = 4 ('CD0/')
-
-	// check if there are slashes in the path (if not it's a file in the root dir)
-	uint32_t loc = find_in_str(p, "/");
-	if(loc == MAX)
-		return;
-
-	reverse_path(p);
-	remove_from_str(p, find_in_str(p, "/") + 1);
-}
-
-void reverse_path(char *path)
+// !! WARNING !!
+// Destroy's original string!
+void reverse_path(char *path, char *out_filename)
 {
-	// I bet there is a better way to do this
-	const size_t len = strlen(path);
-	char *current, *backup = create_backup_str(path);
+	ASSERT(out_filename);
 
-	char *new = kmalloc(strlen(path) + 1);
-	uint32_t index = len - 1;
+	char *backup = create_backup_str(path);
+	ASSERT(backup);
 
-	current = strtok(backup, "/");
+	memcpy(backup, path, strlen(path));
+	
+	// remove disk identifier from backup
+	size_t s = find_in_str(path, "/");
+	remove_from_str(backup, s + 1);
 
-	while(current != NULL)
-	{
-		// copy current word to the new path var and update the index
-		memcpy(&new[index-strlen(current)+1], current, strlen(current));
-		index -= strlen(current);
-		
-		if(!index)
+	uint32_t b_index = strlen(backup);
+
+	// the last file in the path is the filename
+	for(; b_index > 0; b_index--)
+		if(backup[b_index] == '/')
 			break;
 
-		// add the forward slash back (delim for strtok when traversing the path)
-		new[index] = '/';
+	// if b_index == 0 then there was no '/', meaning only a filename exists
+	// in the path	
+	b_index = (b_index) ? b_index + 1 : 0;
+	memcpy(out_filename, &backup[b_index], strlen(&backup[b_index]));
 
-		// increase the index once more to account for the slash above
-		index--;
-
-		current = strtok(NULL, "/");
+	if(!b_index)
+	{
+		path[0] = '\0';
+		kfree(backup);
+		return;
 	}
 
-	new[len] = '\0';
-	memcpy(&path[0], &new[0], strlen(new) + 1);
+	backup[b_index - 1] = '\0';
+
+	// copy the rest of the path
+	uint32_t p_index = 0;
+	b_index = strlen(backup);
+	for(; b_index > 0; b_index--)
+	{
+		if(backup[b_index] != '/')
+			continue;
+
+		size_t s = strlen(&backup[b_index + 1]);
+		memcpy(&path[p_index], &backup[b_index + 1], s);
+		backup[b_index] = '\0';
+
+		p_index += s;
+		path[p_index] = '/';
+		p_index++;
+	}
+
+	s = strlen(&backup[b_index]);
+	memcpy(&path[p_index], &backup[b_index], s);
+	path[s + p_index] = '\0';
 
 	kfree(backup);
-	kfree(new);
 }
 
 void iso_read(char * path, uint32_t *drv)
