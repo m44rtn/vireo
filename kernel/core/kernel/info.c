@@ -48,7 +48,7 @@ void info_print_full_version(void)
 {
     print((char*) "\n[KERNEL] ");
     info_print_version();
-    print_value("[KERNEL] Build on: %s ", (uint32_t) BUILDDATE);
+    print_value("[KERNEL] Built on: %s ", (uint32_t) BUILDDATE);
     print_value("at %s\n", (uint32_t) BUILDTIME);
 }
 
@@ -56,7 +56,7 @@ void info_print_panic_version(void)
 {
     print(" Kernel version string: ");
     info_print_version();
-    print_value(" Build on: %s ", (uint32_t) BUILDDATE);
+    print_value(" Built on: %s ", (uint32_t) BUILDDATE);
     print_value("at %s\n", (uint32_t) BUILDTIME);
 }
 
