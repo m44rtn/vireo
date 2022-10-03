@@ -72,7 +72,6 @@ typedef struct api_new_program_t
 {
     syscall_hdr_t hdr;
     char *path;
-    return_t ret_addr; // FIXME: ignored
 } __attribute__((packed)) api_new_program_t;
 
 typedef struct terminate_t
