@@ -173,17 +173,28 @@ popad
 iret
 
 global ISR_80
-extern api_dispatcher_start
-extern start
+extern api_dispatcher
 ISR_80:
 ; System calls
 
 ; save old eip
 pop DWORD [ignore]
-mov edi, DWORD [ignore]
+push DWORD [ignore]
 
-; FIXME: may not work when user mode is used for programs
-push api_dispatcher_start
+pushad
+
+push eax
+push DWORD [ignore]
+
+sti
+call api_dispatcher
+
+; manually pop the things we pushed on the stack for
+; api_dispatcher
+pop DWORD [ignore]
+pop DWORD [ignore]
+
+popad
 iretd
 
 ; for ignoring values without using the registers
