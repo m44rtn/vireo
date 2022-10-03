@@ -173,13 +173,11 @@ uint32_t prog_find_info_index(const pid_t pid)
     uint32_t i = 0;
 
     for(; i < PROG_INFO_MAX_INDEX; ++i)
-    {
         if(prog_info[i].pid == pid)
             break;
-        else if(i == PROG_INFO_MAX_INDEX)
-            { i = MAX; break; } // if still not found when i == max_index 
-                                // then use MAX to indicate NOT FOUND
-    }
+
+    if(i == PROG_INFO_MAX_INDEX)
+        i = MAX;
     
     return i;
 }
