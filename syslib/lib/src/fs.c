@@ -39,7 +39,7 @@ uint8_t fs_get_filesystem(char *_drive)
         .hdr.system_call = SYSCALL_GET_FS,
         .path = _drive
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return (uint8_t) (req.hdr.response);
 }
@@ -50,7 +50,7 @@ file_t *fs_read_file(char *_path, size_t *_o_size, err_t *err)
         .hdr.system_call = SYSCALL_FS_READ,
         .path = _path
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     *_o_size = req.hdr.response_size;
     *err = req.hdr.exit_code;
@@ -67,7 +67,7 @@ err_t fs_write_file(char *_path, file_t *_file, size_t _size, uint8_t _attrib)
         .size = _size,
         .attrib = _attrib,
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -78,7 +78,7 @@ err_t fs_delete_file(char *_path)
         .hdr.system_call = SYSCALL_FS_DELETE,
         .path = _path
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -90,7 +90,7 @@ err_t fs_rename_file(char *_path, char *_new_name)
         .path = _path,
         .new_name = _new_name
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -101,7 +101,7 @@ err_t fs_mkdir(char *_path)
         .hdr.system_call = SYSCALL_FS_MKDIR,
         .path = _path,
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -112,7 +112,7 @@ fs_file_info_t *fs_file_get_info(char *_path, err_t *_err)
         .hdr.system_call = SYSCALL_FS_GET_FILE_INFO,
         .path = _path,
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     *_err = req.hdr.exit_code;
     return req.hdr.response_ptr;

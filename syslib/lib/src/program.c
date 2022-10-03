@@ -39,7 +39,7 @@ typedef struct terminate_t
 program_info_t *program_get_info(err_t *err)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_GET_PROGRAM_INFO};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     *err = hdr.exit_code;
     
@@ -53,7 +53,7 @@ err_t program_start_new(const char *_path, function_t _ret_addr)
         .path = (char *) (_path),
         .ret_addr = _ret_addr
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -64,7 +64,7 @@ err_t program_terminate_pid(pid_t _pid)
         .hdr.system_call = SYSCALL_PROGRAM_TERMINATE_PID,
         .pid = _pid
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -72,7 +72,7 @@ err_t program_terminate_pid(pid_t _pid)
 err_t program_terminate_stay_resident(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_PROGRAM_TERMINATE_STAY};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return hdr.exit_code;
 }

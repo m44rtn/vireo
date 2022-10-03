@@ -33,7 +33,7 @@ typedef struct driver_call_t
 driver_info_t *driver_get_list(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_DRIVER_GET_LIST};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return (driver_info_t *) hdr.response_ptr;
 }
@@ -45,7 +45,7 @@ err_t driver_add(const char *_path, driver_t _type)
         .type = _type,
         .path = (char *) (_path)
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -56,7 +56,7 @@ err_t driver_remove(driver_t _type)
         .hdr.system_call = SYSCALL_DRIVER_REMOVE,
         .type = _type,
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }

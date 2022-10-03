@@ -40,7 +40,7 @@ typedef struct sleep_request_t
 char *kernel_get_version_str(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_VERSION_STR};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return (char *) hdr.response_ptr;
 }
@@ -48,7 +48,7 @@ char *kernel_get_version_str(void)
 kernel_ver_t *kernel_get_version_number(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_VERSION_NUM};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return (kernel_ver_t *) hdr.response_ptr;
 }
@@ -56,7 +56,7 @@ kernel_ver_t *kernel_get_version_number(void)
 uint8_t *kernel_get_free_interrupt_handlers(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_FREE_INT_HANDLERS};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return (uint8_t *) hdr.response_ptr;
 }
@@ -69,7 +69,7 @@ err_t kernel_add_interrupt_handler(void *_handler, uint8_t _int)
         .intr = _int
     };
 
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -77,7 +77,7 @@ err_t kernel_add_interrupt_handler(void *_handler, uint8_t _int)
 uint32_t kernel_get_systicks(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_GET_SYSTICKS};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     // in this case, the pointer is not a pointer but a value
     return (uint32_t) hdr.response_ptr;
@@ -90,5 +90,5 @@ void kernel_sleep(uint32_t _ms)
         .ms = _ms
     };
 
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 }

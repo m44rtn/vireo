@@ -27,10 +27,6 @@ SOFTWARE.
 #include "types.h"
 #include "call.h"
 
-#ifndef PERFORM_SYSCALL
-    #define PERFORM_SYSCALL(req)    __asm__ __volatile__("mov %0, %%esi\n\t" "int $0x80" :: "rm" (req));
-#endif
-
 typedef struct api_listing_t
 {
     char filename[11];

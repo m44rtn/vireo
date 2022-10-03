@@ -38,7 +38,7 @@ typedef struct vfree_t
 memory_info_t *memory_get_info(err_t *err)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_GET_MEM_INFO};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     *err = hdr.exit_code;
 
@@ -52,7 +52,7 @@ void *valloc(size_t _size)
         .size = _size
     };
 
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
     
     return req.hdr.response_ptr;
 }
@@ -64,5 +64,5 @@ void vfree(void *_ptr)
         .ptr = _ptr
     };
 
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 }

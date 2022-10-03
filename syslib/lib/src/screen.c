@@ -41,7 +41,7 @@ typedef struct screen_color_t
 screen_info_t *screen_get_info(err_t *err)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_GET_SCREEN_INFO};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     *err = hdr.exit_code;
 
@@ -54,7 +54,7 @@ err_t screen_print(const char *_str)
         .hdr.system_call = SYSCALL_PRINT,
         .str = _str
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -67,7 +67,7 @@ err_t screen_print_at(const char *_str, uint32_t _x, uint32_t _y)
         .x = _x,
         .y = _y
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -75,7 +75,7 @@ err_t screen_print_at(const char *_str, uint32_t _x, uint32_t _y)
 char *screen_get_buffer(err_t *err)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_GET_SCREEN_BUFFER};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     *err = hdr.exit_code;
 
@@ -89,7 +89,7 @@ char screen_get_byte_at(uint32_t _x, uint32_t _y, err_t *err)
         .x = _x,
         .y = _y
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     *err = req.hdr.exit_code;
 
@@ -104,7 +104,7 @@ err_t screen_set_color(color_t _color)
         .hdr.system_call = SYSCALL_SET_SCREEN_COLOR,
         .color = _color
     };
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -112,5 +112,5 @@ err_t screen_set_color(color_t _color)
 void screen_clear(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_CLEAR_SCREEN};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 }

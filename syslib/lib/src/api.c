@@ -33,7 +33,7 @@ typedef struct api_request_t
 api_listing_t *api_get_syscall_listing(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_GET_API_LISTING};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
     
     return (api_listing_t *) hdr.response_ptr;
 }
@@ -41,7 +41,7 @@ api_listing_t *api_get_syscall_listing(void)
 api_space_t api_get_api_space(function_t _handler)
 {
     api_request_t req = {.hdr.system_call = SYSCALL_REQUEST_API_SPACE, .handler = _handler};
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
     
     return (api_space_t) req.hdr.response;
 }
@@ -49,6 +49,6 @@ api_space_t api_get_api_space(function_t _handler)
 void api_free_api_space(api_space_t _space)
 {
     api_request_t req = {.hdr.system_call = SYSCALL_FREE_API_SPACE, .space = _space};
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 }
 

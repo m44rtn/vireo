@@ -37,7 +37,7 @@ typedef struct disk_syscall_t
 disk_info_t *disk_get_drive_list(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_DISK_LIST};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return (disk_info_t *) hdr.response_ptr;
 }
@@ -49,7 +49,7 @@ partition_info_t *disk_get_partition_info(char *_id)
         .drive = _id
     };
 
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return (partition_info_t *) req.hdr.response_ptr;
 }
@@ -63,7 +63,7 @@ void *disk_absolute_read(char *_drive, uint32_t _lba, uint32_t _sctrs)
         .nlba = _sctrs
     };
 
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.response_ptr;
 }
@@ -78,7 +78,7 @@ err_t disk_absolute_write(char *_drive, uint32_t _lba, void *_bfr, size_t _bfr_s
         .buffer_size = _bfr_size
     };
 
-    asm_syscall(&req);
+    PERFORM_SYSCALL(&req);
 
     return req.hdr.exit_code;
 }
@@ -86,7 +86,7 @@ err_t disk_absolute_write(char *_drive, uint32_t _lba, void *_bfr, size_t _bfr_s
 char *disk_get_bootdisk(void)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_DISK_GET_BOOTDISK};
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return (char *) hdr.response_ptr;
 }

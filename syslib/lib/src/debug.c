@@ -30,7 +30,7 @@ err_t debug_nop(void)
         .system_call = SYSCALL_NOP,
         .exit_code = EXIT_CODE_GLOBAL_GENERAL_FAIL
     };
-    asm_syscall(&hdr);
+    PERFORM_SYSCALL(&hdr);
 
     return hdr.exit_code;
 }

@@ -36,6 +36,8 @@ typedef struct
     size_t response_size;
 } __attribute__((packed)) syscall_hdr_t;
 
-extern void asm_syscall(void *req);
+#ifndef PERFORM_SYSCALL
+    #define PERFORM_SYSCALL(req)    __asm__ __volatile__("mov %0, %%eax\n\t" "int $0x80" :: "rm" (req));
+#endif
 
 #endif // __CALL_H__
