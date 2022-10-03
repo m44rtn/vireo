@@ -234,7 +234,7 @@ void prog_terminate(pid_t pid, bool_t stay)
     memset((void *) &prog_info[pid_index], sizeof(prog_info_t), 0xFF);
     
     // free binary and stack memory
-    vfree((void *) (((uint32_t) prog_info[pid_index].stck) - (PAGE_SIZE + 1)));
+    vfree((void *) (((uint32_t) prog_info[pid_index].stck) & PAGING_ADDR_MSK));
     vfree(prog_info[pid_index].binary_start);
 }
 
