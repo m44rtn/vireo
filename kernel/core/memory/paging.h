@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#define PAGING_ADDR_MSK             0xFFFFF000   
 #define PAGE_SIZE                   4096 // bytes
 #define PAGE_REQ_ATTR_READ_WRITE    1U << 0
 #define PAGE_REQ_ATTR_READ_ONLY     !PAGE_REQ_ATTR_READ_WRITE

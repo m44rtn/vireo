@@ -36,8 +36,7 @@ SOFTWARE.
 #include "../util/util.h"
 
 #include "../exec/task.h"
-
-#define PAGING_ADDR_MSK         0xFFFFF000       
+    
 #define PAGING_PAGE_SIZE        4096U /* bytes */
 #define PAGING_TABLE_SIZE       1024 /* entries */
 
