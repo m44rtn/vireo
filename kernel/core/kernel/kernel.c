@@ -151,8 +151,12 @@ void kernel_fetch_new_line(file_t *f, size_t size, uint32_t *loc, char *bfr)
     }
 
     *(loc) = i + 1;
+
+    // null terminate copied string
+    bfr[i - st] = '\0';
 }
 
+// FIXME: not used currently, maybe remove if still not used by v0.1
 void kernel_line_strip(char *line)
 {
     for(uint32_t i = 0; i < CONFIG_FILE_PATH_LEN; ++i)
@@ -183,8 +187,6 @@ char *kernel_parse_config(file_t *f, size_t fsize)
         else
             break;
     }
-    
-    kernel_line_strip(line);
 
     if(loc > fsize || !strlen(line))
     {
@@ -202,7 +204,7 @@ void kernel_execute_config(void)
     char *disk = bootdisk();
     
     // create file path of config file
-    memcpy(config_file, disk, strlen(disk));
+    memcpy(config_file, disk, strlen(disk) + 1);
     memcpy(&config_file[strlen(config_file)], (char *) DEFAULT_CONFIG_FILE_LOC, strlen(DEFAULT_CONFIG_FILE_LOC));
 
     // read config file
