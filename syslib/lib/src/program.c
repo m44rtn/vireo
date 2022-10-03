@@ -27,7 +27,6 @@ typedef struct new_program_t
 {
     syscall_hdr_t hdr;
     char *path;
-    function_t ret_addr;
 } __attribute__((packed)) new_program_t;
 
 typedef struct terminate_t
@@ -46,12 +45,11 @@ program_info_t *program_get_info(err_t *err)
     return (program_info_t *) hdr.response_ptr;
 }
 
-err_t program_start_new(const char *_path, function_t _ret_addr)
+err_t program_start_new(const char *_path_and_args)
 {
     new_program_t req = {
         .hdr.system_call = SYSCALL_PROGRAM_START_NEW,
-        .path = (char *) (_path),
-        .ret_addr = _ret_addr
+        .path = (char *) (_path_and_args)
     };
     PERFORM_SYSCALL(&req);
 

@@ -41,8 +41,8 @@ typedef struct program_info_t
 // returns information about the current program
 program_info_t *program_get_info(err_t *err);
 
-// starts a new program located at _path (on disk)
-err_t program_start_new(const char *_path, function_t _ret_addr);
+// starts a new program located at _path_and_args (on disk)
+err_t program_start_new(const char *_path_and_args);
 
 // terminates program with _pid (program id), this allows for a 'force termination' function
 err_t program_terminate_pid(pid_t _pid);
