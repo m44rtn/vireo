@@ -723,11 +723,11 @@ void reverse_path(char *path, char *out_filename)
 		if(backup[b_index] != '/')
 			continue;
 
-		size_t s = strlen(&backup[b_index + 1]);
-		memcpy(&path[p_index], &backup[b_index + 1], s);
+		size_t size = strlen(&backup[b_index + 1]);
+		memcpy(&path[p_index], &backup[b_index + 1], size);
 		backup[b_index] = '\0';
 
-		p_index += s;
+		p_index += size;
 		path[p_index] = '/';
 		p_index++;
 	}
