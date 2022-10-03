@@ -27,7 +27,7 @@ SOFTWARE.
 #include "../include/types.h"
 
 extern void EXEC_CALL_FUNC(unsigned int *ptr, unsigned int *data);
-extern err_t asm_exec_call(void *ptr, void *stack);
+extern err_t asm_exec_call(void *ptr, void *stack, uint32_t argc, char **argv);
 extern void asm_exec_isr(void *ptr);
 
 #endif

@@ -58,10 +58,16 @@ asm_exec_call:
 ;	input: 
 ;       - pointer to binary    [stack]
 ;       - pointer to new stack [stack + 4]
+;       - argc                 [stack + 8]
+;       - argv                 [stack + 12]
 ;	ouput: n/a
 
 mov DWORD [.stack], esp
 mov DWORD [.bptr], ebp
+
+; argc & argv
+mov edx, [esp + 12]
+mov ecx, [esp + 16]
 
 ; function to call
 mov eax, DWORD [esp + 4]

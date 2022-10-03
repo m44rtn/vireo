@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2021-2022 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,8 @@ SOFTWARE.
 
 #include "../util/util.h"
 
+#define PROG_FILENAME_LEN       512
+#define PROG_ARG_DELIM          " "
 #define PROG_INFO_TABLE_SIZE    4096    // bytes (= 1 page)
 #define PROG_INFO_MAX_INDEX     (4096 / sizeof(prog_info_t)) - 1
 
@@ -63,6 +65,7 @@ typedef struct
   void *stck;
   size_t size;
   char *filename;
+  char **argv;
 } __attribute__((packed)) prog_info_t;
 
 typedef struct api_new_program_t
@@ -122,17 +125,82 @@ uint32_t prog_find_free_index(void)
     return i;
 }
 
-err_t prog_launch_binary(char *filename)
+// !! WARNING !!
+// Manipulates original string *args!
+static err_t prog_parse_argv(char *args, char **argv, uint32_t *argc, char *filename)
 {
+    // !! WARNING !!
+    // Manipulates original string *args!
+    *argc = 1;
+    uint32_t index = 0;
+
+    if(args[0] == '\0')
+        return EXIT_CODE_GLOBAL_INVALID;
+
+    str_get_part(filename, args, PROG_ARG_DELIM, &index);
+
+    index = 0;
+
+    // get argc
+    for(; *argc < PAGE_SIZE / sizeof(uint32_t); *argc = *argc + 1u)
+    {
+        argv[*argc - 1] = &args[index];
+
+        uint32_t res = find_in_str(&args[index], PROG_ARG_DELIM);
+        
+        if(res == MAX)
+            break;
+
+        index += res;
+
+        // null-terminate at space
+        args[index] = '\0';
+        index++;
+    }
+    
+    // do not allow more than 4095 arguments due to laziness on
+    // the programmer's behalf.
+    ASSERT((*argc) < PAGE_SIZE / sizeof(uint32_t));
+    argv[*argc] = NULL;    
+    
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+err_t prog_launch_binary(char *arg)
+{
+    // TODO: clean up
+
     ASSERT(prog_info);
 
     // find free index in prog_info
     uint32_t free_index = prog_find_free_index();
-
     ASSERT(free_index);
 
     if(free_index == MAX)
         return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
+
+    pid_t pid = task_new_pid();
+    char *filename = kmalloc(512),
+         **argv = evalloc(PAGE_SIZE, pid),
+          *args = evalloc(strlen(arg) + 1, pid);
+
+    if(!argv || !args)
+    {
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+    }
+
+    memcpy(args, arg, strlen(arg) + 1);
+    
+    uint32_t argc;
+    err_t err = prog_parse_argv(args, argv, &argc, filename);
+
+    if(err)
+    {
+        kfree(filename);
+        vfree(argv);
+        vfree(args);
+        return err;
+    }
 
     size_t size = 0;
 
@@ -141,17 +209,22 @@ err_t prog_launch_binary(char *filename)
     file_t *elf = f;
 
     if(!f)
+    {
+        kfree(filename);
+        vfree(argv);
+        vfree(args);
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    }
 
-    // save all known information about the program
+    // save all known information about the program (TODO: move to function?)
     prog_info[free_index].binary_start = f;
     prog_info[free_index].size = size; // file size (= size in memory for flat binaries)
     prog_info[free_index].started_by = current_running_pid;
-    prog_info[free_index].filename = filename; // FIXME: could point to an unkown program's memory
-    prog_info[free_index].pid = task_new_pid();
+    prog_info[free_index].filename = filename;
+    prog_info[free_index].argv = argv;
+    prog_info[free_index].pid = pid;
     prog_info[free_index].stck = (void *) (((uint32_t)evalloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
 
-    err_t err = 0;
     void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err, &prog_info[free_index].size);
 
     if(!err)
@@ -160,8 +233,8 @@ err_t prog_launch_binary(char *filename)
         prog_info[free_index].rel_start = f; // start of file (in case of flat binary)
 
     current_running_pid = prog_info[free_index].pid;
-    
-    err = asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck);
+        
+    err = asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck, argc, argv);
 
     prog_terminate(current_running_pid, (prog_info[free_index].flags & PROG_FLAG_TERMINATE_STAY));
 
@@ -230,12 +303,15 @@ void prog_terminate(pid_t pid, bool_t stay)
         return;
     }
 
-    // remove information in internal program list
-    memset((void *) &prog_info[pid_index], sizeof(prog_info_t), 0xFF);
+    kfree(prog_info[pid_index].filename);
+    vfree(prog_info[pid_index].argv);
     
     // free binary and stack memory
     vfree((void *) (((uint32_t) prog_info[pid_index].stck) & PAGING_ADDR_MSK));
     vfree(prog_info[pid_index].binary_start);
+
+    // remove information in internal program list
+    memset((void *) &prog_info[pid_index], sizeof(prog_info_t), 0xFF);
 }
 
 void prog_api(void *req)
@@ -269,6 +345,8 @@ void prog_api(void *req)
         case SYSCALL_PROGRAM_START_NEW:
         {
             api_new_program_t *n = req;
+
+            // FIXME: what if path does not contain a drive id (i.e. path =~ '/PROGRAM.ELF')?
             n->hdr.exit_code = prog_launch_binary((n->path));
             break;
         }
