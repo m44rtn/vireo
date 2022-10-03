@@ -1,4 +1,4 @@
-PROJDIRS := lib/src lib/asm
+PROJDIRS := lib/src
 
 # called OBJDIR but is actually kernel.sys dir
 OBJDIR   := bin
