@@ -178,8 +178,6 @@ void vfree(void *ptr)
     // check if the pointer is kernel memory (kmalloc)
     if(((uint32_t) ptr) < memory_getMallocStart())
         kfree(ptr);
-    
-    //print_value("[VIREO] vfree(): ptr: 0x%x\n", ptr);
 
     uint32_t d_index, t_index,
             page_id = ((uint32_t) ptr) / PAGING_PAGE_SIZE;
@@ -219,6 +217,9 @@ static void *paging_find_free(uint16_t npages)
 
         if(!cnt)
             index = i;
+        
+        if((index + npages) > g_max_pages)
+            break;
         
         if(cnt++ == npages)
             return (void *) (index << 12); // same as index * PAGE_SIZE
