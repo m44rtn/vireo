@@ -55,7 +55,7 @@ kernel_ver_t *kernel_get_version_number(void)
 
 uint8_t *kernel_get_free_interrupt_handlers(void)
 {
-    syscall_hdr_t hdr = {.system_call = SYSCALL_FREE_INT_HANDLERS};
+    syscall_hdr_t hdr = {.system_call = SYSCALL_GET_FREE_INT_HANDLERS};
     PERFORM_SYSCALL(&hdr);
 
     return (uint8_t *) hdr.response_ptr;

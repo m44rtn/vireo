@@ -27,7 +27,7 @@ SOFTWARE.
 // kernel (0x0000-0x00ff)
 #define SYSCALL_VERSION_STR             0x0000
 #define SYSCALL_VERSION_NUM             0x0001
-#define SYSCALL_FREE_INT_HANDLERS       0x0010
+#define SYSCALL_GET_FREE_INT_HANDLERS       0x0010
 #define SYSCALL_ADD_INT_HANDLER         0x0011
 #define SYSCALL_GET_SYSTICKS            0x0020
 #define SYSCALL_SLEEP                   0x0021

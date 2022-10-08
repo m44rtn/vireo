@@ -105,7 +105,7 @@ void kernel_api_handler(void *req)
             break;
         }
 
-        case SYSCALL_FREE_INT_HANDLERS:
+        case SYSCALL_GET_FREE_INT_HANDLERS:
             hdr->response_ptr = evalloc(MAX_PIC_INTERRUPTS * sizeof(void *), prog_get_current_running());
             hdr->response_size = MAX_PIC_INTERRUPTS * sizeof(void *);
             memcpy(hdr->response_ptr, isr_get_extern_handlers(), sizeof(void *));
