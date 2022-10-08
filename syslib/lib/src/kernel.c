@@ -69,7 +69,7 @@ err_t kernel_add_interrupt_handler(function_t _handler, uint8_t _int)
 {
     int_request_t req = {
         .hdr.system_call = SYSCALL_ADD_INT_HANDLER,
-        .handler = _handler,
+        .handler = (void *) _handler,
         .intr = _int
     };
 
@@ -82,7 +82,7 @@ err_t kernel_remove_interrupt_handler(function_t _handler, uint8_t _int)
 {
     int_request_t req = {
         .hdr.system_call = SYSCALL_REM_INT_HANDLER,
-        .handler = _handler,
+        .handler = (void *) _handler,
         .intr = _int
     };
 
