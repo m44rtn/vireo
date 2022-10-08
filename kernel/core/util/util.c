@@ -355,7 +355,7 @@ uint8_t nth_bit(uint32_t dword, uint8_t size)
 	size = size > 32 ? 32 : size;
 
 	for(uint8_t i = 0; i < size; ++i)
-		if(dword == (1U << i))
+		if(dword & (1U << i))
 			return i;
 	
 	return (uint8_t) MAX;
