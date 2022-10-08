@@ -109,16 +109,34 @@ void kernel_api_handler(void *req)
             break;
         }
 
-        case SYSCALL_GET_FREE_INT_HANDLERS:
-            hdr->response_ptr = evalloc(MAX_PIC_INTERRUPTS * sizeof(void *), prog_get_current_running());
-            hdr->response_size = MAX_PIC_INTERRUPTS * sizeof(void *);
-            memcpy(hdr->response_ptr, isr_get_extern_handlers(), sizeof(void *));
+        case SYSCALL_GET_INT_HANDLERS_FROM_NUM:
+        {
+            int_request_t *intr = (int_request_t *) req;
+            uint32_t max_entries = isr_max_extern_handlers();
+
+            intr->hdr.response_size = max_entries * sizeof(void *);
+            intr->hdr.response_ptr = evalloc(hdr->response_size, prog_get_current_running());
+            
+            uint32_t actual_entries = isr_get_extern_handlers(intr->intr, (void **) intr->hdr.response_ptr, intr->hdr.response_size);
+
+            if(actual_entries == MAX)
+                intr->hdr.exit_code = EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+            intr->hdr.response_size = actual_entries * sizeof(void *);
+        }
         break;
 
         case SYSCALL_ADD_INT_HANDLER:
         {
             int_request_t *intr = (int_request_t *) req;
             isr_set_extern_handler(intr->intr, intr->handler);
+            break;
+        }
+
+        case SYSCALL_REM_INT_HANDLER:
+        {
+            int_request_t *intr = (int_request_t *) req;
+            isr_delete_extern_handler(intr->intr, intr->handler);
             break;
         }
 

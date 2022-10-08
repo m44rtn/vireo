@@ -44,6 +44,8 @@ SOFTWARE.
 #include "../exec/exec.h"
 #include "../util/util.h"
 
+#include "../cpu/interrupts/isr.h"
+
 #define API_LAST_SEGMENT            0xFF
 #define API_SYSCALL_SEGMENT_SIZE    0x100u
 
@@ -93,6 +95,7 @@ void api_init(void)
     for(uint16_t i = 0; i < API_LAST_RESERVED_SEGM + 1; ++i)
         memcpy(&api_spaces[i].filename[0], (char *) "VIREO.SYS", strlen("VIREO.SYS"));
     
+    isr_api_init();    
 }
 
 void *api_dispatcher(void *eip, void *req)

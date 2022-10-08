@@ -26,8 +26,12 @@ SOFTWARE.
 
 #include "../../include/types.h"
 
-void isr_set_extern_handler(unsigned char type, void *handler);
-void **isr_get_extern_handlers(void);
+void isr_api_init(void);
+err_t isr_set_extern_handler(uint8_t type, void *handler);
+uint32_t isr_get_extern_handlers(uint8_t type, void **o_extern_handlers, size_t ext_handlers_buffer_size);
+void isr_delete_extern_handler(uint8_t type, void * handler);
+void isr_delete_extern_handlers_in_range(void *from, void *to);
+uint32_t isr_max_extern_handlers(void);
 
 void ISR_STANDARD_HANDLER(void);
 
