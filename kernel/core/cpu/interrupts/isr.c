@@ -132,14 +132,3 @@ void ISR_20_HANDLER(void)
     timer_incTicks();
     PIC_EOI(0);
 }
-
-void ISR_21_HANDLER(void)
-{
-    uint16_t character = (uint16_t) inb(0x60);
-    
-    /* to get rid of compiler warnings :)
-      this'll be changed to something useful later on */
-    if(character) { /* do something */ }
-    
-    PIC_EOI(1);
-}
