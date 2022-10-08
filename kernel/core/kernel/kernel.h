@@ -26,6 +26,9 @@ SOFTWARE.
 
 #include "../include/types.h"
 
+#define KERNEL_FLAG_HAS_INIT    1U << 0
+extern uint8_t g_kernel_flags;
+
 void kernel_api_handler(void *req);
 void kernel_fetch_new_line(file_t *f, size_t size, uint32_t *loc, char *bfr);
 void kernel_line_strip(char *line);

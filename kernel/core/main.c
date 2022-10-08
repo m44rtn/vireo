@@ -127,6 +127,8 @@ void init_env(void)
     prog_init();
     api_init();
 
+    g_kernel_flags |= KERNEL_FLAG_HAS_INIT;
+
 }
 
 void main(void)

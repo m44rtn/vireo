@@ -47,6 +47,8 @@ SOFTWARE.
 
 #include "../main.h"
 
+#define KERNEL_FLAG_HAS_INIT    1U << 0
+
 #define CONFIG_FILE_PATH_LEN    512 // bytes, maximum
 #define DEFAULT_CONFIG_FILE_LOC "/CONFIG"
 
@@ -72,6 +74,8 @@ typedef struct kernel_ver_t
     uint32_t build;
     char rev[KERNEL_REV_MAX_SIZE];
 } __attribute__((packed)) kernel_ver_t;
+
+uint8_t g_kernel_flags = 0;
 
 void kernel_api_handler(void *req)
 {
