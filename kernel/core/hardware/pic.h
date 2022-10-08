@@ -24,7 +24,9 @@ SOFTWARE.
 #ifndef __PIC_H__
 #define __PIC_H__
 
-#define PIC_CASCADE             1U << 2
+#define PIC_LAST_INTERRUPT_VECTOR   0x2F
+#define PIC_CASCADE                 1U << 2
+#define MAX_PIC_INTERRUPTS          0x10
 
 void PIC_controller_setup(void);
 

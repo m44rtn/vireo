@@ -24,7 +24,7 @@ SOFTWARE.
 #ifndef __ISR_H__
 #define __ISR_H__
 
-#define MAX_PIC_INTERRUPTS      0x10
+#include "../../include/types.h"
 
 void isr_set_extern_handler(unsigned char type, void *handler);
 void **isr_get_extern_handlers(void);

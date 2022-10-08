@@ -129,5 +129,11 @@ uint16_t PIC_read_ISR(void)
     outb(PIC_MASTER_CMNDSTAT, PIC_READ_ISR);
     outb(PIC_SLAVE_CMNDSTAT,  PIC_READ_ISR);
 
-    return (uint16_t)((inb(PIC_SLAVE_CMNDSTAT) << 8U) | inb(PIC_MASTER_CMNDSTAT));    
+    uint16_t pic = (uint16_t)((inb(PIC_SLAVE_CMNDSTAT) << 8U) | inb(PIC_MASTER_CMNDSTAT));
+
+    // do not show bit 2 of the master PIC, since this would always
+    // be on when the slave PIC has an interrupt.
+    pic &= (uint16_t) ~(PIC_CASCADE);
+
+    return pic;    
 }
