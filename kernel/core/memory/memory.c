@@ -295,6 +295,11 @@ uint32_t memory_get_malloc_end(void)
     return (uint32_t) MEMORY_KMALLOC_END;
 }
 
+void * memory_get_kernel_space_end(void)
+{
+    return (void *) memory_get_malloc_end();
+}
+
 uint32_t *memsrch(void *match, size_t matchsize, uint32_t start, uint32_t end)
 {
     uint32_t i, j = 0;
