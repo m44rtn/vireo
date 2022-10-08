@@ -65,7 +65,7 @@ void **kernel_get_free_interrupt_handlers(uint8_t _int)
     return (void **) req.hdr.response_ptr;
 }
 
-err_t kernel_add_interrupt_handler(uint32_t _handler, uint8_t _int)
+err_t kernel_add_interrupt_handler(function_t _handler, uint8_t _int)
 {
     int_request_t req = {
         .hdr.system_call = SYSCALL_ADD_INT_HANDLER,
@@ -78,7 +78,7 @@ err_t kernel_add_interrupt_handler(uint32_t _handler, uint8_t _int)
     return req.hdr.exit_code;
 }
 
-err_t kernel_remove_interrupt_handler(uint32_t _handler, uint8_t _int)
+err_t kernel_remove_interrupt_handler(function_t _handler, uint8_t _int)
 {
     int_request_t req = {
         .hdr.system_call = SYSCALL_REM_INT_HANDLER,
