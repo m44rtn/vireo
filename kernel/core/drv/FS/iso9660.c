@@ -411,7 +411,7 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 	// convert drive identifier (e.g. 'CD0') to something useful
 	uint8_t drive = (uint8_t) ((drive_convert_drive_id((const char *) path)) >> DISKIO_DISK_NUMBER);
 
-	// save file name (TODO: can be seperate function)
+	// save file name
 	char * p = create_backup_str(path);
 	char *filename = iso_allocate_bfr(ISO_MAX_FILENAME_LEN + 1);
 	reverse_path(p, filename);
@@ -547,8 +547,14 @@ static bool_t iso_check_pathtable_parents(uint8_t drive, const char *parents_pat
 	uint32_t part = 0;
 	bool_t result = true;
 
-	while(str_get_part(parent_name, parents_path, "/", &part))
+	while(result)
 	{
+		if(!str_get_part(parent_name, parents_path, "/", &part))
+			break;
+
+		if(parent_name[0] == '\0' && parent_entry == 0)
+			break;
+
 		uint16_t e = entry, parent = 0;
 		uint32_t lba = 0;
 
@@ -580,7 +586,8 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, const char *path)
 	uint32_t part = 0;
 	str_get_part(filename, path, "/", &part);
 
-	uint32_t start_parent_path = find_in_str(path, "/") + 1;
+	uint32_t start_parent_path = find_in_str(path, "/");
+	start_parent_path = (start_parent_path == MAX) ? strlen(path) : start_parent_path + 1;
 
 	uint16_t entry = 0;
 	uint32_t lba = 0;
