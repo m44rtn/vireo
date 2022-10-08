@@ -711,7 +711,7 @@ void reverse_path(char *path, char *out_filename)
 	// if b_index == 0 then there was no '/', meaning only a filename exists
 	// in the path	
 	b_index = (b_index) ? b_index + 1 : 0;
-	memcpy(out_filename, &backup[b_index], strlen(&backup[b_index]));
+	memcpy(out_filename, &backup[b_index], strlen(&backup[b_index]) + 1);
 
 	if(!b_index)
 	{
