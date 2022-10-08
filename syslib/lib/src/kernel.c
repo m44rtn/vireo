@@ -53,18 +53,35 @@ kernel_ver_t *kernel_get_version_number(void)
     return (kernel_ver_t *) hdr.response_ptr;
 }
 
-uint8_t *kernel_get_free_interrupt_handlers(void)
+void **kernel_get_free_interrupt_handlers(uint8_t _int)
 {
-    syscall_hdr_t hdr = {.system_call = SYSCALL_GET_FREE_INT_HANDLERS};
-    PERFORM_SYSCALL(&hdr);
+    int_request_t req = {
+        .hdr.system_call = SYSCALL_GET_INT_HANDLERS_FROM_NUM,
+        .intr = _int
+    };
 
-    return (uint8_t *) hdr.response_ptr;
+    PERFORM_SYSCALL(&req);
+
+    return (void **) req.hdr.response_ptr;
 }
 
-err_t kernel_add_interrupt_handler(void *_handler, uint8_t _int)
+err_t kernel_add_interrupt_handler(uint32_t _handler, uint8_t _int)
 {
     int_request_t req = {
         .hdr.system_call = SYSCALL_ADD_INT_HANDLER,
+        .handler = _handler,
+        .intr = _int
+    };
+
+    PERFORM_SYSCALL(&req);
+
+    return req.hdr.exit_code;
+}
+
+err_t kernel_remove_interrupt_handler(uint32_t _handler, uint8_t _int)
+{
+    int_request_t req = {
+        .hdr.system_call = SYSCALL_REM_INT_HANDLER,
         .handler = _handler,
         .intr = _int
     };

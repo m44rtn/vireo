@@ -45,11 +45,14 @@ char *kernel_get_version_str(void);
 // returns kernel_ver_t with full information on the version number
 kernel_ver_t *kernel_get_version_number(void);
 
-// returns an array of free interrupt numbers
-uint8_t *kernel_get_free_interrupt_handlers(void);
+// returns a list of all handlers registered to a specific interrupt number
+void **kernel_get_free_interrupt_handlers(uint8_t _int);
 
 // adds the interrupt handler at _handler to as the interrupt handler for int _int
-err_t kernel_add_interrupt_handler(void *_handler, uint8_t _int);
+err_t kernel_add_interrupt_handler(uint32_t _handler, uint8_t _int);
+
+// removes the interrupt handler _handler registered to interrupt number _int
+err_t kernel_remove_interrupt_handler(uint32_t _handler, uint8_t _int);
 
 // returns the number of systicks passed
 uint32_t kernel_get_systicks(void);
