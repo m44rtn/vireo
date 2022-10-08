@@ -47,8 +47,6 @@ SOFTWARE.
 
 #include "../main.h"
 
-#define KERNEL_FLAG_HAS_INIT    1U << 0
-
 #define CONFIG_FILE_PATH_LEN    512 // bytes, maximum
 #define DEFAULT_CONFIG_FILE_LOC "/CONFIG"
 
