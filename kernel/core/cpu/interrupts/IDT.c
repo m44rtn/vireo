@@ -24,6 +24,7 @@ SOFTWARE.
 #include "IDT.h"
 
 #include "../../include/types.h"
+#include "../../util/util.h"
 
 typedef struct IDT_ENTRY
 {
@@ -91,6 +92,16 @@ void IDT_add_handler(uint8_t index, uint32_t handler)
     
     /* present, DPL = 00, s = 0 and gatetype = 0xE */
     IDT[index].type_attr    = 0x8E;
+}
+
+void idt_remove_handler(uint8_t index)
+{
+    memset(&IDT[index], sizeof(IDT_ENTRY), 0);
+}
+
+bool_t idt_handler_in_use(uint8_t index)
+{
+    return (IDT[index].offset_low == 0 && IDT[index].offset_hi == 0) ? false : true;
 }
 
 static void IDT_reset(void)
