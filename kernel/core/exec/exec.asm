@@ -101,16 +101,17 @@ asm_exec_isr:
 ;	ouput: n/a
 
 push ebp
-
 mov ebp, esp
 
 ; function to call
 mov eax, DWORD [ebp + 8]
 mov edi, eax
 
+sti
 call edi
+cli
 
-pop esp
+mov esp, ebp
 pop ebp
 
 ret
