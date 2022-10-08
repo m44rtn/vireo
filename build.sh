@@ -12,18 +12,18 @@ cp lib/include/* ../bootdisk/syslib/include/
 cd ..
 
 # build external drivers
-FILES=$(find drv -maxdepth 1 | grep -e 'drv/')
+cd drv
+FILES=$(find -maxdepth 1 | tr -d './')
 
 for i in $FILES ;
     do
 
     cd $i
-    make 
+    make
+    cp $i.drv ../../bootdisk/sys/
     cd ..
-
-    # FIXME: copy driver to sys folder on bootdisk
 done;
-
+cd ..
 
 # make the Vireo CD
 grub-mkrescue -o vireo.iso bootdisk
