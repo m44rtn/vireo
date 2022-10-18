@@ -45,6 +45,8 @@ SOFTWARE.
 #define ISR_EXT_HANDLER_TABLE_ENTRIES   ISR_EXT_HANDLER_TABLE_SIZE / sizeof(extern_isr_handlers_t)
 #define ISR_FIRST_ALLOWED_EXT_INT       0x20U
 
+#define PS2_PORT                        0x60
+
 typedef struct extern_isr_handlers_t
 {
     uint8_t intr;
@@ -159,7 +161,7 @@ static void isr_exec_extern(uint8_t type)
 {
     // NOTE: this makes ISRs long and relatively slow which is not ideal.
     //       on the other hand, interrupts are enabled during extern execution (unless user disables them again)
-    //       and the PIC_EOI has been given before all this is called.
+    //       and the PIC_EOI should have been given before all this is called.
     void **extern_handlers = kmalloc(ISR_EXT_HANDLER_TABLE_ENTRIES * sizeof(void *));
 
     if(!extern_handlers)
@@ -180,6 +182,9 @@ void ISR_STANDARD_HANDLER(void)
     if(pic == (uint8_t) MAX)
         return;
     
+    // read PS/2 port to ensure it never 'clogs up'
+    inb(PS2_PORT);
+
     PIC_EOI(pic);
 
     isr_exec_extern((uint8_t) (pic + ISR_FIRST_ALLOWED_EXT_INT));
