@@ -27,6 +27,8 @@ SOFTWARE.
 #include "task.h"
 #include "exec.h"
 
+#include "../cpu/interrupts/isr.h"
+
 #include "../include/exit_code.h"
 
 #include "../dbg/dbg.h"
@@ -305,6 +307,8 @@ void prog_terminate(pid_t pid, bool_t stay)
     if(stay)
         return;
     
+    isr_delete_extern_handlers_in_range(prog_info[pid_index].binary_start, (void *) 
+                                        ((uint32_t)prog_info[pid_index].binary_start + prog_info[pid_index].size));
 
     kfree(prog_info[pid_index].filename);
     vfree(prog_info[pid_index].argv);
