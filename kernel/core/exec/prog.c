@@ -187,6 +187,7 @@ err_t prog_launch_binary(char *arg)
 
     if(!argv || !args)
     {
+        kfree(filename);
         return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
     }
 
