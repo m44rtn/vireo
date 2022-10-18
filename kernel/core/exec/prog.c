@@ -226,6 +226,7 @@ err_t prog_launch_binary(char *arg)
     prog_info[free_index].argv = argv;
     prog_info[free_index].pid = pid;
     prog_info[free_index].stck = (void *) (((uint32_t)evalloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
+    prog_info[free_index].flags = 0;
 
     void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err, &prog_info[free_index].size);
 
