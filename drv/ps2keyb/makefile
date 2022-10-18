@@ -1,8 +1,5 @@
 PROJDIRS := ./
 
-# called OBJDIR but is actually kernel.sys dir
-OBJDIR   := bin
-
 # output file
 OFILE := ps2keyb.drv
 
@@ -15,11 +12,11 @@ DCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.d")
 OCLEAN   := $(shell find $(PROJDIRS) -type f -name "*.o")
 
 ALLOBJFILES := $(foreach thing,$(SRCFILES),$(thing:%.c=%.o))
-OBJFILES :=  $(filter-out $(OBJIGNORE), $(ALLOBJFILES))		#$(patsubst %.c, %.o, $(SRCFILES))
+OBJFILES :=  $(filter-out $(OBJIGNORE), $(ALLOBJFILES))	
 ASOBJFILES := $(foreach thing,$(ASMFILES),$(thing:%.asm=%.o))
 
-LDOBJFILES := $(filter-out core/kernel.o, $(OBJFILES))
-LDASOBJFILES := $(filter-out ./start.o, $(ASOBJFILES))
+LDOBJFILES := $(OBJFILES)
+LDASOBJFILES := $(ASOBJFILES)
 
 ALLFILES := $(SRCFILES) $(HDRFILES) $(ASMFILES)
 
@@ -36,16 +33,11 @@ CC := i686-elf-gcc
 LD := i686-elf-ld
 AC := nasm
 
-.PHONY: all clean todo run assembly iso
+.PHONY: all clean todo run assembly
 
 all: clean $(OBJFILES) $(ASOBJFILES)
-	@$(CC) -T linker.ld -o $(OFILE) $(LDOBJFILES) $(LDASOBJFILES) ../../syslib/bin/libvireo_sys.a -lgcc -pie -static -ffreestanding -O2 -nostdlib -fpie
+	@$(CC) -I../../syslib/lib/include -T linker.ld -o $(OFILE) $(LDOBJFILES) $(LDASOBJFILES) ../../syslib/bin/libvireo_sys.a -lgcc -pie -static $(CCFLAGS)
 
-
-# adds conway.elf to the testing .iso for the Vireo kernel
-iso: all
-	cp $(OFILE) ../grub/test/$(OFILE)
-	grub-mkrescue -o ../birdos.iso ../grub/
 
 todo: 
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true
@@ -60,6 +52,5 @@ clean:
 	-@for file in $(DCLEAN:Makefile=); do rm $$file; done; true
 	-@for file in $(OCLEAN:Makefile=); do rm $$file; done; true
 
-# creates a map of all function
 map:
-	@$(LD) -Map=kernel.map -T linker.ld -o $(OFILE) conway/start.o $(LDOBJFILES) $(LDASOBJFILES)
+	@$(LD) -Map=kernel.map -T linker.ld -o $(OFILE) $(LDOBJFILES) $(LDASOBJFILES) ../../syslib/bin/libvireo_sys.a
