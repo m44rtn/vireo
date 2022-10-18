@@ -59,7 +59,7 @@ typedef struct
 {
   pid_t pid;
   pid_t started_by;
-  char flags;
+  uint8_t flags;
   void *binary_start;
   void *rel_start; // relative start address
   void *stck;
@@ -280,6 +280,12 @@ const char *prog_get_filename(pid_t pid)
     return (const char *) prog_info[index].filename;
 }
 
+void prog_set_flags(pid_t pid, uint8_t flags)
+{
+    uint32_t pid_index = prog_find_info_index(pid);
+    prog_info[pid_index].flags |= flags;
+}
+
 void prog_terminate(pid_t pid, bool_t stay)
 {
     // is the program we are terminating the current program running?
@@ -297,10 +303,8 @@ void prog_terminate(pid_t pid, bool_t stay)
     current_running_pid = (is_running) ? prog_info[pid_index].started_by : current_running_pid;
 
     if(stay)
-    {
-        prog_info[pid_index].flags |= PROG_FLAG_TERMINATE_STAY;
         return;
-    }
+    
 
     kfree(prog_info[pid_index].filename);
     vfree(prog_info[pid_index].argv);
@@ -367,7 +371,7 @@ void prog_api(void *req)
         }
 
         case SYSCALL_PROGRAM_TERMINATE_STAY:
-            prog_terminate(current_running_pid, PROG_TERMINATE_STAY);
+            prog_set_flags(current_running_pid, PROG_TERMINATE_STAY);
         break;
 
         default:
