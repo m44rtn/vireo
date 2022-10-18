@@ -229,7 +229,11 @@ err_t prog_launch_binary(char *arg)
     void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err, &prog_info[free_index].size);
 
     if(!err)
+    {
         prog_info[free_index].rel_start = (void *) ((uint32_t)rel_addr | (uint32_t)(elf));
+        prog_info[free_index].binary_start = elf;
+        vfree(f);
+    }
     else 
         prog_info[free_index].rel_start = f; // start of file (in case of flat binary)
 
