@@ -182,9 +182,6 @@ void ISR_STANDARD_HANDLER(void)
     if(pic == (uint8_t) MAX)
         return;
     
-    // read PS/2 port to ensure it never 'clogs up'
-    inb(PS2_PORT);
-
     PIC_EOI(pic);
 
     isr_exec_extern((uint8_t) (pic + ISR_FIRST_ALLOWED_EXT_INT));
