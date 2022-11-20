@@ -753,6 +753,7 @@ void iso_read(char * path, uint32_t *drv)
 
 	if(!flba || flba == MAX)
 	{ 
+		// FIXME: this driver is not always able to read a file on qemu and real hardware 
 		gerror = EXIT_CODE_FS_FILE_NOT_FOUND; 
 		drv[2] = NULL; 
 		drv[3] = 0; 
