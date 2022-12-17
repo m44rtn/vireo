@@ -27,12 +27,65 @@ SOFTWARE.
 #include "api.h"
 #include "exit_code.h"
 #include "driver.h"
+#include "program.h"
+
+#define PROGRAM_NAME "PS2KEYB.DRV"
+#include "debug.h"
 
 // includes from ps2keyb
+#include "main.h"
 #include "ps2keyb.h"
+#include "tables.h"
 
-#define KEYB_INT            0x21
-#define KEYB_PORT           0x60
+#define KEYB_INT                0x21
+#define KEYB_PORT               0x60
+#define COMMAND_PORT            0x64
+
+#define COMMAND_PORT_OBF        0x01 // output buffer full
+#define COMMAND_PORT_READY      (0x01 | 0x02)
+
+#define CMD_SET_LEDS            0xED
+#define CMD_ECHO                0xEE
+#define CMD_GET_SET_SCANCODE    0xF0
+#define CMD_KEYB_IDENTIFY       0xF2
+#define CMD_ENABLE_SCANNING     0xF4
+#define CMD_DISABLE_SCANNING    0xF5
+#define CMD_SET_DEFAULT_PARAM   0xF6
+#define CMD_RESEND_LAST_BYTE    0xFE
+#define CMD_RESET_SELF_TEST     0xFF
+
+#define RESP_DETECT_ERROR1      0x00
+#define RESP_SELF_TEST_PASSED   0xAA
+#define RESP_ECHO               0xEE
+#define RESP_ACK                0xFA
+#define RESP_SELF_TEST_FAIL1    0xFC
+#define RESP_SELF_TEST_FAIL2    0xFD
+#define RESP_RESEND             0xFE
+#define RESP_DETECT_ERROR2      0xFF
+
+#define STATE_INIT                      0
+#define STATE_WAIT_FOR_RESPONSE         1
+#define STATE_IDLE                      2
+#define STATE_WAIT_FOR_NEXT_SCAN_CODE   3
+#define STATE_ERR                       4
+
+#define FLAG_CMD_COMPLETE       (1u << 0u)
+#define FLAG_ACK                (1u << 1u)
+#define FLAG_CAPS_ON            (1u << 2u)
+#define FLAG_NUM_ON             (1u << 3u)
+#define FLAG_SCROLL_ON          (1u << 4u)
+#define FLAG_RESP_RECEIVED      (1u << 5u)
+#define FLAG_KEY_RELEASED       (1u << 6u)
+#define FLAG_KEY_EXTENDED       (1u << 7u)
+#define FLAG_CHECK_FOR_PAUSE    (1u << 8u)
+
+#define RESPONSE_BUFFER_SIZE    32  // bytes
+#define COMMAND_BUFFER_SIZE     16  // bytes
+#define KEYCODE_BUFFER_SIZE     128 // bytes
+
+#define SCANCODE_EXTENDED_SET   0xE0
+#define SCANCODE_RELEASED       0x80
+#define SCANCODE_PAUSE_START    0xE1
 
 typedef struct ps2keyb_api_req
 {
@@ -40,10 +93,10 @@ typedef struct ps2keyb_api_req
     void *params;
 } __attribute__((packed)) ps2keyb_api_req;
 
-// prototypes
-uint8_t inb(uint16_t _port);
-void ps2keyb_isr(void);
-void ps2keyb_api_handler(void *req);
+uint8_t g_state = STATE_INIT;
+uint16_t g_flags = 0;
+uint32_t g_current_time = 0;
+uint8_t g_response = 0;
 
 uint8_t inb(uint16_t _port)
 {
@@ -52,11 +105,91 @@ uint8_t inb(uint16_t _port)
 	return rv;
 }
 
-void ps2keyb_isr(void)
+void outb (uint16_t _port, uint8_t _data)
 {
-    uint8_t c = inb(KEYB_PORT);
+	__asm__ __volatile__ ("outb %1, %0" :: "dN" (_port), "a" (_data) );
+}
 
-    // TODO: make buffers
+void ps2keyb_send_keycode(uint16_t keycode)
+{
+    char s[64];
+    str_add_val(s, "pressed key: 0x%x\n", keycode);
+    screen_print(s);
+}
+
+void ps2keyb_manager(uint8_t c)
+{
+    static uint8_t expected_scancodes = 0;
+    uint16_t keycode = 0;
+
+    switch(g_state)
+    {
+        case STATE_INIT:
+            // No longer in use
+            if(c == RESP_SELF_TEST_PASSED)
+                g_flags |= FLAG_CMD_COMPLETE;
+            else if(c == RESP_ACK)
+                g_flags |= FLAG_ACK;
+        break;
+
+        case STATE_WAIT_FOR_RESPONSE:
+            if(c == RESP_ACK)
+                { g_flags |= FLAG_ACK; break; }
+            
+            g_response = c;
+            g_flags |= FLAG_RESP_RECEIVED;
+        break;
+
+        case STATE_IDLE:
+            if(c == SCANCODE_EXTENDED_SET)
+            {
+                // TODO: extended set not yet implemented for scancode set 1 (scancode set 2 doesn't work on Vbox and Qemu)
+                expected_scancodes++;
+                g_state = STATE_WAIT_FOR_NEXT_SCAN_CODE;
+                g_flags |= FLAG_KEY_EXTENDED;
+                break;
+            }
+
+            if(c == SCANCODE_PAUSE_START)
+            {
+                expected_scancodes += 5;
+                g_flags |= (FLAG_CHECK_FOR_PAUSE | FLAG_KEY_EXTENDED);
+                g_state = STATE_WAIT_FOR_NEXT_SCAN_CODE;
+                break;
+            }
+
+            keycode = (c >= SCANCODE_RELEASED) ? (scancode_normal[c - SCANCODE_RELEASED] | KEYCODE_FLAG_KEY_RELEASED) : scancode_normal[c];
+            ps2keyb_send_keycode(keycode);
+        break;
+
+        case STATE_WAIT_FOR_NEXT_SCAN_CODE:
+            expected_scancodes--; 
+            
+            if(g_flags & (FLAG_KEY_EXTENDED))
+                keycode = scancode_extended1[c];
+            
+            if(g_flags & (FLAG_KEY_RELEASED))
+                keycode |=  KEYCODE_FLAG_KEY_RELEASED;
+            
+            // TODO: check for pause
+            
+            if(expected_scancodes)
+                break;
+            
+            g_flags &= ~(FLAG_KEY_RELEASED | FLAG_KEY_EXTENDED | FLAG_CHECK_FOR_PAUSE);
+            ps2keyb_send_keycode(keycode);
+            g_state = STATE_IDLE;
+        break;
+
+    }
+}
+
+void ps2keyb_isr21(void)
+{
+    __asm__ __volatile__ ("cli");
+    uint8_t c = inb(KEYB_PORT);
+    ps2keyb_manager(c);
+    __asm__ __volatile__ ("sti");
 }
 
 void ps2keyb_api_handler(void *req)
@@ -82,32 +215,39 @@ void ps2keyb_api_handler(void *req)
     }
 }
 
+void ps2keyb_wait(void)
+{
+    while(1)
+    {
+        uint8_t stat = inb(COMMAND_PORT);
+
+        if(stat & COMMAND_PORT_OBF)
+            inb(KEYB_PORT);
+        else if(!(stat & COMMAND_PORT_READY))
+            break;
+    }
+}
+
+
 err_t main(void)
 {
-    // TODO:
-    // set-up keyboard
+    g_state = STATE_INIT;
+    g_current_time = 0;
+    g_response = 0;
 
-    // FIXME: The kernel does not use the STANDARD_ISR_HANDLER().
-    //        This means it is impossible to execute an ISR outside the kernel
-    //        at the moment. 
-    // FIXME: The kernel should use iret to return out of 'interrupt mode' so to speak
-    //        otherwise the system will not be able to receive new interrupts because
-    //        some programs may do a lot of processing during an interrupt handler, which
-    //        is not recommended within an ISR anyway.
-    kernel_add_interrupt_handler(ps2keyb_isr, KEYB_INT);
-    
-    // FIXME: driver filename is not set by SYSCALL_REQUEST_API_SPACE.
-    //        instead, the filename of the program calling the driver
-    //        is used...
-    // FIXME: Allow the driver listing to return the driver's filename.
-    //        This makes it easier to find the API space of a specific type
-    //        of driver (e.g., a keyboard driver). 
-    api_space_t space = api_get_api_space(ps2keyb_api_handler);
+    kernel_add_interrupt_handler((function_t) ps2keyb_isr21, KEYB_INT);
+
+    api_space_t space = api_get_api_space((function_t) ps2keyb_api_handler);
 
     if(space == (api_space_t) MAX)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+
+    ps2keyb_wait();
+    g_state = STATE_IDLE;
+
+    // only for testing (during testing this driver is launched
+    // as a program):
+    program_terminate_stay_resident();
     
-
-
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
