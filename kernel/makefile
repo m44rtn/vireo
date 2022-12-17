@@ -72,6 +72,12 @@ map:
 run:
 	vboxmanage startvm $(VM_NAME) -E VBOX_GUI_DBG_ENABLED=true
 
+run-qemu-gdb:
+	gdb -x dbg_vireo_script.gdb
+
+run-qemu:
+	qemu-system-i386 -cdrom ../vireo.iso -m 4
+
 # this one works better, because it start the command line on startup (instead
 # of you having to manually open it, which is the case with the other one)
 run-old:
