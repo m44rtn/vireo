@@ -252,6 +252,7 @@ void kernel_execute_config(void)
 
     kfree(disk);
 
-    if(prog_launch_binary(program))
+    err_t err = prog_launch_binary(program);
+    if(err)
         debug_print_error("Error executing program in CONFIG");
 }
