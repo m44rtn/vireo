@@ -434,7 +434,10 @@ size_t iso_alloc_dir_buffer(size_t dir_size, uint32_t **ret_addr)
 {
 	// first try and allocate the entire size of the dir, since that would make our job easier
 	// otherwise just try and allocate the size of one lba.
-	dir_size += ISO_SECTOR_SIZE - (dir_size % ISO_SECTOR_SIZE);
+	size_t bytes_more_than_lba_size = dir_size % ISO_SECTOR_SIZE;
+	
+	if(bytes_more_than_lba_size)
+		dir_size += ISO_SECTOR_SIZE;
 
 	*(ret_addr) = iso_allocate_bfr(dir_size);
 	
