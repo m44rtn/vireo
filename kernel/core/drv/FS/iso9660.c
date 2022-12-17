@@ -380,12 +380,6 @@ static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *file
 	uint32_t nlba = size / ISO_SECTOR_SIZE + ((size % ISO_SECTOR_SIZE) != 0);
 	const uint32_t to_read = (bfr_size / ISO_SECTOR_SIZE);
 
-	// when the buffer is bigger than the sector size,
-	// it means we have enough space to read the entire directory in one go
-	// instead of multiple small ones
-	if(bfr_size > ISO_SECTOR_SIZE)
-		nlba = 1;
-
 	while(nlba)
 	{
 		read(drive, dir_lba, to_read, (uint8_t *) bfr);
