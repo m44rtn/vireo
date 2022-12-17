@@ -577,15 +577,16 @@ static uint8_t IDE_readPIO28_atapi(uint8_t drive, uint32_t start, uint8_t sctrwr
             __asm__ __volatile__("pause");
     IDEClearFlagBit(IDE_FLAG_IRQ);
     
-    uint32_t size = (uint32_t) (inb(port | ATA_PORT_LBAHI)<<8U) | inb(port | ATA_PORT_LBAMID);
+    uint32_t size = (uint32_t)(inb(port | ATA_PORT_LBAHI) << 8U) | inb(port | ATA_PORT_LBAMID);
+    uint32_t nwords = size / 2;
+    uint32_t counter = 0;
 
-    while((inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ)))
-    {        
-        insw(port, (uint32_t) size, buf);
-
-        buf += size;
-        
-        while(!(ide_flags & IDE_FLAG_IRQ))
+    while ((inb(port | ATA_PORT_COMSTAT) & (ATA_STAT_BUSY | ATA_STAT_DRQ)))
+    {
+        insw(port, (uint32_t)nwords, &buf[counter]);
+        counter = counter + nwords;
+     
+        while (!(ide_flags & IDE_FLAG_IRQ))
             __asm__ __volatile__("pause");
         IDEClearFlagBit(IDE_FLAG_IRQ);
     }
