@@ -131,12 +131,11 @@ static size_t elf_calc_size_in_memory(const elf_program_t *prog, const uint32_t 
             continue;
 
         last_paddr = prog[i].paddr;
-        
         last_memsize = prog[i].memsize;
-        s = s + last_memsize;
     }
 
     *(npages) = ((last_paddr + last_memsize) / PAGE_SIZE) + (last_memsize % PAGE_SIZE != 0);
+    s = last_paddr + last_memsize;
 
     return s;
 }
