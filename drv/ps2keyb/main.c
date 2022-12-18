@@ -83,9 +83,10 @@ SOFTWARE.
 #define COMMAND_BUFFER_SIZE     16  // bytes
 #define KEYCODE_BUFFER_SIZE     128 // bytes
 
-#define SCANCODE_EXTENDED_SET   0xE0
-#define SCANCODE_RELEASED       0x80
-#define SCANCODE_PAUSE_START    0xE1
+#define SCANCODE_EXTENDED_SET       0xE0
+#define SCANCODE_RELEASED           0x80
+#define SCANCDOE_EXTENDED_OFFSET    0x10
+#define SCANCODE_PAUSE_START        0xE1
 
 typedef struct ps2keyb_api_req
 {
@@ -117,6 +118,53 @@ void ps2keyb_send_keycode(uint16_t keycode)
     screen_print(s);
 }
 
+static uint8_t not_in(uint8_t *bfr, size_t bfr_size, uint8_t byte)
+{
+    for(uint32_t i = 0; i < bfr_size; ++i)
+        if(bfr[i] == byte)
+            return 0;
+    
+    return 1;
+}
+
+static uint16_t ps2keyb_get_keycode(uint16_t *set, uint8_t c, uint16_t offset)
+{
+    uint16_t released_offset = SCANCODE_RELEASED + offset;
+
+    if(c >= released_offset)
+        return set[c - SCANCODE_RELEASED] | KEYCODE_FLAG_KEY_RELEASED;
+    
+    return set[c];
+}
+
+static uint16_t ps2keyb_check_pause(uint8_t c)
+{
+    if(not_in(pause_key_seq, sizeof(pause_key_seq), c))
+        return 0;
+    
+    return KEYCODE_PAUSEBREAK;
+}
+
+static uint8_t ps2keyb_idle_state_checks(uint8_t c)
+{
+    if(c == SCANCODE_EXTENDED_SET)
+    {
+        g_state = STATE_WAIT_FOR_NEXT_SCAN_CODE;
+        g_flags |= FLAG_KEY_EXTENDED;
+        return 1;
+    }
+
+    if(c == SCANCODE_PAUSE_START)
+    {
+        g_flags |= (FLAG_CHECK_FOR_PAUSE);
+        g_state = STATE_WAIT_FOR_NEXT_SCAN_CODE;
+        
+        return sizeof(pause_key_seq);
+    }
+
+    return 0;
+}
+
 void ps2keyb_manager(uint8_t c)
 {
     static uint8_t expected_scancodes = 0;
@@ -141,24 +189,9 @@ void ps2keyb_manager(uint8_t c)
         break;
 
         case STATE_IDLE:
-            if(c == SCANCODE_EXTENDED_SET)
-            {
-                // TODO: extended set not yet implemented for scancode set 1 (scancode set 2 doesn't work on Vbox and Qemu)
-                expected_scancodes++;
-                g_state = STATE_WAIT_FOR_NEXT_SCAN_CODE;
-                g_flags |= FLAG_KEY_EXTENDED;
-                break;
-            }
+            expected_scancodes = ps2keyb_idle_state_checks(c);
 
-            if(c == SCANCODE_PAUSE_START)
-            {
-                expected_scancodes += 5;
-                g_flags |= (FLAG_CHECK_FOR_PAUSE | FLAG_KEY_EXTENDED);
-                g_state = STATE_WAIT_FOR_NEXT_SCAN_CODE;
-                break;
-            }
-
-            keycode = (c >= SCANCODE_RELEASED) ? (scancode_normal[c - SCANCODE_RELEASED] | KEYCODE_FLAG_KEY_RELEASED) : scancode_normal[c];
+            keycode = ps2keyb_get_keycode(scancode_normal, c, 0);
             ps2keyb_send_keycode(keycode);
         break;
 
@@ -166,19 +199,22 @@ void ps2keyb_manager(uint8_t c)
             expected_scancodes--; 
             
             if(g_flags & (FLAG_KEY_EXTENDED))
-                keycode = scancode_extended1[c];
+                keycode = ps2keyb_get_keycode(scancode_extended1, c, SCANCDOE_EXTENDED_OFFSET);
             
-            if(g_flags & (FLAG_KEY_RELEASED))
-                keycode |=  KEYCODE_FLAG_KEY_RELEASED;
+            if(g_flags & (FLAG_CHECK_FOR_PAUSE))
+                keycode = ps2keyb_check_pause(c);
             
-            // TODO: check for pause
+            // if by this time we're still not able to give an indication of what the keycode should be
+            // we'd better stop
+            if(!keycode)
+                expected_scancodes = 0;
             
             if(expected_scancodes)
                 break;
             
             g_flags &= ~(FLAG_KEY_RELEASED | FLAG_KEY_EXTENDED | FLAG_CHECK_FOR_PAUSE);
-            ps2keyb_send_keycode(keycode);
             g_state = STATE_IDLE;
+            ps2keyb_send_keycode(keycode);
         break;
 
     }
