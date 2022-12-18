@@ -28,22 +28,19 @@ SOFTWARE.
 
 #define PS2KEYB_CALL_REGISTER_SUBSCRIBER     0x00
 /* parameters:
-    * [uint32_t] (param 0) program or driver id
-    * [void *] (param 1) pointer to outbuffer
-    * [size_t] (param 2) size of outbuffer
-    * [uin32_t] (param 3) reset type --> see above
+    * [uint16_t *] pointer to buffer
+    * [size_t] size of buffer
     
-    returns: (syscall_hdr_t.response) buffer id
+    requests with invalid values (i.e. size < sizeof(uint16_t) and buffer < kernel_space_border) will be ignored.
 */ 
 
 #define PS2KEYB_CALL_DEREGISTER_SUBSCRIBER   0x01
 /* parameters:
-    * [uint32_t] (param 0) program or driver id
-    * [uint32_t] (param 1) buffer id 
-    
-    if the buffer id provided was not requested by the program
-    of the provided program/driver id
-    the request to deregister the outbuffer will be ignored.
+    * [uint16_t *] pointer to buffer
+    * [size_t] size of buffer
+
+    buffer and size are used to identify the right subscriber info within the driver.
+    requests with invalid values (i.e. size < sizeof(uint16_t) and buffer < kernel_space_border) will be ignored.
 */
 
 #define PS2KEYB_CALL_LAST_KEY            0x02
