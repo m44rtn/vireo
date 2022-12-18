@@ -96,8 +96,8 @@ typedef struct ps2keyb_api_req
 
 uint8_t g_state = STATE_INIT;
 uint16_t g_flags = 0;
-uint32_t g_current_time = 0;
 uint8_t g_response = 0;
+uint16_t g_last_key = KEYCODE_UNUSED;
 
 uint8_t inb(uint16_t _port)
 {
@@ -111,13 +111,6 @@ void outb (uint16_t _port, uint8_t _data)
 	__asm__ __volatile__ ("outb %1, %0" :: "dN" (_port), "a" (_data) );
 }
 
-void ps2keyb_send_keycode(uint16_t keycode)
-{
-    char s[64];
-    str_add_val(s, "pressed key: 0x%x\n", keycode);
-    screen_print(s);
-}
-
 static uint8_t not_in(uint8_t *bfr, size_t bfr_size, uint8_t byte)
 {
     for(uint32_t i = 0; i < bfr_size; ++i)
@@ -125,6 +118,14 @@ static uint8_t not_in(uint8_t *bfr, size_t bfr_size, uint8_t byte)
             return 0;
     
     return 1;
+}
+
+void ps2keyb_send_keycode(uint16_t keycode)
+{
+    g_last_key = keycode;
+    char s[64];
+    str_add_val(s, "pressed key: 0x%x\n", keycode);
+    screen_print(s);
 }
 
 static uint16_t ps2keyb_get_keycode(uint16_t *set, uint8_t c, uint16_t offset)
@@ -231,6 +232,7 @@ void ps2keyb_isr21(void)
 void ps2keyb_api_handler(void *req)
 {
     ps2keyb_api_req *r = req;
+    r->hdr.exit_code = EXIT_CODE_GLOBAL_SUCCESS;
 
     switch((r->hdr.system_call) & 0xFF)
     {
@@ -243,6 +245,7 @@ void ps2keyb_api_handler(void *req)
         break;
 
         case PS2KEYB_CALL_LAST_KEY:
+            r->hdr.response = g_last_key;
         break;
 
         default:
@@ -268,7 +271,6 @@ void ps2keyb_wait(void)
 err_t main(void)
 {
     g_state = STATE_INIT;
-    g_current_time = 0;
     g_response = 0;
 
     kernel_add_interrupt_handler((function_t) ps2keyb_isr21, KEYB_INT);
