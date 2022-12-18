@@ -29,10 +29,12 @@ SOFTWARE.
 uint8_t inb(uint16_t _port);
 void outb (uint16_t _port, uint8_t _data);
 
+void ps2keyb_send_keycode(uint16_t keycode);
+
 void ps2keyb_manager(uint8_t code);
 void ps2keyb_isr21(void);
 
 void ps2keyb_api_handler(void *req);
-void ps2keyb_wait_for_flags(uint16_t flags);
+void ps2keyb_wait(void);
 
 #endif // __MAIN_H__

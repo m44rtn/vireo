@@ -79,10 +79,10 @@ SOFTWARE.
 #define FLAG_KEY_EXTENDED       (1u << 7u)
 #define FLAG_CHECK_FOR_PAUSE    (1u << 8u)
 
-#define SCANCODE_EXTENDED_SET       0xE0
-#define SCANCODE_RELEASED           0x80
-#define SCANCDOE_EXTENDED_OFFSET    0x10
-#define SCANCODE_PAUSE_START        0xE1
+#define SCANCODE_EXTENDED_SET       0xE0u
+#define SCANCODE_RELEASED           0x80u
+#define SCANCDOE_EXTENDED_OFFSET    0x10u
+#define SCANCODE_PAUSE_START        0xE1u
 
 #define SUBSCRIBER_STRUCT_SPACE     4096 // bytes
 #define MAX_SUBSCRIBERS             SUBSCRIBER_STRUCT_SPACE / sizeof(subscribers_t)
@@ -156,7 +156,7 @@ void ps2keyb_send_keycode(uint16_t keycode)
 
 static uint16_t ps2keyb_get_keycode(uint16_t *set, uint8_t c, uint16_t offset)
 {
-    uint16_t released_offset = SCANCODE_RELEASED + offset;
+    uint16_t released_offset = (uint16_t)(SCANCODE_RELEASED + offset);
 
     if(c >= released_offset)
         return set[c - SCANCODE_RELEASED] | KEYCODE_FLAG_KEY_RELEASED;
@@ -242,7 +242,7 @@ void ps2keyb_manager(uint8_t c)
             if(expected_scancodes)
                 break;
             
-            g_flags &= ~(FLAG_KEY_RELEASED | FLAG_KEY_EXTENDED | FLAG_CHECK_FOR_PAUSE);
+            g_flags &= (uint16_t) ~(FLAG_KEY_RELEASED | FLAG_KEY_EXTENDED | FLAG_CHECK_FOR_PAUSE);
             g_state = STATE_IDLE;
             ps2keyb_send_keycode(keycode);
         break;
@@ -261,7 +261,7 @@ void ps2keyb_isr21(void)
 static err_t ps2keyb_reg_subscriber(uint16_t *bfr, size_t size)
 {
     // check buffer not in kernel space or size lower than the absolute minimum
-    if(bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
+    if((uint32_t)bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
         return EXIT_CODE_GLOBAL_INVALID;
     
     for(uint32_t i = 0; i < MAX_SUBSCRIBERS; ++i)
@@ -281,7 +281,7 @@ static err_t ps2keyb_reg_subscriber(uint16_t *bfr, size_t size)
 static err_t ps2keyb_dereg_subscriber(uint16_t *bfr, size_t size)
 {
     // check buffer not in kernel space or size lower than the absolute minimum
-    if(bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
+    if((uint32_t)bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
         return EXIT_CODE_GLOBAL_INVALID;
 
     for(uint32_t i = 0; i < MAX_SUBSCRIBERS; ++i)
