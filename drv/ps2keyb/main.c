@@ -218,6 +218,9 @@ void ps2keyb_manager(uint8_t c)
         case STATE_IDLE:
             expected_scancodes = ps2keyb_idle_state_checks(c);
 
+            if(expected_scancodes)
+                break;
+
             keycode = ps2keyb_get_keycode(scancode_normal, c, 0);
             ps2keyb_send_keycode(keycode);
         break;
