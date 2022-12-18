@@ -71,33 +71,41 @@ SOFTWARE.
 
 #define FLAG_CMD_COMPLETE       (1u << 0u)
 #define FLAG_ACK                (1u << 1u)
-#define FLAG_CAPS_ON            (1u << 2u)
-#define FLAG_NUM_ON             (1u << 3u)
-#define FLAG_SCROLL_ON          (1u << 4u)
+#define FLAG_CAPS_ON            (1u << 2u) // TODO
+#define FLAG_NUM_ON             (1u << 3u) // TODO
+#define FLAG_SCROLL_ON          (1u << 4u) // TODO
 #define FLAG_RESP_RECEIVED      (1u << 5u)
 #define FLAG_KEY_RELEASED       (1u << 6u)
 #define FLAG_KEY_EXTENDED       (1u << 7u)
 #define FLAG_CHECK_FOR_PAUSE    (1u << 8u)
-
-#define RESPONSE_BUFFER_SIZE    32  // bytes
-#define COMMAND_BUFFER_SIZE     16  // bytes
-#define KEYCODE_BUFFER_SIZE     128 // bytes
 
 #define SCANCODE_EXTENDED_SET       0xE0
 #define SCANCODE_RELEASED           0x80
 #define SCANCDOE_EXTENDED_OFFSET    0x10
 #define SCANCODE_PAUSE_START        0xE1
 
+#define SUBSCRIBER_STRUCT_SPACE     4096 // bytes
+#define MAX_SUBSCRIBERS             SUBSCRIBER_STRUCT_SPACE / sizeof(subscribers_t)
+
 typedef struct ps2keyb_api_req
 {
     syscall_hdr_t hdr;
-    void *params;
+    uint16_t *buffer;
+    size_t buffer_size;
 } __attribute__((packed)) ps2keyb_api_req;
+
+typedef struct subscribers_t
+{
+    uint16_t *buffer;
+    size_t buffer_size;
+    uint32_t index;
+} __attribute__((packed)) subscribers_t;
 
 uint8_t g_state = STATE_INIT;
 uint16_t g_flags = 0;
 uint8_t g_response = 0;
 uint16_t g_last_key = KEYCODE_UNUSED;
+subscribers_t *g_subscribers = NULL;
 
 uint8_t inb(uint16_t _port)
 {
@@ -229,6 +237,44 @@ void ps2keyb_isr21(void)
     __asm__ __volatile__ ("sti");
 }
 
+static err_t ps2keyb_reg_subscriber(uint16_t *bfr, size_t size)
+{
+    // check buffer not in kernel space or size lower than the absolute minimum
+    if(bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
+        return EXIT_CODE_GLOBAL_INVALID;
+    
+    for(uint32_t i = 0; i < MAX_SUBSCRIBERS; ++i)
+    {
+        if(g_subscribers[i].buffer == NULL)
+        {
+            g_subscribers[i].buffer = bfr;
+            g_subscribers[i].buffer_size = size;
+            g_subscribers[i].index = 0;
+            return EXIT_CODE_GLOBAL_SUCCESS;
+        }
+    }
+
+    return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+}
+
+static err_t ps2keyb_dereg_subscriber(uint16_t *bfr, size_t size)
+{
+    // check buffer not in kernel space or size lower than the absolute minimum
+    if(bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
+        return EXIT_CODE_GLOBAL_INVALID;
+
+    for(uint32_t i = 0; i < MAX_SUBSCRIBERS; ++i)
+    {
+        if(g_subscribers[i].buffer == bfr && g_subscribers[i].buffer_size == size)
+        {
+            g_subscribers[i].buffer = NULL;
+            return EXIT_CODE_GLOBAL_SUCCESS;
+        }
+    }
+
+    return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+}
+
 void ps2keyb_api_handler(void *req)
 {
     ps2keyb_api_req *r = req;
@@ -236,12 +282,12 @@ void ps2keyb_api_handler(void *req)
 
     switch((r->hdr.system_call) & 0xFF)
     {
-        case PS2KEYB_CALL_REGISTER_OUTBFR:
-            // TODO
+        case PS2KEYB_CALL_REGISTER_SUBSCRIBER:
+            r->hdr.exit_code = ps2keyb_reg_subscriber(r->buffer, r->buffer_size);
         break;
 
-        case PS2KEYB_CALL_DEREGISTER_OUTBFR:
-            // TODO
+        case PS2KEYB_CALL_DEREGISTER_SUBSCRIBER:
+            r->hdr.exit_code = ps2keyb_dereg_subscriber(r->buffer, r->buffer_size);
         break;
 
         case PS2KEYB_CALL_LAST_KEY:
@@ -279,6 +325,13 @@ err_t main(void)
 
     if(space == (api_space_t) MAX)
         return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    
+    g_subscribers = valloc(SUBSCRIBER_STRUCT_SPACE);
+
+    if(!g_subscribers)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+    
+    memset(g_subscribers, SUBSCRIBER_STRUCT_SPACE, 0);
 
     ps2keyb_wait();
     g_state = STATE_IDLE;

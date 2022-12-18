@@ -26,7 +26,7 @@ SOFTWARE.
 
 #define PS2KEYB_DRIVER_ID   DRIVER_TYPE_HID | KEYB_INT
 
-#define PS2KEYB_CALL_REGISTER_OUTBFR     0x00
+#define PS2KEYB_CALL_REGISTER_SUBSCRIBER     0x00
 /* parameters:
     * [uint32_t] (param 0) program or driver id
     * [void *] (param 1) pointer to outbuffer
@@ -36,7 +36,7 @@ SOFTWARE.
     returns: (syscall_hdr_t.response) buffer id
 */ 
 
-#define PS2KEYB_CALL_DEREGISTER_OUTBFR   0x01
+#define PS2KEYB_CALL_DEREGISTER_SUBSCRIBER   0x01
 /* parameters:
     * [uint32_t] (param 0) program or driver id
     * [uint32_t] (param 1) buffer id 
