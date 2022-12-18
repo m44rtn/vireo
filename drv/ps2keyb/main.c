@@ -97,7 +97,7 @@ typedef struct ps2keyb_api_req
 typedef struct subscribers_t
 {
     uint16_t *buffer;
-    size_t buffer_size;
+    size_t buffer_nwords;
     uint32_t index;
 } __attribute__((packed)) subscribers_t;
 
@@ -143,7 +143,7 @@ void ps2keyb_send_keycode(uint16_t keycode)
         if(g_subscribers[i].buffer == NULL)
             continue;
         
-        if(g_subscribers[i].index >= g_subscribers[i].buffer_size)
+        if(g_subscribers[i].index >= (g_subscribers[i].buffer_nwords))
             g_subscribers[i].index = 0;
         
         if(!g_subscribers[i].index && ps2keyb_subscriber_empty(g_subscribers[i].buffer))
@@ -264,12 +264,14 @@ static err_t ps2keyb_reg_subscriber(uint16_t *bfr, size_t size)
     if((uint32_t)bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
         return EXIT_CODE_GLOBAL_INVALID;
     
+    size = size / sizeof(uint16_t);
+    
     for(uint32_t i = 0; i < MAX_SUBSCRIBERS; ++i)
     {
         if(g_subscribers[i].buffer == NULL)
         {
             g_subscribers[i].buffer = bfr;
-            g_subscribers[i].buffer_size = size;
+            g_subscribers[i].buffer_nwords = size;
             g_subscribers[i].index = 0;
             return EXIT_CODE_GLOBAL_SUCCESS;
         }
@@ -284,9 +286,11 @@ static err_t ps2keyb_dereg_subscriber(uint16_t *bfr, size_t size)
     if((uint32_t)bfr < (2 * 1024 * 1024) || size < sizeof(uint16_t))
         return EXIT_CODE_GLOBAL_INVALID;
 
+    size = size / sizeof(uint16_t);
+
     for(uint32_t i = 0; i < MAX_SUBSCRIBERS; ++i)
     {
-        if(g_subscribers[i].buffer == bfr && g_subscribers[i].buffer_size == size)
+        if(g_subscribers[i].buffer == bfr && g_subscribers[i].buffer_nwords == size)
         {
             g_subscribers[i].buffer = NULL;
             return EXIT_CODE_GLOBAL_SUCCESS;
