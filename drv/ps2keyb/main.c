@@ -128,12 +128,30 @@ static uint8_t not_in(uint8_t *bfr, size_t bfr_size, uint8_t byte)
     return 1;
 }
 
+static uint8_t ps2keyb_subscriber_empty(uint16_t *bfr)
+{
+    // here I'm going to be lazy and say that if the first index is empty, we 
+    // can assume the entire buffer is empty
+    return bfr[0] == 0;
+}
+
 void ps2keyb_send_keycode(uint16_t keycode)
 {
     g_last_key = keycode;
-    char s[64];
-    str_add_val(s, "pressed key: 0x%x\n", keycode);
-    screen_print(s);
+    for(uint32_t i = 0; i < MAX_SUBSCRIBERS; ++i)
+    {
+        if(g_subscribers[i].buffer == NULL)
+            continue;
+        
+        if(g_subscribers[i].index >= g_subscribers[i].buffer_size)
+            g_subscribers[i].index = 0;
+        
+        if(!g_subscribers[i].index && ps2keyb_subscriber_empty(g_subscribers[i].buffer))
+            continue;
+        
+        // put the keycode in the buffer, please
+        g_subscribers[i].buffer[g_subscribers[i].index++] = keycode;        
+    }
 }
 
 static uint16_t ps2keyb_get_keycode(uint16_t *set, uint8_t c, uint16_t offset)
