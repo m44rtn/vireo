@@ -63,6 +63,8 @@ SOFTWARE.
 
 #define API_SEG_DEBUG           0x0C00 / API_SYSCALL_SEGMENT_SIZE
 
+#define API_SPACES_SIZE         0xFF * sizeof(api_spaces_t)
+
 // 255 * sizeof(api_space_t) = 4080 bytes
 typedef struct api_spaces_t
 {
@@ -90,7 +92,8 @@ api_spaces_t *api_spaces = NULL;
 
 void api_init(void)
 {
-    api_spaces = evalloc(API_LAST_RESERVED_SEGM * sizeof(api_spaces_t), PID_KERNEL);
+    api_spaces = evalloc(API_SPACES_SIZE, PID_KERNEL);
+    memset(api_spaces, API_SPACES_SIZE, 0);
 
     for(uint16_t i = 0; i < API_LAST_RESERVED_SEGM + 1; ++i)
         memcpy(&api_spaces[i].filename[0], (char *) "VIREO.SYS", strlen("VIREO.SYS"));
