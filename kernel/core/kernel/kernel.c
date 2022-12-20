@@ -232,7 +232,7 @@ char *kernel_parse_config(file_t *f, size_t fsize)
 err_t kernel_format_program_path(char *p)
 {    
     uint16_t drive = drive_convert_drive_id(p);
-    uint32_t fwd_slash_index = strchr(p, '/');
+    uint32_t fwd_slash_index = find_in_str(p, "/");
 
     if(drive != (uint16_t)MAX && fwd_slash_index != MAX)
         return EXIT_CODE_GLOBAL_SUCCESS;
