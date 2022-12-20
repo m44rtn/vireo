@@ -30,7 +30,7 @@ current binary build = [BUILD] - 1 */
 
 #define MAJOR 0
 #define MINOR 1  
-#define REV (char *) "-pre2"
+#define REV (char *) ""
 
 #define BUILDDATE    __DATE__
 #define BUILDTIME    __TIME__
