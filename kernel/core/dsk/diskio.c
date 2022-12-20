@@ -328,7 +328,7 @@ uint16_t drive_convert_drive_id(const char *id)
     type = drive_type(id);
 
     if(type == ((uint8_t) MAX))
-        return type;
+        return (uint16_t) MAX;
 
     // get drive number (drive id of that type)
     drive = strdigit_toInt(id[2]);
