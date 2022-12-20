@@ -138,6 +138,7 @@ static err_t prog_parse_argv(char *args, char **argv, uint32_t *argc, char *file
     if(args[0] == '\0')
         return EXIT_CODE_GLOBAL_INVALID;
 
+    memset(argv, PAGE_SIZE, 0);
     str_get_part(filename, args, PROG_ARG_DELIM, &index);
 
     index = 0;
