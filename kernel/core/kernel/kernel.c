@@ -44,6 +44,7 @@ SOFTWARE.
 #include "../exec/prog.h"
 #include "../dsk/fs.h"
 #include "../dsk/bootdisk.h"
+#include "../dsk/diskio.h"
 
 #include "../main.h"
 
@@ -218,6 +219,25 @@ char *kernel_parse_config(file_t *f, size_t fsize)
     return line;
 }
 
+err_t kernel_format_program_path(char *p)
+{    
+    uint16_t drive = drive_convert_drive_id(p);
+    uint32_t fwd_slash_index = strchr(p, '/');
+
+    if(drive != (uint16_t)MAX && fwd_slash_index != MAX)
+        return EXIT_CODE_GLOBAL_SUCCESS;
+    else if(drive != (uint16_t)MAX && fwd_slash_index == MAX)
+        return EXIT_CODE_GLOBAL_INVALID;
+    
+    if(p[0] != '/' && drive == (uint16_t)MAX)
+    { 
+        move_str_back(p, 1); 
+        p[0] = '/'; 
+    }
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
 void kernel_execute_config(void)
 {
     char *config_file = kmalloc(CONFIG_FILE_PATH_LEN);
@@ -236,6 +256,8 @@ void kernel_execute_config(void)
 
     // parse config file
     char *program = kernel_parse_config(f, size);
+
+    err_t format_err = kernel_format_program_path(program);
     
     // error parsing config file
     if(!program)

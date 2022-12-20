@@ -33,6 +33,7 @@ void kernel_api_handler(void *req);
 void kernel_fetch_new_line(file_t *f, size_t size, uint32_t *loc, char *bfr);
 void kernel_line_strip(char *line);
 char *kernel_parse_config(file_t *f, size_t fsize);
+err_t kernel_format_program_path(char *p);
 void kernel_execute_config(void);
 
 #endif // __KERNEL_H__
