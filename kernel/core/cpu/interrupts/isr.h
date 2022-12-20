@@ -43,6 +43,7 @@ void ISR_0D_HANDLER(void);
 void ISR_0E_handler(unsigned int error_code);
 
 void ISR_20_HANDLER(void);
+uint8_t ISR_21_HANDLER(void);
 
 void ISR_80_HANDLER(void *eip, void *req);
 
