@@ -39,6 +39,7 @@ void prog_set_status_prog_running(void);
 
 pid_t prog_get_current_running(void);
 const char *prog_get_filename(pid_t pid);
+void prog_set_flags(pid_t pid, uint8_t flags);
 void prog_terminate(pid_t pid, bool_t stay);
 
 #endif // __PROG_H__
