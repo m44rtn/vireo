@@ -24,7 +24,18 @@ SOFTWARE.
 #ifndef __PS2KEYB_H__
 #define __PS2KEYB_H__
 
-#define PS2KEYB_DRIVER_ID   DRIVER_TYPE_HID | KEYB_INT
+#include "types.h"
+#include "call.h"
+#include "driver.h"
+
+typedef struct ps2keyb_api_req
+{
+    syscall_hdr_t hdr;
+    uint16_t *buffer;
+    size_t buffer_size;
+} __attribute__((packed)) ps2keyb_api_req;
+
+#define PS2KEYB_DRIVER_ID   DRIVER_TYPE_HID | 0x21 // KEYB_INT
 
 #define PS2KEYB_CALL_REGISTER_SUBSCRIBER     0x00
 /* parameters:

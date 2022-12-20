@@ -87,13 +87,6 @@ SOFTWARE.
 #define SUBSCRIBER_STRUCT_SPACE     4096 // bytes
 #define MAX_SUBSCRIBERS             SUBSCRIBER_STRUCT_SPACE / sizeof(subscribers_t)
 
-typedef struct ps2keyb_api_req
-{
-    syscall_hdr_t hdr;
-    uint16_t *buffer;
-    size_t buffer_size;
-} __attribute__((packed)) ps2keyb_api_req;
-
 typedef struct subscribers_t
 {
     uint16_t *buffer;
@@ -363,7 +356,7 @@ err_t main(void)
 
     // only for testing (during testing this driver is launched
     // as a program):
-    program_terminate_stay_resident();
+    // program_terminate_stay_resident();
     
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
