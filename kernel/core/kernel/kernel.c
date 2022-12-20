@@ -53,6 +53,9 @@ SOFTWARE.
 
 #define KERNEL_REV_MAX_SIZE     8
 
+#define ERROR_PARSING_CONFIG    "Error parsing config file (error code 0x%x)"
+#define ERROR_EXEC_PROG         "Error executing program in CONFIG (error code 0x%x)"
+
 typedef struct int_request_t
 {
     syscall_hdr_t hdr;
@@ -192,6 +195,13 @@ void kernel_line_strip(char *line)
     }
 }
 
+static void kernel_report_error(err_t err, const char *error_text_format)
+{
+    char s[64];
+    str_add_val(s, error_text_format, err);
+    debug_print_error(s);
+}
+
 char *kernel_parse_config(file_t *f, size_t fsize)
 {
     uint32_t loc = 0;
@@ -212,7 +222,7 @@ char *kernel_parse_config(file_t *f, size_t fsize)
     if(loc > (fsize + 1u) || !strlen(line))
     {
         kfree(line);
-        debug_print_error("Error parsing configuration file");
+        kernel_report_error(EXIT_CODE_GLOBAL_INVALID, ERROR_PARSING_CONFIG);
         return NULL;
     }
 
@@ -256,12 +266,15 @@ void kernel_execute_config(void)
 
     // parse config file
     char *program = kernel_parse_config(f, size);
-
-    err_t format_err = kernel_format_program_path(program);
     
     // error parsing config file
     if(!program)
     { kfree(disk); return; }
+
+    err_t format_err = kernel_format_program_path(program);
+    
+    if(format_err)
+        kernel_report_error(EXIT_CODE_GLOBAL_INVALID, ERROR_PARSING_CONFIG);
 
     // if the config file only lists a path that starts at root 
     // (no disk specified), we need to add the bootdisk in front
@@ -276,5 +289,5 @@ void kernel_execute_config(void)
 
     err_t err = prog_launch_binary(program);
     if(err)
-        debug_print_error("Error executing program in CONFIG");
+        kernel_report_error(err, ERROR_EXEC_PROG);
 }
