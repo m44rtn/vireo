@@ -128,6 +128,7 @@ static void IDT_default_list(void)
     IDT_add_handler(0x0E, (uint32_t) ISR_0E);
     
     IDT_add_handler(0x20, (uint32_t) ISR_20);
+    IDT_add_handler(0x21, (uint32_t) ISR_21);
 
     // api handler
     IDT_add_handler(0x80, (uint32_t) ISR_80);

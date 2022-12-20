@@ -162,6 +162,16 @@ pushad
 popad
 iret
 
+global ISR_21
+extern ISR_21_HANDLER
+ISR_21:
+; keyboard
+pushad
+    cld
+    call ISR_21_HANDLER
+popad
+iret
+
 global ISR_80
 extern api_dispatcher
 ISR_80:

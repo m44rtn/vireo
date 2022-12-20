@@ -260,3 +260,15 @@ void ISR_20_HANDLER(void)
     if(g_kernel_flags & KERNEL_FLAG_HAS_INIT)
         isr_exec_extern(0x20);
 }
+
+uint8_t ISR_21_HANDLER(void)
+{
+    PIC_EOI(1);
+
+    if(!(g_kernel_flags & KERNEL_FLAG_HAS_INIT))
+    { uint8_t c = inb(0x60); return c; } // read keyboard to avoid #GP's
+    
+    isr_exec_extern(0x21);
+
+    return 0;
+}
