@@ -353,10 +353,6 @@ err_t main(void)
 
     ps2keyb_wait();
     g_state = STATE_IDLE;
-
-    // only for testing (during testing this driver is launched
-    // as a program):
-    // program_terminate_stay_resident();
     
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
