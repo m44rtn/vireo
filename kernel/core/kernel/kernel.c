@@ -208,7 +208,7 @@ char *kernel_parse_config(file_t *f, size_t fsize)
             break;
     }
 
-    if(loc > fsize || !strlen(line))
+    if(loc > (fsize + 1u) || !strlen(line))
     {
         kfree(line);
         debug_print_error("Error parsing configuration file");
