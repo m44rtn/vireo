@@ -235,13 +235,20 @@ void api_api(void *req)
     {
         case SYSCALL_GET_API_LISTING:
         {
-            api_listing_t *list = evalloc(API_LAST_RESERVED_SEGM * sizeof(api_spaces_t), prog_get_current_running());
+            api_listing_t *list = evalloc(API_SPACES_SIZE, prog_get_current_running());
+            memset(list, API_SPACES_SIZE, 0);
             
             for(uint16_t i = 0; i < API_LAST_SEGMENT; ++i)
             {
-                memcpy(&list[i].filename[0], &api_spaces[i].filename[0], 11);
+                if(api_spaces[i].filename[0] == 0)
+                    continue;
+
+                memcpy(&list[i].filename[0], &api_spaces[i].filename[0], 12);
                 list[i].start_syscall_space = (api_space_t) (i * API_SYSCALL_SEGMENT_SIZE);
             }
+            
+            hdr->response_ptr = list;
+            hdr->response_size = API_SPACES_SIZE;
             break;
         }
 
