@@ -29,7 +29,7 @@ SOFTWARE.
 
 typedef struct api_listing_t
 {
-    char filename[11];
+    char filename[12];
     api_space_t start_syscall_space; // e.g., 0xff00 (which would run until 0xffff)
 } __attribute__((packed)) api_listing_t;
 
