@@ -71,7 +71,7 @@ SOFTWARE.
 #define KEYCODE_P           0x020b
 #define KEYCODE_SQBROPEN    0x020c // square bracket open
 #define KEYCODE_SQBRCLOSE   0x020d // square bracket close
-#define KEYCODE_BACKSLASH   0x020c
+#define KEYCODE_BACKSLASH   0x020e
 
 #define KEYCODE_CAPSLOCK    0x0301 
 #define KEYCODE_A           0x0302
