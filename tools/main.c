@@ -129,36 +129,6 @@ static uint16_t get_scancode_from_defname(char *name, char *scancodes)
 
     uint32_t res = (uint32_t) strtol(&scancodes[index], NULL, 0);
 
-    // // first get all digits
-    // char hex[4] = {0, 0, 0, 0};
-    // uint32_t n_digits = 0;
-    // for(uint32_t i = 0; i < 4; i++)
-    // {
-    //     char c = scancodes[index + i];
-
-    //     if(c < '0' || c > '9')
-    //         break;
-        
-    //     hex[n_digits++] = c;   
-    // }
-
-    // uint16_t res = 0;
-    // n_digits = n_digits - 1;
-
-    // const char *digs = "0123456789abcdef";
-
-    // for(uint32_t i = 0; i < 4; i++)
-    // {
-    //     if(hex[i] == 0)
-    //         break;
-        
-    //     char *loc = strchr((char *) digs, (int) hex[i]);
-    //     uint32_t val = (uint32_t) ((uint32_t)loc - (uint32_t)digs);
-
-    //     res = (uint16_t)(res + ((val) << (n_digits * 4u)));
-    //     n_digits--;
-    // }
-
     return res;
 }
 
