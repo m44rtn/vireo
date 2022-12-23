@@ -25,5 +25,19 @@ for i in $FILES ;
 done;
 cd ..
 
+# build programs
+cd prog
+FILES=$(find -maxdepth 1 | tr -d './')
+
+for i in $FILES ;
+    do
+
+    cd $i
+    make
+    cp $i.elf ../../bootdisk/bin/
+    cd ..
+done;
+cd ..
+
 # make the Vireo CD
 grub-mkrescue -o vireo.iso bootdisk
