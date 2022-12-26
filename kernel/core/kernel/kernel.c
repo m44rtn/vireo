@@ -180,21 +180,6 @@ void kernel_fetch_new_line(file_t *f, size_t size, uint32_t *loc, char *bfr)
     bfr[i - st] = '\0';
 }
 
-// FIXME: not used currently, maybe remove if still not used by v0.1
-void kernel_line_strip(char *line)
-{
-    for(uint32_t i = 0; i < CONFIG_FILE_PATH_LEN; ++i)
-    {
-        // if part of file path, skip
-        if( (line[i] >= 'A' && line[i] <= 'Z') || (line[i] >= '0' && line[i] <= '9') || line[i] == '.' || line[i] == '/')
-            continue;
-
-        // otherwise cut the string right here
-        line[i] = '\0';
-        break;
-    }
-}
-
 static void kernel_report_error(err_t err, const char *error_text_format)
 {
     char s[64];
