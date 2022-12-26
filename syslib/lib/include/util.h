@@ -48,6 +48,15 @@ unsigned char strcmp_until(const char *str1, const char *str2, unsigned int stop
 // allocates a backup string from str using valloc
 char *create_backup_str(const char *str);
 
+// makes lowercase characters in string s, of size slen, uppercase (will manipulate original string)
+void to_uc(char *s, size_t slen);
+
+// makes uppercase characters in string s, of size slen, lowercase (will manipulate original string)
+void to_lc(char *s, size_t slen);
+
+// will flip cases of lower- and uppercase characters in string s, of size slen
+void to_other_case(char *s, size_t slen);
+
 // creates a string containing value in hexadecimal format (without leading `0x`),
 // amount of digits can be controlled with digit_amount. setting digit_amount to 0 is the same
 // as setting it to 8. digit_amount values are not strictly respected, meaning that when more

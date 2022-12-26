@@ -124,6 +124,41 @@ char *create_backup_str(const char *str)
 	return backup;
 }
 
+// !! WARNING !!
+// Will destroy original string!
+void to_uc(char *s, size_t slen)
+{
+	for(uint32_t i = 0; i < slen; ++i)
+		if(s[i] >= 'a' && s[i] <= 'z')
+			s[i] = (char) (s[i] - 0x20);
+}
+
+// !! WARNING !!
+// Will destroy original string!
+void to_lc(char *s, size_t slen)
+{
+	for(uint32_t i = 0; i < slen; ++i)
+		if(s[i] >= 'A' && s[i] <= 'Z')
+			s[i] = (char) (s[i] + 0x20);
+}
+
+// !! WARNING !!
+// Will destroy original string!
+void to_other_case(char *s, size_t slen)
+{
+	// !! WARNING !!
+	// Will destroy original string!
+
+	for(uint32_t i = 0; i < slen; ++i)
+	{
+		if(s[i] >= 'a' && s[i] <= 'z')
+			to_uc(&s[i], 1);
+		else if(s[i] >= 'A' && s[i] <= 'Z')
+			to_lc(&s[i], 1);
+	}
+
+}
+
 /* digit_amount: amount of digits to show, if 0 (or the value is bigger) the normal 
  amount of digits is used. meaning enough to show the actual value.*/
 char* hexstr(unsigned int value, uint8_t digit_amount)

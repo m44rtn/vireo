@@ -24,6 +24,8 @@ SOFTWARE.
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+#include "../include/types.h"
+
 // FIXME: cleanup
 unsigned int strlen(const char *str);
 void remove_from_str(char *p, unsigned int n);
@@ -31,6 +33,10 @@ void replace_in_str(char *p, const char c, const char repl);
 unsigned char strcmp(const char *str1, const char *str2);
 unsigned char strcmp_until(const char *str1, const char *str2, unsigned int stop);
 char *create_backup_str(const char *str);
+
+void to_uc(char *s, size_t slen);
+void to_lc(char *s, size_t slen);
+void to_other_case(char *s, size_t slen);
 
 char* hexstr(unsigned int value, unsigned char digit_amount);
 char *intstr(unsigned int value);
