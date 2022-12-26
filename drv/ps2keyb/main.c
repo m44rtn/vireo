@@ -136,10 +136,10 @@ void ps2keyb_send_keycode(uint16_t keycode)
         if(g_subscribers[i].buffer == NULL)
             continue;
         
-        if(g_subscribers[i].index >= (g_subscribers[i].buffer_nwords))
+        if(g_subscribers[i].index >= (g_subscribers[i].buffer_nwords) || ps2keyb_subscriber_empty(g_subscribers[i].buffer))
             g_subscribers[i].index = 0;
-        
-        if(!g_subscribers[i].index && ps2keyb_subscriber_empty(g_subscribers[i].buffer))
+                
+        if(!g_subscribers[i].index && !ps2keyb_subscriber_empty(g_subscribers[i].buffer))
             continue;
         
         // put the keycode in the buffer, please
