@@ -479,6 +479,7 @@ static void fat_filename_fatcompat(char *filename)
         memcpy(&filename[FILE_NAME_LEN], &original_name[dot_index + 1], FILE_EXT_LEN);
     
     filename[TOTAL_FILENAME_LEN] = '\0';
+    to_uc(filename, TOTAL_FILENAME_LEN);
 }
 
 static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oattrib)
@@ -1033,6 +1034,8 @@ err_t fat_mkdir(char *path)
     {
         old_cluster = cluster;
         size_t len = strlen(&filename[0]);
+        to_uc(filename, len);
+
         memcpy(&checking_path[path_loc], &filename[0], len);
         
         size_t s;
