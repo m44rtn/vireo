@@ -340,7 +340,8 @@ static void screen_basic_char_put_on_screen(char c){
 
 	switch(c){
 			case ('\b'):
-				SCRscreenData.cursorX--;
+				if(SCRscreenData.cursorX > 0)
+					SCRscreenData.cursorX--;
 				vidmem[(SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX)*SCREEN_BASIC_DEPTH] = 0;  
 			
 			break;
