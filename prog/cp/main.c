@@ -65,7 +65,13 @@ static char print_char(uint16_t keycode, keymap_entry_t *keymap, size_t keymap_s
 
 err_t main(uint32_t argc, char **argv)
 {    
-    err_t err = config_load_drv();
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    file_t *cf = config_load_configfile(&err); 
+
+    if(err)
+        return err;
+
+    err = config_load_drv(cf);
 
     if(err)
         return err;

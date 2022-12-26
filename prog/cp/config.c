@@ -43,6 +43,18 @@ SOFTWARE.
 #define COMMENT_CHAR    '#'
 #define KEYWORD_LOAD_DRV "LOAD"
 
+void config_read_file(err_t *err)
+{
+    char *bootdisk = disk_get_bootdisk();
+
+    char path[MAX_PATH_LEN];
+    merge_disk_id_and_path(bootdisk, (char *) CONFIG_PATH, path);
+    vfree(bootdisk);
+
+    size_t fsize;
+    return fs_read_file(path, &fsize, err);  
+}
+
 static uint8_t config_get_line(file_t *cf, char *out, uint32_t *pindex)
 {
     uint8_t is_not_done = 1;
@@ -77,20 +89,8 @@ static void config_actually_load_driver(char *path, uint32_t n_drv)
     vfree(p);
 }
 
-err_t config_load_drv(void)
+err_t config_load_drv(file_t *cf)
 {
-    char *bootdisk = disk_get_bootdisk();
-
-    char path[MAX_PATH_LEN];
-    merge_disk_id_and_path(bootdisk, (char *) CONFIG_PATH, path);
-    vfree(bootdisk);
-
-    size_t fsize;
-    err_t err;
-    file_t *cf = fs_read_file(path, &fsize, &err);   
-
-    if(err)
-        return err;
 
     uint32_t line_num = 0;
     char *line = valloc(MAX_LINE_LEN);
