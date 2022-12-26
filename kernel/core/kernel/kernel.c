@@ -260,12 +260,12 @@ void kernel_execute_config(void)
     // read config file
     size_t size = 0;
 
-    // FIXME: f is not freed before launching the program
     file_t *f = fs_read_file(config_file, &size);
     kfree(config_file);
 
     // parse config file
     char *program = kernel_parse_config(f, size);
+    vfree(f);
     
     // error parsing config file
     if(!program)
