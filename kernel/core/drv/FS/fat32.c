@@ -147,7 +147,9 @@ fs_info_t partition_info[FAT_MAX_PARTITIONS];
 struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT32 | DRIVER_TYPE_FS), (uint32_t) (fat_handler)};
 
 void fat_handler(uint32_t *drv)
-{        
+{
+    drv[4] = EXIT_CODE_GLOBAL_SUCCESS;
+
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
