@@ -54,7 +54,7 @@ unsigned char drive_to_type_index(unsigned char drive, unsigned char type);
 const char *drive_type_to_chars(unsigned char type);
 
 unsigned short drive_convert_drive_id(const char *id);
-unsigned char drive_type(const char *id);
+unsigned char drive_type(const char *_id);
 unsigned char to_actual_drive(unsigned char drive, unsigned char type);
 
 #endif

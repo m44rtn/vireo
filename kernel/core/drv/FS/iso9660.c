@@ -407,6 +407,8 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 
 	// save file name
 	char * p = create_backup_str(path);
+	to_uc(p, strlen(p));
+
 	char *filename = iso_allocate_bfr(ISO_MAX_FILENAME_LEN + 1);
 	reverse_path(p, filename);
 

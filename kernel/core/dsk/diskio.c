@@ -323,7 +323,7 @@ uint16_t drive_convert_drive_id(const char *id)
 {
     uint8_t drive, type;
     uint16_t result = 0;
-
+    
     // get drive type
     type = drive_type(id);
 
@@ -343,7 +343,7 @@ uint16_t drive_convert_drive_id(const char *id)
     result = (uint16_t) (result | (drive & 0xFFU) << DISKIO_DISK_NUMBER);
 
     // is there a partition specified?
-    if(id[3] != DISKIO_DISKID_P)
+    if(id[3] != DISKIO_DISKID_P && id[3] != (DISKIO_DISKID_P + 0x20))
         return result | 0xFF;
 
     // if yes
@@ -359,9 +359,13 @@ uint16_t drive_convert_drive_id(const char *id)
     return result;
 }
 
-uint8_t drive_type(const char *id)
+uint8_t drive_type(const char *_id)
 {
     uint8_t type;
+    char id[4];
+
+    memcpy(id, _id, 4);
+    to_uc(id, 4);
     
     // check drive type
     if(!strcmp_until(&id[0], DISKIO_DISKID_HD, 2)) // is hdd?
