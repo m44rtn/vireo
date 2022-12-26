@@ -363,6 +363,10 @@ void driver_api(void *req)
         
 
         case SYSCALL_DRIVER_ADD:
+            if(!call->type)
+                { call->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
+            if(!call->path)
+                { call->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
             call->hdr.exit_code = driver_add_external_driver(call->type, call->path);
         break;
 
