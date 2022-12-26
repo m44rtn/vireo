@@ -68,9 +68,6 @@ typedef struct fs_file_info_t
     uint32_t modified_time; // in FAT32 format
 } __attribute__((packed)) fs_file_info_t;
 
-
-typedef void file_t;
-
 // returns the filesystem type of the drive specified
 uint8_t fs_get_filesystem(char *_drive);
 

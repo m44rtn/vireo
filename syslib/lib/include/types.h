@@ -49,4 +49,6 @@ typedef uint8_t err_t;
 
 typedef uint8_t bool_t;
 
+typedef void file_t;
+
 #endif
