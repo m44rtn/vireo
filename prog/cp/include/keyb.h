@@ -21,14 +21,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __FILEMAN_H__
-#define __FILEMAN_H__
+#ifndef __KEYB_H__
+#define __KEYB_H__
 
 #include "types.h"
 
-#define MAX_FILENAME_LEN 32
-#define MAX_PATH_LEN    255
+typedef struct keymap_entry_t
+{
+    char lc;
+    char uc;
+    uint16_t scancode;
+} __attribute__((packed)) keymap_entry_t;
 
-void merge_disk_id_and_path(char *disk, char *path, char *out);
+err_t keyb_start(file_t *cf);
 
-#endif // __FILEMAN_H__
+// testing only
+char keyb_get_usable_char(void);
+
+#endif // __KEYB_H__

@@ -36,13 +36,7 @@ SOFTWARE.
 #include "scancode.h"
 
 #include "include/config.h"
-
-typedef struct keymap_entry_t
-{
-    char lc;
-    char uc;
-    uint16_t scancode;
-} __attribute__((packed)) keymap_entry_t;
+#include "include/keyb.h"
 
 static char print_char(uint16_t keycode, keymap_entry_t *keymap, size_t keymap_size, char l)
 {
@@ -66,7 +60,7 @@ static char print_char(uint16_t keycode, keymap_entry_t *keymap, size_t keymap_s
 err_t main(uint32_t argc, char **argv)
 {    
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
-    file_t *cf = config_load_configfile(&err); 
+    file_t *cf = config_read_file(&err); 
 
     if(err)
         return err;
@@ -75,36 +69,19 @@ err_t main(uint32_t argc, char **argv)
 
     if(err)
         return err;
-
-    api_listing_t *list = api_get_syscall_listing();
-    api_space_t keyb_api = 0;
-
-    for(uint32_t i = 0; i < 0xFF; ++i)
-        if(!strcmp(list[i].filename, "PS2KEYB.DRV"))
-        {
-            keyb_api = list[i].start_syscall_space;
-            break;
-        };
     
-    if(!keyb_api)
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    err = keyb_start(cf);
     
-    size_t keymap_size = 0;
-    keymap_entry_t *keymap = fs_read_file("CD0/SYS/USINT.KL", &keymap_size, &err);
-
     if(err)
         return err;
     
-    syscall_hdr_t req = {.system_call = keyb_api + PS2KEYB_CALL_LAST_KEY};
-    char last_char = ' ';
     while(1)
     {
-        PERFORM_SYSCALL(&req);
-        if(req.response == KEYCODE_UNUSED && (req.response & KEYCODE_FLAG_KEY_RELEASED))
-            continue;
+        char lc = keyb_get_usable_char();
+        char str[2] = {lc, 0};
 
-        last_char = print_char(req.response, keymap, keymap_size, last_char);
-        
+        if(lc)
+            screen_print(str);
     }
 
     return err;

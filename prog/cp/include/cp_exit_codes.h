@@ -21,14 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __FILEMAN_H__
-#define __FILEMAN_H__
+#ifndef __CP_EXIT_CODES_H__
+#define __CP_EXIT_CODES_H__
 
-#include "types.h"
+#include "exit_code.h"
 
-#define MAX_FILENAME_LEN 32
-#define MAX_PATH_LEN    255
+#define EXIT_CODE_CP_NO_KEYB_DRV    FIRST_NOT_RESV_EXIT_CODE+0x00u
+#define EXIT_CODE_CP_NO_KEYMAP      FIRST_NOT_RESV_EXIT_CODE+0x01u
 
-void merge_disk_id_and_path(char *disk, char *path, char *out);
-
-#endif // __FILEMAN_H__
+#endif // __CP_EXIT_CODES_H__

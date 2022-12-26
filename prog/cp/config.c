@@ -33,16 +33,19 @@ SOFTWARE.
 #include "include/fileman.h"
 #include "include/config.h"
 
-#define MAX_PATH_LEN    255
 #define CONFIG_PATH     "/CONFIG"
 
 #define MAX_LINE_LEN    1024 // bytes
 
-// chars and strings to interpret
+// standard chars and strings to interpret
 #define COMMENT_CHAR    '#'
 #define KEYWORD_LOAD_DRV "LOAD"
 
-void config_read_file(err_t *err)
+// CP chars and strings to interpret
+#define KEYWORD_KEYB_DRIVER_NAME "KEYB_DRV_NAME"
+#define KEYWORD_KEYMAP_PATH "KEYMAP"
+
+file_t *config_read_file(err_t *err)
 {
     char *bootdisk = disk_get_bootdisk();
 
@@ -90,7 +93,6 @@ static void config_actually_load_driver(char *path, uint32_t n_drv)
 
 err_t config_load_drv(file_t *cf)
 {
-
     uint32_t line_num = 0;
     char *line = valloc(MAX_LINE_LEN);
     uint32_t n_drv = 1;
@@ -107,5 +109,42 @@ err_t config_load_drv(file_t *cf)
     }
 
     return EXIT_CODE_GLOBAL_SUCCESS;
-    
+}
+
+char *config_get_keyb_drv_name(file_t *cf)
+{
+    uint32_t line_num = 0;
+    char *line = valloc(MAX_LINE_LEN);
+    char *out = valloc(MAX_FILENAME_LEN); // + 2 for: (+ 1 '\0', +1 '.' to seperate filename and extension)
+
+    while(config_get_line(cf, line, &line_num))
+    {
+        if(strcmp_until(line, KEYWORD_KEYB_DRIVER_NAME, strlen(KEYWORD_LOAD_DRV)))
+            continue;
+
+        uint32_t pindex = 1;
+        str_get_part(out, line, " ", &pindex);
+    }
+
+    vfree(line);
+    return out;
+}
+
+char *config_get_keymap_path(file_t *cf)
+{
+    uint32_t line_num = 0;
+    char *line = valloc(MAX_LINE_LEN);
+    char *out = valloc(MAX_FILENAME_LEN); // + 2 for: (+ 1 '\0', +1 '.' to seperate filename and extension)
+
+    while(config_get_line(cf, line, &line_num))
+    {
+        if(strcmp_until(line, KEYWORD_KEYMAP_PATH, strlen(KEYWORD_LOAD_DRV)))
+            continue;
+
+        uint32_t pindex = 1;
+        str_get_part(out, line, " ", &pindex);
+    }
+
+    vfree(line);
+    return out;
 }
