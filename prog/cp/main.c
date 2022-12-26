@@ -22,16 +22,7 @@ SOFTWARE.
 */
 
 #include "types.h"
-#include "memory.h"
-#include "screen.h"
-#include "call.h"
-#include "api.h"
-#include "ps2keyb.h"
-#include "fs.h"
-
 #include "exit_code.h"
-#include "util.h"
-#include "scancode.h"
 
 #include "include/config.h"
 #include "include/keyb.h"
