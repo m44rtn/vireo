@@ -315,12 +315,12 @@ void move_str_back(char *str, uint32_t move_by)
 		str[j--] = str[i-1];
 }
 
-void memcpy(void *_dest, void *_src, size_t size)
+void memcpy(void *_dest, const void *_src, size_t size)
 {
 	uint32_t i;
 	
 	char *dest = _dest;
-	char *src = _src;
+	const char *src = _src;
 
 	for(i = 0; i < size; ++i)
 		*(dest + i) = *(src + i);
