@@ -56,6 +56,8 @@ SOFTWARE.
 #define ERROR_PARSING_CONFIG    "Error parsing config file (error code 0x%x)"
 #define ERROR_EXEC_PROG         "Error executing program in CONFIG (error code 0x%x)"
 
+#define KEYWORD_RUN_PROG        "RUN"
+
 typedef struct int_request_t
 {
     syscall_hdr_t hdr;
@@ -192,16 +194,20 @@ char *kernel_parse_config(file_t *f, size_t fsize)
     uint32_t loc = 0;
     char *line = kmalloc(CONFIG_FILE_PATH_LEN);
 
+    // find first line with keyword 'RUN' in config file 
     while(loc < fsize)
     {
         kernel_fetch_new_line(f, fsize, &loc, line);
+        to_uc(line, strlen(line)); // always uppercase
 
         if(line[0] == '#')
             continue;
         else if(line[0] < '/' || line[0] > 'z')
             continue;
-        else
+        else if(!strcmp_until(line, KEYWORD_RUN_PROG, strlen(KEYWORD_RUN_PROG)))
             break;
+        else
+            continue;
     }
 
     if(loc > (fsize + 1u) || !strlen(line))
@@ -255,6 +261,10 @@ void kernel_execute_config(void)
     // error parsing config file
     if(!program)
     { kfree(disk); return; }
+
+    // remove keyword 'RUN' from line
+    uint32_t spacei = find_in_str(program, " ") + 1;
+    memcpy(program, &program[spacei], strlen(&program[spacei]) + 1);
 
     err_t format_err = kernel_format_program_path(program);
     

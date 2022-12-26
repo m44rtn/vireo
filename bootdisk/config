@@ -1,2 +1,2 @@
 # for now this file only stores the file to read
-/BIN/CP.ELF test
+run /BIN/CP.ELF test
