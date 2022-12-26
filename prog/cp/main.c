@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-
-
 #include "types.h"
 #include "memory.h"
 #include "screen.h"
@@ -37,25 +35,6 @@ SOFTWARE.
 
 #include "include/config.h"
 #include "include/keyb.h"
-
-static char print_char(uint16_t keycode, keymap_entry_t *keymap, size_t keymap_size, char l)
-{
-    keymap_size = keymap_size / sizeof(keymap_entry_t);
-    char p = ' ';
-
-    for(uint32_t i = 0; i < keymap_size; ++i)
-        if(keymap[i].scancode == keycode)
-            p = keymap[i].lc;
-    
-    if(p == l)
-        return p;
-
-    char s[2];
-    str_add_val(s, "%c", p);
-    screen_print(s);
-
-    return p;
-}
 
 err_t main(uint32_t argc, char **argv)
 {    
