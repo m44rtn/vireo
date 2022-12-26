@@ -26,6 +26,7 @@ SOFTWARE.
 
 #include "types.h"
 
-err_t config_load_drv(void);
+void config_read_file(err_t *err);
+err_t config_load_drv(file_t *cf);
 
 #endif // __CONFIG_H__
