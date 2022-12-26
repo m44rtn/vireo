@@ -35,6 +35,8 @@ SOFTWARE.
 #include "util.h"
 #include "scancode.h"
 
+#include "include/config.h"
+
 typedef struct keymap_entry_t
 {
     char lc;
@@ -62,12 +64,12 @@ static char print_char(uint16_t keycode, keymap_entry_t *keymap, size_t keymap_s
 }
 
 err_t main(uint32_t argc, char **argv)
-{
-    err_t err = driver_add("CD0/SYS/PS2KEYB.DRV", PS2KEYB_DRIVER_ID);
+{    
+    err_t err = config_load_drv();
 
     if(err)
         return err;
-    
+
     api_listing_t *list = api_get_syscall_listing();
     api_space_t keyb_api = 0;
 
