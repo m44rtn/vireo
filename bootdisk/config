@@ -1,4 +1,10 @@
-# for now this file only stores the file to read
+# keywords and -symbols:
+#   * `run` (load a binary)
+#   * `load` (load a driver)
+#   * `#` (comment)
+# 
+# Not case sensitive.
+# Anything else is ignored (i.e. the symbols/lines '[kernel]' and '[drivers]' have no real function).
 
 [kernel]
 run /bin/cp.elf test
