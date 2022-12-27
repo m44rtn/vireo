@@ -119,7 +119,7 @@ err_t keyb_start(file_t *cf)
 }
 
 // for testing only
-static char in_keymap(uint16_t code)
+static char keyb_in_keymap(uint16_t code)
 {
     for(uint32_t i = 0; i < g_keymap_size / sizeof(keymap_entry_t); ++i)
         if(code == g_keymap[i].scancode)
@@ -129,17 +129,16 @@ static char in_keymap(uint16_t code)
 }
 
 // for testing only
-char keyb_get_usable_char(void)
+char keyb_get_character(void)
 {
-    uint32_t i = 0;
     char lc = 0;
 
-    while(g_keyb_bfr[i] != 0 && i < KEYBOARD_BFR_SIZE / sizeof(uint16_t))
+    for(uint32_t i = 0; i < KEYBOARD_BFR_SIZE / sizeof(uint16_t); ++i)
     {
-        lc = in_keymap(g_keyb_bfr[i]);
+        lc = keyb_in_keymap(g_keyb_bfr[i]);
 
         if(g_keyb_bfr[i] == KEYCODE_ENTER)
-            lc = '\n';
+            { memset(g_keyb_bfr, KEYBOARD_BFR_SIZE, 0); lc = '\n'; }
         else if(g_keyb_bfr[i] == KEYCODE_SPACE)
             lc = ' ';
         else if(g_keyb_bfr[i] == KEYCODE_BACKSPACE)

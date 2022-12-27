@@ -21,21 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KEYB_H__
-#define __KEYB_H__
+#ifndef __PROCESSOR_H__
+#define __PROCESSOR_H__
 
 #include "types.h"
 
-typedef struct keymap_entry_t
-{
-    char lc;
-    char uc;
-    uint16_t scancode;
-} __attribute__((packed)) keymap_entry_t;
+void processor_execute_command(char *cmd_bfr);
 
-err_t keyb_start(file_t *cf);
-
-// testing only
-char keyb_get_character(void);
-
-#endif // __KEYB_H__
+#endif // __PROCESSOR_H__

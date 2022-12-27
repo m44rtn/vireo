@@ -21,21 +21,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KEYB_H__
-#define __KEYB_H__
-
 #include "types.h"
+#include "kernel.h"
+#include "util.h"
+#include "screen.h"
+#include "memory.h"
 
-typedef struct keymap_entry_t
+#include "include/commands.h"
+#include "include/info.h"
+
+#define MAX_INFO_STR_LEN    128
+#define INFO_VER_STR_START  "CP "
+
+static char *command_create_cp_ver_str(void)
 {
-    char lc;
-    char uc;
-    uint16_t scancode;
-} __attribute__((packed)) keymap_entry_t;
+    // FIXME: internal memory pool?
+    char *str = valloc(MAX_INFO_STR_LEN);
+    
+    if(!str)
+        return NULL;
 
-err_t keyb_start(file_t *cf);
+    str_add_val(str, INFO_VER_STR_START "v%i.", MAJOR);
+    uint32_t i = strlen(str);
 
-// testing only
-char keyb_get_character(void);
+    str_add_val(&str[i], "%i", MINOR);
+    i = strlen(str);
 
-#endif // __KEYB_H__
+    str_add_val(&str[i], "%s", (uint32_t) REV);
+
+    str_add_val(&str[i], " (build %i)", BUILD);
+    
+    return str;
+}
+
+void command_ver(void)
+{
+    char *kernel_ver = kernel_get_version_str();
+    char *cp_ver = command_create_cp_ver_str();
+
+    screen_print("Kernel: ");
+    screen_print(kernel_ver);
+    screen_print("\n");
+    vfree(kernel_ver);
+
+    screen_print("CP: ");
+    screen_print(cp_ver);
+    screen_print("\n");
+    vfree(cp_ver);
+}

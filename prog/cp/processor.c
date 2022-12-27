@@ -21,21 +21,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KEYB_H__
-#define __KEYB_H__
+#include "util.h"
+#include "program.h"
 
-#include "types.h"
+#include "include/commands.h"
+#include "include/processor.h"
 
-typedef struct keymap_entry_t
+#define N_INTERNAL_COMMANDS 5
+#define CHECK_COMMAND(a) !strcmp_until(a, cmd_bfr, sizeof(a) - 1)
+
+static uint8_t processor_exec_internal_command(char *cmd_bfr)
 {
-    char lc;
-    char uc;
-    uint16_t scancode;
-} __attribute__((packed)) keymap_entry_t;
+    uint8_t did_execute = 0;
 
-err_t keyb_start(file_t *cf);
+    if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_VER)))
+        command_ver();
+    
+    return did_execute;
+}
 
-// testing only
-char keyb_get_character(void);
+void processor_execute_command(char *cmd_bfr)
+{
+    if(processor_exec_internal_command(cmd_bfr))
+        return;
+    
+    uint32_t end = find_in_str(cmd_bfr, "\n");
+    cmd_bfr[end] = '\0';
 
-#endif // __KEYB_H__
+    // TODO: report error in errorlvl command?
+    program_start_new(cmd_bfr);
+}

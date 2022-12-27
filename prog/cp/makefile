@@ -37,6 +37,7 @@ AC := nasm
 
 all: clean $(OBJFILES) $(ASOBJFILES)
 	@$(CC) -I../../syslib/lib/include -T linker.ld -o $(OFILE) $(LDOBJFILES) $(LDASOBJFILES) ../../syslib/bin/libvireo_sys.a -lgcc -pie -static $(CCFLAGS)
+	-@xenops -f include/info.h -q
 
 todo: 
 	-@for file in $(ALLFILES:Makefile=); do fgrep -H -e TODO -e FIXME $$file; done; true

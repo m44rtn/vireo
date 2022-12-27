@@ -23,9 +23,16 @@ SOFTWARE.
 
 #include "types.h"
 #include "exit_code.h"
+#include "memory.h"
+#include "util.h"
+#include "screen.h"
 
 #include "include/config.h"
 #include "include/keyb.h"
+#include "include/processor.h"
+
+#define PROMPT  "$ "
+#define COMMAND_BUFFER_SIZE 512 // chars
 
 err_t main(uint32_t argc, char **argv)
 {    
@@ -45,13 +52,39 @@ err_t main(uint32_t argc, char **argv)
     if(err)
         return err;
     
+    char *cmd_bfr = valloc(COMMAND_BUFFER_SIZE);
+    uint32_t i = 0;
+
+    screen_print(PROMPT);
+
     while(1)
     {
-        char lc = keyb_get_usable_char();
+        char lc = keyb_get_character();
+        
+        if(!lc)
+            continue;
+        
         char str[2] = {lc, 0};
+        cmd_bfr[i++] = lc;
+        screen_print(str);
 
-        if(lc)
-            screen_print(str);
+        if(lc == '\b' && i > 0)
+            i--;
+
+        if(lc != '\n')
+            continue;
+
+        // everything to uppercase, since this makes everything easier for us
+        to_uc(cmd_bfr, strlen(cmd_bfr));
+
+        // extra newline to allow for a visual seperation of user input and program output
+        screen_print("\n");
+
+        // exec command and set-up for next command
+        processor_execute_command(cmd_bfr); 
+        memset(cmd_bfr, COMMAND_BUFFER_SIZE, 0);
+        i = 0;
+        screen_print(PROMPT);
     }
 
     return err;

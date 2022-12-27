@@ -21,21 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KEYB_H__
-#define __KEYB_H__
+#ifndef __COMMANDS_H__
+#define __COMMANDS_H__
 
 #include "types.h"
 
-typedef struct keymap_entry_t
-{
-    char lc;
-    char uc;
-    uint16_t scancode;
-} __attribute__((packed)) keymap_entry_t;
+#define INTERNAL_COMMAND_CD     "CD"
+#define INTERNAL_COMMAND_DIR    "DIR"
+#define INTERNAL_COMMAND_ECHO   "ECHO"
+#define INTERNAL_COMMAND_HELP   "HELP"
+#define INTERNAL_COMMAND_VER    "VER"
 
-err_t keyb_start(file_t *cf);
+void command_ver(void);
 
-// testing only
-char keyb_get_character(void);
-
-#endif // __KEYB_H__
+#endif // __COMMANDS_H__

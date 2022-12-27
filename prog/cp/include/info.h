@@ -21,21 +21,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __KEYB_H__
-#define __KEYB_H__
+#ifndef __INFO_H__
+#define __INFO_H__
 
-#include "types.h"
+/* this is always the build number for next build. 
+current binary build = [BUILD] - 1 */
+#define BUILD 0
 
-typedef struct keymap_entry_t
-{
-    char lc;
-    char uc;
-    uint16_t scancode;
-} __attribute__((packed)) keymap_entry_t;
+#define MAJOR 0
+#define MINOR 1  
+#define REV (char *) ""
 
-err_t keyb_start(file_t *cf);
+#define BUILDDATE    __DATE__
+#define BUILDTIME    __TIME__
 
-// testing only
-char keyb_get_character(void);
-
-#endif // __KEYB_H__
+#endif // __INFO_H__
