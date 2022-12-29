@@ -115,7 +115,7 @@ char *config_get_keyb_drv_name(file_t *cf)
 {
     uint32_t line_num = 0;
     char *line = valloc(MAX_LINE_LEN);
-    char *out = valloc(MAX_FILENAME_LEN); // + 2 for: (+ 1 '\0', +1 '.' to seperate filename and extension)
+    char *out = valloc(MAX_FILENAME_LEN);
 
     while(config_get_line(cf, line, &line_num))
     {
