@@ -40,14 +40,16 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr)
     return did_execute;
 }
 
-void processor_execute_command(char *cmd_bfr)
+err_t processor_execute_command(char *cmd_bfr)
 {
-    if(processor_exec_internal_command(cmd_bfr))
-        return;
+    uint8_t ran_internal = processor_exec_internal_command(cmd_bfr);
+
+    if(ran_internal)
+        return EXIT_CODE_GLOBAL_SUCCESS;
     
     uint32_t end = find_in_str(cmd_bfr, "\n");
     cmd_bfr[end] = '\0';
 
     // TODO: report error in errorlvl command?
-    program_start_new(cmd_bfr);
+    return program_start_new(cmd_bfr);
 }

@@ -26,6 +26,6 @@ SOFTWARE.
 
 #include "types.h"
 
-void processor_execute_command(char *cmd_bfr);
+err_t processor_execute_command(char *cmd_bfr);
 
 #endif // __PROCESSOR_H__
