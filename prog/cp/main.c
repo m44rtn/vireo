@@ -34,6 +34,13 @@ SOFTWARE.
 #define PROMPT  "$ "
 #define COMMAND_BUFFER_SIZE 512 // chars
 
+static void print_did_not_exec_correctly(char *cmd_bfr)
+{
+    char str[512];
+    str_add_val(str, "%s: no command or filename, or program returned with error.\n", cmd_bfr);
+    screen_print(str);
+}
+
 err_t main(uint32_t argc, char **argv)
 {    
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
@@ -81,7 +88,9 @@ err_t main(uint32_t argc, char **argv)
         screen_print("\n");
 
         // exec command and set-up for next command
-        processor_execute_command(cmd_bfr); 
+        if(processor_execute_command(cmd_bfr))
+            print_did_not_exec_correctly(cmd_bfr);
+            
         memset(cmd_bfr, COMMAND_BUFFER_SIZE, 0);
         i = 0;
         screen_print(PROMPT);
