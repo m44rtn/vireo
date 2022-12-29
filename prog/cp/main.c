@@ -69,7 +69,7 @@ err_t main(uint32_t argc, char **argv)
         screen_print(str);
 
         if(lc == '\b' && i > 0)
-            i--;
+            i = i - 2;
 
         if(lc != '\n')
             continue;
