@@ -118,7 +118,6 @@ err_t keyb_start(file_t *cf)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-// for testing only
 static char keyb_in_keymap(uint16_t code)
 {
     for(uint32_t i = 0; i < g_keymap_size / sizeof(keymap_entry_t); ++i)
@@ -128,22 +127,29 @@ static char keyb_in_keymap(uint16_t code)
     return 0;
 }
 
-// for testing only
+static char keyb_convert_keycode(uint16_t code)
+{
+    char lc = 0;
+    
+    if(code == KEYCODE_ENTER)
+        { memset(g_keyb_bfr, KEYBOARD_BFR_SIZE, 0); lc = '\n'; }
+    else if(code == KEYCODE_SPACE)
+        lc = ' ';
+    else if(code == KEYCODE_BACKSPACE)
+        lc = '\b';
+    else
+        lc = keyb_in_keymap(code);
+    
+    return lc;
+}
+
 char keyb_get_character(void)
 {
     char lc = 0;
 
     for(uint32_t i = 0; i < KEYBOARD_BFR_SIZE / sizeof(uint16_t); ++i)
     {
-        lc = keyb_in_keymap(g_keyb_bfr[i]);
-
-        if(g_keyb_bfr[i] == KEYCODE_ENTER)
-            { memset(g_keyb_bfr, KEYBOARD_BFR_SIZE, 0); lc = '\n'; }
-        else if(g_keyb_bfr[i] == KEYCODE_SPACE)
-            lc = ' ';
-        else if(g_keyb_bfr[i] == KEYCODE_BACKSPACE)
-            lc = '\b';
-
+        lc = keyb_convert_keycode(g_keyb_bfr[i]);
         g_keyb_bfr[i] = 0;
 
         if(lc)
