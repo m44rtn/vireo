@@ -33,6 +33,7 @@ SOFTWARE.
 #include "include/config.h"
 #include "include/keyb.h"
 #include "include/processor.h"
+#include "include/commands.h"
 
 #define COMMAND_BUFFER_SIZE 512 // chars
 
@@ -115,7 +116,8 @@ err_t main(uint32_t argc, char **argv)
     uint32_t i = 0;
 
     screen_prepare_for_first_prompt();
-    screen_print(PROMPT);
+    command_ver();
+    screen_print("\n" PROMPT);
 
     while(1)
     {
