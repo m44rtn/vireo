@@ -30,5 +30,8 @@ SOFTWARE.
 #define MAX_PATH_LEN    255
 
 void merge_disk_id_and_path(char *disk, char *path, char *out);
+uint8_t fileman_contains_disk(char *path);
+void setcwd(char *path);
+void getcwd(char *buf, uint32_t *len);
 
 #endif // __FILEMAN_H__

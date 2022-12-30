@@ -26,7 +26,9 @@ SOFTWARE.
 #include "util.h"
 #include "screen.h"
 #include "memory.h"
+#include "disk.h"
 
+#include "include/fileman.h"
 #include "include/commands.h"
 #include "include/info.h"
 
@@ -68,4 +70,66 @@ void command_ver(void)
     screen_print(cp_ver);
     screen_print("\n");
     vfree(cp_ver);
+}
+
+static void command_set_wd_bootdisk(char *path)
+{
+    char *bd = disk_get_bootdisk();
+    char *out = valloc(MAX_PATH_LEN + 1);
+
+    if(!out)
+        return;
+    
+    merge_disk_id_and_path(bd, path, out);
+    setcwd(out);
+
+    vfree(bd);
+    vfree(out);
+}
+
+void command_append_to_current_wd(char *new_part)
+{
+    char *out = valloc(MAX_PATH_LEN + 1);
+    uint32_t len = 0;
+
+    getcwd(out, &len);
+    
+    merge_disk_id_and_path(out, new_part, out);
+    setcwd(out);
+
+    vfree(out);
+}
+
+void command_cd(char *cmd_bfr)
+{
+    uint32_t space_index = find_in_str(cmd_bfr, " ");
+
+    cmd_bfr[find_in_str(cmd_bfr, "\n")] = '\0';
+
+    uint32_t i = space_index;
+    while((i = find_in_str(&cmd_bfr[space_index + 1], " ")) != MAX)
+        space_index = space_index + i;
+
+    if(space_index == MAX || cmd_bfr[space_index] == '\0')
+        { command_pwd(); return; }
+    
+    space_index++;
+    if(cmd_bfr[space_index] == '/')
+        command_set_wd_bootdisk(&cmd_bfr[space_index]);
+    else if(fileman_contains_disk(&cmd_bfr[space_index]))
+        setcwd(&cmd_bfr[space_index]);
+    else
+        command_append_to_current_wd(&cmd_bfr[space_index]);
+    
+}
+
+void command_pwd(void)
+{
+    char str[255]; 
+    uint32_t len = 0;
+
+    getcwd(str, &len); 
+    
+    screen_print(str);
+    screen_print("\n");
 }

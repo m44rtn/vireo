@@ -23,11 +23,47 @@ SOFTWARE.
 
 #include "include/fileman.h"
 
+#include "disk.h"
+#include "memory.h"
 #include "util.h"
+
+char working_dir[MAX_PATH_LEN + 1];
 
 void merge_disk_id_and_path(char *disk, char *path, char *out)
 {    
     size_t d_len = strlen(disk);
     memcpy(out, disk, d_len);
     memcpy(&out[d_len], path, strlen(path) + 1);
+}
+
+uint8_t fileman_contains_disk(char *path)
+{
+    // not happy with this, but it works
+    if(!(path[2] >= '0' && path[2] <= '9'))
+        return 0;
+    
+    if(!(path[1] >= 'A' && path[1] <= 'Z'))
+        return 0;
+    
+    if(!(path[0] >= 'A' && path[0] <= 'Z'))
+        return 0;
+
+    return 1;    
+}
+
+void setcwd(char *path)
+{
+    size_t len = strlen(path) + 1;
+    len = (len > MAX_PATH_LEN + 1) ? MAX_PATH_LEN + 1 : len;
+
+    memcpy(working_dir, path, len);
+
+    if(working_dir[len - 2] != '/')
+        { working_dir[len - 1] = '/'; working_dir[len] = '\0'; }
+}
+
+void getcwd(char *buf, uint32_t *len)
+{
+    *len = strlen(working_dir);
+    memcpy(buf, working_dir, *len + 1);
 }

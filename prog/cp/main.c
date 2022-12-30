@@ -26,7 +26,9 @@ SOFTWARE.
 #include "memory.h"
 #include "util.h"
 #include "screen.h"
+#include "disk.h"
 
+#include "include/fileman.h"
 #include "include/config.h"
 #include "include/keyb.h"
 #include "include/processor.h"
@@ -74,6 +76,14 @@ static void screen_magic(char *str, uint32_t n, uint32_t cdm_bfr_index)
     }
 }
 
+static void set_first_working_dir(void)
+{
+    char *bd = disk_get_bootdisk();
+    setcwd(bd);
+
+    vfree(bd);
+}
+
 err_t main(uint32_t argc, char **argv)
 {    
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
@@ -91,6 +101,8 @@ err_t main(uint32_t argc, char **argv)
     
     if(err)
         return err;
+    
+    set_first_working_dir();
     
     char *cmd_bfr = valloc(COMMAND_BUFFER_SIZE * 2);
     char *cmd_shadow = cmd_bfr + COMMAND_BUFFER_SIZE;
