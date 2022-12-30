@@ -44,8 +44,8 @@ typedef struct partition_info_t
     uint8_t type;
 } __attribute__((packed)) partition_info_t;
 
-// returns information on detected disks by the system
-disk_info_t *disk_get_drive_list(void);
+// returns information on detected disks by the system and the total size of the list in *size
+disk_info_t *disk_get_drive_list(size_t *size);
 
 // returns information about a partition of a disk (e.g. HD0P0)
 partition_info_t *disk_get_partition_info(char *_id);

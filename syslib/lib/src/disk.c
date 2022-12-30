@@ -34,10 +34,12 @@ typedef struct disk_syscall_t
 } __attribute__((packed)) disk_syscall_t;
 
 
-disk_info_t *disk_get_drive_list(void)
+disk_info_t *disk_get_drive_list(size_t *size)
 {
     syscall_hdr_t hdr = {.system_call = SYSCALL_DISK_LIST};
     PERFORM_SYSCALL(&hdr);
+
+    *(size) = hdr.response_size;
 
     return (disk_info_t *) hdr.response_ptr;
 }
