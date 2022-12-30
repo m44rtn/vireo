@@ -37,7 +37,7 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr)
 
     if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_VER)))
         command_ver();
-    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_CD)))
+    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_CD)) && !fileman_contains_disk(cmd_bfr))
         command_cd(cmd_bfr);
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_PWD)))
         command_pwd();

@@ -26,7 +26,7 @@ SOFTWARE.
 
 #include "types.h"
 
-#define INTERNAL_COMMAND_CD     "CD " // space to avoid problems with using a full path to launch a program (e.g. 'cd0/breaker.elf')
+#define INTERNAL_COMMAND_CD     "CD"
 #define INTERNAL_COMMAND_PWD    "PWD"
 #define INTERNAL_COMMAND_DIR    "DIR"
 #define INTERNAL_COMMAND_ECHO   "ECHO"
