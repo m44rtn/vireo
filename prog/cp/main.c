@@ -41,6 +41,39 @@ static void print_did_not_exec_correctly(char *cmd_bfr)
     screen_print(str);
 }
 
+static uint32_t append_shadow_to_main(char *shadow, uint32_t sh_len, char *main, uint32_t main_st)
+{
+    uint32_t i = main_st;
+    uint32_t shi = 0;
+
+    while(shi < sh_len)
+    {
+        if(i > 0 && shadow[shi] == '\b')
+            { shi++; i--; continue; }
+        else if(i == 0 && shadow[shi] == '\b')
+            { shi++; continue; }
+        
+        main[i] = shadow[shi];
+        i++; shi++;
+    }
+ 
+    return i;
+}
+
+static void screen_magic(char *str, uint32_t n, uint32_t cdm_bfr_index)
+{
+    // print everything, unless we backspace when there's nothing in the command buffer
+    for(uint32_t i = 0; i < n; i++)
+    {
+        if(cdm_bfr_index == 0 && str[i] == '\b')
+            continue;
+        
+        char st[2] = {str[i], 0};
+        screen_print(st);
+        cdm_bfr_index++;
+    }
+}
+
 err_t main(uint32_t argc, char **argv)
 {    
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
@@ -59,26 +92,24 @@ err_t main(uint32_t argc, char **argv)
     if(err)
         return err;
     
-    char *cmd_bfr = valloc(COMMAND_BUFFER_SIZE);
+    char *cmd_bfr = valloc(COMMAND_BUFFER_SIZE * 2);
+    char *cmd_shadow = cmd_bfr + COMMAND_BUFFER_SIZE;
+
     uint32_t i = 0;
 
     screen_print(PROMPT);
 
     while(1)
     {
-        char lc = keyb_get_character();
+        uint32_t n = keyb_get_character(cmd_shadow);
         
-        if(!lc)
+        if(!n)
             continue;
         
-        char str[2] = {lc, 0};
-        cmd_bfr[i++] = lc;
-        screen_print(str);
+        screen_magic(cmd_shadow, n, i);       
+        i = append_shadow_to_main(cmd_shadow, n, cmd_bfr, i);
 
-        if(lc == '\b' && i > 0)
-            i = i - 2;
-
-        if(lc != '\n')
+        if(cmd_bfr[i - 1] != '\n')
             continue;
 
         // everything to uppercase, since this makes everything easier for us

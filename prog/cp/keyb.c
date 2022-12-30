@@ -143,18 +143,25 @@ static char keyb_convert_keycode(uint16_t code)
     return lc;
 }
 
-char keyb_get_character(void)
+uint32_t keyb_get_character(char *bfr)
 {
+    if(!g_keyb_bfr[0])
+        return 0;
+
     char lc = 0;
+    uint32_t n = 0;
 
     for(uint32_t i = 0; i < KEYBOARD_BFR_SIZE / sizeof(uint16_t); ++i)
     {
         lc = keyb_convert_keycode(g_keyb_bfr[i]);
-        g_keyb_bfr[i] = 0;
 
+        // if(lc == '\b' && n > 0)
+        //     n = n - 1;
         if(lc)
-            break;
+            bfr[n++] = lc;
     }
 
-    return lc;
+    memset(g_keyb_bfr, KEYBOARD_BFR_SIZE, 0);
+
+    return n;
 }

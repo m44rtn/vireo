@@ -35,7 +35,6 @@ typedef struct keymap_entry_t
 
 err_t keyb_start(file_t *cf);
 
-// testing only
-char keyb_get_character(void);
+uint32_t keyb_get_character(char *bfr);
 
 #endif // __KEYB_H__
