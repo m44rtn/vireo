@@ -28,12 +28,12 @@ SOFTWARE.
 #include "screen.h"
 #include "disk.h"
 
+#include "include/screen.h"
 #include "include/fileman.h"
 #include "include/config.h"
 #include "include/keyb.h"
 #include "include/processor.h"
 
-#define PROMPT  "$ "
 #define COMMAND_BUFFER_SIZE 512 // chars
 
 static void print_did_not_exec_correctly(char *cmd_bfr)
@@ -112,9 +112,9 @@ err_t main(uint32_t argc, char **argv)
     
     char *cmd_bfr = valloc(COMMAND_BUFFER_SIZE * 2);
     char *cmd_shadow = cmd_bfr + COMMAND_BUFFER_SIZE;
-
     uint32_t i = 0;
 
+    screen_prepare_for_first_prompt();
     screen_print(PROMPT);
 
     while(1)

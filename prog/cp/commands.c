@@ -28,6 +28,7 @@ SOFTWARE.
 #include "memory.h"
 #include "disk.h"
 
+#include "include/screen.h"
 #include "include/fileman.h"
 #include "include/commands.h"
 #include "include/info.h"
@@ -137,4 +138,5 @@ void command_pwd(void)
 void command_clear(void)
 {
     screen_clear();
+    screen_prepare_for_first_prompt();
 }
