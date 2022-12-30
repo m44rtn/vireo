@@ -87,7 +87,7 @@ static void command_set_wd_bootdisk(char *path)
     vfree(out);
 }
 
-void command_append_to_current_wd(char *new_part)
+static void command_append_to_current_wd(char *new_part)
 {
     char *out = valloc(MAX_PATH_LEN + 1);
     uint32_t len = 0;
