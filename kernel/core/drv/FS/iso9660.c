@@ -348,7 +348,11 @@ static uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *f
 		if(!size)
 			continue;
 		
-		if(strlen(file) >= len)
+		// A file identifier always contains ';1' at the end of a filename, which counts towards ident_len.
+		// a file with no file extension (e.g. a file called 'config') will still always carry the extension seperator (i.e. the dot '.').
+		// Therefore, we ignore the last two and three characters of the identifier when checking if a filename is the same length.
+		// A directory entry does not contain these symbols within its identifier.
+		if(entry->ident_len == len || (entry->ident_len - 2u) == len || (entry->ident_len - 3u) == len)
 			if(!strcmp_until(filename, file, len))
 			{
 				*(fsize) = (entry->size);
