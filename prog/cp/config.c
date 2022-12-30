@@ -77,7 +77,7 @@ static uint8_t config_get_line(file_t *cf, char *out, uint32_t *pindex)
     return is_not_done;
 }
 
-static void config_actually_load_driver(char *path, uint32_t n_drv)
+static err_t config_actually_load_driver(char *path, uint32_t n_drv)
 {
     // we don't actually need to care about the driver id, as long as its unique and non-zero
     if(path[0] != '/')
@@ -87,8 +87,10 @@ static void config_actually_load_driver(char *path, uint32_t n_drv)
     char *p = valloc(strlen(path) + strlen(bd) + 1);
     merge_disk_id_and_path(bd, path, p);
     
-    driver_add(p, n_drv);
+    err_t err = driver_add(p, n_drv);
     vfree(p);
+
+    return err;
 }
 
 err_t config_load_drv(file_t *cf)
@@ -105,7 +107,7 @@ err_t config_load_drv(file_t *cf)
         // remove keyword 'LOAD' from line
         uint32_t spacei = find_in_str(line, " ") + 1;
         memcpy(line, &line[spacei], strlen(&line[spacei]) + 1);
-        config_actually_load_driver(line, n_drv++); // TODO: report error to user
+        assert(!config_actually_load_driver(line, n_drv++)); // TODO: report error to user
     }
 
     return EXIT_CODE_GLOBAL_SUCCESS;
