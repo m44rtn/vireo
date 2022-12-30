@@ -109,7 +109,7 @@ void command_cd(char *cmd_bfr)
 
     uint32_t i = space_index;
     while((i = find_in_str(&cmd_bfr[space_index + 1], " ")) != MAX)
-        space_index = space_index + i;
+        space_index = space_index + i + 1;
 
     if(space_index == MAX || cmd_bfr[space_index] == '\0')
         { command_pwd(); return; }
