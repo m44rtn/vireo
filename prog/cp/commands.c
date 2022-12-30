@@ -133,3 +133,8 @@ void command_pwd(void)
     screen_print(str);
     screen_print("\n");
 }
+
+void command_clear(void)
+{
+    screen_clear();
+}

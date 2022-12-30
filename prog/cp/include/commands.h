@@ -28,6 +28,7 @@ SOFTWARE.
 
 #define INTERNAL_COMMAND_CD     "CD"
 #define INTERNAL_COMMAND_PWD    "PWD"
+#define INTERNAL_COMMAND_CLEAR  "CLEAR"
 #define INTERNAL_COMMAND_DIR    "DIR"
 #define INTERNAL_COMMAND_ECHO   "ECHO"
 #define INTERNAL_COMMAND_HELP   "HELP"
@@ -36,5 +37,6 @@ SOFTWARE.
 void command_ver(void);
 void command_cd(char *cmd_bfr);
 void command_pwd(void);
+void command_clear(void);
 
 #endif // __COMMANDS_H__
