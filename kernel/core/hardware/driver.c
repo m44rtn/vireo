@@ -123,6 +123,8 @@ void driver_init(void)
 
     ASSERT(ext_drv_list);
 
+    memset(ext_drv_list, DRIVER_EXTERNAL_LIST_SIZE, 0);
+
 #ifndef NO_DEBUG_INFO
     print( "\n");
 #endif
