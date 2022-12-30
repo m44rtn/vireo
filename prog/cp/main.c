@@ -38,9 +38,12 @@ SOFTWARE.
 
 static void print_did_not_exec_correctly(char *cmd_bfr)
 {
-    char str[512];
+    char *str = valloc(strlen(cmd_bfr));
+
     str_add_val(str, "%s: no command or filename, or program returned with error.\n", cmd_bfr);
     screen_print(str);
+
+    vfree(str);
 }
 
 static uint32_t append_shadow_to_main(char *shadow, uint32_t sh_len, char *main, uint32_t main_st)
@@ -54,6 +57,9 @@ static uint32_t append_shadow_to_main(char *shadow, uint32_t sh_len, char *main,
             { shi++; i--; continue; }
         else if(i == 0 && shadow[shi] == '\b')
             { shi++; continue; }
+        else if(i >= COMMAND_BUFFER_SIZE - 1 && shadow[shi] != '\n')
+            { shi++; continue; }
+
         
         main[i] = shadow[shi];
         i++; shi++;
@@ -118,8 +124,11 @@ err_t main(uint32_t argc, char **argv)
         if(!n)
             continue;
         
-        screen_magic(cmd_shadow, n, i);       
+        if(i + n < COMMAND_BUFFER_SIZE)
+            screen_magic(cmd_shadow, n, i);       
+        
         i = append_shadow_to_main(cmd_shadow, n, cmd_bfr, i);
+       
 
         if(cmd_bfr[i - 1] != '\n')
             continue;
