@@ -24,6 +24,7 @@ SOFTWARE.
 #include "util.h"
 #include "program.h"
 
+#include "include/fileman.h"
 #include "include/commands.h"
 #include "include/processor.h"
 
@@ -54,6 +55,20 @@ err_t processor_execute_command(char *cmd_bfr)
     uint32_t end = find_in_str(cmd_bfr, "\n");
     cmd_bfr[end] = '\0';
 
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+
+    if(fileman_contains_disk(cmd_bfr))
+        err = program_start_new(cmd_bfr);
+    
+    uint32_t len = 0;
+    char *str = valloc(MAX_PATH_LEN + 1);
+    getcwd(str, &len);
+
+    merge_disk_id_and_path(str, cmd_bfr, str);
+
+    err = program_start_new(str);
+    vfree(str);
+
     // TODO: report error in errorlvl command?
-    return program_start_new(cmd_bfr);
+    return err;
 }
