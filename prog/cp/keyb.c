@@ -43,7 +43,7 @@ size_t g_keymap_size = 0;
 
 uint16_t *g_keyb_bfr = NULL;
 
-static api_space_t keyb_get_api_space(char *keyb_driver_name)
+static api_space_t keyb_get_api_space(void)
 {
     api_listing_t *list = api_get_syscall_listing();
     api_space_t keyb_api = 0;
@@ -65,7 +65,6 @@ static keymap_entry_t * keyb_load_keymap(file_t *cf)
 {
     char *path = config_get_keymap_path(cf);
 
-    size_t keymap_size = 0;
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
 
     char *p = valloc(MAX_PATH_LEN);
@@ -89,7 +88,7 @@ err_t keyb_start(file_t *cf)
     memcpy(g_keyb_drv_name, drv_name, MAX_FILENAME_LEN);
     vfree(drv_name);
 
-    g_keyb_api = keyb_get_api_space(g_keyb_drv_name);
+    g_keyb_api = keyb_get_api_space();
 
     if(g_keyb_api == (uint16_t) MAX)
         return EXIT_CODE_CP_NO_KEYB_DRV;
@@ -155,8 +154,6 @@ uint32_t keyb_get_character(char *bfr)
     {
         lc = keyb_convert_keycode(g_keyb_bfr[i]);
 
-        // if(lc == '\b' && n > 0)
-        //     n = n - 1;
         if(lc)
             bfr[n++] = lc;
     }

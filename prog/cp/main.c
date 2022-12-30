@@ -40,7 +40,7 @@ static void print_did_not_exec_correctly(char *cmd_bfr)
 {
     char *str = valloc(strlen(cmd_bfr));
 
-    str_add_val(str, "%s: no command or filename, or program returned with error.\n", cmd_bfr);
+    str_add_val(str, "%s: no command or filename, or program returned with error.\n", (uint32_t) cmd_bfr);
     screen_print(str);
 
     vfree(str);
