@@ -192,6 +192,7 @@ void diskio_api(void *req)
 
             char *id = bootdisk();
             memcpy(hdr->response_ptr, id, strlen(id));
+            kfree(id);
             
             hdr->exit_code = EXIT_CODE_GLOBAL_SUCCESS;
         break;
@@ -397,7 +398,7 @@ uint8_t to_actual_drive(uint8_t drive, uint8_t type)
             nfound++;
 
             if(nfound == drive)
-                return i;
+                { kfree(drivelist); return i; }
         }
     }
 
