@@ -251,7 +251,7 @@ uint8_t read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsig
             IDE_COMMAND_READ : NULL; /* TODO: make NULL floppy command */
 
     if(drive > DISKIO_MAX_DRIVES)
-        return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
+        { kfree(drv); return EXIT_CODE_GLOBAL_OUT_OF_RANGE; }
 
     drv[0] = command;
     drv[1] = (uint32_t) (drive);
@@ -297,7 +297,10 @@ size_t disk_get_max_addr(uint8_t drive)
 
     driver_exec_int((uint32_t) (disk_info_t[drive].controller_info | DRIVER_TYPE_PCI), drv);
     
-    return drv[2];
+    size_t max_addr = drv[2];
+    kfree(drv);
+
+    return max_addr;
 }
 
 size_t disk_get_sector_size(uint8_t drive)
