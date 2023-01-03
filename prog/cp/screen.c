@@ -39,8 +39,6 @@ void screen_prepare_for_first_prompt(void)
     if(info)
         { skip_lines = info->height - 2; vfree(info); }
 
-    for(uint32_t i = 0; i < skip_lines; ++i)
-        screen_print("\n");
-
+    err_t err = screen_set_cursor_pos(0, skip_lines);
     
 }
