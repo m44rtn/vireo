@@ -148,6 +148,24 @@ void screen_basic_api(void *req)
 			break;
 		}
 
+		case SYSCALL_SET_SCREEN_CURSOR:
+			if(r->x >= SCREEN_BASIC_WIDTH || r->y >= SCREEN_BASIC_HEIGHT)
+				{r->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
+			
+			SCRscreenData.cursorX = (uint16_t) r->x;
+			SCRscreenData.cursorY = (uint16_t) r->y;
+
+			r->hdr.exit_code = screen_basic_move_cursor((uint16_t) r->x, (uint16_t) r->y);
+		break;
+
+		case SYSCALL_GET_SCREEN_CURSOR:
+			// You can get the value of the x and y cursor by doing the following calculation:
+			// uint16_t x = pos % SCREEN_BASIC_WIDTH;
+			// uint16_t y = pos / SCREEN_BASIC_WIDTH;
+
+			r->hdr.response = (uint32_t) screen_basic_get_cursor_position();
+		break;
+
 		case SYSCALL_CLEAR_SCREEN:
 			screen_basic_clear_screen();
 		break;

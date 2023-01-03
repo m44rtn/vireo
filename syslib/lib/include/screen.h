@@ -82,4 +82,10 @@ err_t screen_set_color(color_t _color);
 // clears the entire screen
 void screen_clear(void);
 
+// sets the cursor to position _x and _y
+err_t screen_set_cursor_pos(uint8_t _x, uint8_t _y);
+
+// gets the cursor and returns the cursor position in *_x and *_y, using _scr_width
+void screen_get_cursor_pos(uint16_t _scr_width, uint8_t *_x, uint8_t *_y);
+
 #endif // __SCREEM_H__

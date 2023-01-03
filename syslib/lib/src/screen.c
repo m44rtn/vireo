@@ -114,3 +114,24 @@ void screen_clear(void)
     syscall_hdr_t hdr = {.system_call = SYSCALL_CLEAR_SCREEN};
     PERFORM_SYSCALL(&hdr);
 }
+
+err_t screen_set_cursor_pos(uint8_t _x, uint8_t _y)
+{
+    screen_t req = {
+        .hdr.system_call = SYSCALL_SET_SCREEN_CURSOR,
+        .x = (uint32_t) _x,
+        .y = (uint32_t) _y
+    };
+    PERFORM_SYSCALL(&req);
+
+    return req.hdr.exit_code;
+}
+
+void screen_get_cursor_pos(uint16_t _scr_width, uint8_t *_x, uint8_t *_y)
+{
+    syscall_hdr_t hdr = {.system_call = SYSCALL_GET_SCREEN_CURSOR};
+    PERFORM_SYSCALL(&hdr);
+
+    *_x = (uint8_t) (hdr.response % _scr_width);
+    *_y = (uint8_t) (hdr.response / _scr_width);
+}

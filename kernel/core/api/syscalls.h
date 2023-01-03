@@ -41,6 +41,8 @@ SOFTWARE.
 #define SYSCALL_GET_SCREEN_GET_BYTE         0x0104
 #define SYSCALL_SET_SCREEN_COLOR            0x0105
 #define SYSCALL_CLEAR_SCREEN                0x0106
+#define SYSCALL_SET_SCREEN_CURSOR           0x0107
+#define SYSCALL_GET_SCREEN_CURSOR           0x0108
 
 // memory (0x0200-0x02ff)
 #define SYSCALL_GET_MEM_INFO                0x0200
