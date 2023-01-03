@@ -420,7 +420,7 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 	uint32_t dir_lba = (p[0] == '\0') ? (info->rootdir_lba) : iso_path_to_dir_lba(drive, p);
 
 	if(dir_lba == MAX)
-		return MAX;
+		{ iso_free_bfr(p); iso_free_bfr(filename); return MAX; }
 
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize, entry);
 	
@@ -778,7 +778,7 @@ void iso_read(char * path, uint32_t *drv)
 	if(nlba)
 		read(drive, flba, nlba, bfr);
 	else
-		gerror = EXIT_CODE_FS_FILE_NOT_FOUND;
+		{ vfree(bfr); bfr = NULL; gerror = EXIT_CODE_FS_FILE_NOT_FOUND; }
 
 	drv[2] = (uint32_t) bfr;
 	drv[3] = fsize;
