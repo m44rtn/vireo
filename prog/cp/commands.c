@@ -171,7 +171,7 @@ void command_dir(void)
         
         screen_set_cursor_pos(DIR_DIRTXT_INDENT, y);
         if(dir[i].attrib && FAT_FILE_ATTRIB_DIR == FAT_FILE_ATTRIB_DIR)
-            { screen_print("<DIR>"); } // continue;
+            { screen_print("<DIR>\n"); continue; }
         
         screen_set_cursor_pos(DIR_FILESIZE_INDENT, y);
         
