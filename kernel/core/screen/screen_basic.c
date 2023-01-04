@@ -36,6 +36,8 @@ SOFTWARE.
 
 #define SCREEN_BASIC_DEFAULT_COLOR  0x07
 
+#define SCREEN_BASIC_INDENT_AMOUNT	8
+
 #define SCREEN_BASIC_FIRST_SCNLINE	0
 #define SCREEN_BASIC_LAST_SCNLINE	15
 
@@ -374,8 +376,12 @@ static void screen_basic_char_put_on_screen(char c){
 			break;
 			
 			case ('\t'):
-				SCRscreenData.cursorX = (unsigned short) (SCRscreenData.cursorX + 4);
-			break;
+			{
+				uint16_t a = SCRscreenData.cursorX / SCREEN_BASIC_INDENT_AMOUNT;
+				SCRscreenData.cursorX = (a + 1) * SCREEN_BASIC_INDENT_AMOUNT;
+				break;
+			}
+			
 
 			default:
 			 vidmem[((SCRscreenData.cursorY * SCREEN_BASIC_WIDTH + SCRscreenData.cursorX) * SCREEN_BASIC_DEPTH)] = (unsigned char) c;
