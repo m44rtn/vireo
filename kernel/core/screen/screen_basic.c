@@ -312,12 +312,17 @@ void print(const char* str){
 
 void print_at(const char *str, uint32_t x, uint32_t y)
 {
-	unsigned int i;  
-	unsigned int length = strlen((char *) str);
+	uint16_t _x = SCRscreenData.cursorX;
+	uint16_t _y = SCRscreenData.cursorY;
 
-	for(i = 0; i < length; i++, x++){ 
-		screen_basic_putchar(x, y, str[i]);	
-	}
+	SCRscreenData.cursorX = (uint16_t) x;
+	SCRscreenData.cursorY = (uint16_t) y;
+
+	print(str);
+
+	SCRscreenData.cursorX = _x; 
+	SCRscreenData.cursorY = _y;
+
 }
 
 void screen_basic_clear_screen(void){
@@ -378,7 +383,7 @@ static void screen_basic_char_put_on_screen(char c){
 			case ('\t'):
 			{
 				uint16_t a = SCRscreenData.cursorX / SCREEN_BASIC_INDENT_AMOUNT;
-				SCRscreenData.cursorX = (a + 1) * SCREEN_BASIC_INDENT_AMOUNT;
+				SCRscreenData.cursorX = (uint16_t) ((a + 1) * SCREEN_BASIC_INDENT_AMOUNT);
 				break;
 			}
 			
