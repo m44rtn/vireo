@@ -43,6 +43,8 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr)
         command_pwd();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_CLEAR)))
         command_clear();
+    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_DIR)))
+        command_dir();
     
     return did_execute;
 }

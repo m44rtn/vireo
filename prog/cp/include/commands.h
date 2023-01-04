@@ -38,5 +38,6 @@ void command_ver(void);
 void command_cd(char *cmd_bfr);
 void command_pwd(void);
 void command_clear(void);
+void command_dir(void);
 
 #endif // __COMMANDS_H__

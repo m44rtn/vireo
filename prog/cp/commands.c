@@ -27,6 +27,7 @@ SOFTWARE.
 #include "screen.h"
 #include "memory.h"
 #include "disk.h"
+#include "fs.h"
 
 #include "include/screen.h"
 #include "include/fileman.h"
@@ -35,6 +36,9 @@ SOFTWARE.
 
 #define MAX_INFO_STR_LEN    128
 #define INFO_VER_STR_START  "CP "
+
+#define DIR_DIRTXT_INDENT   18
+#define DIR_FILESIZE_INDENT 26
 
 static char *command_create_cp_ver_str(void)
 {
@@ -139,4 +143,43 @@ void command_clear(void)
 {
     screen_clear();
     screen_prepare_for_first_prompt();
+}
+
+void command_dir(void)
+{
+    // TODO: add ability to get dir of working dir AND given dir
+    
+    uint32_t len = 0;
+    char *path = valloc(MAX_PATH_LEN + 1);
+    getcwd(path, &len);
+
+    err_t err = 0;
+    fs_dir_contents_t *dir = fs_dir_get_contents(path, &len, &err);
+
+    vfree(path);
+
+    if(err)
+        return;
+
+    uint8_t x = 0, y = 0;
+    for(uint32_t i = 0; i < len; ++i)
+    {
+        screen_print(" ");
+
+        screen_get_cursor_pos(screen_get_width(), &x, &y);
+        screen_print(dir[i].name);
+        
+        screen_set_cursor_pos(DIR_DIRTXT_INDENT, y);
+        if(dir[i].attrib && FAT_FILE_ATTRIB_DIR == FAT_FILE_ATTRIB_DIR)
+            { screen_print("<DIR>"); } // continue;
+        
+        screen_set_cursor_pos(DIR_FILESIZE_INDENT, y);
+        
+        char s[24];
+        str_add_val(s, "%i b", dir[i].file_size);
+        screen_print(s);
+
+        screen_print("\n");
+        
+    }       
 }

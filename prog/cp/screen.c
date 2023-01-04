@@ -28,6 +28,7 @@ SOFTWARE.
 #include "include/screen.h"
 
 #define SCREEN_HEIGHT 25
+#define SCREEN_WIDTH  80
 
 void screen_prepare_for_first_prompt(void)
 {
@@ -40,5 +41,17 @@ void screen_prepare_for_first_prompt(void)
         { skip_lines = info->height - 2; vfree(info); }
 
     err_t err = screen_set_cursor_pos(0, skip_lines);
+}
+
+uint16_t screen_get_width(void)
+{
+    uint16_t ans = SCREEN_WIDTH;
+
+    err_t ignored_err;
+    screen_info_t *info = screen_get_info(&ignored_err);
+
+    if(info)
+        { ans = info->width; vfree(info); }
     
+    return ans;
 }
