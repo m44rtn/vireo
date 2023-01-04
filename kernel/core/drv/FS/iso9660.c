@@ -57,7 +57,6 @@ SOFTWARE.
 #define VOL_IDENT_SIZE          32   // bytes
 
 #define FIRST_DESCRIPTOR_LBA	0x10
-#define ISO_MAX_FILENAME_LEN	255 // bytes
 
 // Descriptor types
 #define VD_TYPE_PRIMARY         0x01
@@ -143,6 +142,7 @@ uint8_t gerror;
 void iso_handler(uint32_t * drv)
 {
 	gerror = 0;
+	drv[4] = 0;
 
     switch(drv[0])
     {
@@ -156,6 +156,10 @@ void iso_handler(uint32_t * drv)
 
 		case FS_COMMAND_GET_FILE_INFO:
 			drv[2] = (uint32_t) iso_get_file_info((char *) drv[1]);
+		break;
+
+		case FS_COMMAND_GET_DIR_CONTENTS:
+			drv[2] = (uint32_t) iso_get_dir_contents((char *) drv[1], drv);
 		break;
 
 		default:
@@ -351,8 +355,7 @@ static uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *f
 		// A file identifier always contains ';1' at the end of a filename, which counts towards ident_len.
 		// a file with no file extension (e.g. a file called 'config') will still always carry the extension seperator (i.e. the dot '.').
 		// Therefore, we ignore the last two and three characters of the identifier when checking if a filename is the same length.
-		// A directory entry does not contain these symbols within its identifier.
-		if(entry->ident_len == len || (entry->ident_len - 2u) == len || (entry->ident_len - 3u) == len)
+		if(entry->ident_len == len || (entry->ident_len - 2u) == len || (entry->ident_len - 3u) == len || filename[0] == '\0')
 			if(!strcmp_until(filename, file, len))
 			{
 				*(fsize) = (entry->size);
@@ -418,13 +421,16 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 
 	cd_info_t *info = iso_get_cd_info_entry(drive);
 	uint32_t dir_lba = (p[0] == '\0') ? (info->rootdir_lba) : iso_path_to_dir_lba(drive, p);
+	iso_free_bfr(p);
 
 	if(dir_lba == MAX)
-		{ iso_free_bfr(p); iso_free_bfr(filename); return MAX; }
+		{ iso_free_bfr(filename); return MAX; }
 
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize, entry);
-	
-	iso_free_bfr(p);
+
+	if(entry->file_flags & (FF_DIRECTORY))
+		*fsize = iso_get_dir_size(drive, flba);
+
 	iso_free_bfr(filename);
 
 	return flba;
@@ -788,14 +794,14 @@ static uint8_t iso_convert_fileflags_to_fat_filetype(uint8_t file_flags)
 {
 	uint8_t fat_type = 0;
 
-	if(file_flags & FF_HIDDEN)
+	if(file_flags & (FF_HIDDEN))
 		fat_type |= FAT_FILE_ATTRIB_HIDDEN;
 	
-	if(file_flags & FF_DIRECTORY)
+	if(file_flags & (FF_DIRECTORY))
 		fat_type |= FAT_FILE_ATTRIB_DIR;
 	
 	// because Vireo doesn't support writing to ATAPI anyway:
-	file_flags |= FAT_FILE_ATTRIB_READONLY;
+	fat_type |= FAT_FILE_ATTRIB_READONLY;
 
 	return file_flags;
 }
@@ -850,4 +856,70 @@ fs_file_info_t *iso_get_file_info(const char *path)
 	info->creation_time = iso_convert_time_to_fat_time(time);
 
 	return info;
+}
+
+static void iso_fill_dircontent_entry(char *filename, size_t fname_len, uint8_t file_flags, size_t size, fs_dir_contents_t *entry)
+{
+	uint32_t x = find_in_str(filename, ";");
+
+	if(filename[0] == '\0' || filename[0] == ' ')
+		{fname_len = sizeof("."); memcpy(entry->name, ".", fname_len);}
+	else if(filename[0] == '\1')
+		{ fname_len = sizeof(".."); memcpy(entry->name, "..", fname_len); }
+	else
+		memcpy(entry->name, filename, fname_len);
+
+	if(x != MAX)
+		fname_len = x;
+	
+	entry->name[fname_len] = '\0';
+	entry->attrib = iso_convert_fileflags_to_fat_filetype(file_flags);
+	entry->file_size = size;
+}
+
+fs_dir_contents_t *iso_get_dir_contents(const char *path, uint32_t *drv)
+{
+	iso_read(path, drv);
+
+	ASSERT(!gerror);
+	ASSERT(drv[2]);
+	ASSERT(drv[3]);
+
+	if(!drv[3] || !drv[2] || gerror)
+		return NULL;
+	
+	uint8_t *dir = (uint8_t *) drv[2];
+	size_t fsize = drv[3];
+	drv[2] = drv[3] = 0;
+
+	// allocate enough memory for the directory information. However, I don't like this, since this way will always allocate a buffer
+	// way bigger than necessary. At some point, this may be improved by
+	// first counting how many directory entries there actually are.
+	fs_dir_contents_t *c = evalloc(fsize / sizeof(direntry_t) * sizeof(fs_dir_contents_t), PID_DRIVER);
+	ASSERT(c);
+
+	if(!c)
+		{ gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
+	
+	uint32_t i = 0, outi = 0;
+	while(i < fsize)
+	{
+		direntry_t *entry = (direntry_t *) &dir[i];
+		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
+		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
+
+		i += (size) ? size : sizeof(direntry_t);
+
+		if(!size)
+			continue;
+		
+		iso_fill_dircontent_entry(file, entry->ident_len, entry->file_flags, entry->size, &c[outi++]);
+	}
+
+	vfree(dir);
+
+	drv[3] = outi * sizeof(fs_dir_contents_t);
+	ASSERT(drv[3]);
+
+	return c;
 }

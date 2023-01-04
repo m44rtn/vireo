@@ -80,9 +80,21 @@ drv[4] (parameter4) --> (returns) error code
 
 #define FS_COMMAND_GET_FILE_INFO 0x15
 /*
-drv[1] (parameter1) --> path to the new file
+drv[1] (parameter1) --> path to the file
 drv[2] (parameter2) --> (returns) pointer to info structure containing file info*
 drv[4] (parameter4) --> (returns) error code
+
+    * = See FS_TYPES.H 
+*/
+
+#define FS_COMMAND_GET_DIR_CONTENTS 0x16
+/*
+    drv[1] (parameter1) --> path to the directory
+    drv[2] (parameter2) --> (returns) pointer to to info structure of directory*
+    drv[3] (parameter3) --> (returns) total size of returned info structure
+    drv[4] (parameter4) --> (returns) error code
+
+    * = See FS_TYPES.H
 */
 
 #endif

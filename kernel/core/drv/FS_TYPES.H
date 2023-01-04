@@ -27,6 +27,7 @@ SOFTWARE.
 #include "../include/types.h"
 
 #define FAT_MAX_FILENAME_LEN        11
+#define ISO_MAX_FILENAME_LEN	    255 // bytes
 
 #define FAT_FILE_ATTRIB_FILE        0x00
 #define FAT_FILE_ATTRIB_READONLY    0x01
@@ -54,13 +55,21 @@ typedef struct fs_file_info_t
     uint32_t first_cluster; // 0xFFFFFFFF if not applicable
     uint32_t first_sector;
     size_t file_size;
-    uint8_t file_type;      // in FAT32 format
+    uint8_t file_type;      // in FAT32 format (file attributes)
     uint32_t creation_date; // in FAT32 format
     uint32_t creation_time; // in FAT32 format
     uint32_t access_date;   // in FAT32 format
     uint32_t modified_date; // in FAT32 format
     uint32_t modified_time; // in FAT32 format
 } __attribute__((packed)) fs_file_info_t;
+
+
+typedef struct fs_dir_contents_t
+{
+    char name[ISO_MAX_FILENAME_LEN + 1];
+    uint8_t attrib;         // in FAT32 format
+    size_t file_size;
+} __attribute__((packed)) fs_dir_contents_t;
 
 
 #endif
