@@ -117,3 +117,16 @@ fs_file_info_t *fs_file_get_info(char *_path, err_t *_err)
     *_err = req.hdr.exit_code;
     return req.hdr.response_ptr;
 }
+
+fs_dir_contents_t *fs_dir_get_contents(char *_path, uint32_t *_n_entries, err_t *_err)
+{
+    fs_t req = {
+        .hdr.system_call = SYSCALL_FS_GET_DIR_CONTENTS,
+        .path = _path,
+    };
+    PERFORM_SYSCALL(&req);
+
+    *_err = req.hdr.exit_code;
+    *_n_entries = req.hdr.response_size / sizeof(fs_dir_contents_t);
+    return req.hdr.response_ptr;
+}

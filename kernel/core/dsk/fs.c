@@ -197,6 +197,25 @@ void fs_api(void *req)
         }
         break;
 
+        case SYSCALL_FS_GET_DIR_CONTENTS:
+        { 
+            if(!fs_check_path(fs->path))
+                { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
+            
+            uint8_t disk_type = drive_type(fs->path);
+            uint32_t driver_type = (disk_type == DRIVE_TYPE_IDE_PATAPI) ? FS_TYPE_ISO : FS_TYPE_FAT32; // FIXME: should use MBR type
+
+            drv[0] = FS_COMMAND_GET_DIR_CONTENTS;
+            drv[1] = (uint32_t) fs->path;
+            driver_exec_int(DRIVER_TYPE_FS | driver_type, &drv[0]);
+
+            fs->hdr.response_ptr = (void *) drv[2];
+            fs->hdr.response_size = (size_t) drv[3];
+            fs->hdr.exit_code = (err_t) drv[4];
+
+            break;
+        }
+
         default:
             fs->hdr.exit_code = EXIT_CODE_GLOBAL_NOT_IMPLEMENTED;
         break;
@@ -211,9 +230,6 @@ uint8_t fs_check_path(char* p)
     uint32_t fwd_slash_index = find_in_str(p, "/");
 
     if(fwd_slash_index == MAX)
-        return 0;
-
-    if(fwd_slash_index + 1 == strlen(p))
         return 0;
 
     return 1; // path is OK

@@ -28,6 +28,7 @@ SOFTWARE.
 #include "call.h"
 
 #define FS_FAT_MAX_FILENAME_LEN 11
+#define FS_ISO_MAX_FILENAME_LEN 255
 
 #define FS_TYPE_FAT12   0x01
 #define FS_TYPE_FAT16   0x04
@@ -68,6 +69,13 @@ typedef struct fs_file_info_t
     uint32_t modified_time; // in FAT32 format
 } __attribute__((packed)) fs_file_info_t;
 
+typedef struct fs_dir_contents_t
+{
+    char name[FS_ISO_MAX_FILENAME_LEN + 1];
+    uint8_t attrib;         // in FAT32 format
+    size_t file_size;
+} __attribute__((packed)) fs_dir_contents_t;
+
 // returns the filesystem type of the drive specified
 uint8_t fs_get_filesystem(char *_drive);
 
@@ -86,9 +94,14 @@ err_t fs_rename_file(char *_path, char *_new_name);
 // creates directories that don't exist, along the path
 err_t fs_mkdir(char *_path);
 
-// returns a pointer to an fs_file_info_t struct containing
+// returns a pointer to a fs_file_info_t struct containing
 // information about the file pointed to by _path, while returning
 // the exit code in *_err.
 fs_file_info_t *fs_file_get_info(char *_path, err_t *_err);
+
+// returns a pointer to a fs_dir_contents_info_t struct
+// containing the contents of the directory at _path, while returning
+// any error in *_err and the number of entries in the struct in *_n_entries.
+fs_dir_contents_t *fs_dir_get_contents(char *_path, uint32_t *_n_entries, err_t *_err);
 
 #endif // __FS_H__

@@ -64,6 +64,7 @@ SOFTWARE.
 #define SYSCALL_FS_RENAME                   0x0404
 #define SYSCALL_FS_MKDIR                    0x0405
 #define SYSCALL_FS_GET_FILE_INFO            0x0406
+#define SYSCALL_FS_GET_DIR_CONTENTS         0x0407
 
 // program (0x0500-0x05ff)
 #define SYSCALL_GET_PROGRAM_INFO            0x0500
