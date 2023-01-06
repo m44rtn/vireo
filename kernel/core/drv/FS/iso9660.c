@@ -151,7 +151,7 @@ void iso_handler(uint32_t * drv)
         break;
 
 		case FS_COMMAND_READ:
-			iso_read((char *) drv[1], drv);
+			iso_read((const char *) drv[1], drv);
 		break;
 
 		case FS_COMMAND_GET_FILE_INFO:
@@ -758,7 +758,7 @@ void reverse_path(char *path, char *out_filename)
 	kfree(backup);
 }
 
-void iso_read(char * path, uint32_t *drv)
+void iso_read(const char * path, uint32_t *drv)
 {
 	size_t fsize = 0;
     uint32_t flba = iso_traverse(path, &fsize, NULL);
