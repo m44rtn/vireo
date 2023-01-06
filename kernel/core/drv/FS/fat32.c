@@ -514,6 +514,29 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
     return starting_cluster;
 }
 
+static size_t fat_get_size_from_n_clusters(uint8_t disk, uint8_t part, uint32_t st_cluster)
+{
+    size_t cl_size = fat_get_cluster_size(disk, part);
+
+    // following two variables/pointers are necessary for fat_read_fat()
+    uint32_t last_fat_sector = 0;
+    void *fat_table_buffer = kmalloc(FAT32_SECTOR_SIZE);
+
+    ASSERT(fat_table_buffer);
+
+    uint32_t cluster = st_cluster;
+    size_t s = 0;
+
+    while(cluster < FAT_CORRUPT_CLUSTER)
+    {
+        s += cl_size;
+        cluster = fat_read_fat(disk, part, cluster, &last_fat_sector, fat_table_buffer);
+    }
+
+    kfree(fat_table_buffer);
+    return s;
+}
+
 file_t *fat_read(const char *path, size_t *ofile_size)
 {
     uint8_t disk, part;
@@ -525,6 +548,9 @@ file_t *fat_read(const char *path, size_t *ofile_size)
     if(starting_cluster == MAX)
         return NULL;
 
+    if(!*ofile_size)
+        *ofile_size = fat_get_size_from_n_clusters(disk, part, starting_cluster);
+    
     size_t alloc_size = *(ofile_size) + (FAT32_SECTOR_SIZE - (*(ofile_size) % FAT32_SECTOR_SIZE));
     file_t *file;
     uint8_t *buffer = file = evalloc(alloc_size, PID_DRIVER);
