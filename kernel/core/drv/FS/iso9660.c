@@ -803,7 +803,7 @@ static uint8_t iso_convert_fileflags_to_fat_filetype(uint8_t file_flags)
 	// because Vireo doesn't support writing to ATAPI anyway:
 	fat_type |= FAT_FILE_ATTRIB_READONLY;
 
-	return file_flags;
+	return fat_type;
 }
 
 static uint16_t iso_convert_date_to_fat_date(uint32_t date)
