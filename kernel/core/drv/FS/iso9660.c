@@ -428,7 +428,7 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize, entry);
 
-	if(entry->file_flags & (FF_DIRECTORY) == (FF_DIRECTORY))
+	if((entry->file_flags & (FF_DIRECTORY)) == (FF_DIRECTORY))
 		*fsize = iso_get_dir_size(drive, flba);
 
 	iso_free_bfr(filename);
