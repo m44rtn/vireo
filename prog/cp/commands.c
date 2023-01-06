@@ -162,6 +162,9 @@ void command_dir(void)
         return;
 
     uint8_t x = 0, y = 0;
+    size_t total_size = 0;
+    char s[24];
+
     for(uint32_t i = 0; i < len; ++i)
     {
         screen_print(" ");
@@ -175,13 +178,25 @@ void command_dir(void)
         
         screen_set_cursor_pos(DIR_FILESIZE_INDENT, y);
         
-        char s[24];
+        total_size += dir[i].file_size;
         str_add_val(s, "%i b", dir[i].file_size);
         screen_print(s);
 
         screen_print("\n");
-        
-    }    
+    }  
+
+    screen_print("\n");
+
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(DIR_DIRTXT_INDENT, y);
+    str_add_val(s, "%i items\n", len);
+    screen_print(s);
+
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(DIR_DIRTXT_INDENT, y);
+    str_add_val(s, "%i ", total_size);
+    screen_print(s);
+    screen_print("bytes total\n");
 
     vfree(dir);   
 }
