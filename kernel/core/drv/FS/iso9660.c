@@ -874,6 +874,11 @@ static void iso_fill_dircontent_entry(char *filename, size_t fname_len, uint8_t 
 	if(x != MAX)
 		fname_len = x;
 	
+	// check if the file is extensionless (ends with a seperator)
+	uint32_t trailing_dot = find_in_str(filename, ".");
+	if(trailing_dot != MAX && trailing_dot == fname_len - 1)
+		fname_len--;
+	
 	entry->name[fname_len] = '\0';
 	entry->attrib = iso_convert_fileflags_to_fat_filetype(file_flags);
 	entry->file_size = size;
