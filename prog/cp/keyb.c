@@ -36,12 +36,16 @@ SOFTWARE.
 
 #define KEYBOARD_BFR_SIZE   1024 // bytes (512 keycodes)
 
+#define KEYB_FLAG_SHIFT     (1 << 0) // shift pressed
+
 api_space_t g_keyb_api = (uint16_t) MAX;
 char g_keyb_drv_name[MAX_FILENAME_LEN];
 keymap_entry_t *g_keymap = NULL;
 size_t g_keymap_size = 0;
 
 uint16_t *g_keyb_bfr = NULL;
+
+uint8_t g_flags = 0;
 
 static api_space_t keyb_get_api_space(void)
 {
@@ -121,7 +125,7 @@ static char keyb_in_keymap(uint16_t code)
 {
     for(uint32_t i = 0; i < g_keymap_size / sizeof(keymap_entry_t); ++i)
         if(code == g_keymap[i].scancode)
-            return g_keymap[i].lc;
+            return (g_flags & KEYB_FLAG_SHIFT) ? g_keymap[i].uc : g_keymap[i].lc;
     
     return 0;
 }
@@ -136,6 +140,10 @@ static char keyb_convert_keycode(uint16_t code)
         lc = ' ';
     else if(code == KEYCODE_BACKSPACE)
         lc = '\b';
+    else if(code == KEYCODE_LSHIFT || code == KEYCODE_RSHIFT)
+        g_flags |= KEYB_FLAG_SHIFT;
+    else if(code == (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_LSHIFT) || code == (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_RSHIFT))
+        g_flags &= ~(KEYB_FLAG_SHIFT);
     else
         lc = keyb_in_keymap(code);
     
