@@ -141,6 +141,10 @@ void memory_api(void *req)
         case SYSCALL_VALLOC:
         {
             valloc_t *v = (valloc_t *) req;
+
+            if((v->size / PAGE_SIZE) > paging_get_max_pages())
+                { v->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; v->hdr.response_ptr = NULL; break; }
+
             v->hdr.response_ptr = evalloc(v->size, prog_get_current_running());
             break;
         }

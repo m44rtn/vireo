@@ -45,6 +45,7 @@ void *paging_vptr_to_pptr(void *vptr);
 void paging_map(void *pptr, void *vptr, PAGE_REQ *req);
 
 void *valloc(PAGE_REQ *req);
+uint32_t paging_get_max_pages(void);
 void *evalloc(size_t size, pid_t pid);
 void vfree(void *ptr);
 void paging_rel_resources(const pid_t pid);
