@@ -144,6 +144,8 @@ void iso_handler(uint32_t * drv)
 	gerror = 0;
 	drv[4] = 0;
 
+	// FIXME: replace '..' in path with '\1' and get the driver to find the parent directory.
+	
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
