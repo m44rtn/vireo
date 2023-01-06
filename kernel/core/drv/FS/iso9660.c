@@ -347,7 +347,10 @@ static uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *f
 		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
 		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
 
-		i += (size) ? size : sizeof(direntry_t);
+		if(!size)
+			{ size = ISO_SECTOR_SIZE - (i % ISO_SECTOR_SIZE); i += size; continue; }
+
+		i += size;
 
 		if(!size)
 			continue;
@@ -908,10 +911,10 @@ fs_dir_contents_t *iso_get_dir_contents(const char *path, uint32_t *drv)
 		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
 		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
 
-		i += (size) ? size : sizeof(direntry_t);
-
 		if(!size)
-			continue;
+			{ size = ISO_SECTOR_SIZE - (i % ISO_SECTOR_SIZE); i += size; continue; }
+
+		i += size;
 		
 		iso_fill_dircontent_entry(file, entry->ident_len, entry->file_flags, entry->size, &c[outi++]);
 	}

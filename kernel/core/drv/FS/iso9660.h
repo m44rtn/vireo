@@ -47,7 +47,7 @@ unsigned int iso_path_to_dir_lba(unsigned char drive, const char *path);
 void reverse_path(char *path, char *out_filename);
 
 unsigned short *iso_read_drive(unsigned char drive, unsigned int lba, unsigned int sctr_read);
-void iso_read(char * path, unsigned int *drv);
+void iso_read(const char * path, unsigned int *drv);
 fs_file_info_t *iso_get_file_info(const char *path);
 fs_dir_contents_t *iso_get_dir_contents(const char *path, uint32_t *drv);
 
