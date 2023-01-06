@@ -520,6 +520,9 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
     *ofile_size = dir_entry.fSize;
     *oattrib = dir_entry.attrib;
 
+    if(starting_cluster == info->clustLocRootdir)
+        {*ofile_size = 0; *oattrib = FAT_DIR_ATTRIB_DIRECTORY; }
+
     return starting_cluster;
 }
 
