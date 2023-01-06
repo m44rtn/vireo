@@ -190,6 +190,10 @@ void fat_handler(uint32_t *drv)
             drv[2] = (uint32_t) fat_get_file_info((char *) drv[1], (err_t *) &drv[4]);
         break;
 
+        case FS_COMMAND_GET_DIR_CONTENTS:
+            drv[2] = (uint32_t) fat_get_dir_contents((const char *) drv[1], (size_t *) &drv[3], (err_t *) &drv[4]);
+        break;
+
         default:
             drv[4] = EXIT_CODE_GLOBAL_UNSUPPORTED;
         break;
@@ -1132,4 +1136,64 @@ fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
     file_info->modified_time = dir_entry.mTime;
     
     return file_info;
+}
+
+static void fat_convert_filename_to_readable(const char *original, char *out)
+{
+    uint32_t i = find_in_str(original, " ");
+
+    i = (i < FAT_MAX_FILENAME_LEN) ? i : FILE_NAME_LEN;
+
+    memcpy(out, original, i);
+
+    if(original[FAT_MAX_FILENAME_LEN - FILE_EXT_LEN] != ' ')
+        out[i++] = '.';
+    
+    memcpy(&out[i], &original[FAT_MAX_FILENAME_LEN - FILE_EXT_LEN], FILE_EXT_LEN);
+
+    out[i + FILE_EXT_LEN] = '\0';
+}
+
+fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *oerr)
+{
+    size_t dsize = 0;
+    FAT32_DIR *dir = fat_read(path, &dsize);
+
+    ASSERT(dir);
+    ASSERT(dsize);
+
+    if(!dsize || !dir)
+        { *oerr = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
+    
+    uint32_t n = dsize / sizeof(FAT32_DIR);
+    char filename[FAT_MAX_FILENAME_LEN + 2]; // +1 for '.' and + 1 for '\0'
+
+    *osize = n * sizeof(fs_dir_contents_t);
+    fs_dir_contents_t *c = evalloc(*osize, PID_DRIVER);
+
+    if(!c)
+        { vfree(dir); *oerr = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
+    uint32_t i = 0, outi = 0;
+
+    for(; i < n; ++i)
+    {
+        if(dir[i].name[0] == (char) DIR_UNUSED_ENTRY)
+            continue;
+        else if(dir[i].name[0] == 0)
+            break;
+
+        fat_convert_filename_to_readable(dir[i].name, filename);
+        memcpy(c[outi].name, filename, strlen(filename) + 1);
+
+        c[outi].file_size = dir[i].fSize;
+        c[outi].attrib = dir[i].attrib;
+
+        outi++;
+    }
+
+    *osize = outi * sizeof(fs_dir_contents_t);
+    *oerr = EXIT_CODE_GLOBAL_SUCCESS;
+    vfree(dir);
+
+    return c;
 }
