@@ -181,5 +181,7 @@ void command_dir(void)
 
         screen_print("\n");
         
-    }       
+    }    
+
+    vfree(dir);   
 }
