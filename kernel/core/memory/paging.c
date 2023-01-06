@@ -146,6 +146,11 @@ void *valloc(PAGE_REQ *req)
     return ptr;
 }
 
+uint32_t paging_get_max_pages(void)
+{
+    return g_max_pages;
+}
+
 // easy valloc()
 void *evalloc(size_t size, pid_t pid)
 {
@@ -159,6 +164,7 @@ void *evalloc(size_t size, pid_t pid)
         .size = size,
         .attr = attr
     };
+
     void *ptr = valloc(&req);
 
     ASSERT(ptr);

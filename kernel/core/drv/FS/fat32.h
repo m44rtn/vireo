@@ -35,5 +35,6 @@ err_t fat_rename(char *path, char *new_name);
 err_t fat_delete(char *path);
 err_t fat_mkdir(char *path);
 fs_file_info_t *fat_get_file_info(const char *path, err_t *err);
+fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *oerr);
 
 #endif

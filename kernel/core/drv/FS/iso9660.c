@@ -151,7 +151,7 @@ void iso_handler(uint32_t * drv)
         break;
 
 		case FS_COMMAND_READ:
-			iso_read((char *) drv[1], drv);
+			iso_read((const char *) drv[1], drv);
 		break;
 
 		case FS_COMMAND_GET_FILE_INFO:
@@ -343,11 +343,14 @@ static uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *f
 	
 	while(i < bfr_size)
 	{
-		direntry_t *entry = out_entry = (direntry_t *) &b[i];
+		direntry_t *entry = (direntry_t *) &b[i];
 		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
 		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
 
-		i += (size) ? size : sizeof(direntry_t);
+		if(!size)
+			{ size = ISO_SECTOR_SIZE - (i % ISO_SECTOR_SIZE); i += size; continue; }
+
+		i += size;
 
 		if(!size)
 			continue;
@@ -358,6 +361,7 @@ static uint32_t iso_search_dir_bfr(uint32_t *bfr, size_t bfr_size, const char *f
 		if(entry->ident_len == len || (entry->ident_len - 2u) == len || (entry->ident_len - 3u) == len || filename[0] == '\0')
 			if(!strcmp_until(filename, file, len))
 			{
+				memcpy(out_entry, entry, sizeof(direntry_t));
 				*(fsize) = (entry->size);
 				return (entry->lba_extend);
 			}
@@ -372,7 +376,6 @@ static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *file
 {
 	uint32_t flba; // file lba
 	uint32_t *bfr;
-	direntry_t entry;
 
 	size_t size = iso_get_dir_size(drive, dir_lba);
 
@@ -390,7 +393,7 @@ static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *file
 	while(nlba)
 	{
 		read(drive, dir_lba, to_read, (uint8_t *) bfr);
-		flba = iso_search_dir_bfr(bfr, bfr_size, filename, fsize, &entry);
+		flba = iso_search_dir_bfr(bfr, bfr_size, filename, fsize, out_entry);
 
 		if(flba || !(nlba--))
 			break;
@@ -398,9 +401,6 @@ static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *file
 		iso_free_bfr(bfr);
 		dir_lba++;
 	}
-
-	if(out_entry)
-		memcpy(out_entry, &entry, sizeof(direntry_t));
 
 	iso_free_bfr(bfr);
 	return flba;
@@ -428,7 +428,7 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 
 	uint32_t flba = iso_search_dir(drive, dir_lba, (const char *) filename, fsize, entry);
 
-	if(entry->file_flags & (FF_DIRECTORY))
+	if((entry->file_flags & (FF_DIRECTORY)) == (FF_DIRECTORY))
 		*fsize = iso_get_dir_size(drive, flba);
 
 	iso_free_bfr(filename);
@@ -755,7 +755,7 @@ void reverse_path(char *path, char *out_filename)
 	kfree(backup);
 }
 
-void iso_read(char * path, uint32_t *drv)
+void iso_read(const char * path, uint32_t *drv)
 {
 	size_t fsize = 0;
     uint32_t flba = iso_traverse(path, &fsize, NULL);
@@ -908,10 +908,10 @@ fs_dir_contents_t *iso_get_dir_contents(const char *path, uint32_t *drv)
 		size_t size = (size_t) ((entry->DR_len) + ((entry->DR_len) % 2 != 0));
 		char *file = ((char *)&(entry->ident_len) + sizeof(uint8_t));
 
-		i += (size) ? size : sizeof(direntry_t);
-
 		if(!size)
-			continue;
+			{ size = ISO_SECTOR_SIZE - (i % ISO_SECTOR_SIZE); i += size; continue; }
+
+		i += size;
 		
 		iso_fill_dircontent_entry(file, entry->ident_len, entry->file_flags, entry->size, &c[outi++]);
 	}

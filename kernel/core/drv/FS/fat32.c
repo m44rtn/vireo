@@ -190,6 +190,10 @@ void fat_handler(uint32_t *drv)
             drv[2] = (uint32_t) fat_get_file_info((char *) drv[1], (err_t *) &drv[4]);
         break;
 
+        case FS_COMMAND_GET_DIR_CONTENTS:
+            drv[2] = (uint32_t) fat_get_dir_contents((const char *) drv[1], (size_t *) &drv[3], (err_t *) &drv[4]);
+        break;
+
         default:
             drv[4] = EXIT_CODE_GLOBAL_UNSUPPORTED;
         break;
@@ -488,18 +492,23 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
     fat_get_disk_from_path(path, &disk, &part);
     uint32_t start = find_in_str(path, "/");
     
+    FAT32_EBPB *info = fat_get_ebpb(disk, part);
+
     if(start == MAX)
-        return 2;
+        return info->clustLocRootdir;
 
     // buffer for filename is maximum characters long. At this stage
     // this is 8 chars filename, 1 seperator ('.'), 3 chars extension
     char filename[TOTAL_FILENAME_LEN + 1];
     uint32_t str_parts_index = 0;
-    uint32_t starting_cluster = 0, ignore;
+    uint32_t starting_cluster = info->clustLocRootdir, ignore;
     FAT32_DIR dir_entry;
 
     while(str_get_part(&filename[0], &path[start + 1], "/", &str_parts_index))
     {
+        if(filename[0] == '\0')
+            break;
+
         fat_filename_fatcompat(&filename[0]);
         
         if(fat_find_in_dir(disk, part, &filename[0], starting_cluster, &dir_entry, &ignore) == MAX)
@@ -514,6 +523,29 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
     return starting_cluster;
 }
 
+static size_t fat_get_size_from_n_clusters(uint8_t disk, uint8_t part, uint32_t st_cluster)
+{
+    size_t cl_size = fat_get_cluster_size(disk, part);
+
+    // following two variables/pointers are necessary for fat_read_fat()
+    uint32_t last_fat_sector = 0;
+    void *fat_table_buffer = kmalloc(FAT32_SECTOR_SIZE);
+
+    ASSERT(fat_table_buffer);
+
+    uint32_t cluster = st_cluster;
+    size_t s = 0;
+
+    while(cluster < FAT_CORRUPT_CLUSTER)
+    {
+        s += cl_size;
+        cluster = fat_read_fat(disk, part, cluster, &last_fat_sector, fat_table_buffer);
+    }
+
+    kfree(fat_table_buffer);
+    return s;
+}
+
 file_t *fat_read(const char *path, size_t *ofile_size)
 {
     uint8_t disk, part;
@@ -525,6 +557,9 @@ file_t *fat_read(const char *path, size_t *ofile_size)
     if(starting_cluster == MAX)
         return NULL;
 
+    if(!*ofile_size)
+        *ofile_size = fat_get_size_from_n_clusters(disk, part, starting_cluster);
+    
     size_t alloc_size = *(ofile_size) + (FAT32_SECTOR_SIZE - (*(ofile_size) % FAT32_SECTOR_SIZE));
     file_t *file;
     uint8_t *buffer = file = evalloc(alloc_size, PID_DRIVER);
@@ -1101,4 +1136,64 @@ fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
     file_info->modified_time = dir_entry.mTime;
     
     return file_info;
+}
+
+static void fat_convert_filename_to_readable(const char *original, char *out)
+{
+    uint32_t i = find_in_str(original, " ");
+
+    i = (i < FAT_MAX_FILENAME_LEN) ? i : FILE_NAME_LEN;
+
+    memcpy(out, original, i);
+
+    if(original[FAT_MAX_FILENAME_LEN - FILE_EXT_LEN] != ' ')
+        out[i++] = '.';
+    
+    memcpy(&out[i], &original[FAT_MAX_FILENAME_LEN - FILE_EXT_LEN], FILE_EXT_LEN);
+
+    out[i + FILE_EXT_LEN] = '\0';
+}
+
+fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *oerr)
+{
+    size_t dsize = 0;
+    FAT32_DIR *dir = fat_read(path, &dsize);
+
+    ASSERT(dir);
+    ASSERT(dsize);
+
+    if(!dsize || !dir)
+        { *oerr = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
+    
+    uint32_t n = dsize / sizeof(FAT32_DIR);
+    char filename[FAT_MAX_FILENAME_LEN + 2]; // +1 for '.' and + 1 for '\0'
+
+    *osize = n * sizeof(fs_dir_contents_t);
+    fs_dir_contents_t *c = evalloc(*osize, PID_DRIVER);
+
+    if(!c)
+        { vfree(dir); *oerr = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
+    uint32_t i = 0, outi = 0;
+
+    for(; i < n; ++i)
+    {
+        if(dir[i].name[0] == (char) DIR_UNUSED_ENTRY)
+            continue;
+        else if(dir[i].name[0] == 0)
+            break;
+
+        fat_convert_filename_to_readable(dir[i].name, filename);
+        memcpy(c[outi].name, filename, strlen(filename) + 1);
+
+        c[outi].file_size = dir[i].fSize;
+        c[outi].attrib = dir[i].attrib;
+
+        outi++;
+    }
+
+    *osize = outi * sizeof(fs_dir_contents_t);
+    *oerr = EXIT_CODE_GLOBAL_SUCCESS;
+    vfree(dir);
+
+    return c;
 }
