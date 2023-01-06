@@ -488,18 +488,23 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
     fat_get_disk_from_path(path, &disk, &part);
     uint32_t start = find_in_str(path, "/");
     
+    FAT32_EBPB *info = fat_get_ebpb(disk, part);
+
     if(start == MAX)
-        return 2;
+        return info->clustLocRootdir;
 
     // buffer for filename is maximum characters long. At this stage
     // this is 8 chars filename, 1 seperator ('.'), 3 chars extension
     char filename[TOTAL_FILENAME_LEN + 1];
     uint32_t str_parts_index = 0;
-    uint32_t starting_cluster = 0, ignore;
+    uint32_t starting_cluster = info->clustLocRootdir, ignore;
     FAT32_DIR dir_entry;
 
     while(str_get_part(&filename[0], &path[start + 1], "/", &str_parts_index))
     {
+        if(filename[0] == '\0')
+            break;
+
         fat_filename_fatcompat(&filename[0]);
         
         if(fat_find_in_dir(disk, part, &filename[0], starting_cluster, &dir_entry, &ignore) == MAX)
