@@ -63,24 +63,32 @@ static char *processor_ignore_leading_spaces(char *bfr)
 
 err_t processor_execute_command(char *cmd_bfr)
 {
+     if(!cmd_bfr)
+        return EXIT_CODE_GLOBAL_INVALID;
+        
     uint32_t end = find_in_str(cmd_bfr, "\n");
     cmd_bfr[end] = '\0';
 
     char *cmd = processor_ignore_leading_spaces(cmd_bfr);
+
+    if(cmd[0] == '\0')
+        return EXIT_CODE_GLOBAL_SUCCESS;
+
+    uint8_t ran_internal = processor_exec_internal_command(cmd);
 
     if(ran_internal)
         return EXIT_CODE_GLOBAL_SUCCESS;
     
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
 
-    if(fileman_contains_disk(cmd_bfr))
-        err = program_start_new(cmd_bfr);
+    if(fileman_contains_disk(cmd))
+        err = program_start_new(cmd);
     
     uint32_t len = 0;
     char *str = valloc(MAX_PATH_LEN + 1);
     getcwd(str, &len);
 
-    merge_disk_id_and_path(str, cmd_bfr, str);
+    merge_disk_id_and_path(str, cmd, str);
 
     err = program_start_new(str);
     vfree(str);
