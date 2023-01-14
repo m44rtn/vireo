@@ -173,7 +173,6 @@ void *evalloc(size_t size, pid_t pid)
 
 void vfree(void *ptr)
 {
-    ASSERT(ptr);
     ASSERT((uint32_t)ptr < memory_getAvailable());
 
     ptr = (void *) ((uint32_t)ptr & PAGING_ADDR_MSK);
