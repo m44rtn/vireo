@@ -132,20 +132,40 @@ static char keyb_in_keymap(uint16_t code)
 
 static char keyb_convert_keycode(uint16_t code)
 {
+    if(!code)
+        return 0;
+
     char lc = 0;
-    
-    if(code == KEYCODE_ENTER)
-        { memset(g_keyb_bfr, KEYBOARD_BFR_SIZE, 0); lc = '\n'; }
-    else if(code == KEYCODE_SPACE)
-        lc = ' ';
-    else if(code == KEYCODE_BACKSPACE)
-        lc = '\b';
-    else if(code == KEYCODE_LSHIFT || code == KEYCODE_RSHIFT)
-        g_flags |= KEYB_FLAG_SHIFT;
-    else if(code == (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_LSHIFT) || code == (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_RSHIFT))
-        g_flags &= ~(KEYB_FLAG_SHIFT);
-    else
-        lc = keyb_in_keymap(code);
+
+    switch(code)
+    {
+        case KEYCODE_ENTER:
+            memset(g_keyb_bfr, KEYBOARD_BFR_SIZE, 0); 
+            lc = '\n';
+        break;
+
+        case KEYCODE_SPACE:
+            lc = ' ';
+        break;
+
+        case KEYCODE_BACKSPACE:
+            lc = '\b';
+        break;
+
+        case KEYCODE_RSHIFT:
+        case KEYCODE_LSHIFT:
+            g_flags |= KEYB_FLAG_SHIFT;
+        break;
+
+        case (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_LSHIFT):
+        case (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_RSHIFT):
+            g_flags &= ~(KEYB_FLAG_SHIFT);
+        break;
+
+        default:
+            lc = keyb_in_keymap(code);
+        break;
+    }
     
     return lc;
 }
