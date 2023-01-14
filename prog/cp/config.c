@@ -81,7 +81,7 @@ static err_t config_actually_load_driver(char *path, uint32_t n_drv)
 {
     // we don't actually need to care about the driver id, as long as its unique and non-zero
     if(path[0] != '/')
-        { driver_add(path, n_drv); return; }
+        { driver_add(path, n_drv); return EXIT_CODE_GLOBAL_SUCCESS; }
 
     char *bd = disk_get_bootdisk();
     char *p = valloc(strlen(path) + strlen(bd) + 1);
