@@ -63,7 +63,7 @@ typedef struct
   pid_t started_by;
   uint8_t flags;
   void *binary_start;
-  void *rel_start; // relative start address
+  void *start; // relative start address
   void *stck;
   size_t size;
   char *filename;
@@ -109,7 +109,7 @@ void prog_init(void)
 
     memset((void *) prog_info, PROG_INFO_TABLE_SIZE, 0xFF);
 
-    prog_info[0].rel_start = (void *) ((uint32_t) start);
+    prog_info[0].start = (void *) ((uint32_t) start);
     prog_info[0].binary_start = (void *) (0x100000u);
     prog_info[0].filename = (char *) "VIREO.SYS";
     prog_info[0].pid = PID_KERNEL;
@@ -169,10 +169,35 @@ static err_t prog_parse_argv(char *args, char **argv, uint32_t *argc, char *file
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+static void prog_fill_prog_info(uint32_t free_index, pid_t pid, char *filename, char **argv, char *args, void *rel_addr, void *binary)
+{
+    void *stack = evalloc(PROG_DEFAULT_STACK_SIZE, pid);
+
+    if(!stack)
+        { prog_info[free_index].stck = NULL; return; }
+
+    prog_info[free_index].started_by = current_running_pid;
+    prog_info[free_index].filename = filename;
+    prog_info[free_index].argv = argv;
+    prog_info[free_index].all_args = args;
+    prog_info[free_index].pid = pid;
+    prog_info[free_index].stck = (void *) (((uint32_t) stack) + PAGE_SIZE - 1U);
+    prog_info[free_index].flags = 0;
+    prog_info[free_index].start = (void *) ((uint32_t)rel_addr + (uint32_t)(binary));
+    prog_info[free_index].binary_start = binary;
+
+    current_running_pid = prog_info[free_index].pid;
+}
+
+static void prog_launch_binary_free_buffers(char *filename, char **argv, char *args)
+{
+    kfree(filename);
+    vfree(argv);
+    vfree(args);
+}
+
 err_t prog_launch_binary(char *arg)
 {
-    // TODO: clean up
-
     ASSERT(prog_info);
 
     // find free index in prog_info
@@ -182,70 +207,49 @@ err_t prog_launch_binary(char *arg)
     if(free_index == MAX)
         return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
 
+    // get a new PID and allocate memory for the arguments and filename of the binary
     pid_t pid = task_new_pid();
-    char *filename = kmalloc(512),
-         **argv = evalloc(PAGE_SIZE, pid),
-          *args = evalloc(strlen(arg) + 1, pid);
+    char *filename = kmalloc(512), **argv = evalloc(PAGE_SIZE, pid), *args = evalloc(strlen(arg) + 1, pid);
 
-    if(!argv || !args)
-    {
-        kfree(filename);
-        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
-    }
+    if(!filename || !argv || !args)
+        { prog_launch_binary_free_buffers(filename, argv, args); return EXIT_CODE_GLOBAL_OUT_OF_MEMORY; }
 
     memcpy(args, arg, strlen(arg) + 1);
     
+    // parse the arguments and fill argv
     uint32_t argc;
     err_t err = prog_parse_argv(args, argv, &argc, filename);
 
     if(err)
-    {
-        kfree(filename);
-        vfree(argv);
-        vfree(args);
-        return err;
-    }
-
-    size_t size = 0;
+        { prog_launch_binary_free_buffers(filename, argv, args); return err; }
 
     // read binary file
-    file_t *f = fs_read_file(filename, &size);
-    file_t *elf = f;
+    size_t size = 0;
+    file_t *elf = fs_read_file(filename, &size);
 
-    if(!f)
-    {
-        kfree(filename);
-        vfree(argv);
-        vfree(args);
-        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
-    }
+    if(!elf)
+        { prog_launch_binary_free_buffers(filename, argv, args); return EXIT_CODE_GLOBAL_GENERAL_FAIL; }
 
-    // save all known information about the program (TODO: move to function?)
-    prog_info[free_index].binary_start = f;
-    prog_info[free_index].size = size; // file size (= size in memory for flat binaries)
-    prog_info[free_index].started_by = current_running_pid;
-    prog_info[free_index].filename = filename;
-    prog_info[free_index].argv = argv;
-    prog_info[free_index].all_args = args;
-    prog_info[free_index].pid = pid;
-    prog_info[free_index].stck = (void *) (((uint32_t)evalloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
-    prog_info[free_index].flags = 0;
+    // parse the ELF
+    void *rel_addr = elf_parse_binary(&elf, pid, &err, &prog_info[free_index].size);
 
-    void *rel_addr = elf_parse_binary(&elf, prog_info[free_index].pid, &err, &prog_info[free_index].size);
-
+    // when err == EXIT_CODE_GLOBAL_GENERAL_FAIL, the binary file is of an unsupported type.
+    // otherwise, if err, we listen to whatever elf_parse_binary() is telling us
     if(err && err != EXIT_CODE_GLOBAL_GENERAL_FAIL)
-        { kfree(filename); vfree(argv); vfree(args); return EXIT_CODE_GLOBAL_GENERAL_FAIL; return err; }
+        { prog_launch_binary_free_buffers(filename, argv, args); return err; }
     else if(err && err == EXIT_CODE_GLOBAL_GENERAL_FAIL)
-        { kfree(filename); vfree(argv); vfree(args); return EXIT_CODE_GLOBAL_GENERAL_FAIL; return EXIT_CODE_GLOBAL_UNSUPPORTED; }
+        { prog_launch_binary_free_buffers(filename, argv, args); return EXIT_CODE_GLOBAL_UNSUPPORTED; }
 
-    prog_info[free_index].rel_start = (void *) ((uint32_t)rel_addr + (uint32_t)(elf));
-    prog_info[free_index].binary_start = elf;
-    vfree(f);
+    // save all known information about the program
+    prog_fill_prog_info(free_index, pid, filename, argv, args, rel_addr, elf);
 
-    current_running_pid = prog_info[free_index].pid;
+    if(!prog_info[free_index].stck)
+        { prog_launch_binary_free_buffers(filename, argv, args); return EXIT_CODE_GLOBAL_OUT_OF_MEMORY; }
 
-    err = asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck, argc, argv);
+    // we can finally launch the program!
+    err = asm_exec_call(prog_info[free_index].start, prog_info[free_index].stck, argc, argv);
 
+    // we get back here when the program has finished running
     prog_terminate(current_running_pid, (prog_info[free_index].flags & PROG_FLAG_TERMINATE_STAY));
 
     return err;
