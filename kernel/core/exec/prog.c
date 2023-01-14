@@ -233,7 +233,7 @@ err_t prog_launch_binary(char *arg)
 
     if(!err)
     {
-        prog_info[free_index].rel_start = (void *) ((uint32_t)rel_addr | (uint32_t)(elf));
+        prog_info[free_index].rel_start = (void *) ((uint32_t)rel_addr + (uint32_t)(elf));
         prog_info[free_index].binary_start = elf;
         vfree(f);
     }
@@ -241,7 +241,7 @@ err_t prog_launch_binary(char *arg)
         prog_info[free_index].rel_start = f; // start of file (in case of flat binary)
 
     current_running_pid = prog_info[free_index].pid;
-        
+
     err = asm_exec_call(prog_info[free_index].rel_start, prog_info[free_index].stck, argc, argv);
 
     prog_terminate(current_running_pid, (prog_info[free_index].flags & PROG_FLAG_TERMINATE_STAY));
