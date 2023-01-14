@@ -68,6 +68,7 @@ typedef struct
   size_t size;
   char *filename;
   char **argv;
+  char *all_args;
 } __attribute__((packed)) prog_info_t;
 
 typedef struct api_new_program_t
@@ -225,6 +226,7 @@ err_t prog_launch_binary(char *arg)
     prog_info[free_index].started_by = current_running_pid;
     prog_info[free_index].filename = filename;
     prog_info[free_index].argv = argv;
+    prog_info[free_index].all_args = args;
     prog_info[free_index].pid = pid;
     prog_info[free_index].stck = (void *) (((uint32_t)evalloc(PROG_DEFAULT_STACK_SIZE, prog_info[free_index].pid)) + PAGE_SIZE - 1U);
     prog_info[free_index].flags = 0;
@@ -319,6 +321,7 @@ void prog_terminate(pid_t pid, bool_t stay)
 
     kfree(prog_info[pid_index].filename);
     vfree(prog_info[pid_index].argv);
+    vfree(prog_info[pid_index].all_args);
     
     // free binary and stack memory
     vfree((void *) (((uint32_t) prog_info[pid_index].stck) & PAGING_ADDR_MSK));
