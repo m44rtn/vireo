@@ -49,16 +49,28 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr)
     return did_execute;
 }
 
+static char *processor_ignore_leading_spaces(char *bfr)
+{
+    uint32_t i = 0;
+    size_t len = strlen(bfr);
+
+    for(; i < len; ++i)
+        if(bfr[i] != ' ')
+            break;
+    
+    return &bfr[i];
+}
+
 err_t processor_execute_command(char *cmd_bfr)
 {
-    uint8_t ran_internal = processor_exec_internal_command(cmd_bfr);
+    uint32_t end = find_in_str(cmd_bfr, "\n");
+    cmd_bfr[end] = '\0';
+
+    char *cmd = processor_ignore_leading_spaces(cmd_bfr);
 
     if(ran_internal)
         return EXIT_CODE_GLOBAL_SUCCESS;
     
-    uint32_t end = find_in_str(cmd_bfr, "\n");
-    cmd_bfr[end] = '\0';
-
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
 
     if(fileman_contains_disk(cmd_bfr))
