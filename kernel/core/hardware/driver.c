@@ -284,7 +284,7 @@ err_t driver_add_external_driver(uint32_t type, char *path)
     // add information to the driver list based on the type of binary (elf, flat)
     if(!err)
     {
-        ext_drv_list[index].start = (void *) ((uint32_t)rel_addr | (uint32_t)(elf));
+        ext_drv_list[index].start = (void *) ((uint32_t)rel_addr + (uint32_t)(elf));
         ext_drv_list[index].binary = elf;
     }
     else
