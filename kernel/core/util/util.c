@@ -57,7 +57,7 @@ unsigned int strlen(const char *str)
 
 void remove_from_str(char *p, uint32_t n)
 {
-	uint32_t max = strlen(p);
+	uint32_t max = strlen(p) + 1;
 	uint32_t i = 0, s = n;
 
 	for(; s < max; ++s)
@@ -65,8 +65,6 @@ void remove_from_str(char *p, uint32_t n)
 		p[i] = p[s];
 		i++;
 	}
-
-	p[max-n] = '\0';
 }
 
 void replace_in_str(char *p, const char c, const char repl)
