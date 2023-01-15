@@ -904,10 +904,6 @@ fs_dir_contents_t *iso_get_dir_contents(const char *path, uint32_t *drv)
 {
 	iso_read(path, drv);
 
-	ASSERT(!gerror);
-	ASSERT(drv[2]);
-	ASSERT(drv[3]);
-
 	if(!drv[3] || !drv[2] || gerror)
 		return NULL;
 	
