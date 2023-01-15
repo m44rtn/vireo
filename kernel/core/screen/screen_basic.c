@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -170,6 +170,14 @@ void screen_basic_api(void *req)
 
 		case SYSCALL_CLEAR_SCREEN:
 			screen_basic_clear_screen();
+		break;
+
+		case SYSCALL_SCREEN_PUT_CHAR:
+			// TODO: add to syslib, let conway use it
+			if(r->x >= SCREEN_BASIC_WIDTH || r->y >= SCREEN_BASIC_HEIGHT)
+				{r->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
+
+			screen_basic_putchar(r->x, r->y, r->str[0]);
 		break;
 	}
 }

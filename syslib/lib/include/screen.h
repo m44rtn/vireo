@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2021 Maarten Vermeulen
+Copyright (c) 2022-2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -87,5 +87,8 @@ err_t screen_set_cursor_pos(uint8_t _x, uint8_t _y);
 
 // gets the cursor and returns the cursor position in *_x and *_y, using _scr_width
 void screen_get_cursor_pos(uint16_t _scr_width, uint8_t *_x, uint8_t *_y);
+
+// puts char c at _x, _y
+void screen_put_char_at(char c, uint8_t _x, uint8_t _y);
 
 #endif // __SCREEM_H__

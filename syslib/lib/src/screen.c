@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2021 Maarten Vermeulen
+Copyright (c) 2022-2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -134,4 +134,17 @@ void screen_get_cursor_pos(uint16_t _scr_width, uint8_t *_x, uint8_t *_y)
 
     *_x = (uint8_t) (hdr.response % _scr_width);
     *_y = (uint8_t) (hdr.response / _scr_width);
+}
+
+void screen_put_char_at(char c, uint8_t _x, uint8_t _y)
+{
+    char str[2] = {c, 0};
+
+    screen_t req = {
+        .hdr.system_call = SYSCALL_SCREEN_PUT_CHAR,
+        .x = (uint32_t) _x,
+        .y = (uint32_t) _y,
+        .str = str
+    };
+    PERFORM_SYSCALL(&req);
 }

@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2022 Maarten Vermeulen
+Copyright (c) 2019-2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@ SOFTWARE.
 #define SYSCALL_CLEAR_SCREEN                0x0106
 #define SYSCALL_SET_SCREEN_CURSOR           0x0107
 #define SYSCALL_GET_SCREEN_CURSOR           0x0108
+#define SYSCALL_SCREEN_PUT_CHAR             0x0109
 
 // memory (0x0200-0x02ff)
 #define SYSCALL_GET_MEM_INFO                0x0200
