@@ -408,6 +408,21 @@ static uint32_t iso_search_dir(uint8_t drive, uint32_t dir_lba, const char *file
 	return flba;
 }
 
+static void iso_remove_current_dir_symbols_from_path(char *path)
+{
+	uint32_t dot = find_in_str(path, "./");
+
+	if(dot == MAX)
+		return;
+	
+	while(dot != MAX)
+	{
+		remove_from_str(&path[dot], 2);
+		dot = find_in_str(path, "./");
+	}
+
+}
+
 // use this function to convert a path into the lba of the file
 static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 {
@@ -417,6 +432,7 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 	// save file name
 	char * p = create_backup_str(path);
 	to_uc(p, strlen(p));
+	iso_remove_current_dir_symbols_from_path(p);
 
 	char *filename = iso_allocate_bfr(ISO_MAX_FILENAME_LEN + 1);
 	reverse_path(p, filename);
