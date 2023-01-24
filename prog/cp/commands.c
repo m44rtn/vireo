@@ -79,32 +79,39 @@ void command_ver(void)
     screen_print("\nCopyright (c) 2019-2023 Maarten Vermeulen\n");
 }
 
-static void command_set_wd_bootdisk(char *path)
+static err_t command_set_wd_bootdisk(char *path)
 {
     char *bd = disk_get_bootdisk();
     char *out = valloc(MAX_PATH_LEN + 1);
 
     if(!out)
-        return;
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
     
     merge_disk_id_and_path(bd, path, out);
-    setcwd(out);
+    err_t err = setcwd(out);
 
     vfree(bd);
     vfree(out);
+
+    return err;
 }
 
-static void command_append_to_current_wd(char *new_part)
+static err_t command_append_to_current_wd(char *new_part)
 {
     char *out = valloc(MAX_PATH_LEN + 1);
+
+    if(!out)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+
     uint32_t len = 0;
 
     getcwd(out, &len);
     
     merge_disk_id_and_path(out, new_part, out);
-    setcwd(out);
+    err_t err = setcwd(out);
 
     vfree(out);
+    return err;
 }
 
 void command_cd(char *cmd_bfr)
@@ -121,14 +128,25 @@ void command_cd(char *cmd_bfr)
     if(space_index == MAX || cmd_bfr[space_index] == '\0')
         { command_pwd(); return; }
     
+    err_t err = 0;
+
     space_index++;
     if(cmd_bfr[space_index] == '/')
-        command_set_wd_bootdisk(&cmd_bfr[space_index]);
+        err = command_set_wd_bootdisk(&cmd_bfr[space_index]);
     else if(fileman_contains_disk(&cmd_bfr[space_index]))
-        setcwd(&cmd_bfr[space_index]);
+        err = setcwd(&cmd_bfr[space_index]);
     else
-        command_append_to_current_wd(&cmd_bfr[space_index]);
-    
+        err = command_append_to_current_wd(&cmd_bfr[space_index]);
+
+    if(!err)
+        return;
+
+    char *s = valloc(MAX_PATH_LEN + 64); 
+    if(!s)
+        return;
+    str_add_val(s, "%s: not a valid directory\n", &cmd_bfr[space_index]);
+    screen_print(s);
+    vfree(s);    
 }
 
 void command_pwd(void)

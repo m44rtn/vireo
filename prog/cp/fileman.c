@@ -26,6 +26,7 @@ SOFTWARE.
 #include "disk.h"
 #include "memory.h"
 #include "util.h"
+#include "fs.h"
 
 char working_dir[MAX_PATH_LEN + 1];
 
@@ -51,8 +52,28 @@ uint8_t fileman_contains_disk(char *path)
     return 1;    
 }
 
-void setcwd(char *path)
+static uint8_t fileman_is_existing_dir(char *path)
 {
+    err_t err = 0;
+    fs_file_info_t *t = fs_file_get_info(path, &err);
+
+    if(!t)
+        return 0;
+    else if(err)
+        return 0;
+    else if((t->file_type & FAT_FILE_ATTRIB_DIR) != FAT_FILE_ATTRIB_DIR)
+       return 0;
+    
+    vfree(t);
+    return 1;
+}
+
+err_t setcwd(char *path)
+{
+    // first check if this path even exists...
+    if(!fileman_is_existing_dir(path))
+        return EXIT_CODE_GLOBAL_INVALID;
+
     size_t len = strlen(path) + 1;
     len = (len > MAX_PATH_LEN + 1) ? MAX_PATH_LEN + 1 : len;
 
@@ -60,6 +81,8 @@ void setcwd(char *path)
 
     if(working_dir[len - 2] != '/')
         { working_dir[len - 1] = '/'; working_dir[len] = '\0'; }
+    
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
 void getcwd(char *buf, uint32_t *len)
