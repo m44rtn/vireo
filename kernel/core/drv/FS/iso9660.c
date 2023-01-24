@@ -616,12 +616,12 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, const char *path)
 	uint32_t start_parent_path = find_in_str(path, "/");
 	start_parent_path = (start_parent_path == MAX) ? strlen(path) : start_parent_path + 1;
 
+	uint16_t parent_entry = 0;
 	uint16_t entry = 0;
 	uint32_t lba = 0;
 	
 	while(1)
 	{
-		uint16_t parent_entry = 0;
 		lba = iso_find_in_path_table(drive, filename, &entry, &parent_entry);
 
 		if(lba == MAX)
