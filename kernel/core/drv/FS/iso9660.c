@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2022 Maarten Vermeulen
+Copyright (c) 2019-2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -638,79 +638,6 @@ uint32_t iso_path_to_dir_lba(uint8_t drive, const char *path)
 	iso_free_bfr(filename);
 
 	return lba;
-}
-
-static uint16_t iso_count_index(uint16_t *index_start, uint16_t until, uint8_t *buffer)
-{
-	uint16_t read = 0, index = *(index_start);
-	
-	while(read < ISO_SECTOR_SIZE)
-	{
-		pathtable_t *p = (pathtable_t *) &buffer[read];
-		uint16_t ident_len = (uint32_t) (p->ident_len);
-
-		if(index == until)
-			break;
-
-		// add amount of bytes read: base entry size, length of the identifier and padding byte
-		read = (uint16_t) (read + sizeof(pathtable_t) + ident_len + ((ident_len % 2) == 1));
-		index++;
-	}
-
-	*(index_start) = index;
-	return read;
-}
-
-uint32_t *iso_find_index(uint8_t drive, uint16_t index)
-{
-	// there is nothing at index 0
-	if(!index)
-		return NULL;
-
-	uint32_t lba = 0;
-	uint16_t total = 0;
-	uint16_t i = 0;
-
-	const cd_info_t *info = iso_get_cd_info_entry(drive);
-	uint8_t * b = evalloc(ISO_SECTOR_SIZE, PID_DRIVER);
-
-	if(!b)
-		return NULL;
-
-	// do while the current sector does not equal the max sectors of the path table
-	while(lba < (info->path_table_size)) // was: (lba * ISO_SECTOR_SIZE) < (info->path_table_size)
-	{
-		read(drive, (info->path_table_lba) + lba, 1, b);
-		uint16_t read = iso_count_index(&i, index, b);
-
-		// if we are at the end of the current buffer, update the total
-		// reset i and increase the lba
-		if(read >= ISO_SECTOR_SIZE)
-		{
-			total = (uint16_t) (total + i); 
-			i = 0; 
-			lba++; 
-			continue; 
-		}
-		
-		if((total + i) != index)
-		 	continue;
-		
-		// if we get here we found what we were looking for
-		pathtable_t *t = (pathtable_t *) &b[read];
-		uint32_t len = (t->ident_len) + sizeof(pathtable_t);
-		uint32_t *ret = iso_allocate_bfr(len);
-		
-		ASSERT(ret);
-		
-		memcpy((char *) ret, (char *) &b[read], len);
-		iso_free_bfr(b);
-
-		return ret;
-	}
-	
-	iso_free_bfr(b);
-	return NULL;
 }
 
 // !! WARNING !!

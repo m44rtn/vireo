@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2022 Maarten Vermeulen
+Copyright (c) 2019-2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,6 @@ unsigned int iso_alloc_dir_buffer(unsigned int dir_size, unsigned int **ret_addr
 unsigned int iso_get_dir_size(unsigned char drive, unsigned int dir_lba);
 
 unsigned int *iso_search_in_path_table(unsigned char drive, char *filename, unsigned char reset);
-unsigned int *iso_find_index(unsigned char drive, unsigned short index);
 
 unsigned short iso_search_path_table(const char *file, unsigned char drive, unsigned int start_lba, unsigned int *b_ptr);
 unsigned int iso_path_to_dir_lba(unsigned char drive, const char *path);
