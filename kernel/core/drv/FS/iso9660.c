@@ -423,6 +423,25 @@ static void iso_remove_current_dir_symbols_from_path(char *path)
 
 }
 
+static uint32_t iso_remove_parent_dir_notation_from_path(char *path)
+{
+	uint32_t index = find_in_str(path, "..");
+
+	if(index == MAX)
+		return MAX;
+
+	uint32_t oindex = index;
+	index = (index >= 2) ? index - 2 : 0; // -2 to start before the '/..' 
+
+	for(; index > 0; index-- )
+		if(path[index] == '/')
+			break;
+	
+	remove_from_str(&path[index], oindex - index + 2);
+	
+	return 1u;
+}
+
 // use this function to convert a path into the lba of the file
 static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 {
@@ -432,6 +451,8 @@ static uint32_t iso_traverse(const char *path, size_t *fsize, direntry_t *entry)
 	// save file name
 	char * p = create_backup_str(path);
 	to_uc(p, strlen(p));
+
+	while(iso_remove_parent_dir_notation_from_path(p) != MAX);
 	iso_remove_current_dir_symbols_from_path(p);
 
 	char *filename = iso_allocate_bfr(ISO_MAX_FILENAME_LEN + 1);
