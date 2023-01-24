@@ -75,6 +75,8 @@ void command_ver(void)
     screen_print(cp_ver);
     screen_print("\n");
     vfree(cp_ver);
+
+    screen_print("\nCopyright (c) 2019-2023 Maarten Vermeulen\n");
 }
 
 static void command_set_wd_bootdisk(char *path)
@@ -107,6 +109,7 @@ static void command_append_to_current_wd(char *new_part)
 
 void command_cd(char *cmd_bfr)
 {
+    // FIXME: check if ==directory before CD'ing (using fs_get_file_info()?)
     uint32_t space_index = find_in_str(cmd_bfr, " ");
 
     cmd_bfr[find_in_str(cmd_bfr, "\n")] = '\0';
