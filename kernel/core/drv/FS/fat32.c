@@ -1101,6 +1101,25 @@ err_t fat_mkdir(char *path)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+static uint8_t fat_file_info_rootdir(uint8_t disk, uint8_t part, const char *path, fs_file_info_t *file_info)
+{
+    uint32_t n_slashes = 0;
+    uint32_t i = 0, index = 0;
+    
+    // check if rootdir is requested (only one slash in path)
+    while((index = find_in_str(&path[i], "/")) != MAX)
+        { i += index + 1; n_slashes++; }
+    
+    if(!n_slashes || n_slashes > 1)
+        return 0;
+    
+    memset(file_info, sizeof(fs_file_info_t), 0);
+
+    file_info->file_type = FAT_DIR_ATTRIB_DIRECTORY;
+    file_info->first_sector = fat_cluster_lba(disk, part, fat_get_ebpb(disk, part)->clustLocRootdir);
+    return 1;
+}
+
 fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
 {
     uint8_t disk, part;
@@ -1109,18 +1128,30 @@ fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
     char filename[FAT_MAX_FILENAME_LEN + 1];
     FAT32_DIR dir_entry;
 
-    // ignored
-    uint32_t dir_cluster, dir_index;
-
-    *err = fat_check_file_exists(disk, part, path, &filename[0], &dir_entry, &dir_cluster, &dir_cluster, &dir_index);
-    
-    if(*err)
-        return NULL;
-        
     fs_file_info_t *file_info = evalloc(sizeof(fs_file_info_t), PID_DRIVER);
     
     if(file_info == NULL)
     { *err = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
+
+    if(fat_file_info_rootdir(disk, part, path, file_info))
+        return file_info;
+
+
+    // remove trailing slash from path (in case of 'hd0p0/dir/' or 'hd0p0/file.txt/')
+    char *p = create_backup_str(path);
+    uint32_t last_char = strlen(p) - 1;
+
+    if(p[last_char] == '/')
+        p[last_char] = '\0';
+
+    // ignored
+    uint32_t dir_cluster, dir_index;
+    *err = fat_check_file_exists(disk, part, p, &filename[0], &dir_entry, &dir_cluster, &dir_cluster, &dir_index);
+    
+    kfree(p);
+    
+    if(*err)
+        { vfree(file_info); return NULL; }
 
     file_info->file_size = dir_entry.fSize;
     file_info->file_type = dir_entry.attrib;
