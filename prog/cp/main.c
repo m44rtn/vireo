@@ -86,8 +86,12 @@ static void screen_magic(char *str, uint32_t n, uint32_t cdm_bfr_index)
 static void set_first_working_dir(void)
 {
     char *bd = disk_get_bootdisk();
-    setcwd(bd);
+    size_t len = strlen(bd);
 
+    bd[len] = '/';
+    bd[len + 1] = '\0';
+    
+    setcwd(bd);
     vfree(bd);
 }
 
