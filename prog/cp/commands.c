@@ -40,6 +40,8 @@ SOFTWARE.
 #define DIR_DIRTXT_INDENT   18
 #define DIR_FILESIZE_INDENT 26
 
+#define HELP_TXT_INDENT     12
+
 static char *command_create_cp_ver_str(void)
 {
     // FIXME: internal memory pool?
@@ -220,4 +222,44 @@ void command_dir(void)
     screen_print("bytes total\n");
 
     vfree(dir);   
+}
+
+void command_help(void)
+{
+    uint8_t x, y;
+
+    screen_print(INTERNAL_COMMAND_CD " [PATH]");
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(HELP_TXT_INDENT, y);
+    screen_print("navigate to [PATH], executes PWD if no path was given\n");
+
+    screen_print(INTERNAL_COMMAND_PWD);
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(HELP_TXT_INDENT, y);
+    screen_print("prints current working directory\n");
+
+    screen_print(INTERNAL_COMMAND_CLEAR);
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(HELP_TXT_INDENT, y);
+    screen_print("clears the screen\n");
+
+    screen_print(INTERNAL_COMMAND_DIR);
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(HELP_TXT_INDENT, y);
+    screen_print("shows contents of current working directory\n");
+
+    screen_print(INTERNAL_COMMAND_ECHO " [TXT]");
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(HELP_TXT_INDENT, y);
+    screen_print("prints [TXT] to the screen\n");
+
+    screen_print(INTERNAL_COMMAND_HELP);
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(HELP_TXT_INDENT, y);
+    screen_print("shows this help message\n");
+
+    screen_print(INTERNAL_COMMAND_VER);
+    screen_get_cursor_pos(screen_get_width(), &x, &y);
+    screen_set_cursor_pos(HELP_TXT_INDENT, y);
+    screen_print("prints copyright and version of CP and the kernel\n");
 }
