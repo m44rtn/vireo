@@ -139,6 +139,11 @@ err_t main(uint32_t argc, char **argv)
         if(cmd_bfr[i - 1] != '\n')
             continue;
 
+        // copy contents of cmd_bfr to the shadow, which can be used as an 'original' copy
+        // of the command buffer. This is useful for, say, the ECHO command (to print the original user's text
+        // and not an all uppercase version)
+        memcpy(cmd_shadow, cmd_bfr, strlen(cmd_bfr));
+
         // everything to uppercase, since this makes everything easier for us
         to_uc(cmd_bfr, strlen(cmd_bfr));
 
@@ -146,7 +151,7 @@ err_t main(uint32_t argc, char **argv)
         screen_print("\n");
 
         // exec command and set-up for next command
-        if(processor_execute_command(cmd_bfr))
+        if(processor_execute_command(cmd_bfr, cmd_shadow))
             print_did_not_exec_correctly(cmd_bfr);
             
         memset(cmd_bfr, COMMAND_BUFFER_SIZE, 0);

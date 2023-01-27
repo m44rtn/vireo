@@ -31,7 +31,7 @@ SOFTWARE.
 #define N_INTERNAL_COMMANDS 5
 #define CHECK_COMMAND(a) !strcmp_until(a, cmd_bfr, sizeof(a) - 1)
 
-static uint8_t processor_exec_internal_command(char *cmd_bfr)
+static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow)
 {
     uint8_t did_execute = 0;
 
@@ -46,7 +46,7 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr)
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_DIR)))
         command_dir();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_ECHO)))
-        command_echo(cmd_bfr);
+        command_echo(shadow);
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_HELP)))
         command_help();
 
@@ -65,7 +65,7 @@ static char *processor_ignore_leading_spaces(char *bfr)
     return &bfr[i];
 }
 
-err_t processor_execute_command(char *cmd_bfr)
+err_t processor_execute_command(char *cmd_bfr, char *shadow)
 {
      if(!cmd_bfr)
         return EXIT_CODE_GLOBAL_INVALID;
@@ -74,11 +74,12 @@ err_t processor_execute_command(char *cmd_bfr)
     cmd_bfr[end] = '\0';
 
     char *cmd = processor_ignore_leading_spaces(cmd_bfr);
+    char *shdw = processor_ignore_leading_spaces(shadow);
 
     if(cmd[0] == '\0')
         return EXIT_CODE_GLOBAL_SUCCESS;
 
-    uint8_t ran_internal = processor_exec_internal_command(cmd);
+    uint8_t ran_internal = processor_exec_internal_command(cmd, shdw);
 
     if(ran_internal)
         return EXIT_CODE_GLOBAL_SUCCESS;
