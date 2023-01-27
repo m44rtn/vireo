@@ -230,42 +230,22 @@ void command_echo(char *cmd_bfr)
     screen_print(&cmd_bfr[start]); // \n already there due to how the command buffer works
 }
 
-void command_help(void)
+static void help_print_command(const char *command, const char *helptxt)
 {
     uint8_t x, y;
-
-    screen_print(INTERNAL_COMMAND_CD " [PATH]");
+    screen_print(command);
     screen_get_cursor_pos(screen_get_width(), &x, &y);
     screen_set_cursor_pos(HELP_TXT_INDENT, y);
-    screen_print("navigate to [PATH], executes PWD if no path was given\n");
+    screen_print(helptxt);
+}
 
-    screen_print(INTERNAL_COMMAND_PWD);
-    screen_get_cursor_pos(screen_get_width(), &x, &y);
-    screen_set_cursor_pos(HELP_TXT_INDENT, y);
-    screen_print("prints current working directory\n");
-
-    screen_print(INTERNAL_COMMAND_CLEAR);
-    screen_get_cursor_pos(screen_get_width(), &x, &y);
-    screen_set_cursor_pos(HELP_TXT_INDENT, y);
-    screen_print("clears the screen\n");
-
-    screen_print(INTERNAL_COMMAND_DIR);
-    screen_get_cursor_pos(screen_get_width(), &x, &y);
-    screen_set_cursor_pos(HELP_TXT_INDENT, y);
-    screen_print("shows contents of current working directory\n");
-
-    screen_print(INTERNAL_COMMAND_ECHO " [TXT]");
-    screen_get_cursor_pos(screen_get_width(), &x, &y);
-    screen_set_cursor_pos(HELP_TXT_INDENT, y);
-    screen_print("prints [TXT] to the screen\n");
-
-    screen_print(INTERNAL_COMMAND_HELP);
-    screen_get_cursor_pos(screen_get_width(), &x, &y);
-    screen_set_cursor_pos(HELP_TXT_INDENT, y);
-    screen_print("shows this help message\n");
-
-    screen_print(INTERNAL_COMMAND_VER);
-    screen_get_cursor_pos(screen_get_width(), &x, &y);
-    screen_set_cursor_pos(HELP_TXT_INDENT, y);
-    screen_print("prints copyright and version of CP and the kernel\n");
+void command_help(void)
+{
+    help_print_command(INTERNAL_COMMAND_CD " [PATH]", "navigate to [PATH], executes PWD if no path was given\n");
+    help_print_command(INTERNAL_COMMAND_PWD, "prints current working directory\n");
+    help_print_command(INTERNAL_COMMAND_CLEAR, "clears the screen\n");
+    help_print_command(INTERNAL_COMMAND_DIR, "shows contents of current working directory\n");
+    help_print_command(INTERNAL_COMMAND_ECHO " [TXT]", "prints [TXT] to the screen\n");
+    help_print_command(INTERNAL_COMMAND_HELP, "shows this help message\n");
+    help_print_command(INTERNAL_COMMAND_VER, "prints copyright and version of CP and the kernel\n");
 }
