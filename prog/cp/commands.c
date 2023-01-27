@@ -224,6 +224,13 @@ void command_dir(void)
     vfree(dir);   
 }
 
+void command_echo(char *cmd_bfr)
+{
+    uint32_t start = strlen("ECHO ");
+    screen_print(&cmd_bfr[start]);
+    screen_print("\n");
+}
+
 void command_help(void)
 {
     uint8_t x, y;
