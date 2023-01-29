@@ -33,6 +33,7 @@ SOFTWARE.
 #define INTERNAL_COMMAND_ECHO   "ECHO"
 #define INTERNAL_COMMAND_HELP   "HELP"
 #define INTERNAL_COMMAND_VER    "VER"
+#define INTERNAL_COMMAND_ERRLVL "ERRLVL"
 
 void command_ver(void);
 void command_cd(char *cmd_bfr);
@@ -41,5 +42,6 @@ void command_clear(void);
 void command_dir(void);
 void command_echo(char *cmd_bfr);
 void command_help(void);
+void command_errlvl(void);
 
 #endif // __COMMANDS_H__

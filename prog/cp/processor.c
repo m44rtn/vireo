@@ -51,6 +51,8 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow)
         command_echo(shadow);
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_HELP)))
         command_help();
+    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_ERRLVL)))
+        command_errlvl();
 
     return did_execute;
 }
@@ -65,6 +67,16 @@ static char *processor_ignore_leading_spaces(char *bfr)
             break;
     
     return &bfr[i];
+}
+
+void processor_set_last_error(err_t err)
+{
+    g_last_error = err;
+}
+
+err_t processor_get_last_error(void)
+{
+    return g_last_error;
 }
 
 err_t processor_execute_command(char *cmd_bfr, char *shadow)
@@ -86,10 +98,10 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     if(ran_internal)
         return EXIT_CODE_GLOBAL_SUCCESS;
     
-    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    err_t err = g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
 
     if(fileman_contains_disk(cmd))
-        err = program_start_new(cmd);
+        { g_last_error = err = program_start_new(cmd); return err; }
     
     uint32_t len = 0;
     char *str = valloc(MAX_PATH_LEN + 1);
@@ -97,7 +109,7 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
 
     merge_disk_id_and_path(str, cmd, str);
 
-    err = program_start_new(str);
+    g_last_error = err = program_start_new(str);
     vfree(str);
 
     // TODO: report error in errorlvl command?

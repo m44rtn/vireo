@@ -122,6 +122,7 @@ err_t main(uint32_t argc, char **argv)
     screen_prepare_for_first_prompt();
     command_ver();
     screen_print("\n" PROMPT);
+    processor_set_last_error(EXIT_CODE_GLOBAL_SUCCESS);
 
     while(1)
     {

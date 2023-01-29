@@ -33,6 +33,7 @@ SOFTWARE.
 #include "include/fileman.h"
 #include "include/commands.h"
 #include "include/info.h"
+#include "include/processor.h"
 
 #define MAX_INFO_STR_LEN    128
 #define INFO_VER_STR_START  "CP "
@@ -248,4 +249,12 @@ void command_help(void)
     help_print_command(INTERNAL_COMMAND_ECHO " [TXT]", "prints [TXT] to the screen\n");
     help_print_command(INTERNAL_COMMAND_HELP, "shows this help message\n");
     help_print_command(INTERNAL_COMMAND_VER, "prints copyright and version of CP and the kernel\n");
+    help_print_command(INTERNAL_COMMAND_ERRLVL, "prints exit code of last ran binary\n");
+}
+
+void command_errlvl(void)
+{
+    char s[12];
+    str_add_val(s, " 0x%x\n", (uint32_t)processor_get_last_error());
+    screen_print(s);
 }
