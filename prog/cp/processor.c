@@ -28,7 +28,6 @@ SOFTWARE.
 #include "include/commands.h"
 #include "include/processor.h"
 
-#define N_INTERNAL_COMMANDS 5
 #define CHECK_COMMAND(a) !strcmp(a, cmd_bfr)
 
 err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
