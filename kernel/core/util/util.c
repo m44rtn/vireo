@@ -97,7 +97,7 @@ uint8_t strcmp_until(const char *str1, const char *str2, uint32_t stop)
 {
 	uint32_t i = 0;
 
-	while((str1[i] && str2[i]) && (i < stop))
+	while(i < stop)
 	{
 		if(str1[i] != str2[i])
 			return EXIT_CODE_GLOBAL_GENERAL_FAIL;

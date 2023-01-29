@@ -28,7 +28,7 @@ SOFTWARE.
 #include "include/commands.h"
 #include "include/processor.h"
 
-#define CHECK_COMMAND(a) !strcmp(a, cmd_bfr)
+#define CHECK_COMMAND(a) !strcmp_until(a, cmd_bfr, strlen(a))
 
 err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
 
