@@ -29,7 +29,9 @@ SOFTWARE.
 #include "include/processor.h"
 
 #define N_INTERNAL_COMMANDS 5
-#define CHECK_COMMAND(a) !strcmp_until(a, cmd_bfr, sizeof(a) - 1)
+#define CHECK_COMMAND(a) !strcmp(a, cmd_bfr)
+
+err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
 
 static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow)
 {
