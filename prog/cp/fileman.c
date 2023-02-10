@@ -55,17 +55,18 @@ uint8_t fileman_contains_disk(char *path)
 static uint8_t fileman_is_existing_dir(char *path)
 {
     err_t err = 0;
+    uint8_t res = 1;
     fs_file_info_t *t = fs_file_get_info(path, &err);
 
     if(!t)
-        return 0;
+        res = 0;
     else if(err)
-        return 0;
+        res = 0;
     else if((t->file_type & FAT_FILE_ATTRIB_DIR) != FAT_FILE_ATTRIB_DIR)
-       return 0;
+       res = 0;
     
     vfree(t);
-    return 1;
+    return res;
 }
 
 err_t setcwd(char *path)
