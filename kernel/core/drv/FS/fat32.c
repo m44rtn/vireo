@@ -515,6 +515,9 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
             return MAX;
 
         starting_cluster = (uint32_t) ((dir_entry.clHi << 16u) | dir_entry.clLo);
+
+        if(!starting_cluster && !strcmp_until(filename, ".. ", sizeof(".. ") - 1))
+            starting_cluster = info->clustLocRootdir;
     }
 
     *ofile_size = dir_entry.fSize;
@@ -1104,13 +1107,12 @@ err_t fat_mkdir(char *path)
 static uint8_t fat_file_info_rootdir(uint8_t disk, uint8_t part, const char *path, fs_file_info_t *file_info)
 {
     uint32_t n_slashes = 0;
-    uint32_t i = 0, index = 0;
+    uint32_t index = 0;
     
     // check if rootdir is requested (only one slash in path)
-    while((index = find_in_str(&path[i], "/")) != MAX)
-        { i += index + 1; n_slashes++; }
-    
-    if(!n_slashes || n_slashes > 1)
+    if((index = find_in_str(path, "/")) == MAX)
+        return 0;
+    if(path[index + 2] != '\0')
         return 0;
     
     memset(file_info, sizeof(fs_file_info_t), 0);
@@ -1135,7 +1137,6 @@ fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
 
     if(fat_file_info_rootdir(disk, part, path, file_info))
         return file_info;
-
 
     // remove trailing slash from path (in case of 'hd0p0/dir/' or 'hd0p0/file.txt/')
     char *p = create_backup_str(path);
