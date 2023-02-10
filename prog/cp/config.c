@@ -47,14 +47,8 @@ SOFTWARE.
 
 file_t *config_read_file(err_t *err)
 {
-    char *bootdisk = disk_get_bootdisk();
-
-    char path[MAX_PATH_LEN];
-    merge_disk_id_and_path(bootdisk, (char *) CONFIG_PATH, path);
-    vfree(bootdisk);
-
-    size_t fsize;
-    return fs_read_file(path, &fsize, err);  
+    size_t ignore;
+    return read_file_from_bootdisk(CONFIG_PATH, err, &ignore);
 }
 
 static uint8_t config_get_line(file_t *cf, char *out, uint32_t *pindex)

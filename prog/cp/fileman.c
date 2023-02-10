@@ -30,6 +30,20 @@ SOFTWARE.
 
 char working_dir[MAX_PATH_LEN + 1];
 
+file_t *read_file_from_bootdisk(const char *path, err_t *err, size_t *fsize)
+{
+    char *bootdisk = disk_get_bootdisk();
+    char *opath = valloc(strlen(bootdisk) + strlen(path) + 1);
+
+    merge_disk_id_and_path(bootdisk, (char *) path, opath);
+    vfree(bootdisk);
+
+    file_t *f = fs_read_file(opath, fsize, err);
+    vfree(opath);
+
+    return f;
+}
+
 void merge_disk_id_and_path(char *disk, char *path, char *out)
 {    
     size_t d_len = strlen(disk);
