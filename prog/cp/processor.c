@@ -28,6 +28,9 @@ SOFTWARE.
 #include "include/commands.h"
 #include "include/processor.h"
 
+#define MAX_LINE_LEN        512 // bytes
+#define AUTOEXEC_FILENAME   "/AUTOEXEC"
+
 #define CHECK_COMMAND(a) !strcmp_until(a, cmd_bfr, strlen(a))
 
 err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
@@ -114,3 +117,30 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     // TODO: report error in errorlvl command?
     return err;
 }
+
+void processor_execute_autoexec(void)
+{
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    size_t ignore;
+
+    file_t *autoexec = read_file_from_bootdisk(AUTOEXEC_FILENAME, &err, &ignore);
+
+    if(err)
+        return;
+    
+    char *out = valloc(MAX_LINE_LEN), *shdw = valloc(MAX_LINE_LEN);
+
+    if(!out)
+        return;
+
+    uint32_t pindex = 0;
+    while(str_get_part(out, autoexec, "\n", &pindex))
+    {
+        to_uc(out, strlen(out));
+        processor_execute_command(out, out);
+    }
+
+    vfree(out);
+    vfree(autoexec);
+}
+

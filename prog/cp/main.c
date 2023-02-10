@@ -120,7 +120,9 @@ err_t main(uint32_t argc, char **argv)
     uint32_t i = 0;
 
     screen_prepare_for_first_prompt();
-    command_ver();
+
+    processor_execute_autoexec();
+
     screen_print("\n" PROMPT);
     processor_set_last_error(EXIT_CODE_GLOBAL_SUCCESS);
 
