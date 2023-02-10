@@ -114,7 +114,6 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     g_last_error = err = program_start_new(str);
     vfree(str);
 
-    // TODO: report error in errorlvl command?
     return err;
 }
 
