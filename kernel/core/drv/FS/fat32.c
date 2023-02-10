@@ -515,6 +515,9 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
             return MAX;
 
         starting_cluster = (uint32_t) ((dir_entry.clHi << 16u) | dir_entry.clLo);
+
+        if(!starting_cluster && !strcmp_until(filename, ".. ", sizeof(".. ") - 1))
+            starting_cluster = info->clustLocRootdir;
     }
 
     *ofile_size = dir_entry.fSize;
