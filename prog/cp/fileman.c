@@ -66,6 +66,18 @@ uint8_t fileman_contains_disk(char *path)
     return 1;    
 }
 
+uint8_t fileman_is_existing_file(char *path)
+{
+    err_t err = 0;
+    fs_file_info_t *t = fs_file_get_info(path, &err);
+
+    if(!t || err)
+        return 0;
+    
+    vfree(t);
+    return 1;
+}
+
 static uint8_t fileman_is_existing_dir(char *path)
 {
     err_t err = 0;

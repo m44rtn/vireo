@@ -27,6 +27,7 @@ SOFTWARE.
 #include "include/fileman.h"
 #include "include/commands.h"
 #include "include/processor.h"
+#include "include/config.h"
 
 #define MAX_LINE_LEN        512 // bytes
 #define AUTOEXEC_FILENAME   "/AUTOEXEC"
@@ -81,6 +82,31 @@ err_t processor_get_last_error(void)
     return g_last_error;
 }
 
+static char *processor_binpath_or_cwd(char *cmd_bfr, char *binpath, char *cwd)
+{
+    if(fileman_is_existing_file(cmd_bfr))
+        return cmd_bfr;
+
+    char *path = valloc(MAX_PATH_LEN);
+    char *binary = valloc(MAX_PATH_LEN);
+    uint32_t pindex = 0;
+
+    str_get_part(binary, cmd_bfr, " ", &pindex);
+    merge_disk_id_and_path(binpath, binary, path);
+
+    if(fileman_is_existing_file(path))
+        { merge_disk_id_and_path(binpath, cmd_bfr, path); vfree(binary); return path; }
+    
+    merge_disk_id_and_path(cwd, binary, path);
+
+    if(fileman_is_existing_file(path))
+        { merge_disk_id_and_path(cwd, cmd_bfr, path); vfree(binary); return path; }
+    
+    vfree(binary);
+    vfree(path);
+    return NULL;
+}
+
 err_t processor_execute_command(char *cmd_bfr, char *shadow)
 {
      if(!cmd_bfr)
@@ -102,16 +128,16 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     
     err_t err = g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
 
-    if(fileman_contains_disk(cmd))
-        { g_last_error = err = program_start_new(cmd); return err; }
-    
-    uint32_t len = 0;
     char *str = valloc(MAX_PATH_LEN + 1);
+    uint32_t len = 0;
     getcwd(str, &len);
 
-    merge_disk_id_and_path(str, cmd, str);
+    char *path = processor_binpath_or_cwd(cmd, config_get_bin_path(), str);
 
-    g_last_error = err = program_start_new(str);
+    if(!path)
+        return EXIT_CODE_GLOBAL_INVALID;
+    
+    g_last_error = err = program_start_new(path);
     vfree(str);
 
     return err;

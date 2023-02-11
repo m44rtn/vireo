@@ -104,6 +104,7 @@ err_t main(uint32_t argc, char **argv)
         return err;
 
     err = config_load_drv(cf);
+    config_set_bin_path(cf);
 
     if(err)
         return err;

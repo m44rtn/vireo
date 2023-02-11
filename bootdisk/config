@@ -15,5 +15,4 @@ load /sys/ps2keyb.drv
 [settings for cp]
 keymap /sys/usint.kl
 keyb_drv_name PS2KEYB.DRV
-
-[autoexec]
+setpath /bin/

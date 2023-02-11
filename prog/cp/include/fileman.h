@@ -32,6 +32,7 @@ SOFTWARE.
 file_t *read_file_from_bootdisk(const char *path, err_t *err, size_t *fsize);
 void merge_disk_id_and_path(char *disk, char *path, char *out);
 uint8_t fileman_contains_disk(char *path);
+uint8_t fileman_is_existing_file(char *path);
 err_t setcwd(char *path);
 void getcwd(char *buf, uint32_t *len);
 

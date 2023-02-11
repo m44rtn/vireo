@@ -42,8 +42,11 @@ SOFTWARE.
 #define KEYWORD_LOAD_DRV "LOAD"
 
 // CP chars and strings to interpret
-#define KEYWORD_KEYB_DRIVER_NAME "KEYB_DRV_NAME"
-#define KEYWORD_KEYMAP_PATH "KEYMAP"
+#define KEYWORD_KEYB_DRIVER_NAME    "KEYB_DRV_NAME"
+#define KEYWORD_KEYMAP_PATH         "KEYMAP"
+#define KEYWORD_BIN_PATH            "SETPATH"
+
+char *g_bin_path = NULL;
 
 file_t *config_read_file(err_t *err)
 {
@@ -130,7 +133,7 @@ char *config_get_keymap_path(file_t *cf)
 {
     uint32_t line_num = 0;
     char *line = valloc(MAX_LINE_LEN);
-    char *out = valloc(MAX_FILENAME_LEN); // + 2 for: (+ 1 '\0', +1 '.' to seperate filename and extension)
+    char *out = valloc(MAX_FILENAME_LEN);
 
     while(config_get_line(cf, line, &line_num))
     {
@@ -143,4 +146,37 @@ char *config_get_keymap_path(file_t *cf)
 
     vfree(line);
     return out;
+}
+
+const char *config_get_bin_path(void)
+{
+    return g_bin_path;
+}
+
+void config_set_bin_path(file_t *cf)
+{
+    uint32_t line_num = 0;
+    char *line = valloc(MAX_LINE_LEN);
+    char *out = valloc(MAX_PATH_LEN);
+    g_bin_path = valloc(MAX_PATH_LEN);
+
+    while(config_get_line(cf, line, &line_num))
+    {
+        if(strcmp_until(line, KEYWORD_BIN_PATH, strlen(KEYWORD_BIN_PATH)))
+            continue;
+
+        uint32_t pindex = 1;
+        str_get_part(out, line, " ", &pindex);
+        
+        if(fileman_contains_disk(out))
+            { memcpy(g_bin_path, out, strlen(out)); break; }
+        
+        // no disk in path (use bootdisk)
+        char *bd = disk_get_bootdisk();
+        merge_disk_id_and_path(bd, out, g_bin_path);
+        vfree(bd);
+    }
+
+    vfree(line);
+    vfree(out);
 }

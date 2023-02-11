@@ -30,5 +30,7 @@ file_t *config_read_file(err_t *err);
 err_t config_load_drv(file_t *cf);
 char *config_get_keyb_drv_name(file_t *cf);
 char *config_get_keymap_path(file_t *cf);
+const char *config_get_bin_path(void);
+void config_set_bin_path(file_t *cf);
 
 #endif // __CONFIG_H__
