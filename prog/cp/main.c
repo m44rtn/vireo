@@ -34,6 +34,7 @@ SOFTWARE.
 #include "include/keyb.h"
 #include "include/processor.h"
 #include "include/commands.h"
+#include "include/cp_exit_codes.h"
 
 #define COMMAND_BUFFER_SIZE 512 // chars
 
@@ -41,7 +42,7 @@ static void print_did_not_exec_correctly(char *cmd_bfr)
 {
     char *str = valloc(strlen(cmd_bfr));
 
-    str_add_val(str, "%s: no command or filename, or program returned with error.\n", (uint32_t) cmd_bfr);
+    str_add_val(str, "%s: no command or filename\n", (uint32_t) cmd_bfr);
     screen_print(str);
 
     vfree(str);
@@ -155,7 +156,7 @@ err_t main(uint32_t argc, char **argv)
         screen_print("\n");
 
         // exec command and set-up for next command
-        if(processor_execute_command(cmd_bfr, cmd_shadow))
+        if(processor_execute_command(cmd_bfr, cmd_shadow) == EXIT_CODE_CP_NO_COMMAND)
             print_did_not_exec_correctly(cmd_bfr);
             
         memset(cmd_bfr, COMMAND_BUFFER_SIZE, 0);

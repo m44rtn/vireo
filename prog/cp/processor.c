@@ -28,6 +28,7 @@ SOFTWARE.
 #include "include/commands.h"
 #include "include/processor.h"
 #include "include/config.h"
+#include "include/cp_exit_codes.h"
 
 #define MAX_LINE_LEN        512 // bytes
 #define AUTOEXEC_FILENAME   "/AUTOEXEC"
@@ -110,7 +111,7 @@ static char *processor_binpath_or_cwd(char *cmd_bfr, char *binpath, char *cwd)
 err_t processor_execute_command(char *cmd_bfr, char *shadow)
 {
      if(!cmd_bfr)
-        return EXIT_CODE_GLOBAL_INVALID;
+        return EXIT_CODE_CP_NO_COMMAND;
         
     uint32_t end = find_in_str(cmd_bfr, "\n");
     cmd_bfr[end] = '\0';
@@ -135,7 +136,7 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     char *path = processor_binpath_or_cwd(cmd, config_get_bin_path(), str);
 
     if(!path)
-        return EXIT_CODE_GLOBAL_INVALID;
+        return EXIT_CODE_CP_NO_COMMAND;
     
     g_last_error = err = program_start_new(path);
     vfree(str);
