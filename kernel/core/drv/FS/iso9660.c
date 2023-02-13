@@ -801,13 +801,13 @@ fs_file_info_t *iso_get_file_info(const char *path)
 
 	uint32_t flba = iso_traverse(path, &fsize, &entry);
 
-	if(!flba)
-	{ gerror = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
+	if(!flba || flba == MAX)
+		{ gerror = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
 
 	fs_file_info_t *info = evalloc(sizeof(fs_file_info_t), PID_DRIVER);
 	
 	if(!info)
-	{ gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
+		{ gerror = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
 	
 	info->file_size = fsize;
 	info->first_sector = flba;
