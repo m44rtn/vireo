@@ -1112,7 +1112,7 @@ static uint8_t fat_file_info_rootdir(uint8_t disk, uint8_t part, const char *pat
     // check if rootdir is requested (only one slash in path)
     if((index = find_in_str(path, "/")) == MAX)
         return 0;
-    if(path[index + 2] != '\0')
+    if(path[index + 1] != '\0')
         return 0;
     
     memset(file_info, sizeof(fs_file_info_t), 0);
