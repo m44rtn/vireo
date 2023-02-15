@@ -1020,9 +1020,8 @@ err_t fat_delete(char *path)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-static void fat_create_dir(uint8_t disk, uint8_t part, uint32_t cluster_parent, char *path)
+static void fat_create_dir(uint8_t disk, uint8_t part, uint32_t cluster_parent, char *path, err_t *err)
 {
-    
     FAT32_DIR *dir = evalloc(FAT32_SECTOR_SIZE, PID_DRIVER);
 
     // fat_mkdir appends a slash, it is something
@@ -1051,7 +1050,7 @@ static void fat_create_dir(uint8_t disk, uint8_t part, uint32_t cluster_parent, 
     dir[1].clHi = (uint16_t) ((cluster_parent << 16) & 0xFFFF);
     dir[1].attrib = FAT_DIR_ATTRIB_DIRECTORY;
 
-    fat_write(actual_path, dir, FAT32_SECTOR_SIZE, FAT_DIR_ATTRIB_DIRECTORY);
+    *err = fat_write(actual_path, dir, FAT32_SECTOR_SIZE, FAT_DIR_ATTRIB_DIRECTORY);
     
     kfree(actual_path);
     vfree(dir);
@@ -1089,8 +1088,12 @@ err_t fat_mkdir(char *path)
         if(cluster != MAX)
             continue;
 
-        // dir does not exist
-        fat_create_dir(disk, part, old_cluster, checking_path);
+        // dir does not exist, so try and create it
+        err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+        fat_create_dir(disk, part, old_cluster, checking_path, &err);
+
+        if(err)
+            { vfree(checking_path); return err; }
     }
 
     vfree(checking_path);
