@@ -27,13 +27,14 @@ SOFTWARE.
 #include "types.h"
 #include "call.h"
 
+#define API_LAST_CALL           0xFFFF
+#define API_SPACE_SEGMENT_SIZE  0x100 // calls
+
 typedef struct api_listing_t
 {
     char filename[12];
     api_space_t start_syscall_space; // e.g., 0xff00 (which would run until 0xffff)
 } __attribute__((packed)) api_listing_t;
-
-
 
 // get all non-kernel api syscalls, returns api_listing_t * 
 api_listing_t *api_get_syscall_listing(void);
