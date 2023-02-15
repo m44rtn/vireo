@@ -30,6 +30,8 @@ SOFTWARE.
 #define FS_FAT_MAX_FILENAME_LEN 11
 #define FS_ISO_MAX_FILENAME_LEN 255
 
+#define FS_MAX_PATH_LEN         255
+
 #define FS_TYPE_FAT12   0x01
 #define FS_TYPE_FAT16   0x04
 #define FS_TYPE_FAT32   0x0B
