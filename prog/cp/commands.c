@@ -43,9 +43,8 @@ SOFTWARE.
 
 #define HELP_TXT_INDENT     12
 
-static char *command_create_cp_ver_str(void)
+char *command_create_cp_ver_str(void)
 {
-    // FIXME: internal memory pool?
     char *str = valloc(MAX_INFO_STR_LEN);
     
     if(!str)

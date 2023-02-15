@@ -27,6 +27,8 @@ SOFTWARE.
 #include "util.h"
 #include "screen.h"
 #include "disk.h"
+#include "api.h"
+#include "program.h"
 
 #include "include/screen.h"
 #include "include/fileman.h"
@@ -35,6 +37,7 @@ SOFTWARE.
 #include "include/processor.h"
 #include "include/commands.h"
 #include "include/cp_exit_codes.h"
+#include "include/cp_api.h"
 
 #define COMMAND_BUFFER_SIZE 512 // chars
 
@@ -101,6 +104,10 @@ err_t main(uint32_t argc, char **argv)
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
     file_t *cf = config_read_file(&err); 
 
+    program_info_t *prog_info = program_get_info(&err);
+    api_space_t space = api_get_api_space((function_t) prog_info->bin_start + cp_api_handler);
+    cp_api_set_space(space);
+
     if(err)
         return err;
 
@@ -164,5 +171,6 @@ err_t main(uint32_t argc, char **argv)
         screen_print(PROMPT);
     }
 
+    vfree(prog_info);
     return err;
 }

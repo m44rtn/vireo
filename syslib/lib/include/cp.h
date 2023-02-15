@@ -21,29 +21,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __COMMANDS_H__
-#define __COMMANDS_H__
+#ifndef __CP_H__
+#define __CP_H__
 
 #include "types.h"
+#include "call.h"
 
-#define INTERNAL_COMMAND_CD     "CD"
-#define INTERNAL_COMMAND_PWD    "PWD"
-#define INTERNAL_COMMAND_CLEAR  "CLEAR"
-#define INTERNAL_COMMAND_DIR    "DIR"
-#define INTERNAL_COMMAND_ECHO   "ECHO"
-#define INTERNAL_COMMAND_HELP   "HELP"
-#define INTERNAL_COMMAND_VER    "VER"
-#define INTERNAL_COMMAND_ERRLVL "ERRLVL"
+typedef struct cp_api_req
+{
+    syscall_hdr_t hdr;
+    char *param;
+} __attribute__((packed)) cp_api_req;
 
-char *command_create_cp_ver_str(void);
+#define CP_GET_VERSION          0x00
+/* 
+    returns a string containing the CP version in cp_api_req.hdr.response_ptr
+*/ 
 
-void command_ver(void);
-void command_cd(char *cmd_bfr);
-void command_pwd(void);
-void command_clear(void);
-void command_dir(void);
-void command_echo(char *cmd_bfr);
-void command_help(void);
-void command_errlvl(void);
+#define CP_GET_CWD              0x01
+/* 
+    returns the path to the current working directory in cp_api_req.hdr.response_ptr
+*/
 
-#endif // __COMMANDS_H__
+#define CP_SET_CWD              0x02
+/* 
+    sets the current working directory to the contents of cp_api_req.param    
+*/
+
+#define CP_EXEC_CMD             0x03
+/* 
+    executes the command given in cp_api_req.param as if it were typed by the user
+*/
+
+#define CP_GET_ERRLVL           0x04
+/* 
+    returns the error level (exit code) of the previous binary in cp_api_req.hdr.response  
+*/
+
+#endif // __CP_H__

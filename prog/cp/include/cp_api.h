@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2022 Maarten Vermeulen
+Copyright (c) 2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,29 +21,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-#ifndef __COMMANDS_H__
-#define __COMMANDS_H__
+#ifndef __CP_API_H__
+#define __CP_API_H__
 
-#include "types.h"
+#include "cp.h"
 
-#define INTERNAL_COMMAND_CD     "CD"
-#define INTERNAL_COMMAND_PWD    "PWD"
-#define INTERNAL_COMMAND_CLEAR  "CLEAR"
-#define INTERNAL_COMMAND_DIR    "DIR"
-#define INTERNAL_COMMAND_ECHO   "ECHO"
-#define INTERNAL_COMMAND_HELP   "HELP"
-#define INTERNAL_COMMAND_VER    "VER"
-#define INTERNAL_COMMAND_ERRLVL "ERRLVL"
+void cp_api_set_space(api_space_t s);
+void cp_api_handler(void *r);
 
-char *command_create_cp_ver_str(void);
-
-void command_ver(void);
-void command_cd(char *cmd_bfr);
-void command_pwd(void);
-void command_clear(void);
-void command_dir(void);
-void command_echo(char *cmd_bfr);
-void command_help(void);
-void command_errlvl(void);
-
-#endif // __COMMANDS_H__
+#endif // __CP_API_H__
