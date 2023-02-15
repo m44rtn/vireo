@@ -395,10 +395,9 @@ static uint32_t fat_search_dir_part(FAT32_DIR *dir, const char *filename, size_t
 
         file[TOTAL_FILENAME_LEN] = '\0';
 
-        if(strcmp_until(&file[0], filename, TOTAL_FILENAME_LEN))
-            continue;
-        
-        return i; 
+        if(!strcmp_until(&file[0], filename, TOTAL_FILENAME_LEN) || 
+            (filename[0] == 0 && file[0] == 0) || ((uint8_t)filename[0] == DIR_UNUSED_ENTRY && (uint8_t)file[0] == DIR_UNUSED_ENTRY))
+                return i;
     }
 
     return MAX;
@@ -1106,7 +1105,6 @@ err_t fat_mkdir(char *path)
 
 static uint8_t fat_file_info_rootdir(uint8_t disk, uint8_t part, const char *path, fs_file_info_t *file_info)
 {
-    uint32_t n_slashes = 0;
     uint32_t index = 0;
     
     // check if rootdir is requested (only one slash in path)
