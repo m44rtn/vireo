@@ -89,6 +89,7 @@ typedef struct program_info_t
     void *stack;
     size_t size;
     char *path;
+    void *bin_start;
 } __attribute__((packed)) api_prog_info_t;
 
 prog_info_t *prog_info = NULL;
@@ -357,6 +358,7 @@ void prog_api(void *req)
             info->pid = current_running_pid;
             info->size = prog_info[pid_index].size;
             info->stack = prog_info[pid_index].stck;
+            info->bin_start = prog_info[pid_index].binary_start;
 
             hdr->response_ptr = info;
             hdr->response_size = sizeof(api_prog_info_t);

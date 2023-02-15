@@ -36,6 +36,7 @@ typedef struct program_info_t
     stack_t *stack;
     size_t size;
     char *path;
+    void *bin_start;
 } __attribute__((packed)) program_info_t;
 
 // returns information about the current program
