@@ -188,11 +188,12 @@ static api_space_t api_handle_prog_space_request(api_space_t space, pid_t pid)
     const char *file = prog_get_filename(pid);
 
      // find the filename in the path
-    uint32_t i = find_in_str((char *) &file[strlen(file) - 12], "/");
-    i = (i == MAX) ? strlen(file) - 12 : i + strlen(file) - 12;
+    uint32_t slash_index = 0, i = 0;
+    while((i =find_in_str(&file[slash_index], "/")) != MAX)
+        slash_index += i + 1;
     
     // copy filename to api_spaces.filename
-    memcpy(&api_spaces[space].filename[0], (void *) &file[i + 1], strlen(&file[i + 1]));
+    memcpy(&api_spaces[space].filename[0], (void *) &file[slash_index],  FAT_MAX_FILENAME_LEN + 1);
 
     return (api_space_t) (space * API_SYSCALL_SEGMENT_SIZE);
 }
