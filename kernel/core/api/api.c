@@ -213,6 +213,9 @@ static api_space_t api_handle_driver_space_request(api_space_t space)
 
 api_space_t api_handle_space_request(uint32_t handler)
 {
+    if(handler < (uint32_t)memory_get_kernel_space_end())
+        return (api_space_t) MAX;
+
     api_space_t space = api_get_free_space();
             
     if(space == (api_space_t) MAX)
