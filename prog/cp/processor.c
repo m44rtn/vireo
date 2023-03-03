@@ -83,31 +83,6 @@ err_t processor_get_last_error(void)
     return g_last_error;
 }
 
-static char *processor_binpath_or_cwd(char *cmd_bfr, char *binpath, char *cwd)
-{
-    if(fileman_is_existing_file(cmd_bfr))
-        return cmd_bfr;
-
-    char *path = valloc(MAX_PATH_LEN);
-    char *binary = valloc(MAX_PATH_LEN);
-    uint32_t pindex = 0;
-
-    str_get_part(binary, cmd_bfr, " ", &pindex);
-    merge_disk_id_and_path(binpath, binary, path);
-
-    if(fileman_is_existing_file(path))
-        { merge_disk_id_and_path(binpath, cmd_bfr, path); vfree(binary); return path; }
-    
-    merge_disk_id_and_path(cwd, binary, path);
-
-    if(fileman_is_existing_file(path))
-        { merge_disk_id_and_path(cwd, cmd_bfr, path); vfree(binary); return path; }
-    
-    vfree(binary);
-    vfree(path);
-    return NULL;
-}
-
 err_t processor_execute_command(char *cmd_bfr, char *shadow)
 {
      if(!cmd_bfr)
@@ -133,7 +108,7 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     uint32_t len = 0;
     getcwd(str, &len);
 
-    char *path = processor_binpath_or_cwd(cmd, config_get_bin_path(), str);
+    char *path = fileman_abspath_or_cwd(cmd, config_get_bin_path(), str);
 
     if(!path)
         return EXIT_CODE_CP_NO_COMMAND;

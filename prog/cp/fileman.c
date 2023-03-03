@@ -30,6 +30,31 @@ SOFTWARE.
 
 char working_dir[MAX_PATH_LEN + 1];
 
+char *fileman_abspath_or_cwd(char *cmd_bfr, char *abspath, char *cwd)
+{
+    if(fileman_is_existing_file(cmd_bfr))
+        return cmd_bfr;
+
+    char *path = valloc(MAX_PATH_LEN);
+    char *abs = valloc(MAX_PATH_LEN);
+    uint32_t pindex = 0;
+
+    str_get_part(abs, cmd_bfr, " ", &pindex);
+    merge_disk_id_and_path(abspath, abs, path);
+
+    if(fileman_is_existing_file(path))
+        { merge_disk_id_and_path(abspath, cmd_bfr, path); vfree(abs); return path; }
+    
+    merge_disk_id_and_path(cwd, abs, path);
+
+    if(fileman_is_existing_file(path))
+        { merge_disk_id_and_path(cwd, cmd_bfr, path); vfree(abs); return path; }
+    
+    vfree(abs);
+    vfree(path);
+    return NULL;
+}
+
 file_t *read_file_from_bootdisk(const char *path, err_t *err, size_t *fsize)
 {
     char *bootdisk = disk_get_bootdisk();
