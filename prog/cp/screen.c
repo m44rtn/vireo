@@ -43,6 +43,19 @@ void screen_prepare_for_first_prompt(void)
     err_t err = screen_set_cursor_pos(0, skip_lines);
 }
 
+uint16_t screen_get_height(void)
+{
+    uint16_t ans = SCREEN_WIDTH;
+
+    err_t ignored_err;
+    screen_info_t *info = screen_get_info(&ignored_err);
+
+    if(info)
+        { ans = info->height; vfree(info); }
+    
+    return ans;
+}
+
 uint16_t screen_get_width(void)
 {
     uint16_t ans = SCREEN_WIDTH;

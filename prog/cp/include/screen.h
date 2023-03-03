@@ -27,6 +27,7 @@ SOFTWARE.
 #define PROMPT  "$ "
 
 void screen_prepare_for_first_prompt(void);
+uint16_t screen_get_height(void);
 uint16_t screen_get_width(void);
 
 #endif // __SCREEN_CP_H__
