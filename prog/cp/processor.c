@@ -115,6 +115,7 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     
     g_last_error = err = program_start_new(path);
     vfree(str);
+    vfree(path);
 
     return err;
 }
