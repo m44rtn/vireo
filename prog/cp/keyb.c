@@ -190,3 +190,19 @@ uint32_t keyb_get_character(char *bfr)
 
     return n;
 }
+
+char keyb_get_last_pressed(void)
+{
+    char *bfr = valloc(KEYBOARD_BFR_SIZE);
+
+    if(!bfr)
+        return 0;
+
+    uint32_t n = keyb_get_character(bfr);
+    to_uc(bfr, n);
+
+    char c = bfr[n - 1];
+    vfree(bfr);
+
+    return c;
+}
