@@ -34,6 +34,7 @@ SOFTWARE.
 #define INTERNAL_COMMAND_HELP   "HELP"
 #define INTERNAL_COMMAND_VER    "VER"
 #define INTERNAL_COMMAND_ERRLVL "ERRLVL"
+#define INTERNAL_COMMAND_TYPE   "TYPE"
 
 char *command_create_cp_ver_str(void);
 
@@ -45,5 +46,6 @@ void command_dir(void);
 void command_echo(char *cmd_bfr);
 void command_help(void);
 void command_errlvl(void);
+void command_type(char *cmd_bfr);
 
 #endif // __COMMANDS_H__

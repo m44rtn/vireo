@@ -28,12 +28,14 @@ SOFTWARE.
 #include "memory.h"
 #include "disk.h"
 #include "fs.h"
+#include "scancode.h"
 
 #include "include/screen.h"
 #include "include/fileman.h"
 #include "include/commands.h"
 #include "include/info.h"
 #include "include/processor.h"
+#include "include/keyb.h"
 
 #define MAX_INFO_STR_LEN    128
 #define INFO_VER_STR_START  "CP "
@@ -42,6 +44,13 @@ SOFTWARE.
 #define DIR_FILESIZE_INDENT 26
 
 #define HELP_TXT_INDENT     12
+
+typedef enum 
+{
+    ALL_OK,
+    QUIT,
+    CONTINUE
+} more_t;
 
 char *command_create_cp_ver_str(void)
 {
@@ -248,6 +257,7 @@ void command_help(void)
     help_print_command(INTERNAL_COMMAND_HELP, "shows this help message\n");
     help_print_command(INTERNAL_COMMAND_VER, "prints copyright and version of CP and the kernel\n");
     help_print_command(INTERNAL_COMMAND_ERRLVL, "prints exit code of last ran binary\n");
+    help_print_command(INTERNAL_COMMAND_TYPE " [PATH]", "prints the contents of file at [PATH]\n");
 }
 
 void command_errlvl(void)
@@ -255,4 +265,77 @@ void command_errlvl(void)
     char s[12];
     str_add_val(s, " 0x%x\n", (uint32_t)processor_get_last_error());
     screen_print(s);
+}
+
+static more_t command_more(uint16_t scr_width, uint16_t scr_height)
+{
+    uint8_t x = 0, y = 0;
+    screen_get_cursor_pos(scr_width, &x, &y);
+
+    if(y < (scr_height - 3))
+        return ALL_OK; // everything ok
+
+    screen_print("-- press [C] to continue, or [Q] to quit --");
+    
+    uint16_t c = 0;
+    while(c != 'Q' && c != 'C')
+        c = keyb_get_last_pressed();
+    
+    screen_print("\n");
+    
+    if(c == 'Q')
+        return QUIT;
+    
+    return CONTINUE;
+}
+
+void command_type(char *cmd_bfr)
+{
+    // check where the file is located (cwd or given path)
+    char *str = valloc(MAX_PATH_LEN + 1);
+    uint32_t len = 0;
+    getcwd(str, &len);
+
+    uint32_t i = 1;
+    str_get_part(cmd_bfr, cmd_bfr, " ", &i);
+    char *path = fileman_abspath_or_cwd(cmd_bfr, str, str);
+
+    if(!path)
+        { vfree(str); screen_print("File not found - "); screen_print(cmd_bfr); screen_print("\n"); return; }
+
+    vfree(str);
+    
+    // read the file
+    size_t s = 0;
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    char *file_contents = fs_read_file(path, &s, &err);
+    vfree(path);
+
+    if(!file_contents || err)
+        { screen_print("Error reading file\n"); return; }
+
+    char *out = valloc(s + 1);
+    uint32_t index = 0;
+
+    uint16_t scr_width = screen_get_width();
+    uint16_t scr_height = screen_get_height();
+    
+    // print the file contents
+    while(str_get_part(out, file_contents, "\n", &index))
+    { 
+        screen_print(out); 
+        screen_print("\n"); 
+
+        more_t next_action = command_more(scr_width, scr_height);
+        
+        if(next_action == QUIT)
+            break;
+        else if(next_action == ALL_OK)
+            continue;
+                
+        screen_clear();
+        screen_print("\n");
+    }
+
+    vfree(out);
 }
