@@ -52,6 +52,28 @@ typedef enum
     CONTINUE
 } more_t;
 
+static more_t command_more(uint16_t scr_width, uint16_t scr_height)
+{
+    uint8_t x = 0, y = 0;
+    screen_get_cursor_pos(scr_width, &x, &y);
+
+    if(y < (scr_height - 3))
+        return ALL_OK; // everything ok
+
+    screen_print("-- press [C] to continue, or [Q] to quit --");
+    
+    uint16_t c = 0;
+    while(c != 'Q' && c != 'C')
+        c = keyb_get_last_pressed();
+    
+    screen_print("\n");
+    
+    if(c == 'Q')
+        return QUIT;
+    
+    return CONTINUE;
+}
+
 char *command_create_cp_ver_str(void)
 {
     char *str = valloc(MAX_INFO_STR_LEN);
@@ -192,27 +214,45 @@ void command_dir(void)
     if(err)
         return;
 
+    uint16_t scr_width = screen_get_width();
+    uint16_t scr_height = screen_get_height();
+
     uint8_t x = 0, y = 0;
     size_t total_size = 0;
     char s[24];
-
+    
     for(uint32_t i = 0; i < len; ++i)
     {
         screen_print(" ");
 
         screen_get_cursor_pos(screen_get_width(), &x, &y);
-        screen_print(dir[i].name);
+        screen_print(dir[i].name);       
         
         screen_set_cursor_pos(DIR_DIRTXT_INDENT, y);
         if((dir[i].attrib & FAT_FILE_ATTRIB_DIR) == FAT_FILE_ATTRIB_DIR)
-            { screen_print("<DIR>\n"); continue; }
-        
-        screen_set_cursor_pos(DIR_FILESIZE_INDENT, y);
-        
-        total_size += dir[i].file_size;
-        str_add_val(s, "%i b", dir[i].file_size);
-        screen_print(s);
+            screen_print("<DIR>");
+        else 
+        {
+            screen_set_cursor_pos(DIR_FILESIZE_INDENT, y);
+            
+            total_size += dir[i].file_size;
+            str_add_val(s, "%i b", dir[i].file_size);
+            screen_print(s);
+        }
 
+        screen_print("\n");
+
+        if(len < (scr_height - 1))
+            continue;
+
+        more_t next_action = command_more(scr_width, scr_height);
+        
+        if(next_action == QUIT)
+            break;
+        else if(next_action == ALL_OK)
+            continue;
+                
+        screen_clear();
         screen_print("\n");
     }  
 
@@ -265,28 +305,6 @@ void command_errlvl(void)
     char s[12];
     str_add_val(s, " 0x%x\n", (uint32_t)processor_get_last_error());
     screen_print(s);
-}
-
-static more_t command_more(uint16_t scr_width, uint16_t scr_height)
-{
-    uint8_t x = 0, y = 0;
-    screen_get_cursor_pos(scr_width, &x, &y);
-
-    if(y < (scr_height - 3))
-        return ALL_OK; // everything ok
-
-    screen_print("-- press [C] to continue, or [Q] to quit --");
-    
-    uint16_t c = 0;
-    while(c != 'Q' && c != 'C')
-        c = keyb_get_last_pressed();
-    
-    screen_print("\n");
-    
-    if(c == 'Q')
-        return QUIT;
-    
-    return CONTINUE;
 }
 
 void command_type(char *cmd_bfr)
