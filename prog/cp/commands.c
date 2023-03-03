@@ -118,7 +118,6 @@ static err_t command_append_to_current_wd(char *new_part)
 
 void command_cd(char *cmd_bfr)
 {
-    // FIXME: check if ==directory before CD'ing (using fs_get_file_info()?)
     uint32_t space_index = find_in_str(cmd_bfr, " ");
 
     cmd_bfr[find_in_str(cmd_bfr, "\n")] = '\0';
