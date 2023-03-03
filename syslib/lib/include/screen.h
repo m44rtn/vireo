@@ -27,6 +27,12 @@ SOFTWARE.
 #include "types.h"
 #include "call.h"
 
+// The kernel uses the MARGIN_BELL_OFFSET below to determine if a new word after a space should be printed on the next 
+// line, if a string is longer than the width of the screen. Its name comes from the margin bell from a type writer.
+// (i.e.: if there is a space within the last 7 characters of the maximum amount of characters on a line (SCREEN_WIDTH), the next word
+// and all following characters will be printed on the next line.)
+#define SCREEN_MARGIN_BELL_OFFSET   7
+
 #define SCREEN_COLOR_DEFAULT        0x07
 
 #define SCREEN_COLOR_BLACK          0x00
