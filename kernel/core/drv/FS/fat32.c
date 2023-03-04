@@ -457,8 +457,8 @@ static void fat_filename_fatcompat(char *filename)
     char original_name[TOTAL_FILENAME_LEN + 1 + 1];
     memset(&original_name[0], TOTAL_FILENAME_LEN + 1 + 1, 0);
 
-    size_t original_name_len = strlen(filename);
-    memcpy(&original_name[0], filename, original_name_len);
+    // size_t original_name_len = strlen(filename);
+    memcpy(&original_name[0], filename, TOTAL_FILENAME_LEN + 1 + 1);
 
     original_name[TOTAL_FILENAME_LEN + 1] = '\0';
 
@@ -498,20 +498,20 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
 
     // buffer for filename is maximum characters long. At this stage
     // this is 8 chars filename, 1 seperator ('.'), 3 chars extension
-    char filename[TOTAL_FILENAME_LEN + 1];
+    char *filename = kmalloc(TOTAL_FILENAME_LEN + 1);
     uint32_t str_parts_index = 0;
     uint32_t starting_cluster = info->clustLocRootdir, ignore;
     FAT32_DIR dir_entry;
 
-    while(str_get_part(&filename[0], &path[start + 1], "/", &str_parts_index))
+    while(str_get_part(filename, &path[start + 1], "/", &str_parts_index))
     {
         if(filename[0] == '\0')
             break;
 
-        fat_filename_fatcompat(&filename[0]);
+        fat_filename_fatcompat(filename);
         
-        if(fat_find_in_dir(disk, part, &filename[0], starting_cluster, &dir_entry, &ignore) == MAX)
-            return MAX;
+        if(fat_find_in_dir(disk, part, filename, starting_cluster, &dir_entry, &ignore) == MAX)
+            { kfree(filename); return MAX; }
 
         starting_cluster = (uint32_t) ((dir_entry.clHi << 16u) | dir_entry.clLo);
 
@@ -525,6 +525,7 @@ static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oatt
     if(starting_cluster == info->clustLocRootdir)
         {*ofile_size = 0; *oattrib = FAT_DIR_ATTRIB_DIRECTORY; }
 
+    kfree(filename);
     return starting_cluster;
 }
 
@@ -1128,7 +1129,7 @@ fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
     uint8_t disk, part;
     fat_get_disk_from_path(path, &disk, &part);
 
-    char filename[FAT_MAX_FILENAME_LEN + 1];
+    char *filename = kmalloc(FAT_MAX_FILENAME_LEN + 1);
     FAT32_DIR dir_entry;
 
     fs_file_info_t *file_info = evalloc(sizeof(fs_file_info_t), PID_DRIVER);
@@ -1148,8 +1149,9 @@ fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
 
     // ignored
     uint32_t dir_cluster, dir_index;
-    *err = fat_check_file_exists(disk, part, p, &filename[0], &dir_entry, &dir_cluster, &dir_cluster, &dir_index);
+    *err = fat_check_file_exists(disk, part, p, filename, &dir_entry, &dir_cluster, &dir_cluster, &dir_index);
     
+    kfree(filename);
     kfree(p);
     
     if(*err)
@@ -1202,7 +1204,6 @@ fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *
         { *oerr = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
     
     uint32_t n = dsize / sizeof(FAT32_DIR);
-    char filename[FAT_MAX_FILENAME_LEN + 2]; // +1 for '.' and + 1 for '\0'
 
     *osize = n * sizeof(fs_dir_contents_t);
     fs_dir_contents_t *c = evalloc(*osize, PID_DRIVER);
@@ -1210,6 +1211,8 @@ fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *
     if(!c)
         { vfree(dir); *oerr = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
     uint32_t i = 0, outi = 0;
+
+    char *filename = kmalloc(FAT_MAX_FILENAME_LEN + 2); // +1 for '.' and + 1 for '\0'
 
     for(; i < n; ++i)
     {
@@ -1229,6 +1232,8 @@ fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *
 
     *osize = outi * sizeof(fs_dir_contents_t);
     *oerr = EXIT_CODE_GLOBAL_SUCCESS;
+
+    kfree(filename);
     vfree(dir);
 
     return c;
