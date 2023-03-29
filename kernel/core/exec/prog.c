@@ -296,6 +296,12 @@ const char *prog_get_filename(pid_t pid)
     return (const char *) prog_info[index].filename;
 }
 
+void *prog_get_binary_start(pid_t pid)
+{
+    uint32_t index = prog_find_info_index(pid);
+    return prog_info[index].binary_start;
+}
+
 void prog_set_flags(pid_t pid, uint8_t flags)
 {
     uint32_t pid_index = prog_find_info_index(pid);
