@@ -24,6 +24,8 @@ SOFTWARE.
 #ifndef __DISKIO_H__
 #define __DISKIO_H__
 
+#include "../include/types.h"
+
 #define DISKIO_MAX_DRIVES       4 /* max. 4 IDE drives (, (TODO:) max. 2 floppies) */
 
 #define DEFAULT_SECTOR_SIZE        512
@@ -42,6 +44,9 @@ SOFTWARE.
 void diskio_api(void *req);
 
 void diskio_init(void);
+
+bool diskio_check_exists(const char *id);
+
 unsigned char *diskio_reportDrives(void);
 unsigned char read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf);
 unsigned char write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf);

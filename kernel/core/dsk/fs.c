@@ -35,6 +35,7 @@ SOFTWARE.
 
 #include "../drv/FS_TYPES.H"
 #include "../drv/FS_commands.h"
+#include "../drv/FS/fs_exitcode.h"
 
 #include "../hardware/driver.h"
 
@@ -55,12 +56,16 @@ void fs_api(void *req)
     fs_t *fs = (fs_t *) req;
     uint32_t drv[5];
 
+    uint8_t disk_type = drive_type(fs->path);
+
+    if(disk_type == (uint8_t) MAX || !diskio_check_exists(fs->path))
+        { fs->hdr.exit_code = EXIT_CODE_FS_UNSUPPORTED_DRIVE; return; }
+
     switch(fs->hdr.system_call)
     {
         case SYSCALL_GET_FS:
         {
             // TODO: make function
-            uint8_t disk_type = drive_type(fs->path);
             if(disk_type == DRIVE_TYPE_IDE_PATAPI)
                 { fs->hdr.response = FS_TYPE_ISO; break; }
             
@@ -78,7 +83,6 @@ void fs_api(void *req)
             if(!fs_check_path(fs->path))
                 { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
 
-            uint8_t disk_type = drive_type(fs->path);
             uint32_t driver_type = (disk_type == DRIVE_TYPE_IDE_PATAPI) ? FS_TYPE_ISO : FS_TYPE_FAT32; // FIXME: should use MBR type
 
             drv[0] = FS_COMMAND_READ;
@@ -97,7 +101,6 @@ void fs_api(void *req)
             if(!fs_check_path(fs->path))
                 { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
 
-            uint8_t disk_type = drive_type(fs->path);
             uint32_t driver_type = FS_TYPE_FAT32;
 
             if(disk_type == DRIVE_TYPE_IDE_PATAPI)
@@ -123,7 +126,6 @@ void fs_api(void *req)
             if(!fs_check_path(fs->path))
                 { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
 
-            uint8_t disk_type = drive_type(fs->path);
             uint32_t driver_type = FS_TYPE_FAT32;
 
             if(disk_type == DRIVE_TYPE_IDE_PATAPI)
@@ -143,7 +145,6 @@ void fs_api(void *req)
             if(!fs_check_path(fs->path))
                 { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
 
-            uint8_t disk_type = drive_type(fs->path);
             uint32_t driver_type = FS_TYPE_FAT32;
 
             if(disk_type == DRIVE_TYPE_IDE_PATAPI)
@@ -164,7 +165,6 @@ void fs_api(void *req)
             if(!fs_check_path(fs->path))
                 { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
 
-            uint8_t disk_type = drive_type(fs->path);
             uint32_t driver_type = FS_TYPE_FAT32; // FIXME: should use MBR type
 
             if(disk_type == DRIVE_TYPE_IDE_PATAPI)
@@ -184,7 +184,6 @@ void fs_api(void *req)
             if(!fs_check_path(fs->path))
                 { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
 
-            uint8_t disk_type = drive_type(fs->path);
             uint32_t driver_type = (disk_type == DRIVE_TYPE_IDE_PATAPI) ? FS_TYPE_ISO : FS_TYPE_FAT32; // FIXME: should use MBR type
 
             drv[0] = FS_COMMAND_GET_FILE_INFO;
@@ -202,7 +201,6 @@ void fs_api(void *req)
             if(!fs_check_path(fs->path))
                 { fs->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
             
-            uint8_t disk_type = drive_type(fs->path);
             uint32_t driver_type = (disk_type == DRIVE_TYPE_IDE_PATAPI) ? FS_TYPE_ISO : FS_TYPE_FAT32; // FIXME: should use MBR type
 
             drv[0] = FS_COMMAND_GET_DIR_CONTENTS;

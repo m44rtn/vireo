@@ -233,6 +233,29 @@ void diskio_init(void)
     kfree(drv);
 }
 
+bool diskio_check_exists(const char *id)
+{
+    uint16_t disk_part = drive_convert_drive_id(id);
+
+    uint8_t disk = (uint8_t) (disk_part >> 8);
+    uint8_t part = (uint8_t) (disk_part);
+
+    if(disk == 0xFF || disk >= MAX_DRIVES)
+        return false;
+
+    if(disk_info_t[disk].disktype == 0xFF)
+        return false;
+    
+    if(disk_info_t[disk].disktype == DRIVE_TYPE_IDE_PATAPI)
+        return true;
+    
+    // if we get here it was a hard drive
+    if(mbr_get_type(disk, part) != 0xFF)
+        return true;
+    
+    return false;
+}
+
 uint8_t *diskio_reportDrives(void)
 {
     uint32_t i = 0;
