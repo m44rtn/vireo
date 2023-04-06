@@ -62,7 +62,7 @@ typedef uint8_t bool_t;
 
 typedef void file_t;
 
-typedef enum{
+typedef enum bool {
     false,
     true
 } bool;
