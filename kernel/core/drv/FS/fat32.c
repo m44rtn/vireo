@@ -451,38 +451,37 @@ static uint32_t fat_find_in_dir(uint8_t disk, uint8_t part, const char *filename
 static void fat_filename_fatcompat(char *filename)
 {
     // !! WARNING !! destroys original string
-
-    // length of this buffer is total filename length possible for
-    // FAT32 (NO LFN), plus a dot seperator and null terminator
-    char original_name[TOTAL_FILENAME_LEN + 1 + 1];
-    memset(&original_name[0], TOTAL_FILENAME_LEN + 1 + 1, 0);
-
-    // size_t original_name_len = strlen(filename);
-    memcpy(&original_name[0], filename, TOTAL_FILENAME_LEN + 1 + 1);
-
-    original_name[TOTAL_FILENAME_LEN + 1] = '\0';
-
-    uint8_t dot_index = (uint8_t) (find_in_str(original_name, "."));
-
-    // Ignore the dot when it is the first thing we see 
-    // (in cases of files like '.', '..' or even '.config')
-    if(dot_index == 0)
-        dot_index = (uint8_t) strlen(&original_name[0]);
-
-    dot_index = (dot_index == (uint8_t)MAX) ? (uint8_t) strlen(&original_name[0]) : dot_index;
-    uint8_t n_spaces = (uint8_t) (TOTAL_FILENAME_LEN - dot_index);
-
-    memcpy(filename, &original_name[0], dot_index);
     
-    for(uint8_t i = 0; i < n_spaces; ++i)
-        filename[i + dot_index] = ' ';
+    uint32_t ext_index = find_in_str(filename, ".");
+    uint32_t file_len = ext_index;
+
+    // no extension || found either '.' or '..'
+    // --> in all three cases the dot(s) should not be seen as a file extension,
+    if(ext_index == MAX || ext_index == 0)
+    {
+        file_len = strlen(filename);
+        ext_index = 0;
+    } 
+
+    // file extension length is 0 when there is no file extension (ext_index == 0)
+    uint32_t ext_len = 0;
+
+    // if there is a file extension, then set the length
+    if(ext_index != MAX && ext_index)
+        ext_len = strlen(&filename[ext_index + 1]);
     
-    // copy the file extension if it exists
-    if(original_name[dot_index + 1] != '\0')
-        memcpy(&filename[FILE_NAME_LEN], &original_name[dot_index + 1], FILE_EXT_LEN);
+    char buffer[FAT_MAX_FILENAME_LEN + 1] = {0};
+
+    // file name
+    memcpy(buffer, filename, file_len);
+    memset(&buffer[file_len], FILE_NAME_LEN - file_len, (uint8_t) ' ');
+
+    // file extension
+    memcpy(&buffer[FILE_NAME_LEN], &filename[ext_index + 1], ext_len);
+    memset(&buffer[FILE_NAME_LEN + ext_len], FILE_EXT_LEN - ext_len, (uint8_t) ' ');
     
-    filename[TOTAL_FILENAME_LEN] = '\0';
-    to_uc(filename, TOTAL_FILENAME_LEN);
+    to_uc(buffer, FAT_MAX_FILENAME_LEN + 1);
+    memcpy(filename, buffer, FAT_MAX_FILENAME_LEN + 1);
 }
 
 static uint32_t fat_traverse(const char *path, size_t *ofile_size, uint8_t *oattrib)
