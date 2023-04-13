@@ -437,7 +437,7 @@ static uint32_t iso_remove_parent_dir_notation_from_path(char *path)
 		if(path[index] == '/')
 			break;
 	
-	remove_from_str(&path[index], oindex - index + 2);
+	remove_from_str(&path[index + 1], oindex - index + 2);
 	
 	return 1u;
 }
