@@ -33,7 +33,7 @@ SOFTWARE.
 // returns length of string
 unsigned int strlen(const char *str);
 
-// removes chars in a string starting at n 
+// removes chars in a string starting at p for n 
 void remove_from_str(char *p, unsigned int n);
 
 // replaces chars matching c with repl

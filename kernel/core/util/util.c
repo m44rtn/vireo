@@ -55,15 +55,17 @@ unsigned int strlen(const char *str)
     return i;
 }
 
+// char *p should point to the point where chars should be removed, while n says how many
+// to remove.
 void remove_from_str(char *p, uint32_t n)
 {
 	uint32_t max = strlen(p) + 1;
-	uint32_t i = 0, s = n;
+	uint32_t s = n;
 
-	for(; s < max; ++s)
+	for(uint32_t i = 0; i < max; i++)
 	{
 		p[i] = p[s];
-		i++;
+		s++;
 	}
 }
 
