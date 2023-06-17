@@ -27,6 +27,8 @@ SOFTWARE.
 #include "types.h"
 #include "call.h"
 
+#define PAGE_SIZE 4096
+
 typedef struct memory_info_t
 {
     size_t memory_space_kb;
