@@ -37,5 +37,6 @@ err_t keyb_start(file_t *cf);
 
 uint32_t keyb_get_character(char *bfr);
 char keyb_get_last_pressed(void);
+void keyb_empty_buffer(void);
 
 #endif // __KEYB_H__

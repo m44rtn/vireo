@@ -206,3 +206,12 @@ char keyb_get_last_pressed(void)
 
     return c;
 }
+
+/**
+ * @brief Empties the keyboard buffer
+ * 
+ */
+void keyb_empty_buffer(void)
+{
+    memset(g_keyb_bfr, KEYBOARD_BFR_SIZE, 0);
+}

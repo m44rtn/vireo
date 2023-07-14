@@ -116,6 +116,11 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
         return EXIT_CODE_CP_NO_COMMAND;
     
     g_last_error = err = program_start_new(path);
+
+    // the user may have used the keyboard, which means our buffer now contains
+    // the same data which we cannot use.
+    keyb_empty_buffer();
+
     vfree(str);
     vfree(path);
 
