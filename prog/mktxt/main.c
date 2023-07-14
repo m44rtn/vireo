@@ -109,26 +109,7 @@ err_t main(uint32_t argc, char **argv)
     uint8_t fs_type = fs_get_filesystem(path);
 
     if(fs_type == FS_TYPE_ISO)
-        g_flags |= FLAG_READ_ONLY_MODE;
-
-    screen_print(path);
-    screen_print("\n");
-
-    // try to open the file to see if it exists. 
-    size_t fsize = 0;
-    err_t ferr = 0;
-    file_t * file = fs_read_file(path, &fsize, &ferr);
-
-    // FIXME: make a new file
-    if(ferr && ferr != EXIT_CODE_FS_FILE_NOT_FOUND)
-        return ferr;
-    else if(!ferr)
-        edit_convert_file_to_content(file);
-    
-    // FIXME: remove
-    screen_print(file);
-    screen_print("\n");
-    vfree(file);
+        return EXIT_CODE_FS_FILE_READ_ONLY;
 
     api_space_t kb_api = get_api_space(KEYB_BIN_NAME);
     err = edit(kb_api, path);

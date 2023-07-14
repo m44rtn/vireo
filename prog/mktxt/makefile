@@ -1,7 +1,7 @@
 PROJDIRS := ./
 
 # output file
-OFILE := text.elf
+OFILE := mktxt.elf
 
 SRCFILES = $(shell find $(PROJDIRS) -type f -name "*.c")
 HDRFILES := $(shell find $(PROJDIRS) -type f -name "*.h")
