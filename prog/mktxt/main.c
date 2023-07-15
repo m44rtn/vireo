@@ -30,6 +30,8 @@ SOFTWARE.
 #include "util.h"
 #include "memory.h"
 
+#include "include/edit.h"
+
 #define CP_BIN_NAME     "CP.ELF"
 #define KEYB_BIN_NAME   "PS2KEYB.DRV"
 
@@ -42,7 +44,7 @@ uint8_t g_flags = 0;
  * 
  * @return api_space_t start of api space of CP, or 0 if not found.
  */
-static api_space_t get_api_space(char *fname)
+static api_space_t get_api_space(const char *fname)
 {
     api_listing_t *list = api_get_syscall_listing();
     api_space_t s = 0x0000;
