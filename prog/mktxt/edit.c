@@ -6,6 +6,7 @@
 #include "call.h"
 #include "ps2keyb.h"
 #include "program.h"
+#include "disk.h"
 
 #define PROGRAM_NAME    "TEXT"
 #include "debug.h"
@@ -14,7 +15,8 @@
 
 #define PROGRAM_SIZE_ASSUMPTION         100 * 1024 // we assume we are 100 kb
 #define ALREADY_ALLOCED_ASSUMPTION      200 * 1024 // assume 200 kb is already alloc'ed
-#define KEYB_BFR_ENTRIES 128
+#define KEYB_BFR_ENTRIES                128
+#define KEYMAP_PATH                     "/sys/usint.KL"
 
 typedef struct keymap_entry_t
 {
@@ -292,9 +294,13 @@ err_t edit(api_space_t kb_api, char *path)
     if (err)
         return err;
 
-// FIXME: use bootdisk
-#define KEYMAP_PATH "CD0/sys/usint.KL"
-    g_keymap = (keymap_entry_t *) fs_read_file(KEYMAP_PATH, &g_keymap_size, &err);    
+    char *path_keymap = disk_get_bootdisk();
+    assert(path_keymap);
+
+    memcpy(&path_keymap[strlen(path_keymap)], KEYMAP_PATH, sizeof(KEYMAP_PATH));
+
+    g_keymap = (keymap_entry_t *) fs_read_file(path_keymap, &g_keymap_size, &err);  
+    vfree(path_keymap);  
 
     if (err)
         return err;
