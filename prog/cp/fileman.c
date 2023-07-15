@@ -30,7 +30,7 @@ SOFTWARE.
 
 char working_dir[MAX_PATH_LEN + 1];
 
-char *fileman_abspath_or_cwd(char *cmd_bfr, char *abspath, char *cwd)
+char *fileman_abspath_or_cwd(char *cmd_bfr, const char *abspath, char *cwd)
 {
     if(fileman_is_existing_file(cmd_bfr))
         return cmd_bfr;
@@ -69,7 +69,7 @@ file_t *read_file_from_bootdisk(const char *path, err_t *err, size_t *fsize)
     return f;
 }
 
-void merge_disk_id_and_path(char *disk, char *path, char *out)
+void merge_disk_id_and_path(const char *disk, const char *path, char *out)
 {    
     size_t d_len = strlen(disk);
     memcpy(out, disk, d_len);

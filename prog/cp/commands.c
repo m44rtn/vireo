@@ -64,7 +64,7 @@ static more_t command_more(uint16_t scr_width, uint16_t scr_height)
     
     uint16_t c = 0;
     while(c != 'Q' && c != 'C')
-        c = keyb_get_last_pressed();
+        c = (uint16_t) (keyb_get_last_pressed());
     
     screen_print("\n");
     
@@ -176,7 +176,7 @@ void command_cd(char *cmd_bfr)
     char *s = valloc(MAX_PATH_LEN + 64); 
     if(!s)
         return;
-    str_add_val(s, "%s: not a valid directory\n", &cmd_bfr[space_index]);
+    str_add_val(s, "%s: not a valid directory\n", (uint32_t) (&cmd_bfr[space_index]));
     screen_print(s);
     vfree(s);    
 }
@@ -199,9 +199,7 @@ void command_clear(void)
 }
 
 void command_dir(void)
-{
-    // TODO: add ability to get dir of working dir AND given dir
-    
+{    
     uint32_t len = 0;
     char *path = valloc(MAX_PATH_LEN + 1);
     getcwd(path, &len);
@@ -242,7 +240,7 @@ void command_dir(void)
 
         screen_print("\n");
 
-        if(len < (scr_height - 1))
+        if(len < (scr_height - 1u))
             continue;
 
         more_t next_action = command_more(scr_width, scr_height);

@@ -24,6 +24,7 @@ SOFTWARE.
 #include "util.h"
 #include "program.h"
 
+#include "include/keyb.h"
 #include "include/fileman.h"
 #include "include/commands.h"
 #include "include/processor.h"
@@ -137,7 +138,7 @@ void processor_execute_autoexec(void)
     if(err)
         return;
     
-    char *out = valloc(MAX_LINE_LEN), *shdw = valloc(MAX_LINE_LEN);
+    char *out = valloc(MAX_LINE_LEN);
 
     if(!out)
         return;

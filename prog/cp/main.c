@@ -100,12 +100,15 @@ static void set_first_working_dir(void)
 }
 
 err_t main(uint32_t argc, char **argv)
-{    
+{   
+    (void)argc;
+    (void)argv;
+     
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
     file_t *cf = config_read_file(&err); 
 
     program_info_t *prog_info = program_get_info(&err);
-    api_space_t space = api_get_api_space((function_t) prog_info->bin_start + cp_api_handler);
+    api_space_t space = api_get_api_space((function_t) (uint32_t)prog_info->bin_start + (uint32_t)cp_api_handler);
     cp_api_set_space(space);
 
     if(err)

@@ -29,9 +29,9 @@ SOFTWARE.
 #define MAX_FILENAME_LEN 32
 #define MAX_PATH_LEN    255
 
-char *fileman_abspath_or_cwd(char *cmd_bfr, char *abspath, char *cwd);
+char *fileman_abspath_or_cwd(char *cmd_bfr, const char *abspath, char *cwd);
 file_t *read_file_from_bootdisk(const char *path, err_t *err, size_t *fsize);
-void merge_disk_id_and_path(char *disk, char *path, char *out);
+void merge_disk_id_and_path(const char *disk, const char *path, char *out);
 uint8_t fileman_contains_disk(char *path);
 uint8_t fileman_is_existing_file(char *path);
 err_t setcwd(char *path);

@@ -159,7 +159,7 @@ static char keyb_convert_keycode(uint16_t code)
 
         case (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_LSHIFT):
         case (KEYCODE_FLAG_KEY_RELEASED | KEYCODE_RSHIFT):
-            g_flags &= ~(KEYB_FLAG_SHIFT);
+            g_flags &= (uint8_t) ~(KEYB_FLAG_SHIFT);
         break;
 
         default:

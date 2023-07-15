@@ -40,7 +40,7 @@ void screen_prepare_for_first_prompt(void)
     if(info)
         { skip_lines = info->height - 2; vfree(info); }
 
-    err_t err = screen_set_cursor_pos(0, skip_lines);
+    screen_set_cursor_pos(0, (uint8_t) skip_lines);
 }
 
 uint16_t screen_get_height(void)
@@ -51,7 +51,7 @@ uint16_t screen_get_height(void)
     screen_info_t *info = screen_get_info(&ignored_err);
 
     if(info)
-        { ans = info->height; vfree(info); }
+        { ans = (uint16_t) info->height; vfree(info); }
     
     return ans;
 }
@@ -64,7 +64,7 @@ uint16_t screen_get_width(void)
     screen_info_t *info = screen_get_info(&ignored_err);
 
     if(info)
-        { ans = info->width; vfree(info); }
+        { ans = (uint16_t) info->width; vfree(info); }
     
     return ans;
 }
