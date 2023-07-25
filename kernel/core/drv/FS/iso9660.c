@@ -848,12 +848,27 @@ static void iso_fill_dircontent_entry(char *filename, size_t fname_len, uint8_t 
 	entry->file_size = size;
 }
 
+static uint8_t iso_file_is_directory(const char *path)
+{
+    fs_file_info_t *info = iso_get_file_info(path);
+
+    if(!info)
+        return 2;
+    
+    uint8_t attrib = info->file_type;
+    vfree(info);
+
+    return (attrib & FAT_FILE_ATTRIB_DIR) == FAT_FILE_ATTRIB_DIR;
+}
+
 fs_dir_contents_t *iso_get_dir_contents(const char *path, uint32_t *drv)
 {
 	iso_read(path, drv);
 
 	if(!drv[3] || !drv[2] || gerror)
 		return NULL;
+	else if(!iso_file_is_directory(path))
+        { drv[3] = 0; gerror = EXIT_CODE_GLOBAL_INVALID; return NULL; }
 	
 	uint8_t *dir = (uint8_t *) drv[2];
 	size_t fsize = drv[3];
