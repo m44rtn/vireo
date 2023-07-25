@@ -1191,8 +1191,23 @@ static void fat_convert_filename_to_readable(const char *original, char *out)
     out[i + FILE_EXT_LEN] = '\0';
 }
 
+static uint8_t fat_file_is_directory(const char *path)
+{
+    err_t err = 0;
+    fs_file_info_t *info = fat_get_file_info(path, &err);
+
+    if(err)
+        return 2;
+    
+    uint8_t attrib = info->file_type;
+    vfree(info);
+
+    return (attrib & FAT_FILE_ATTRIB_DIR) == FAT_FILE_ATTRIB_DIR;
+}
+
 fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *oerr)
 {
+    *osize = 0;
     size_t dsize = 0;
     FAT32_DIR *dir = fat_read(path, &dsize);
 
@@ -1201,11 +1216,13 @@ fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *
 
     if(!dsize || !dir)
         { *oerr = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
+    else if(!fat_file_is_directory(path))
+        { *oerr = EXIT_CODE_GLOBAL_INVALID; vfree(dir); return NULL; }
     
     uint32_t n = dsize / sizeof(FAT32_DIR);
 
-    *osize = n * sizeof(fs_dir_contents_t);
-    fs_dir_contents_t *c = evalloc(*osize, PID_DRIVER);
+    size_t alloc_size = n * sizeof(fs_dir_contents_t);
+    fs_dir_contents_t *c = evalloc(alloc_size, PID_DRIVER);
 
     if(!c)
         { vfree(dir); *oerr = EXIT_CODE_GLOBAL_OUT_OF_MEMORY; return NULL; }
