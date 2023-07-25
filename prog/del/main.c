@@ -55,7 +55,6 @@ err_t main(uint32_t argc, char **argv)
 {    
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
 
-    // FIXME: check for dir contents!
     if(argc < 2)
         { screen_print("Usage: del.elf [name of file or directory to delete]\nNote: contents of directory are not automatically deleted\n"); return EXIT_CODE_GLOBAL_INVALID; }
 
@@ -73,6 +72,13 @@ err_t main(uint32_t argc, char **argv)
     vfree(req.hdr.response_ptr);
 
     memcpy(&cwd[cwd_len], argv[1], strlen(argv[1]) + 1);
+
+    uint32_t entries = 0;
+    fs_dir_contents_t *contents = fs_dir_get_contents(cwd, &entries, &err);
+    vfree(contents);
+
+    if(entries > 2 && !err)
+        { screen_print("directory not empty.\n"); return EXIT_CODE_GLOBAL_INVALID; }
 
     err = fs_delete_file(cwd);
 
