@@ -95,7 +95,11 @@ err_t main(uint32_t argc, char **argv)
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
 
     if(argc < 2)
-        { screen_print("Please provide a filename within the current directory.\nUsage: mktxt.elf [path]\n"); return EXIT_CODE_GLOBAL_INVALID; }
+    { 
+        screen_print("Please provide a filename within the current directory.\nUsage: mktxt.elf [path]\n\n"
+                     "[CTRL+S] to save a file and [CTRL+D] to exit the program.\n");
+        return EXIT_CODE_GLOBAL_INVALID; 
+    }
     
     api_space_t cp_api = get_api_space(CP_BIN_NAME);
 
