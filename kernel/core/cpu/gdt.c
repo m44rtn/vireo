@@ -97,7 +97,6 @@ void GDT_setup(GDT_ACCESS access, GDT_FLAGS flags)
     
     ASM_GDT_SUBMIT((uint32_t *) &descriptor);
 
-    /* TODO: TSS 'n such */
 }
 
 static void GDT_entry(GDT_ENTRY *entry, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
