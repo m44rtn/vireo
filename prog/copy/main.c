@@ -73,12 +73,6 @@ err_t main(uint32_t argc, char **argv)
 
     memcpy(&cwd[cwd_len], argv[1], strlen(argv[1]) + 1);
 
-    size_t size = 0;
-    file_t *file = fs_read_file(cwd, &size, &err);
-
-    if(err)
-        { screen_print("failed to read file.\n"); return err; }
-    
     fs_file_info_t *info = fs_file_get_info(cwd, &err);
 
     if(err)
@@ -86,6 +80,12 @@ err_t main(uint32_t argc, char **argv)
 
     uint8_t attrib = info->file_type;
     vfree(info);
+    
+    size_t size = 0;
+    file_t *file = fs_read_file(cwd, &size, &err);
+
+    if(err)
+        { screen_print("failed to read file.\n"); return err; }
     
     fs_write_file(argv[2], file, size, attrib);
     vfree(file);
