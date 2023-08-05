@@ -80,7 +80,11 @@ err_t main(uint32_t argc, char **argv)
 
     uint8_t attrib = info->file_type;
     vfree(info);
-    
+
+    if(attrib & FAT_FILE_ATTRIB_DIR)
+        screen_print("NOTE: Please be aware that the files in a copied directory link directly to the files in the original "
+                     "directory. Please copy each file individually if the files should have been copied too.\n");
+
     size_t size = 0;
     file_t *file = fs_read_file(cwd, &size, &err);
 
