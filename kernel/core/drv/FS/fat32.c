@@ -148,8 +148,6 @@ struct DRIVER FAT_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (FS_TYPE_FAT32 |
 
 void fat_handler(uint32_t *drv)
 {
-    drv[4] = EXIT_CODE_GLOBAL_SUCCESS;
-
     switch(drv[0])
     {
         case DRV_COMMAND_INIT:
@@ -166,6 +164,7 @@ void fat_handler(uint32_t *drv)
 
             drv[2] = (uint32_t) f;
             drv[3] = size;
+            drv[4] = EXIT_CODE_GLOBAL_SUCCESS;
         
             break;
         }
@@ -1125,6 +1124,7 @@ static uint8_t fat_file_info_rootdir(uint8_t disk, uint8_t part, const char *pat
 
 fs_file_info_t *fat_get_file_info(const char *path, err_t *err)
 {
+    *err = EXIT_CODE_GLOBAL_SUCCESS;
     uint8_t disk, part;
     fat_get_disk_from_path(path, &disk, &part);
 
@@ -1207,6 +1207,7 @@ static uint8_t fat_file_is_directory(const char *path)
 
 fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *oerr)
 {
+    *oerr = EXIT_CODE_GLOBAL_SUCCESS;
     *osize = 0;
     size_t dsize = 0;
     FAT32_DIR *dir = fat_read(path, &dsize);
