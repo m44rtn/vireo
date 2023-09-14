@@ -38,6 +38,13 @@ SOFTWARE.
 
 err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
 
+/**
+ * @brief Executes an internal CP command
+ * 
+ * @param cmd_bfr pointer to the buffer containing the user's input (Uppercase)
+ * @param shadow pointer to the buffer containing the original user input (used for ECHO)
+ * @return uint8_t = 1 if an internal command was executed
+ */
 static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow)
 {
     uint8_t did_execute = 0;
@@ -64,6 +71,12 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow)
     return did_execute;
 }
 
+/**
+ * @brief returns a pointer ignoring the leading spaces in a buffer
+ * 
+ * @param bfr pointer to a string
+ * @return char* points after the leading spaces
+ */
 static char *processor_ignore_leading_spaces(char *bfr)
 {
     uint32_t i = 0;
@@ -76,16 +89,37 @@ static char *processor_ignore_leading_spaces(char *bfr)
     return &bfr[i];
 }
 
+/**
+ * @brief sets g_last_error to err
+ * 
+ * @param err 
+ */
 void processor_set_last_error(err_t err)
 {
     g_last_error = err;
 }
 
+/**
+ * @brief Returns last error stored in g_last_error
+ * 
+ * @return err_t last error saved in g_last_error
+ */
 err_t processor_get_last_error(void)
 {
     return g_last_error;
 }
 
+/**
+ * @brief Parse the cmd_bfr and execute the command typed
+ * 
+ * @param cmd_bfr user input (uppercase)
+ * @param shadow original user input
+ * @return err_t:
+ *          - EXIT_CODE_GLOBAL_SUCCESS, if a command was executed.
+ *          - EXIT_CODE_CP_NO_COMMAND, when the user input was empty, NULL or did not 
+ *            contain a valid command.
+ *          - Any other error passed by a command that has been executed (external programs).
+ */
 err_t processor_execute_command(char *cmd_bfr, char *shadow)
 {
      if(!cmd_bfr)
@@ -128,6 +162,13 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     return err;
 }
 
+/**
+ * @brief Executes all commands within the autoexec file
+ *        NOTE: all text in the file is converted to uppercase,
+ *              which results in ECHO not showing the orignal
+ *              capitalization from the *actual* contents of the file.
+ * 
+ */
 void processor_execute_autoexec(void)
 {
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
