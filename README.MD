@@ -7,3 +7,8 @@ Each part of Vireo has its own directory. For example, the kernel lives in the k
 
 ## License
 All parts of Vireo are MIT licensed. 
+
+## Notes
+* This project is not properly documented.
+
+* Real hardware is often not supported.
