@@ -451,6 +451,13 @@ static void fat_filename_fatcompat(char *filename)
 {
     // !! WARNING !! destroys original string
     
+    /* Do not handle invalid strings */
+    if(strlen(filename) == MAX)
+    {
+        memset(filename, FAT_MAX_FILENAME_LEN, 0);
+        return;
+    }
+
     uint32_t ext_index = find_in_str(filename, ".");
     uint32_t file_len = ext_index;
 
@@ -459,6 +466,7 @@ static void fat_filename_fatcompat(char *filename)
     if(ext_index == MAX || ext_index == 0)
     {
         file_len = strlen(filename);
+        file_len = (file_len > FILE_NAME_LEN) ? FILE_NAME_LEN : file_len; 
         ext_index = 0;
     } 
 
@@ -468,6 +476,8 @@ static void fat_filename_fatcompat(char *filename)
     // if there is a file extension, then set the length
     if(ext_index != MAX && ext_index)
         ext_len = strlen(&filename[ext_index + 1]);
+    
+    ext_len = (ext_len > FILE_EXT_LEN) ? FILE_EXT_LEN : ext_len;
     
     char buffer[FAT_MAX_FILENAME_LEN + 1] = {0};
 
