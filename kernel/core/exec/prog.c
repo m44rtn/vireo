@@ -290,6 +290,25 @@ pid_t prog_get_current_running(void)
     return (prog_flags & PROG_FLAG_DRV_RUNNING) ? PID_DRIVER : current_running_pid;
 }
 
+pid_t prog_get_pid_from_eip(uint32_t eip)
+{
+    for(pid_t i = 0; i < PID_RESV; ++i)
+    {
+        uint32_t index = prog_find_info_index(i);
+
+        if(index == MAX)
+            continue;
+        
+        uint32_t bin_start = (uint32_t) prog_info[index].binary_start;
+        size_t bin_size = (size_t) prog_info[index].size;
+
+        if((eip >= bin_start) && (eip <= (bin_start + bin_size)))
+            return i;
+    }
+
+    return PID_RESV;
+}
+
 const char *prog_get_filename(pid_t pid)
 {
     uint32_t index = prog_find_info_index(pid);

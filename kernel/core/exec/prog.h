@@ -38,6 +38,7 @@ void prog_set_status_drv_running(void);
 void prog_set_status_prog_running(void);
 
 pid_t prog_get_current_running(void);
+pid_t prog_get_pid_from_eip(uint32_t eip);
 const char *prog_get_filename(pid_t pid);
 void *prog_get_binary_start(pid_t pid);
 void prog_set_flags(pid_t pid, uint8_t flags);
