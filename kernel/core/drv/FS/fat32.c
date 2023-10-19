@@ -1222,9 +1222,6 @@ fs_dir_contents_t *fat_get_dir_contents(const char *path, size_t *osize, err_t *
     size_t dsize = 0;
     FAT32_DIR *dir = fat_read(path, &dsize);
 
-    ASSERT(dir);
-    ASSERT(dsize);
-
     if(!dsize || !dir)
         { *oerr = EXIT_CODE_FS_FILE_NOT_FOUND; return NULL; }
     else if(!fat_file_is_directory(path))
