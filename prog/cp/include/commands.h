@@ -38,14 +38,14 @@ SOFTWARE.
 
 char *command_create_cp_ver_str(void);
 
-void command_ver(void);
-void command_cd(char *cmd_bfr);
-void command_pwd(void);
-void command_clear(void);
-void command_dir(void);
-void command_echo(char *cmd_bfr);
-void command_help(void);
-void command_errlvl(void);
-void command_type(char *cmd_bfr);
+err_t command_ver(void);
+err_t command_cd(char *cmd_bfr);
+err_t command_pwd(void);
+err_t command_clear(void);
+err_t command_dir(void);
+err_t command_echo(char *cmd_bfr);
+err_t command_help(void);
+err_t command_errlvl(void);
+err_t command_type(char *cmd_bfr);
 
 #endif // __COMMANDS_H__

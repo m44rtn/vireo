@@ -43,30 +43,31 @@ err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
  * 
  * @param cmd_bfr pointer to the buffer containing the user's input (Uppercase)
  * @param shadow pointer to the buffer containing the original user input (used for ECHO)
+ * @param o_err output error code
  * @return uint8_t = 1 if an internal command was executed
  */
-static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow)
+static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow, err_t *o_err)
 {
     uint8_t did_execute = 0;
 
     if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_VER)))
-        command_ver();
+        *o_err = command_ver();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_CD)) && !fileman_contains_disk(cmd_bfr))
-        command_cd(cmd_bfr);
+        *o_err = command_cd(cmd_bfr);
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_PWD)))
-        command_pwd();
+        *o_err = command_pwd();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_CLEAR)))
-        command_clear();
+        *o_err = command_clear();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_DIR)))
-        command_dir();
+        *o_err = command_dir();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_ECHO)))
-        command_echo(shadow);
+        *o_err = command_echo(shadow);
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_HELP)))
-        command_help();
+        *o_err = command_help();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_ERRLVL)))
-        command_errlvl();
+        *o_err = command_errlvl();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_TYPE)))
-        command_type(cmd_bfr);
+        *o_err = command_type(cmd_bfr);
 
     return did_execute;
 }
@@ -122,6 +123,8 @@ err_t processor_get_last_error(void)
  */
 err_t processor_execute_command(char *cmd_bfr, char *shadow)
 {
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+
      if(!cmd_bfr)
         return EXIT_CODE_CP_NO_COMMAND;
         
@@ -134,12 +137,11 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     if(cmd[0] == '\0')
         return EXIT_CODE_GLOBAL_SUCCESS;
 
-    uint8_t ran_internal = processor_exec_internal_command(cmd, shdw);
+    uint8_t ran_internal = processor_exec_internal_command(cmd, shdw, &err);
+    g_last_error = err;
 
     if(ran_internal)
-        return EXIT_CODE_GLOBAL_SUCCESS;
-    
-    err_t err = g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
+        return err;
 
     char *str = valloc(MAX_PATH_LEN + 1);
     uint32_t len = 0;
@@ -148,7 +150,10 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     char *path = fileman_abspath_or_cwd(cmd, config_get_bin_path(), str);
 
     if(!path)
+    {
+        g_last_error = EXIT_CODE_CP_NO_COMMAND;
         return EXIT_CODE_CP_NO_COMMAND;
+    }
     
     g_last_error = err = program_start_new(path);
 

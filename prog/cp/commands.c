@@ -94,10 +94,16 @@ char *command_create_cp_ver_str(void)
     return str;
 }
 
-void command_ver(void)
+err_t command_ver(void)
 {
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
     char *kernel_ver = kernel_get_version_str();
     char *cp_ver = command_create_cp_ver_str();
+
+    // Assume null ptr to kernel version means there
+    // is no more free memory.
+    if(!kernel_ver || !cp_ver)
+        err = EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
 
     if(kernel_ver)
     {
@@ -120,6 +126,8 @@ void command_ver(void)
         screen_print("CP version string currently unavailable\n");
 
     screen_print("\nCopyright (c) 2019-2023 Maarten Vermeulen\n");
+
+    return err;
 }
 
 static err_t command_set_wd_bootdisk(char *path)
@@ -157,7 +165,7 @@ static err_t command_append_to_current_wd(char *new_part)
     return err;
 }
 
-void command_cd(char *cmd_bfr)
+err_t command_cd(char *cmd_bfr)
 {
     uint32_t space_index = find_in_str(cmd_bfr, " ");
 
@@ -168,7 +176,7 @@ void command_cd(char *cmd_bfr)
         space_index = space_index + i + 1;
 
     if(space_index == MAX || cmd_bfr[space_index] == '\0')
-        { command_pwd(); return; }
+        { command_pwd(); return EXIT_CODE_GLOBAL_SUCCESS; }
     
     err_t err = 0;
 
@@ -181,17 +189,19 @@ void command_cd(char *cmd_bfr)
         err = command_append_to_current_wd(&cmd_bfr[space_index]);
 
     if(!err)
-        return;
+        return err;
 
     char *s = valloc(MAX_PATH_LEN + 64); 
     if(!s)
-        return;
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+
     str_add_val(s, "%s: not a valid directory\n", (uint32_t) (&cmd_bfr[space_index]));
     screen_print(s);
     vfree(s);    
-}
 
-void command_pwd(void)
+    return err;
+}
+err_t command_pwd(void)
 {
     char str[255]; 
     uint32_t len = 0;
@@ -200,15 +210,19 @@ void command_pwd(void)
     
     screen_print(str);
     screen_print("\n");
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-void command_clear(void)
+err_t command_clear(void)
 {
     screen_clear();
     screen_prepare_for_first_prompt();
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-void command_dir(void)
+err_t command_dir(void)
 {    
     uint32_t len = 0;
     char *path = valloc(MAX_PATH_LEN + 1);
@@ -220,7 +234,7 @@ void command_dir(void)
     vfree(path);
 
     if(err)
-        return;
+        return err;
 
     uint16_t scr_width = screen_get_width();
     uint16_t scr_height = screen_get_height();
@@ -278,14 +292,17 @@ void command_dir(void)
     screen_print("bytes total\n");
 
     vfree(dir);   
+
+    return err; 
 }
 
-void command_echo(char *cmd_bfr)
+err_t command_echo(char *cmd_bfr)
 {
     uint32_t start = strlen("ECHO ");
     screen_print(&cmd_bfr[start]); // \n already there due to how the command buffer works
-}
 
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
 static void help_print_command(const char *command, const char *helptxt)
 {
     uint8_t x, y;
@@ -295,7 +312,7 @@ static void help_print_command(const char *command, const char *helptxt)
     screen_print(helptxt);
 }
 
-void command_help(void)
+err_t command_help(void)
 {
     help_print_command(INTERNAL_COMMAND_CD " [PATH]", "navigate to [PATH], executes PWD if no path was given\n");
     help_print_command(INTERNAL_COMMAND_PWD, "prints current working directory\n");
@@ -304,21 +321,28 @@ void command_help(void)
     help_print_command(INTERNAL_COMMAND_ECHO " [TXT]", "prints [TXT] to the screen\n");
     help_print_command(INTERNAL_COMMAND_HELP, "shows this help message\n");
     help_print_command(INTERNAL_COMMAND_VER, "prints copyright and version of CP and the kernel\n");
-    help_print_command(INTERNAL_COMMAND_ERRLVL, "prints exit code of last ran binary\n");
+    help_print_command(INTERNAL_COMMAND_ERRLVL, "prints error code of last command/binary\n");
     help_print_command(INTERNAL_COMMAND_TYPE " [PATH]", "prints the contents of file at [PATH]\n");
-}
 
-void command_errlvl(void)
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+err_t command_errlvl(void)
 {
     char s[12];
     str_add_val(s, " 0x%x\n", (uint32_t)processor_get_last_error());
     screen_print(s);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
-void command_type(char *cmd_bfr)
+err_t command_type(char *cmd_bfr)
 {
     // check where the file is located (cwd or given path)
     char *str = valloc(MAX_PATH_LEN + 1);
+
+    if(!str)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+
     uint32_t len = 0;
     getcwd(str, &len);
 
@@ -327,7 +351,13 @@ void command_type(char *cmd_bfr)
     char *path = fileman_abspath_or_cwd(cmd_bfr, str, str);
 
     if(!path)
-        { vfree(str); screen_print("File not found - "); screen_print(cmd_bfr); screen_print("\n"); return; }
+    { 
+        vfree(str); 
+        screen_print("File not found - "); 
+        screen_print(cmd_bfr); 
+        screen_print("\n"); 
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL; 
+    }
 
     vfree(str);
     
@@ -338,7 +368,10 @@ void command_type(char *cmd_bfr)
     vfree(path);
 
     if(!file_contents || err)
-        { screen_print("Error reading file\n"); return; }
+    { 
+        screen_print("Error reading file\n");
+        return err; 
+    }
 
     char *out = valloc(s + 1);
     uint32_t index = 0;
@@ -364,4 +397,5 @@ void command_type(char *cmd_bfr)
     }
 
     vfree(out);
+    return err;
 }
