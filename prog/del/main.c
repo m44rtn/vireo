@@ -56,7 +56,13 @@ err_t main(uint32_t argc, char **argv)
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
 
     if(argc < 2)
-        { screen_print("Usage: del.elf [name of file or directory to delete]\nNote: contents of directory are not automatically deleted\n"); return EXIT_CODE_GLOBAL_INVALID; }
+    { 
+        screen_print("Usage: del.elf filename [-f]\n\n"
+                     "\t -f (optional) - force delete\n"
+                     "\t filename - path to file or directory to delete\n\t\t(starting at current working directory)\n\n"
+                     "\nNote: contents of directory are not automatically deleted\n"); 
+        return EXIT_CODE_GLOBAL_INVALID; 
+    }
 
     api_space_t cp_space = get_cp_api_space();
 
@@ -77,7 +83,13 @@ err_t main(uint32_t argc, char **argv)
     fs_dir_contents_t *contents = fs_dir_get_contents(cwd, &entries, &err);
     vfree(contents);
 
-    if(entries > 2 && !err)
+    // check for force command
+    bool_t force_delete = FALSE;
+     
+    if(!strcmp(argv[1], "-F") || !strcmp(argv[2], "-F")) // force command found?
+        force_delete = TRUE;
+
+    if(entries > 2 && !err && !force_delete)
         { screen_print("directory not empty.\n"); return EXIT_CODE_GLOBAL_INVALID; }
 
     err = fs_delete_file(cwd);
