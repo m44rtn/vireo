@@ -45,6 +45,13 @@ SOFTWARE.
 
 #define HELP_TXT_INDENT     12
 
+/**
+ * @brief Used to translate the meaning of user input:
+ *          - ALL_OK: continue running this command
+ *          - QUIT: stop showing information and stop running this command
+ *          - CONTINUE: continue to show the next chunk of information
+ * 
+ */
 typedef enum 
 {
     ALL_OK,
@@ -52,6 +59,16 @@ typedef enum
     CONTINUE
 } more_t;
 
+/**
+ * @brief Handles the 'more' functionality of type.
+ *        NOTE: This command can be run on:
+ *              - Every line print
+ *              - Every information chunk
+ * 
+ * @param scr_width width of the screen
+ * @param scr_height height of the screen
+ * @return more_t see more_t
+ */
 static more_t command_more(uint16_t scr_width, uint16_t scr_height)
 {
     uint8_t x = 0, y = 0;
@@ -74,6 +91,12 @@ static more_t command_more(uint16_t scr_width, uint16_t scr_height)
     return CONTINUE;
 }
 
+/**
+ * @brief Creates a string containing the version of
+ *        CP.ELF (this program)
+ * 
+ * @return char* pointer to created version string
+ */
 char *command_create_cp_ver_str(void)
 {
     char *str = valloc(MAX_INFO_STR_LEN);
@@ -94,6 +117,14 @@ char *command_create_cp_ver_str(void)
     return str;
 }
 
+/**
+ * @brief Shows current kernel and CP version
+ * 
+ * @return err_t error code:
+ *               - EXIT_CODE_GLOBAL_SUCCESS: on success
+ *               - EXIT_CODE_GLOBAL_OUT_OF_MEMORY: CP/kernel string not available
+ *                      (assumed out of memory)
+ */
 err_t command_ver(void)
 {
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
@@ -107,20 +138,20 @@ err_t command_ver(void)
 
     if(kernel_ver)
     {
-    screen_print("Kernel: ");
-    screen_print(kernel_ver);
-    screen_print("\n");
-    vfree(kernel_ver);
+        screen_print("Kernel: ");
+        screen_print(kernel_ver);
+        screen_print("\n");
+        vfree(kernel_ver);
     }
     else
         screen_print("Kernel version string currently unavailable\n");
 
     if(cp_ver)
     {
-    screen_print("CP: ");
-    screen_print(cp_ver);
-    screen_print("\n");
-    vfree(cp_ver);
+        screen_print("CP: ");
+        screen_print(cp_ver);
+        screen_print("\n");
+        vfree(cp_ver);
     }
     else
         screen_print("CP version string currently unavailable\n");
@@ -130,6 +161,15 @@ err_t command_ver(void)
     return err;
 }
 
+/**
+ * @brief Sets the current working directory to `bootdisk + '/' + path`
+ *   
+ * 
+ * @param path path to use from bootdisk
+ * @return err_t error code:
+ *               - EXIT_CODE_GLOBAL_SUCCESS: on success
+ *               - EXIT_CODE_GLOBAL_OUT_OF_MEMORY: out of memory
+ */
 static err_t command_set_wd_bootdisk(char *path)
 {
     char *bd = disk_get_bootdisk();
@@ -147,6 +187,14 @@ static err_t command_set_wd_bootdisk(char *path)
     return err;
 }
 
+/**
+ * @brief Appends 'new_part' to the current working directory
+ * 
+ * @param new_part part to append to the curren working directory
+ * @return err_t error code:
+ *               - EXIT_CODE_GLOBAL_SUCCESS: on success
+ *               - EXIT_CODE_GLOBAL_OUT_OF_MEMORY: out of memory
+ */
 static err_t command_append_to_current_wd(char *new_part)
 {
     char *out = valloc(MAX_PATH_LEN + 1);
@@ -165,6 +213,15 @@ static err_t command_append_to_current_wd(char *new_part)
     return err;
 }
 
+/**
+ * @brief Performs the `CD` command (change working directory)
+ *        NOTE: performs `PWD` command when user has not given a path to change to
+ * 
+ * @param cmd_bfr user input, in uppercase
+ * @return err_t error code:
+ *               - EXIT_CODE_GLOBAL_SUCCESS: on success
+ *               - EXIT_CODE_GLOBAL_OUT_OF_MEMORY: out of memory
+ */
 err_t command_cd(char *cmd_bfr)
 {
     uint32_t space_index = find_in_str(cmd_bfr, " ");
@@ -201,6 +258,12 @@ err_t command_cd(char *cmd_bfr)
 
     return err;
 }
+
+/**
+ * @brief Performs the `PWD` command (print working directory)
+ * 
+ * @return err_t always EXIT_CODE_GLOBAL_SUCCESS
+ */
 err_t command_pwd(void)
 {
     char str[255]; 
@@ -214,6 +277,11 @@ err_t command_pwd(void)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+/**
+ * @brief Performs the `CLEAR` command (clear screen)
+ * 
+ * @return err_t always EXIT_CODE_GLOBAL_SUCCESS
+ */
 err_t command_clear(void)
 {
     screen_clear();
@@ -222,6 +290,11 @@ err_t command_clear(void)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+/**
+ * @brief Performs the `DIR` command (print contents of working directory)
+ * 
+ * @return err_t error code provided by filesystem drivers
+ */
 err_t command_dir(void)
 {    
     uint32_t len = 0;
@@ -291,11 +364,16 @@ err_t command_dir(void)
     screen_print(s);
     screen_print("bytes total\n");
 
-    vfree(dir);   
+    vfree(dir);  
 
     return err; 
 }
 
+/**
+ * @brief Performs the `ECHO` command (echo user input to screen)
+ * 
+ * @return err_t always EXIT_CODE_GLOBAL_SUCCESS
+ */
 err_t command_echo(char *cmd_bfr)
 {
     uint32_t start = strlen("ECHO ");
@@ -303,6 +381,14 @@ err_t command_echo(char *cmd_bfr)
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
+
+/**
+ * @brief Helper for `command_help()`, prints one command to the screen,
+ *        algining the `command` and `helptxt` texts on the same tab indents.
+ * 
+ * @param command command name string
+ * @param helptxt string explaining the function of the command
+ */
 static void help_print_command(const char *command, const char *helptxt)
 {
     uint8_t x, y;
@@ -312,6 +398,11 @@ static void help_print_command(const char *command, const char *helptxt)
     screen_print(helptxt);
 }
 
+/**
+ * @brief Performs the `HELP` command (show available internal CP commands)
+ * 
+ * @return err_t always EXIT_CODE_GLOBAL_SUCCESS
+ */
 err_t command_help(void)
 {
     help_print_command(INTERNAL_COMMAND_CD " [PATH]", "navigate to [PATH], executes PWD if no path was given\n");
@@ -326,6 +417,12 @@ err_t command_help(void)
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
+
+/**
+ * @brief Performs the `ERRLVL` command (print error code of last command/binary)
+ * 
+ * @return err_t always EXIT_CODE_GLOBAL_SUCCESS
+ */
 err_t command_errlvl(void)
 {
     char s[12];
@@ -335,6 +432,14 @@ err_t command_errlvl(void)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+/**
+ * @brief Performs the `TYPE` command (print contents of file to the screen)
+ * 
+ * @return err_t error code:
+ *               - EXIT_CODE_GLOBAL_SUCCESS: on success
+ *               - EXIT_CODE_GLOBAL_OUT_OF_MEMORY: out of memory
+ *               - Any errors generated by filesystem drivers
+ */
 err_t command_type(char *cmd_bfr)
 {
     // check where the file is located (cwd or given path)
