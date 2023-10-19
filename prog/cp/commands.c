@@ -99,15 +99,25 @@ void command_ver(void)
     char *kernel_ver = kernel_get_version_str();
     char *cp_ver = command_create_cp_ver_str();
 
+    if(kernel_ver)
+    {
     screen_print("Kernel: ");
     screen_print(kernel_ver);
     screen_print("\n");
     vfree(kernel_ver);
+    }
+    else
+        screen_print("Kernel version string currently unavailable\n");
 
+    if(cp_ver)
+    {
     screen_print("CP: ");
     screen_print(cp_ver);
     screen_print("\n");
     vfree(cp_ver);
+    }
+    else
+        screen_print("CP version string currently unavailable\n");
 
     screen_print("\nCopyright (c) 2019-2023 Maarten Vermeulen\n");
 }
