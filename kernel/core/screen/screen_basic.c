@@ -173,7 +173,6 @@ void screen_basic_api(void *req)
 		break;
 
 		case SYSCALL_SCREEN_PUT_CHAR:
-			// TODO: add to syslib, let conway use it
 			if(r->x >= SCREEN_BASIC_WIDTH || r->y >= SCREEN_BASIC_HEIGHT)
 				{r->hdr.exit_code = EXIT_CODE_GLOBAL_INVALID; break; }
 
