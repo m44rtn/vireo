@@ -125,7 +125,9 @@ void *valloc(PAGE_REQ *req)
         return NULL;
 
     void * ptr = paging_find_free(npages);
-    ASSERT(ptr);
+   
+    if(!ptr)
+        return NULL;
 
     page_id = ((uint32_t) ptr) >> 12;
     d_index = page_id >> 10; /* same as page_id / PAGING_TABLE_SIZE */
@@ -167,7 +169,6 @@ void *evalloc(size_t size, pid_t pid)
 
     void *ptr = valloc(&req);
 
-    ASSERT(ptr);
     return ptr;
 }
 
