@@ -51,6 +51,104 @@ static api_space_t get_cp_api_space(void)
     return s;
 }
 
+/**
+ * @brief Copies a directory
+ * 
+ * @param path path of directory to copy
+ * @param copy_to path to copy directory to (+ new directory name)
+ * @param attrib file attributes
+ * @return err_t 
+ */
+static err_t copy_dir(char *path, char *copy_to)
+{
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    size_t size = 0;
+
+    // make a new directory
+    err = fs_mkdir(copy_to);
+
+    if(err)
+        return err;
+
+    uint32_t n_entries = 0;
+    fs_dir_contents_t *contents = fs_dir_get_contents(path, &n_entries, &err);
+
+    if(err)
+        return err;
+    
+    char *dir_file_path = valloc(FS_MAX_PATH_LEN);
+    char *to_dir_file_path = valloc(FS_MAX_PATH_LEN);
+
+    if(!dir_file_path || !to_dir_file_path)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+    
+    size_t dir_path_end = strlen(path);
+    memcpy(dir_file_path, path, dir_path_end + 1);
+    dir_file_path[dir_path_end++] = '/';
+
+    size_t to_dir_path_end = strlen(copy_to);
+    memcpy(to_dir_file_path, copy_to, dir_path_end + 1);
+    to_dir_file_path[to_dir_path_end++] = '/';
+
+    char *copy_message = valloc(256);
+    
+    // starts at two to skip '.' and '..' entries
+    for(uint32_t i = 2; i < n_entries; ++i)
+    {
+        memcpy(&dir_file_path[dir_path_end], contents[i].name, strlen(contents[i].name) + 1);
+        memcpy(&to_dir_file_path[to_dir_path_end], contents[i].name, strlen(contents[i].name) + 1);
+
+        if(copy_message)
+        {
+            str_add_val(copy_message, "Copying: %s\n", (uint32_t) dir_file_path);
+            screen_print(copy_message);
+        }
+        
+        file_t *file = fs_read_file(dir_file_path, &size, &err); 
+        
+        if(file && !err)
+            err = fs_write_file(to_dir_file_path, file, size, contents[i].attrib);
+        
+        if(err)
+        {
+            screen_print("Failed to copy file ");
+            screen_print(dir_file_path);
+            screen_print("\n");
+        } 
+
+        vfree(file);
+    }
+    
+    vfree(copy_message);
+    vfree(dir_file_path);
+    vfree(to_dir_file_path);
+
+    return err;
+}
+
+/**
+ * @brief Copies a file
+ * 
+ * @param path path of file to copy
+ * @param copy_to path to copy file to (+ filename)
+ * @param attrib file attributes
+ * @return err_t 
+ */
+static err_t copy_file(char *path, char *copy_to, uint8_t attrib)
+{
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    size_t size = 0;
+    file_t *file = fs_read_file(path, &size, &err);
+
+    if(err)
+        { screen_print("failed to read file.\n"); return err; }
+    
+    fs_write_file(copy_to, file, size, attrib);
+    vfree(file);
+
+    return err;
+}
+
 err_t main(uint32_t argc, char **argv)
 {    
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
@@ -82,17 +180,9 @@ err_t main(uint32_t argc, char **argv)
     vfree(info);
 
     if(attrib & FAT_FILE_ATTRIB_DIR)
-        screen_print("NOTE: Please be aware that the files in a copied directory link directly to the files in the original "
-                     "directory. Please copy each file individually if the files should have been copied too.\n");
-
-    size_t size = 0;
-    file_t *file = fs_read_file(cwd, &size, &err);
-
-    if(err)
-        { screen_print("failed to read file.\n"); return err; }
-    
-    fs_write_file(argv[2], file, size, attrib);
-    vfree(file);
+        err = copy_dir(cwd, argv[2]);
+    else
+        err = copy_file(cwd, argv[2], attrib);
 
     vfree(cwd);
     return err;
