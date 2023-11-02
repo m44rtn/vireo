@@ -24,6 +24,7 @@ SOFTWARE.
 #include "types.h"
 #include "screen.h"
 #include "memory.h"
+#include "util.h"
 
 #include "include/screen.h"
 
@@ -67,4 +68,17 @@ uint16_t screen_get_width(void)
         { ans = (uint16_t) info->width; vfree(info); }
     
     return ans;
+}
+void screen_print_no_command(char *cmd_bfr)
+{
+    char *str = valloc(strlen(cmd_bfr));
+
+    if(str)
+    {
+        str_add_val(str, "%s: no command or filename\n", (uint32_t) cmd_bfr);
+        screen_print(str);
+        vfree(str);
+    }
+    else
+        screen_print("No command or filename\n");
 }

@@ -29,5 +29,6 @@ SOFTWARE.
 void screen_prepare_for_first_prompt(void);
 uint16_t screen_get_height(void);
 uint16_t screen_get_width(void);
+void screen_print_no_command(char *cmd_bfr);
 
 #endif // __SCREEN_CP_H__

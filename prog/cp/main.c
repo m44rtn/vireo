@@ -41,16 +41,6 @@ SOFTWARE.
 
 #define COMMAND_BUFFER_SIZE 512 // chars
 
-static void print_did_not_exec_correctly(char *cmd_bfr)
-{
-    char *str = valloc(strlen(cmd_bfr));
-
-    str_add_val(str, "%s: no command or filename\n", (uint32_t) cmd_bfr);
-    screen_print(str);
-
-    vfree(str);
-}
-
 static uint32_t append_shadow_to_main(char *shadow, uint32_t sh_len, char *main, uint32_t main_st)
 {
     uint32_t i = main_st;
@@ -167,7 +157,7 @@ err_t main(uint32_t argc, char **argv)
 
         // exec command and set-up for next command
         if(processor_execute_command(cmd_bfr, cmd_shadow) == EXIT_CODE_CP_NO_COMMAND)
-            print_did_not_exec_correctly(cmd_bfr);
+            screen_print_no_command(cmd_bfr);
             
         memset(cmd_bfr, COMMAND_BUFFER_SIZE, 0);
         i = 0;
