@@ -25,6 +25,7 @@ SOFTWARE.
 #define __KEYB_H__
 
 #include "types.h"
+#include "scancode.h"
 
 typedef struct keymap_entry_t
 {
@@ -38,5 +39,6 @@ err_t keyb_start(file_t *cf);
 uint32_t keyb_get_character(char *bfr);
 char keyb_get_last_pressed(void);
 void keyb_empty_buffer(void);
+void keyb_wait_for_keycode(uint16_t code);
 
 #endif // __KEYB_H__

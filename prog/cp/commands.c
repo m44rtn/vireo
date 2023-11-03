@@ -414,6 +414,7 @@ err_t command_help(void)
     help_print_command(INTERNAL_COMMAND_VER, "prints copyright and version of CP and the kernel\n");
     help_print_command(INTERNAL_COMMAND_ERRLVL, "prints error code of last command/binary\n");
     help_print_command(INTERNAL_COMMAND_TYPE " [PATH]", "prints the contents of file at [PATH]\n");
+    help_print_command(INTERNAL_COMMAND_PAUSE, "waits until the user has pressed [ENTER]\n");
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
@@ -503,4 +504,12 @@ err_t command_type(char *cmd_bfr)
 
     vfree(out);
     return err;
+}
+err_t command_pause(void)
+{
+    screen_print("Press [ENTER] to continue...\n");
+    keyb_wait_for_keycode(KEYCODE_ENTER);
+    screen_print("\n");
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
 }

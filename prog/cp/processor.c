@@ -68,6 +68,8 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow, err_
         *o_err = command_errlvl();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_TYPE)))
         *o_err = command_type(cmd_bfr);
+    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_PAUSE)))
+        *o_err = command_pause();
 
     return did_execute;
 }

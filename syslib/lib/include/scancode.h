@@ -124,6 +124,7 @@ SOFTWARE.
 #define KEYCODE_DOWNCURSOR    0x060c
 #define KEYCODE_RIGHTCURSOR   0x060d
 
+// Keypad keys
 #define KEYCODE_KEYP_0        0x0701
 #define KEYCODE_KEYP_1        0x0702
 #define KEYCODE_KEYP_2        0x0703

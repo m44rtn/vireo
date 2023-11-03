@@ -26,8 +26,8 @@ SOFTWARE.
 #include "api.h"
 #include "ps2keyb.h"
 #include "util.h"
-#include "scancode.h"
 #include "disk.h"
+#include "kernel.h"
 
 #include "include/keyb.h"
 #include "include/fileman.h"
@@ -44,6 +44,7 @@ keymap_entry_t *g_keymap = NULL;
 size_t g_keymap_size = 0;
 
 uint16_t *g_keyb_bfr = NULL;
+uint16_t g_last_keycode = 0;    /* Last pressed keycode */
 
 uint8_t g_flags = 0;
 
@@ -136,6 +137,7 @@ static char keyb_convert_keycode(uint16_t code)
         return 0;
 
     char lc = 0;
+    g_last_keycode = code;
 
     switch(code)
     {
@@ -208,7 +210,21 @@ char keyb_get_last_pressed(void)
 }
 
 /**
- * @brief Empties the keyboard buffer
+ * @brief Waits until the user has pressed a specific key.
+ * 
+ * @param code Keycode to wait for.
+ */
+void keyb_wait_for_keycode(uint16_t code)
+{
+    // clear the last keycode, since we will wait for a new one
+    g_last_keycode = 0;
+    
+    while(g_last_keycode != code)
+        (void)keyb_get_last_pressed();
+}
+
+/**
+ * @brief Empties the keyboard buffer.
  * 
  */
 void keyb_empty_buffer(void)
