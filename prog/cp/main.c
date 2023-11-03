@@ -123,7 +123,14 @@ err_t main(uint32_t argc, char **argv)
 
     screen_prepare_for_first_prompt();
 
-    processor_execute_autoexec();
+    err = processor_execute_autoexec();
+
+    if(err)
+    {
+        screen_set_color(SCREEN_COLOR_BLACK | SCREEN_COLOR_YELLOW);
+        screen_print("<CP> Warning: Unable to execute autoexec!\n");
+        screen_set_color(SCREEN_COLOR_DEFAULT);
+    }
 
     screen_print("\n" PROMPT);
     processor_set_last_error(EXIT_CODE_GLOBAL_SUCCESS);

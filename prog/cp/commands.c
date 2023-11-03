@@ -415,6 +415,7 @@ err_t command_help(void)
     help_print_command(INTERNAL_COMMAND_ERRLVL, "prints error code of last command/binary\n");
     help_print_command(INTERNAL_COMMAND_TYPE " [PATH]", "prints the contents of file at [PATH]\n");
     help_print_command(INTERNAL_COMMAND_PAUSE, "waits until the user has pressed [ENTER]\n");
+    help_print_command(INTERNAL_COMMAND_DOTSLASH "[PATH]", "executes a CP-command script at [PATH]\n");
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
@@ -512,4 +513,34 @@ err_t command_pause(void)
     screen_print("\n");
 
     return EXIT_CODE_GLOBAL_SUCCESS;
+}
+err_t command_dotslash(char *cmd_bfr)
+{
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+
+    char *cwd = valloc(MAX_PATH_LEN + 1);
+
+    if(!cwd)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+
+    uint32_t len = 0;
+    getcwd(cwd, &len);
+
+    char *path = fileman_abspath_or_cwd(&cmd_bfr[2] /* 2 skips the './' */, cwd, cwd);
+
+    if(!path)
+        return EXIT_CODE_FS_FILE_NOT_FOUND;
+    
+    size_t fsize; 
+    file_t *cp_script = fs_read_file(path, &fsize, &err);
+
+    if(err)
+        return err;
+    
+    err = processor_execute_cp_script(cp_script);
+
+    vfree(cp_script);
+    vfree(cwd);
+
+    return err;
 }

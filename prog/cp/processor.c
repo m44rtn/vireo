@@ -23,6 +23,7 @@ SOFTWARE.
 
 #include "util.h"
 #include "program.h"
+#include "screen.h"
 
 #include "include/keyb.h"
 #include "include/fileman.h"
@@ -30,6 +31,7 @@ SOFTWARE.
 #include "include/processor.h"
 #include "include/config.h"
 #include "include/cp_exit_codes.h"
+#include "include/screen.h"
 
 #define MAX_LINE_LEN        512 // bytes
 #define AUTOEXEC_FILENAME   "/AUTOEXEC"
@@ -70,6 +72,8 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow, err_
         *o_err = command_type(cmd_bfr);
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_PAUSE)))
         *o_err = command_pause();
+    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_DOTSLASH)))
+        *o_err = command_dotslash(cmd_bfr);
 
     return did_execute;
 }
@@ -170,13 +174,47 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
 }
 
 /**
- * @brief Executes all commands within the autoexec file
+ * @brief Executes a CP command script (i.e., a text file
+ *        containing commands)
  *        NOTE: all text in the file is converted to uppercase,
  *              which results in ECHO not showing the orignal
  *              capitalization from the *actual* contents of the file.
  * 
+ * @param file Pointer to file buffer.
+ * @return err_t Error code:
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success.
+ *                  - EXIT_CODE_GLOBAL_OUT_OF_MEMORY when out of memory.
+ *                  - The last error
  */
-void processor_execute_autoexec(void)
+err_t processor_execute_cp_script(file_t *file)
+{
+    err_t err = EXIT_CODE_GLOBAL_SUCCESS;
+    
+    char *out = valloc(MAX_LINE_LEN);
+
+    if(!out)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+
+    uint32_t pindex = 0;
+    while(str_get_part(out, file, "\n", &pindex))
+    {
+        to_uc(out, strlen(out));
+        err_t e = processor_execute_command(out, out);
+
+        if(e == EXIT_CODE_CP_NO_COMMAND)
+        {
+            screen_set_color(SCREEN_COLOR_BLACK | SCREEN_COLOR_YELLOW);
+            screen_print("<CP> ");
+            screen_set_color(SCREEN_COLOR_DEFAULT);
+            screen_print_no_command(out);
+        }
+    }
+
+    vfree(out);
+    
+    return err;
+}
+err_t processor_execute_autoexec(void)
 {
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
     size_t ignore;
@@ -184,21 +222,12 @@ void processor_execute_autoexec(void)
     file_t *autoexec = read_file_from_bootdisk(AUTOEXEC_FILENAME, &err, &ignore);
 
     if(err)
-        return;
+        return err;
     
-    char *out = valloc(MAX_LINE_LEN);
+    err = processor_execute_cp_script(autoexec);
 
-    if(!out)
-        return;
-
-    uint32_t pindex = 0;
-    while(str_get_part(out, autoexec, "\n", &pindex))
-    {
-        to_uc(out, strlen(out));
-        processor_execute_command(out, out);
-    }
-
-    vfree(out);
     vfree(autoexec);
+
+    return err;
 }
 

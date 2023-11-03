@@ -36,15 +36,7 @@ SOFTWARE.
 #define INTERNAL_COMMAND_ERRLVL     "ERRLVL"
 #define INTERNAL_COMMAND_TYPE       "TYPE"
 #define INTERNAL_COMMAND_PAUSE      "PAUSE"
-#define INTERNAL_COMMAND_CD     "CD"
-#define INTERNAL_COMMAND_PWD    "PWD"
-#define INTERNAL_COMMAND_CLEAR  "CLEAR"
-#define INTERNAL_COMMAND_DIR    "DIR"
-#define INTERNAL_COMMAND_ECHO   "ECHO"
-#define INTERNAL_COMMAND_HELP   "HELP"
-#define INTERNAL_COMMAND_VER    "VER"
-#define INTERNAL_COMMAND_ERRLVL "ERRLVL"
-#define INTERNAL_COMMAND_TYPE   "TYPE"
+#define INTERNAL_COMMAND_DOTSLASH   "./"
 
 char *command_create_cp_ver_str(void);
 
@@ -58,5 +50,6 @@ err_t command_help(void);
 err_t command_errlvl(void);
 err_t command_type(char *cmd_bfr);
 err_t command_pause(void);
+err_t command_dotslash(char *cmd_bfr);
 
 #endif // __COMMANDS_H__

@@ -29,6 +29,7 @@ SOFTWARE.
 void processor_set_last_error(err_t err);
 err_t processor_get_last_error(void);
 err_t processor_execute_command(char *cmd_bfr, char *shadow);
-void processor_execute_autoexec(void);
+err_t processor_execute_cp_script(file_t *file);
+err_t processor_execute_autoexec(void);
 
 #endif // __PROCESSOR_H__
