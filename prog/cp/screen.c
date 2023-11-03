@@ -31,6 +31,11 @@ SOFTWARE.
 #define SCREEN_HEIGHT 25
 #define SCREEN_WIDTH  80
 
+/**
+ * @brief Prepare the screen (cursor) for the first user prompt
+ *        (i.e., the "$ ").
+ * 
+ */
 void screen_prepare_for_first_prompt(void)
 {
     err_t ignored_err;
@@ -44,6 +49,11 @@ void screen_prepare_for_first_prompt(void)
     screen_set_cursor_pos(0, (uint8_t) skip_lines);
 }
 
+/**
+ * @brief Returns the height of the screen.
+ * 
+ * @return uint16_t Height of the screen.
+ */
 uint16_t screen_get_height(void)
 {
     uint16_t ans = SCREEN_WIDTH;
@@ -57,6 +67,11 @@ uint16_t screen_get_height(void)
     return ans;
 }
 
+/**
+ * @brief Returns the width of the screen.
+ * 
+ * @return uint16_t Width of the screen.
+ */
 uint16_t screen_get_width(void)
 {
     uint16_t ans = SCREEN_WIDTH;
@@ -69,6 +84,12 @@ uint16_t screen_get_width(void)
     
     return ans;
 }
+
+/**
+ * @brief Prints "no command or filename".
+ * 
+ * @param cmd_bfr Command buffer.
+ */
 void screen_print_no_command(char *cmd_bfr)
 {
     char *str = valloc(strlen(cmd_bfr));

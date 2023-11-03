@@ -48,6 +48,11 @@ uint16_t g_last_keycode = 0;    /* Last pressed keycode */
 
 uint8_t g_flags = 0;
 
+/**
+ * @brief Find keyboard driver API.
+ * 
+ * @return api_space_t API space (API code range) of the keyboard driver.
+ */
 static api_space_t keyb_get_api_space(void)
 {
     api_listing_t *list = api_get_syscall_listing();
@@ -66,6 +71,14 @@ static api_space_t keyb_get_api_space(void)
     return keyb_api;
 }
 
+/**
+ * @brief Loads the keymap at the location provided by the system
+ *        configuration file.
+ * 
+ * @param cf Pointer to system configuration file buffer.
+ * @return keymap_entry_t* Pointer to the cached keymap.
+ *                         NOTE: Size of keymap is stored in g_keymap_size.
+ */
 static keymap_entry_t * keyb_load_keymap(file_t *cf)
 {
     char *path = config_get_keymap_path(cf);
@@ -87,6 +100,21 @@ static keymap_entry_t * keyb_load_keymap(file_t *cf)
     return keymap;
 }
 
+/**
+ * @brief Initialize use of keyboard:
+ *          - Finds the keyboard driver API.
+ *          - Subscribes to the keyboard driver.
+ *          - Reads and caches the keymap.
+ * 
+ * @param cf Pointer to system configuration file buffer.
+ * @return err_t Error code:
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success.
+ *                  - EXIT_CODE_CP_NO_KEYB_DRV when the keyboard driver 
+ *                    was not found.
+ *                  - EXIT_CODE_CP_NO_KEYMAP when the keymap was not found.
+ *                  - Any error returned by the keyboard driver on 
+ *                    subscribe attempt.
+ */
 err_t keyb_start(file_t *cf)
 {
     char *drv_name = config_get_keyb_drv_name(cf);
@@ -102,8 +130,7 @@ err_t keyb_start(file_t *cf)
 
     if(!g_keymap)
         return EXIT_CODE_CP_NO_KEYMAP;
-    
-    // FIXME/TODO: some parts of this program might benefit from using a shared memory pool.
+
     g_keyb_bfr = valloc(KEYBOARD_BFR_SIZE);
 
     if(!g_keyb_bfr)
@@ -122,6 +149,14 @@ err_t keyb_start(file_t *cf)
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+/**
+ * @brief Looks through the keymap and returns the correct character for
+ *        a specific keycode. Helper for keyb_convert_keycode().
+ * 
+ * @param code Keycode
+ * @return char Key converted to character (upper-/lowercase depending on SHIFT)
+ *              or 0 if not found in the keymap.
+ */
 static char keyb_in_keymap(uint16_t code)
 {
     for(uint32_t i = 0; i < g_keymap_size / sizeof(keymap_entry_t); ++i)
@@ -131,6 +166,14 @@ static char keyb_in_keymap(uint16_t code)
     return 0;
 }
 
+/**
+ * @brief Converts any keycode to a character or internal function flag.
+ *        Helper for keyb_get_character().
+ * 
+ * @param code Keycode
+ * @return char Character pressed by user, or 0 if it was converted to an
+ *              internal function flag or an unsupported key.
+ */
 static char keyb_convert_keycode(uint16_t code)
 {
     if(!code)
@@ -172,8 +215,16 @@ static char keyb_convert_keycode(uint16_t code)
     return lc;
 }
 
+/**
+ * @brief Get all characters pressed since the last keyboard buffer clear.
+ * 
+ * @param bfr Pointer to buffer that will store the pressed characters.
+ * @return uint32_t Number of characters pressed by user.
+ */
 uint32_t keyb_get_character(char *bfr)
 {
+    // Assume the keyboard buffer is empty if the first scancode in
+    // the buffer is 0 (KEYCODE_UNUSED);
     if(!g_keyb_bfr[0])
         return 0;
 
@@ -193,6 +244,15 @@ uint32_t keyb_get_character(char *bfr)
     return n;
 }
 
+/**
+ * @brief Returns the last pressed key as a character.
+ *        NOTE: Only works for keys that are actually converted to characters
+ *              by keyb_convert_keycode() and keyb_in_keymap(). Since keyb_in_keymap()
+ *              checks for SHIFT presses when converting a keycode to a character, it is 
+ *              possible that the buffer contains both upper- and lowercase characters.
+ * 
+ * @return char Last character pressed by user.
+ */
 char keyb_get_last_pressed(void)
 {
     char *bfr = valloc(KEYBOARD_BFR_SIZE);

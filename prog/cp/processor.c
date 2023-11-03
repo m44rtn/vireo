@@ -189,7 +189,7 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
 err_t processor_execute_cp_script(file_t *file)
 {
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
-    
+
     char *out = valloc(MAX_LINE_LEN);
 
     if(!out)
@@ -214,6 +214,15 @@ err_t processor_execute_cp_script(file_t *file)
     
     return err;
 }
+
+/**
+ * @brief Executes all commands within the autoexec file
+ * 
+ * @return err_t Error code:
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success.
+ *                  - Any error from filesystem driver.
+ *                  - Any error from processor_execute_cp_script().
+ */
 err_t processor_execute_autoexec(void)
 {
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;

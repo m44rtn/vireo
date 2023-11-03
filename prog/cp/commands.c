@@ -511,6 +511,13 @@ err_t command_type(char *cmd_bfr)
     vfree(out);
     return err;
 }
+
+/**
+ * @brief Waits for the user to press ENTER.
+ * 
+ * @return err_t Error code:
+ *                  - EXIT_CODE_GLOBAL_SUCCESS
+ */
 err_t command_pause(void)
 {
     screen_print("Press [ENTER] to continue...\n");
@@ -519,6 +526,18 @@ err_t command_pause(void)
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
+
+/**
+ * @brief Executes a CP command script
+ * 
+ * @param cmd_bfr User input
+ * @return err_t Error code:
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success.
+ *                  - EXIT_CODE_GLOBAL_OUT_OF_MEMORY on out of memory.
+ *                  - EXIT_CODE_FS_FILE_NOT_FOUND on file not found.
+ *                  - Any error produced by filesystem drivers.
+ *                  - Any error produced by processor_execute_cp_script().
+ */
 err_t command_dotslash(char *cmd_bfr)
 {
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
