@@ -417,6 +417,10 @@ err_t command_help(void)
     help_print_command(INTERNAL_COMMAND_TYPE " [PATH]", "prints the contents of file at [PATH]\n");
     help_print_command(INTERNAL_COMMAND_PAUSE, "waits until the user has pressed [ENTER]\n");
     help_print_command(INTERNAL_COMMAND_DOTSLASH "[PATH]", "executes a CP-command script at [PATH]\n");
+    help_print_command("[PATH]", "executes a program from [PATH] or system bin directory\n");
+    
+    screen_print("\nPlease note that [PATH] can refer to both an absolute path to a file/directory "
+                 "or a path relative to the current working directory.\n");
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
