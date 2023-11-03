@@ -378,6 +378,7 @@ err_t command_echo(char *cmd_bfr)
 {
     uint32_t start = strlen("ECHO ");
     screen_print(&cmd_bfr[start]); // \n already there due to how the command buffer works
+    screen_print("\n");
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
