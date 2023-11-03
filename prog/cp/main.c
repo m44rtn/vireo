@@ -167,6 +167,7 @@ err_t main(uint32_t argc, char **argv)
             screen_print_no_command(cmd_bfr);
             
         memset(cmd_bfr, COMMAND_BUFFER_SIZE, 0);
+        memset(cmd_shadow, COMMAND_BUFFER_SIZE, 0);
         i = 0;
         screen_print(PROMPT);
     }
