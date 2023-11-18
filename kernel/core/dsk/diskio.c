@@ -1,6 +1,6 @@
 /*
 MIT license
-Copyright (c) 2019-2021 Maarten Vermeulen
+Copyright (c) 2019-2023 Maarten Vermeulen
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -79,6 +79,11 @@ typedef struct{
 
 DISKINFO disk_info_t[DISKIO_MAX_DRIVES];
 
+/**
+ * @brief API handler for disk I/O such as drive lists, absolute disk writes/reads and partition info
+ * 
+ * @param req Pointer to API request
+ */
 void diskio_api(void *req)
 {
     syscall_hdr_t *hdr = (syscall_hdr_t *) req;
@@ -87,7 +92,6 @@ void diskio_api(void *req)
     {
         case SYSCALL_DISK_LIST: // GET DRIVE LIST
         {
-            // TODO make function
             uint8_t *disks = diskio_reportDrives();
             api_disk_info_t *dsk = (api_disk_info_t *) evalloc(DISKIO_MAX_DRIVES * sizeof(api_disk_info_t), prog_get_current_running());
             
@@ -113,7 +117,6 @@ void diskio_api(void *req)
 
         case SYSCALL_PARTITION_INFO: // GET PARTITION INFO
         {
-            // TODO make function
             disk_syscall_t *c = (disk_syscall_t *) req;
 
             uint16_t id = drive_convert_drive_id(c->drive);
@@ -135,7 +138,6 @@ void diskio_api(void *req)
 
         case SYSCALL_DISK_ABS_READ:
         {
-            // TODO: make function
             disk_syscall_t *c = (disk_syscall_t *) req;
 
             uint16_t id = drive_convert_drive_id((const char *) c->drive);
@@ -162,7 +164,6 @@ void diskio_api(void *req)
 
         case SYSCALL_DISK_ABS_WRITE:
         {
-            // TODO: make function
             disk_syscall_t *c = (disk_syscall_t *) req;
             
             if(c->buffer_size == 0)
@@ -203,6 +204,10 @@ void diskio_api(void *req)
     }
 }
 
+/**
+ * @brief Initializes disk I/O functions and caches the information about connected disks
+ * 
+ */
 void diskio_init(void)
 {
     uint8_t i;
@@ -233,6 +238,14 @@ void diskio_init(void)
     kfree(drv);
 }
 
+/**
+ * @brief Checks whether a drive or partition exists
+ * 
+ * @param id drive id in human readable format (e.g., 'CD0' or 'HD0P0')
+ *           NOTE: this function is able to ignore whatever is behind the drive id
+ * @return true This drive/partition exists
+ * @return false This drive/partition does not exist
+ */
 bool diskio_check_exists(const char *id)
 {
     uint16_t disk_part = drive_convert_drive_id(id);
@@ -256,6 +269,13 @@ bool diskio_check_exists(const char *id)
     return false;
 }
 
+/**
+ * @brief Returns a list of drives attached to the system.
+ *        NOTE: Allocates kernel memory (caller needs to free result)
+ * 
+ * @return uint8_t* Pointer to list of attached drives.
+ *                  Format: list[drive_id == index] = disk_type (e.g., PATA or PATAPI)
+ */
 uint8_t *diskio_reportDrives(void)
 {
     uint32_t i = 0;
@@ -267,12 +287,21 @@ uint8_t *diskio_reportDrives(void)
     return drive_list;
 }
 
+/**
+ * @brief Absolute read at LBA on drive, uses internal drivers
+ * 
+ * @param drive drive number
+ * @param LBA sector number
+ * @param sctrRead amount of sectors to read
+ * @param buf output buffer for content
+ * @return uint8_t exit code (any error by driver or EXIT_CODE_GLOBAL_OUT_OF_RANGE if drive number is too large)
+ */
 uint8_t read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsigned char *buf)
 {
     uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint8_t disk_type = disk_info_t[drive].disktype;
     uint32_t command = (disk_type == DRIVE_TYPE_IDE_PATA || disk_type == DRIVE_TYPE_IDE_PATAPI ) ?
-            IDE_COMMAND_READ : NULL; /* TODO: make NULL floppy command */
+            IDE_COMMAND_READ : NULL; // NULL is here for support for another driver if it's added
 
     if(drive > DISKIO_MAX_DRIVES)
         { kfree(drv); return EXIT_CODE_GLOBAL_OUT_OF_RANGE; }
@@ -290,11 +319,20 @@ uint8_t read(unsigned char drive, unsigned int LBA, unsigned int sctrRead, unsig
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+/**
+ * @brief Absolute write at LBA on drive, uses internal drivers
+ * 
+ * @param drive drive number
+ * @param LBA sector number
+ * @param sctrRead amount of sectors to write
+ * @param buf output buffer for content
+ * @return uint8_t exit code (any error by driver)
+ */
 uint8_t write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, unsigned char *buf)
 {
     uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint32_t command = (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATA) ?
-            IDE_COMMAND_WRITE : NULL; /* TODO: make NULL floppy command */
+            IDE_COMMAND_WRITE : NULL; 
 
     drv[0] = command;
     drv[1] = (uint32_t) (drive);
@@ -309,12 +347,18 @@ uint8_t write(unsigned char drive, unsigned int LBA, unsigned int sctrWrite, uns
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
 
+/**
+ * @brief Gets the maximum address of a drive (i.e., drive size)
+ * 
+ * @param drive drive number
+ * @return size_t drive size, in amount of sectors
+ */
 size_t disk_get_max_addr(uint8_t drive)
 {
 
     uint32_t *drv = kmalloc(sizeof(uint32_t) * DRIVER_COMMAND_PACKET_LEN);
     uint32_t command = (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATA) ?
-            IDE_COMMAND_GET_MAX_ADDRESS : NULL; /* TODO: make NULL floppy command */
+            IDE_COMMAND_GET_MAX_ADDRESS : NULL;
 
     drv[0] = command;
     drv[1] = (uint32_t) (drive);
@@ -327,6 +371,12 @@ size_t disk_get_max_addr(uint8_t drive)
     return max_addr;
 }
 
+/**
+ * @brief Returns the size of a sector based on the drive type
+ * 
+ * @param drive drive number
+ * @return size_t size of sector in bytes
+ */
 size_t disk_get_sector_size(uint8_t drive)
 {
     return (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATAPI) ? ATAPI_DEFAULT_SECTOR_SIZE : DEFAULT_SECTOR_SIZE;
@@ -351,9 +401,14 @@ void drive_convert_to_drive_id(uint8_t drive, char *out_id)
     out_id[s+1] = '\0';
 }
 
-// @returns:
-//   - most significant byte: actual drive number
-//   - least significant byte: actual partition number (when applicable)
+/**
+ * @brief Converts human readable drive id (e.g., 'CD0' or 'HD0P0')
+ *        to a more machine oriented drive id.
+ * 
+ * @param id Human readable drive id (e.g., 'CD0' or 'HD0P0')
+ * @return uint16_t [drive number][partition number] (most significant byte, least signifcant byte respectively)
+ *                  NOTE: [partition number] == 0xFF if not applicable/supported
+ */
 uint16_t drive_convert_drive_id(const char *id)
 {
     uint8_t drive, type;
@@ -394,6 +449,13 @@ uint16_t drive_convert_drive_id(const char *id)
     return result;
 }
 
+/**
+ * @brief Converts human readble drive type (e.g., 'CD' or 'HD') to the
+ *          internal kernel equivilant drive type.
+ * 
+ * @param _id human readble drive type (e.g., 'CD' or 'HD')
+ * @return uint8_t drive type, or MAX if unsupported
+ */
 uint8_t drive_type(const char *_id)
 {
     uint8_t type;
@@ -413,6 +475,14 @@ uint8_t drive_type(const char *_id)
     return type;
 }
 
+/**
+ * @brief Uses the human readable drive id (e.g. '0' in 'HD0')
+ *          and drive type to get the kernel's internal drive id for this disk
+ * 
+ * @param drive drive number of human readable format (e.g. '0' in 'HD0'), as uint8_t
+ * @param type drive type id
+ * @return uint8_t drive number
+ */
 uint8_t to_actual_drive(uint8_t drive, uint8_t type)
 {
     uint8_t *drivelist = diskio_reportDrives();
@@ -437,8 +507,16 @@ uint8_t to_actual_drive(uint8_t drive, uint8_t type)
     return (uint8_t) MAX;
 }
 
-// function converts a drive number to the 'th drive of that type
-// (i.e. the opposite of to_actual_drive())
+/**
+ * @brief Uses drive number and type number to convert to the drive id number for
+ *          human readable format (e.g., '0' in 'HD0')
+ *          (i.e. the opposite of to_actual_drive())
+ * 
+ * @param drive drive number
+ * @param type drive type
+ * @return uint8_t nth drive of this type: drive id number for
+ *          human readable format (e.g., '0' in 'HD0')
+ */
 uint8_t drive_to_type_index(uint8_t drive, uint8_t type)
 {
     uint8_t *drivelist = diskio_reportDrives();
@@ -454,6 +532,13 @@ uint8_t drive_to_type_index(uint8_t drive, uint8_t type)
     return (uint8_t) nfound;
 }
 
+/**
+ * @brief Converts drive type number to character format (e.g., 'HD' or 'CD')
+ * 
+ * @param type type number
+ * @return const char* character format (human readable format): e.g., 'HD' or 'CD'
+ *                      or one space (" ") if not supported
+ */
 const char *drive_type_to_chars(uint8_t type)
 {
     if(type == DRIVE_TYPE_IDE_PATA)
