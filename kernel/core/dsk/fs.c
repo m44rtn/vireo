@@ -241,8 +241,11 @@ file_t *fs_read_file(char *fpath, size_t *o_size)
     };
     fs_api(&req);
     
-    if((*(o_size) = req.hdr.exit_code))
+    if(req.hdr.exit_code)
+    {
+        *o_size = req.hdr.exit_code;
         return NULL;
+    }
 
     *o_size = req.hdr.response_size;
     
