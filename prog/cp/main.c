@@ -97,23 +97,38 @@ err_t main(uint32_t argc, char **argv)
     err_t err = EXIT_CODE_GLOBAL_SUCCESS;
     file_t *cf = config_read_file(&err); 
 
+    if(err)
+    {
+        screen_print("Unable to read config file\n");
+        return err;
+    }
+
     program_info_t *prog_info = program_get_info(&err);
     api_space_t space = api_get_api_space((function_t) (uint32_t)prog_info->bin_start + (uint32_t)cp_api_handler);
     cp_api_set_space(space);
 
     if(err)
+    {
+        screen_print("Unable to get program information\n");
         return err;
+    }
 
     err = config_load_drv(cf);
     config_set_bin_path(cf);
 
     if(err)
+    {
+        screen_print("Unable to read configuration\n");
         return err;
+    }
     
     err = keyb_start(cf);
     
     if(err)
+    {
+        screen_print("Unable to start keyboard interface\n");
         return err;
+    }
     
     set_first_working_dir();
     
