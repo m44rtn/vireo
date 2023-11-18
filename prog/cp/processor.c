@@ -36,7 +36,13 @@ SOFTWARE.
 #define MAX_LINE_LEN        512 // bytes
 #define AUTOEXEC_FILENAME   "/AUTOEXEC"
 
-#define CHECK_COMMAND(a) !strcmp_until(a, cmd_bfr, strlen(a))
+/**
+ * @brief Checks whether input by a user is a specific internal command
+ * 
+ */
+#define CHECK_COMMAND(command) ((!strcmp_until(command, cmd_bfr, strlen(command))) && \
+                                 ((cmd_bfr[strlen(command)] == ' ') || (cmd_bfr[strlen(command)] == '\n') \
+                               || (cmd_bfr[strlen(command)] == '\0')))
 
 err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
 
@@ -74,7 +80,7 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow, err_
         *o_err = command_pause();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_DOTSLASH)))
         *o_err = command_dotslash(cmd_bfr);
-
+    
     return did_execute;
 }
 
