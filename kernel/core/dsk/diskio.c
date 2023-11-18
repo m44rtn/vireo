@@ -332,15 +332,23 @@ size_t disk_get_sector_size(uint8_t drive)
     return (disk_info_t[drive].disktype == DRIVE_TYPE_IDE_PATAPI) ? ATAPI_DEFAULT_SECTOR_SIZE : DEFAULT_SECTOR_SIZE;
 }
 
+/**
+ * @brief Converts a numbered drive id to a human readable drive id (e.g., 'CD0' or 'HD0P0')
+ *        which it returns in `out_id`
+ * 
+ * @param drive drive number
+ * @param out_id output: drive id
+ */
 void drive_convert_to_drive_id(uint8_t drive, char *out_id)
 {
     uint8_t type = disk_info_t[drive].disktype;
 
-    char *t = (char *) (drive_type_to_chars(type));
-    size_t s = strlen(t);
+    char *type_str = (char *) (drive_type_to_chars(type));
+    size_t s = strlen(type_str);
 
-    memcpy(out_id, t, s);
+    memcpy(out_id, type_str, s);
     out_id[s] = (char) (drive_to_type_index(drive, type) + '0');
+    out_id[s+1] = '\0';
 }
 
 // @returns:
