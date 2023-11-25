@@ -142,6 +142,7 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
         
     uint32_t end = find_in_str(cmd_bfr, "\n");
     cmd_bfr[end] = '\0';
+    shadow[end] = '\0';
 
     char *cmd = processor_ignore_leading_spaces(cmd_bfr);
     char *shdw = processor_ignore_leading_spaces(shadow);
