@@ -124,4 +124,8 @@ unsigned char nth_bit(uint32_t dword, uint8_t size);
 //      pindex, pointer to uint32_t (used internally) / specifies which part is wanted
 uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t *pindex);
 
+
+// Counts how many times character ch exists in str and returns the result.
+uint32_t count_char_in_str(const char *str, const char ch);
+
 #endif

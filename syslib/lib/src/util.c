@@ -396,3 +396,15 @@ uint8_t str_get_part(char *part_out, const char *s, const char *delim, uint32_t 
 
 	return 1; // not done
 }
+
+uint32_t count_char_in_str(const char *str, const char ch)
+{
+	size_t slen = strlen(str);
+	uint32_t occurances = 0;
+
+	for(uint32_t i = 0; i < slen; ++i)
+		if(str[i] == ch)
+			occurances++;
+	
+	return occurances;
+}
