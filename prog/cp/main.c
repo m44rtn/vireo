@@ -129,6 +129,14 @@ err_t main(uint32_t argc, char **argv)
         screen_print("Unable to start keyboard interface\n");
         return err;
     }
+
+    err = processor_init();
+
+    if(err)
+    {
+        screen_print("Unable to initialize processor (out of memory)\n");
+        return err;
+    }
     
     set_first_working_dir();
     

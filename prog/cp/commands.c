@@ -43,7 +43,8 @@ SOFTWARE.
 #define DIR_DIRTXT_INDENT   18
 #define DIR_FILESIZE_INDENT 26
 
-#define HELP_TXT_INDENT     12
+#define HELP_TXT_INDENT     20
+
 
 /**
  * @brief Used to translate the meaning of user input:
@@ -416,6 +417,8 @@ err_t command_help(void)
     help_print_command(INTERNAL_COMMAND_ERRLVL, "prints error code of last command/binary\n");
     help_print_command(INTERNAL_COMMAND_TYPE " [PATH]", "prints the contents of file at [PATH]\n");
     help_print_command(INTERNAL_COMMAND_PAUSE, "waits until the user has pressed [ENTER]\n");
+    help_print_command(INTERNAL_COMMAND_SET " [NAME] [VALUE]", "set a shell variable\n");
+    help_print_command(INTERNAL_COMMAND_UNSET " [NAME]", "remove a shell variable\n");
     help_print_command(INTERNAL_COMMAND_DOTSLASH "[PATH]", "executes a CP-command script at [PATH]\n");
     help_print_command("[PATH]", "executes a program from [PATH] or system bin directory\n");
     
@@ -553,18 +556,133 @@ err_t command_dotslash(char *cmd_bfr)
     char *path = fileman_abspath_or_cwd(&cmd_bfr[2] /* 2 skips the './' */, cwd, cwd);
 
     if(!path)
+    {
+        screen_print("File not found\n");
         return EXIT_CODE_FS_FILE_NOT_FOUND;
+    }
     
     size_t fsize; 
     file_t *cp_script = fs_read_file(path, &fsize, &err);
 
     if(err)
+    {
+        screen_print("Unable to read CP-command script\n");
         return err;
+    }
     
     err = processor_execute_cp_script(cp_script);
+
+    if(err)
+        screen_print("Unable to execute CP-command script\n");
 
     vfree(cp_script);
     vfree(cwd);
 
     return err;
+}
+
+/**
+ * @brief Prints the current environment variables
+ * 
+ */
+static void command_set_print_env_vars(void)
+{
+    char *name = valloc(PROCESSOR_MAX_ENV_VAR_NAME_LEN);
+    char *value = valloc(PROCESSOR_MAX_ENV_VAR_VALUE_LEN);
+
+    if(!value || !name)
+    {
+        vfree(name);
+        vfree(value);
+        screen_print("Out of memory, cannot print environment variables.\n");
+        return;
+    }
+
+    uint32_t id = 0;
+    err_t err = 0;
+    while((err = processor_get_environment_variable_value_by_id(id++, name, value)) != EXIT_CODE_GLOBAL_OUT_OF_RANGE)
+    {
+        if(err == EXIT_CODE_GLOBAL_GENERAL_FAIL)
+            continue;
+        else if(err)
+            return;
+        
+        screen_print(name);
+        screen_print("=");
+        screen_print(value);
+        screen_print("\n");
+
+        more_t more = command_more(screen_get_width(), screen_get_height());
+
+        if(more == QUIT)
+            break;
+        else if(more == CONTINUE)
+            screen_clear();
+    }
+}
+
+/**
+ * @brief Sets an environment variable
+ * 
+ * @param cmd_bfr User input (always uppercase)
+ * @param shdw_bfr Original user input (allows for case sensitive variable values)
+ * @return err_t Any error returned by processor_set_environment_variable() or EXIT_CODE_GLOBAL_SUCCESS
+ *               on success.
+ */
+err_t command_set(char *cmd_bfr, char *shdw_bfr)
+{
+    // Print all environment variables if no new one is given
+    if(count_char_in_str(cmd_bfr, ' ') < 1)
+    {
+        command_set_print_env_vars();
+        return EXIT_CODE_GLOBAL_SUCCESS;
+    }
+
+    uint32_t start_of_name = find_in_str(cmd_bfr, " ") + 1;
+    uint32_t end_of_name = find_in_str(&cmd_bfr[start_of_name], " ");
+    end_of_name = (end_of_name == MAX) ? strlen(&cmd_bfr[start_of_name]) : end_of_name;
+
+    cmd_bfr[start_of_name + end_of_name] = '\0';
+
+    err_t err = processor_set_environment_variable(processor_ignore_leading_spaces(&cmd_bfr[start_of_name]), 
+                                                   processor_ignore_leading_spaces(&shdw_bfr[start_of_name + end_of_name]));
+
+    if(err == EXIT_CODE_GLOBAL_RESERVED)
+    {
+        screen_print("Environment variable ");
+        screen_print(processor_ignore_leading_spaces(&cmd_bfr[start_of_name]));
+        screen_print(" already exists.\n");
+    }
+
+    if(err == EXIT_CODE_GLOBAL_INVALID)
+    {
+        screen_print("Invalid environment variable\n");
+        command_set_print_env_vars();
+        return EXIT_CODE_GLOBAL_SUCCESS;
+    }
+
+    return err;
+}
+
+/**
+ * @brief Unsets an environment variable
+ * 
+ * @param cmd_bfr User input
+ * @return err_t Exit code
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success
+ *                  - EXIT_CODE_GLOBAL_INVALID when a variable name was not provided
+ *                  - Any error returned by processor_unset_environment_variable()
+ */
+err_t command_unset(char *cmd_bfr)
+{
+    if(count_char_in_str(cmd_bfr, ' ') < 1)
+        return EXIT_CODE_GLOBAL_INVALID;
+
+    uint32_t start_of_name = find_in_str(cmd_bfr, " ") + 1;
+    uint32_t end_of_name = find_in_str(&cmd_bfr[start_of_name], " ");
+    end_of_name = (end_of_name == MAX) ? strlen(cmd_bfr) : end_of_name;
+
+    cmd_bfr[end_of_name] = '\0';
+    
+    return processor_unset_environment_variable(processor_ignore_leading_spaces(&cmd_bfr[start_of_name]));
 }

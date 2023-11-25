@@ -36,6 +36,8 @@ SOFTWARE.
 #define MAX_LINE_LEN        512 // bytes
 #define AUTOEXEC_FILENAME   "/AUTOEXEC"
 
+#define GET_SMALLEST(a, b)  ((a < b) ? a : b)
+
 /**
  * @brief Checks whether input by a user is a specific internal command
  * 
@@ -45,6 +47,27 @@ SOFTWARE.
                                || (cmd_bfr[strlen(command)] == '\0')))
 
 err_t g_last_error = EXIT_CODE_GLOBAL_SUCCESS;
+processor_envvar_t *g_env_vars = NULL;
+
+/**
+ * @brief Initializes the processor (currently allocates space for
+ *          environment variables)
+ * 
+ * @return err_t Exit code
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success
+ *                  - EXIT_CODE_GLOBAL_OUT_OF_MEMORY unable to allocate memory
+ */
+err_t processor_init(void)
+{
+    g_env_vars = valloc(PROCESSOR_ENV_VAR_SPACE_SIZE);
+
+    if(!g_env_vars)
+        return EXIT_CODE_GLOBAL_OUT_OF_MEMORY;
+
+    memset(g_env_vars, PROCESSOR_ENV_VAR_SPACE_SIZE, 0);
+    
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
 
 /**
  * @brief Executes an internal CP command
@@ -80,6 +103,10 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow, err_
         *o_err = command_pause();
     else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_DOTSLASH)))
         *o_err = command_dotslash(cmd_bfr);
+    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_SET)))
+        *o_err = command_set(cmd_bfr, shadow);
+    else if((did_execute = CHECK_COMMAND(INTERNAL_COMMAND_UNSET)))
+        *o_err = command_unset(cmd_bfr);
     
     return did_execute;
 }
@@ -90,7 +117,7 @@ static uint8_t processor_exec_internal_command(char *cmd_bfr, char *shadow, err_
  * @param bfr pointer to a string
  * @return char* points after the leading spaces
  */
-static char *processor_ignore_leading_spaces(char *bfr)
+char *processor_ignore_leading_spaces(char *bfr)
 {
     uint32_t i = 0;
     size_t len = strlen(bfr);
@@ -149,6 +176,8 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
 
     if(cmd[0] == '\0')
         return EXIT_CODE_GLOBAL_SUCCESS;
+    
+    processor_replace_with_environment_variables(cmd_bfr, shadow);
 
     uint8_t ran_internal = processor_exec_internal_command(cmd, shdw, &err);
     g_last_error = err;
@@ -178,6 +207,83 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
     vfree(path);
 
     return err;
+}
+
+/**
+ * @brief Replaces "$name" of an environment variable with its value, helper for processor_replace_with_environment_variables()
+ * 
+ * @param cmd_bfr Buffer to replace in
+ * @param value Environment variable value
+ * @param end_of_variable_name End of the name of the variable ('$' character included)
+ */
+static void processor_do_replace_action(char *cmd_bfr, char *value, uint32_t end_of_variable_name)
+{
+    size_t value_len = strlen(value);
+    char *tmp = valloc(4096);
+
+    if(!tmp)
+    {
+        screen_print("<CP> Out of memory\n");
+        return;
+    }
+
+    memcpy(tmp, &cmd_bfr[end_of_variable_name + 1], strlen(&cmd_bfr[end_of_variable_name + 1]) + 1);
+
+    memcpy(cmd_bfr, value, value_len);
+    memcpy(&cmd_bfr[value_len], tmp, strlen(tmp) + 1);
+
+    vfree(tmp);
+}
+
+/**
+ * @brief Replaces the environment variable names in cmd_bfr and shdw with their values
+ *        if there are any
+ * 
+ * @param cmd_bfr User input
+ * @param shdw User input
+ */
+void processor_replace_with_environment_variables(char *cmd_bfr, char *shdw)
+{
+    uint32_t ignored_value = 0;
+    uint32_t start_of_var = 0;
+    uint32_t end_of_var = 0;
+    uint32_t index = 0;
+
+    while((index = find_in_str(&cmd_bfr[start_of_var], PROCESSOR_ENV_VAR_DELIM)) != MAX)
+    {
+        start_of_var = start_of_var + index;
+        end_of_var = find_in_str(&cmd_bfr[start_of_var], " ");
+
+        end_of_var = (end_of_var == MAX) ? strlen(&cmd_bfr[start_of_var]) + 1: end_of_var - 1;
+
+        char value[PROCESSOR_MAX_ENV_VAR_VALUE_LEN + 1];
+
+        // Using `value` here as input (as name) to the processor_get_environment_variable_value_by_name() function as well
+        memcpy(value, &cmd_bfr[start_of_var + 1], end_of_var);
+        value[end_of_var] = '\0';
+        to_uc(value, end_of_var);
+
+        err_t err = processor_get_environment_variable_value_by_name(value, value, &ignored_value);
+        value[PROCESSOR_MAX_ENV_VAR_VALUE_LEN] = '\0';
+
+        if(err == EXIT_CODE_GLOBAL_GENERAL_FAIL)
+        {
+            screen_set_color((SCREEN_COLOR_BLACK << 4) | SCREEN_COLOR_YELLOW);
+            screen_print("<CP> Warning: environment variable does not exist.\n\n");
+            screen_set_color(SCREEN_COLOR_DEFAULT);
+
+            // To avoid find_in_str() finding the same '$' over and over, causing an infinite loop
+            start_of_var += 1;
+
+            continue;
+        }
+
+        processor_do_replace_action(&cmd_bfr[start_of_var], value, end_of_var);
+        processor_do_replace_action(&shdw[start_of_var], value, end_of_var);
+
+        // To avoid find_in_str() finding the same '$' over and over, causing an infinite loop
+        start_of_var += 1;
+    }
 }
 
 /**
@@ -247,3 +353,105 @@ err_t processor_execute_autoexec(void)
     return err;
 }
 
+/**
+ * @brief Sets an environment variable within CP.
+ *        NOTE: will truncate name or value when its size is too large.
+ * 
+ * @param name Name of new environment variable
+ * @param value Value of new environment variable
+ * @return err_t Exit code:
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success
+ *                  - EXIT_CODE_GLOBAL_GENERAL_FAIL when the environment variable could not be added
+ *                  - EXIT_CODE_GLOBAL_RESERVED when an environment variable with the same name already
+ *                    exists
+ *                  - EXIT_CODE_GLOBAL_INVALID on invalid environment variable name/value
+ */
+err_t processor_set_environment_variable(const char *name, const char *value)
+{
+    if(strlen(name) == 0)
+        return EXIT_CODE_GLOBAL_INVALID;
+
+    for(uint32_t i = 0; i < PROCESSOR_MAX_ENV_VARS; ++i)
+    {
+        if(!strcmp(&g_env_vars[i].name[0], name))
+            return EXIT_CODE_GLOBAL_RESERVED;
+
+        if(g_env_vars[i].name[0] != 0)
+            continue;
+        
+        // Found an empty entry
+        memcpy(&g_env_vars[i].name[0], name, GET_SMALLEST(strlen(name) + 1, PROCESSOR_MAX_ENV_VAR_NAME_LEN));
+        memcpy(&g_env_vars[i].value[0], value, GET_SMALLEST(strlen(value) + 1, PROCESSOR_MAX_ENV_VAR_VALUE_LEN));
+        return EXIT_CODE_GLOBAL_SUCCESS;
+    }
+
+    return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+}
+
+/**
+ * @brief Removes an environment variable from CP
+ * 
+ * @param name Name of the environment variable
+ * @return err_t Exit code:
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success
+ */
+err_t processor_unset_environment_variable(const char *name)
+{    
+    for(uint32_t i = 0; i < PROCESSOR_MAX_ENV_VARS; ++i)
+        if(!strcmp(name, g_env_vars[i].name))
+            memset(&g_env_vars[i].name[0], PROCESSOR_MAX_ENV_VAR_NAME_LEN, 0);
+    
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}
+
+/**
+ * @brief Returns value and id of environment variable called `name`
+ * 
+ * @param name Name of the environment variable
+ * @param o_value [out] Value of environment variable
+ * @param o_id [out] ID of environment variable
+ * @return err_t Exit code
+ *                  - EXIT_CODE_GLOBAL_SUCCESS when found
+ *                  - EXIT_CODE_GLOBAL_GENERAL_FAIL when not found
+ */
+err_t processor_get_environment_variable_value_by_name(const char *name, char *o_value, uint32_t *o_id)
+{
+    for(uint32_t i = 0; i < PROCESSOR_MAX_ENV_VARS; ++i)
+    {
+        if(strcmp(&g_env_vars[i].name[0], name))
+            continue;
+
+        // Found the environment variable
+        memcpy(o_value, g_env_vars[i].value, PROCESSOR_MAX_ENV_VAR_VALUE_LEN);
+        *o_id = i;
+        return EXIT_CODE_GLOBAL_SUCCESS;
+    }
+
+    return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+}
+
+/**
+ * @brief Returns the name and value of environment variable with ID `id`
+ * 
+ * @param id ID of environment variable
+ * @param o_name [out] name of environment variable
+ * @param o_value [out] name of environment variable
+ * @return err_t Exit code
+ *                  - EXIT_CODE_GLOBAL_SUCCESS on success
+ *                  - EXIT_CODE_GLOBAL_OUT_OF_RANGE on ID too large
+ *                  - EXIT_CODE_GLOBAL_GENERAL_FAIL when the environment variable with ID `id`
+ *                    is not initialized (not set, no name available for this id)
+ */
+err_t processor_get_environment_variable_value_by_id(uint32_t id, char *o_name, char *o_value)
+{
+    if(id >= PROCESSOR_MAX_ENV_VARS)
+        return EXIT_CODE_GLOBAL_OUT_OF_RANGE;
+    
+    if(g_env_vars[id].name[0] == 0)
+        return EXIT_CODE_GLOBAL_GENERAL_FAIL;
+    
+    memcpy(o_name, g_env_vars[id].name, PROCESSOR_MAX_ENV_VAR_NAME_LEN);
+    memcpy(o_value, g_env_vars[id].value, PROCESSOR_MAX_ENV_VAR_VALUE_LEN);
+
+    return EXIT_CODE_GLOBAL_SUCCESS;
+}

@@ -36,6 +36,8 @@ SOFTWARE.
 #define INTERNAL_COMMAND_ERRLVL     "ERRLVL"
 #define INTERNAL_COMMAND_TYPE       "TYPE"
 #define INTERNAL_COMMAND_PAUSE      "PAUSE"
+#define INTERNAL_COMMAND_SET        "SET"
+#define INTERNAL_COMMAND_UNSET      "UNSET"
 #define INTERNAL_COMMAND_DOTSLASH   "./"
 
 char *command_create_cp_ver_str(void);
@@ -51,5 +53,7 @@ err_t command_errlvl(void);
 err_t command_type(char *cmd_bfr);
 err_t command_pause(void);
 err_t command_dotslash(char *cmd_bfr);
+err_t command_set(char *cmd_bfr, char *shdw_bfr);
+err_t command_unset(char *cmd_bfr);
 
 #endif // __COMMANDS_H__
