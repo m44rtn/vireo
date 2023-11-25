@@ -36,7 +36,7 @@ AC := nasm
 .PHONY: all clean todo run assembly
 
 all: clean $(OBJFILES) $(ASOBJFILES)
-	@$(CC) -I../../syslib/lib/include -T linker.ld -o $(OFILE) $(LDOBJFILES) $(LDASOBJFILES) ../../syslib/bin/libvireo_sys.a -lgcc -pie -static $(CCFLAGS)
+	@$(CC) -T linker.ld -o $(OFILE) $(LDOBJFILES) $(LDASOBJFILES) ../../syslib/bin/libvireo_sys.a -lgcc -pie -static $(CCFLAGS)
 	-@xenops -f include/info.h -q
 
 todo: 
