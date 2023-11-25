@@ -26,6 +26,7 @@ SOFTWARE.
 #include "disk.h"
 #include "memory.h"
 #include "driver.h"
+#include "kernel.h"
 
 #define PROGRAM_NAME "CP"
 #include "debug.h"
@@ -96,6 +97,8 @@ err_t config_load_drv(file_t *cf)
     char *line = valloc(MAX_LINE_LEN);
     uint32_t n_drv = 1;
 
+    uint32_t errors = 0;
+
     while(config_get_line(cf, line, &line_num))
     {
         if(strcmp_until(line, KEYWORD_LOAD_DRV, strlen(KEYWORD_LOAD_DRV)))
@@ -104,8 +107,22 @@ err_t config_load_drv(file_t *cf)
         // remove keyword 'LOAD' from line
         uint32_t spacei = find_in_str(line, " ") + 1;
         memcpy(line, &line[spacei], strlen(&line[spacei]) + 1);
-        assert(!config_actually_load_driver(line, n_drv++)); // TODO: report error to user
+        
+        if(config_actually_load_driver(line, n_drv++))
+        {
+            screen_set_color((SCREEN_COLOR_BLACK << 4) | SCREEN_COLOR_YELLOW);
+            screen_print("<CP> Unable to load driver ");
+            screen_print(line);
+            screen_print("\n");
+            screen_set_color(SCREEN_COLOR_DEFAULT);
+
+            errors++;
+        }
     }
+
+    // In case of errors, wait for 3 seconds so that the user can see them.
+    if(errors)
+        kernel_sleep(3000);
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
