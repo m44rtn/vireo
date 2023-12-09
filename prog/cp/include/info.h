@@ -26,7 +26,7 @@ SOFTWARE.
 
 /* this is always the build number for next build. 
 current binary build = [BUILD] - 1 */
-#define BUILD 894
+#define BUILD 1092
 
 #define MAJOR 0
 #define MINOR 1  
