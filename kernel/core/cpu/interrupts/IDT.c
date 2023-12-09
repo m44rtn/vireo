@@ -44,7 +44,6 @@ typedef struct IDT_DESCRIPTOR
 IDT_DESCRIPTOR IDT_desc;
 IDT_ENTRY IDT[256];
 
-static void IDT_reset(void);
 static void IDT_default_list(void);
 
 /* creates a basic IDT with the following stuff:
@@ -104,7 +103,7 @@ bool_t idt_handler_in_use(uint8_t index)
     return (IDT[index].offset_low == 0 && IDT[index].offset_hi == 0) ? false : true;
 }
 
-static void IDT_reset(void)
+void IDT_reset(void)
 {
     ASM_IDT_SUBMIT((uint32_t *) &IDT_desc);
 }

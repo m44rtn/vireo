@@ -30,6 +30,7 @@ void IDT_setup(void);
 void IDT_add_handler(unsigned char index, unsigned int handler);
 void idt_remove_handler(uint8_t index);
 bool_t idt_handler_in_use(uint8_t index);
+void IDT_reset(void);
 
 /* extern assembly functions */
 extern void ASM_IDT_SUBMIT(unsigned int *IDT);
