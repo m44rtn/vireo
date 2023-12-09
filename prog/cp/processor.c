@@ -210,7 +210,7 @@ err_t processor_execute_command(char *cmd_bfr, char *shadow)
 }
 
 /**
- * @brief Replaces "$name" of an environment variable with its value, helper for processor_replace_with_environment_variables()
+ * @brief Replaces "$name;" of an environment variable with its value, helper for processor_replace_with_environment_variables()
  * 
  * @param cmd_bfr Buffer to replace in
  * @param value Environment variable value
@@ -252,16 +252,17 @@ void processor_replace_with_environment_variables(char *cmd_bfr, char *shdw)
     while((index = find_in_str(&cmd_bfr[start_of_var], PROCESSOR_ENV_VAR_DELIM)) != MAX)
     {
         start_of_var = start_of_var + index;
-        end_of_var = find_in_str(&cmd_bfr[start_of_var], " ");
+        end_of_var = find_in_str(&cmd_bfr[start_of_var], ";");
 
-        end_of_var = (end_of_var == MAX) ? strlen(&cmd_bfr[start_of_var]) + 1: end_of_var - 1;
+        if(end_of_var == MAX)
+            return; // INVALID
 
         char value[PROCESSOR_MAX_ENV_VAR_VALUE_LEN + 1];
 
         // Using `value` here as input (as name) to the processor_get_environment_variable_value_by_name() function as well
-        memcpy(value, &cmd_bfr[start_of_var + 1], end_of_var);
-        value[end_of_var] = '\0';
-        to_uc(value, end_of_var);
+        memcpy(value, &cmd_bfr[start_of_var + 1], end_of_var - 1);
+        value[end_of_var - 1] = '\0';
+        to_uc(value, end_of_var - 1);
 
         err_t err = processor_get_environment_variable_value_by_name(value, value, &ignored_value);
         value[PROCESSOR_MAX_ENV_VAR_VALUE_LEN] = '\0';

@@ -424,6 +424,8 @@ err_t command_help(void)
     
     screen_print("\nPlease note that [PATH] can refer to both an absolute path to a file/directory "
                  "or a path relative to the current working directory.\n");
+    
+    screen_print("\nTo use a shell variable within CP, use '$[variable_name];'\n");
 
     return EXIT_CODE_GLOBAL_SUCCESS;
 }
