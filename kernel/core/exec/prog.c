@@ -88,7 +88,7 @@ typedef struct program_info_t
     pid_t pid;
     void *stack;
     size_t size;
-    char *path;
+    char path[FS_MAX_PATH_LEN];
     void *bin_start;
 } __attribute__((packed)) api_prog_info_t;
 
@@ -377,9 +377,12 @@ void prog_api(void *req)
             ASSERT(info);
             
             uint32_t pid_index = prog_find_info_index(current_running_pid);
+
+            size_t filename_len = strlen(prog_info[pid_index].filename);
+            filename_len = ((filename_len + 1u) > FS_MAX_PATH_LEN) ? FS_MAX_PATH_LEN : filename_len + 1u;
             
-            // FIXME: copy filename instead of giving the pointer to it
-            info->path = prog_info[pid_index].filename;
+            memcpy(info->path, prog_info[pid_index].filename, filename_len);
+            
             info->pid = current_running_pid;
             info->size = prog_info[pid_index].size;
             info->stack = prog_info[pid_index].stck;

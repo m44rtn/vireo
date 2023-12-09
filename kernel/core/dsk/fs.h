@@ -27,6 +27,8 @@ SOFTWARE.
 #include "../include/types.h"
 #include "../drv/FS_TYPES.H"
 
+#define FS_MAX_PATH_LEN     255
+
 void fs_api(void *req);
 uint8_t fs_check_path(char* p);
 file_t *fs_read_file(char *fpath, size_t *o_size);

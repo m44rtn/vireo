@@ -27,6 +27,8 @@ SOFTWARE.
 #include "types.h"
 #include "call.h"
 
+#include "fs.h"
+
 typedef void stack_t;
 typedef uint8_t pid_t;
 
@@ -35,7 +37,7 @@ typedef struct program_info_t
     pid_t pid;
     stack_t *stack;
     size_t size;
-    char *path;
+    char path[FS_MAX_PATH_LEN];
     void *bin_start;
 } __attribute__((packed)) program_info_t;
 
