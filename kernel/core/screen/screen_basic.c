@@ -43,6 +43,8 @@ SOFTWARE.
 
 #define SCREEN_BASIC_MARGIN_BELL	7 // characters, named after the margin bell on typewriters
 
+#define VGA_VIDEO_BUFFER			0xb8000
+
 typedef struct SCREENDATA
 {
 	unsigned short cursorY;
@@ -130,8 +132,7 @@ void screen_basic_api(void *req)
 			r->hdr.response_ptr = evalloc(SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH, prog_get_current_running());
 			r->hdr.response_size = SCREEN_BASIC_WIDTH * SCREEN_BASIC_HEIGHT * SCREEN_BASIC_DEPTH;
 
-			// TODO: make 0xb8000 a define
-			memcpy(r->hdr.response_ptr, (void *) 0xb8000, r->hdr.response_size);
+			memcpy(r->hdr.response_ptr, (void *) VGA_VIDEO_BUFFER, r->hdr.response_size);
 		break;
 
 		case SYSCALL_GET_SCREEN_GET_BYTE:
@@ -336,10 +337,9 @@ void screen_basic_clear_screen(void)
 }
 
 
-/* TODO: remove screen_basic_getchar() sometime in the future */
 char screen_basic_getchar(unsigned int x, unsigned int y)
 {
-	unsigned char* vidmem = (unsigned char*) 0xb8000;
+	unsigned char* vidmem = (unsigned char*) VGA_VIDEO_BUFFER;
 
 	if(x > SCREEN_BASIC_WIDTH || y > SCREEN_BASIC_HEIGHT)
 		return NULL;
@@ -349,7 +349,7 @@ char screen_basic_getchar(unsigned int x, unsigned int y)
 
 void screen_basic_putchar(unsigned int x, unsigned int y, char c)
 {
-	unsigned char* vidmem = (unsigned char*) 0xb8000;
+	unsigned char* vidmem = (unsigned char*) VGA_VIDEO_BUFFER;
 
 	if(x > SCREEN_BASIC_WIDTH || y > SCREEN_BASIC_HEIGHT)
 		return;
@@ -363,7 +363,7 @@ void screen_basic_putchar(unsigned int x, unsigned int y, char c)
  */
 
 static void screen_basic_char_put_on_screen(char c){
-	unsigned char* vidmem = (unsigned char*) 0xb8000;
+	unsigned char* vidmem = (unsigned char*) VGA_VIDEO_BUFFER;
 
 	switch(c){
 			case ('\b'):
@@ -438,7 +438,7 @@ static void screen_basic_linecheck(char c)
 static void screen_basic_scroll(unsigned char line)
 {
 	
-	char* vidmemloc = (char*) 0xb8000;
+	char* vidmemloc = (char*) VGA_VIDEO_BUFFER;
 	const unsigned short EndOfScreen = SCREEN_BASIC_WIDTH * (SCREEN_BASIC_HEIGHT - 1) * SCREEN_BASIC_DEPTH;
 	unsigned short i;
 	
@@ -463,7 +463,7 @@ static void screen_basic_scroll(unsigned char line)
 static void screen_basic_clear_line(unsigned char from, unsigned char to)
 {
 	unsigned short i = (unsigned short) (SCREEN_BASIC_WIDTH * from * SCREEN_BASIC_DEPTH);
-	char* vidmem = (char*) 0xb8000;
+	char* vidmem = (char*) VGA_VIDEO_BUFFER;
 	
 	for (; i < (SCREEN_BASIC_WIDTH*to*SCREEN_BASIC_DEPTH); i++){
 		vidmem[(i / 2) * 2 + 1] = (char) SCRscreenData.chScreenColor;
