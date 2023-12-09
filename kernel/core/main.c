@@ -32,8 +32,6 @@ SOFTWARE.
 
 #include "screen/screen_basic.h"
 
-#include "util/util.h"
-
 #include "cpu/gdt.h"
 #include "cpu/interrupts/IDT.h"
 #include "cpu/cpu.h"
@@ -51,8 +49,6 @@ SOFTWARE.
 #include "dsk/mbr.h"
 #include "dsk/cd.h"
 
-#include "exec/exec.h"
-#include "exec/elf.h"
 #include "exec/prog.h"
 
 #include "kernel/panic.h"
@@ -62,17 +58,7 @@ SOFTWARE.
 #include "dsk/fs.h"
 #include "screen/screen_basic.h"
 
-/* TODO: remove */
-#include "drv/COMMANDS.H"
-#include "drv/IDE_commands.h"
-#include "drv/FS_commands.h"
-#include "drv/FS_TYPES.H"
-
-#include "drv/FS/fat32.h"
-#include "drv/FS/fs_exitcode.h"
-
 #include "api/api.h"
-#include "exec/task.h"
 
 void loop(void)
 {

@@ -394,7 +394,6 @@ void prog_api(void *req)
         {
             api_new_program_t *n = req;
 
-            // FIXME: what if path does not contain a drive id (i.e. path =~ '/PROGRAM.ELF')?
             n->hdr.exit_code = prog_launch_binary((n->path));
             break;
         }

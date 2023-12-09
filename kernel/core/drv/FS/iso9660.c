@@ -73,7 +73,7 @@ SOFTWARE.
 // supported file flags
 #define FF_HIDDEN               1 << 0
 #define FF_DIRECTORY            1 << 1
-#define FF_NOT_FINAL_DIR        1 << 7 // TODO: support does not exist yet
+#define FF_NOT_FINAL_DIR        1 << 7 // TODO: support does not exist
 
 // date and time defines
 #define MINUTE_OFFSET			8
@@ -143,8 +143,6 @@ void iso_handler(uint32_t * drv)
 {
 	gerror = 0;
 	drv[4] = 0;
-
-	// FIXME: replace '..' in path with '\1' and get the driver to find the parent directory.
 	
     switch(drv[0])
     {

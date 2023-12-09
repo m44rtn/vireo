@@ -65,7 +65,6 @@ void fs_api(void *req)
     {
         case SYSCALL_GET_FS:
         {
-            // TODO: make function
             if(disk_type == DRIVE_TYPE_IDE_PATAPI)
                 { fs->hdr.response = FS_TYPE_ISO; break; }
             

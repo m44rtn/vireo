@@ -148,8 +148,6 @@ uint16_t ide_flags = 0;
 /* the indentifier for drivers + information about our driver */
 struct DRIVER IDE_driver_id = {(uint32_t) 0xB14D05, "VIREODRV", (IDEController_PCI_CLASS_SUBCLASS | DRIVER_TYPE_PCI), (uint32_t) (IDEController_handler)};
 
-// FIXME remove static declarations/prototypes and put all functions in .h
-
 static uint32_t ide_get_max_addr(uint8_t drive)
 {
     uint16_t port = IDE_getPort(drive);

@@ -71,9 +71,9 @@ SOFTWARE.
 
 #define FLAG_CMD_COMPLETE       (1u << 0u)
 #define FLAG_ACK                (1u << 1u)
-#define FLAG_CAPS_ON            (1u << 2u) // TODO
-#define FLAG_NUM_ON             (1u << 3u) // TODO
-#define FLAG_SCROLL_ON          (1u << 4u) // TODO
+#define FLAG_CAPS_ON            (1u << 2u)
+#define FLAG_NUM_ON             (1u << 3u)
+#define FLAG_SCROLL_ON          (1u << 4u)
 #define FLAG_RESP_RECEIVED      (1u << 5u)
 #define FLAG_KEY_RELEASED       (1u << 6u)
 #define FLAG_KEY_EXTENDED       (1u << 7u)

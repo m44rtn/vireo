@@ -29,6 +29,6 @@ SOFTWARE.
 #define DRIVE_TYPE_UNKNOWN     0xFF
 
 #define IDE_DRIVER_MAX_DRIVES   4
-#define MAX_DRIVES    IDE_DRIVER_MAX_DRIVES /*TODO: + floppy's + ... */
+#define MAX_DRIVES    IDE_DRIVER_MAX_DRIVES
 
 #endif

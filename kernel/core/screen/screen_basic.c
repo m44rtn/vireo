@@ -89,11 +89,6 @@ static void screen_basic_scroll(unsigned char line);
 static void screen_basic_linecheck(char c);
 static void screen_basic_clear_line(unsigned char from, unsigned char to);
 
-/* TODO & FIXME: 
-	- comment some of this stuff 
-	- defines for outb command
-	*/
-
 /*
  * 'Public' part
  */
@@ -332,8 +327,8 @@ void print_at(const char *str, uint32_t x, uint32_t y)
 
 }
 
-void screen_basic_clear_screen(void){
-	/* uint16_t *vidmem = (uint16_t *) 0xb8000;*/
+void screen_basic_clear_screen(void)
+{
 	screen_basic_clear_line(0, SCREEN_BASIC_HEIGHT);
 	SCRscreenData.cursorX = 0;
 	SCRscreenData.cursorY = 0;
