@@ -26,7 +26,6 @@ SOFTWARE.
 
 #include "../include/types.h"
 
-// FIXME: cleanup
 unsigned int strlen(const char *str);
 void remove_from_str(char *p, unsigned int n);
 void replace_in_str(char *p, const char c, const char repl);

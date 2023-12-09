@@ -367,8 +367,7 @@ static void IDE_enumerate(void)
 
     bar = pciGetBar(PCI_controller, PCI_BAR3) & 0xFFFFFFFC;
     s_ctrl_port = (uint16_t) (bar + 0x376U*(!bar)) & 0xFFFFU;
-    
-    // TODO: check whether in Legacy or Native mode before doing this
+  
     if(pciGetReg0(PCI_controller) == 0x24CB8086)
     {
         // this controller (8086:24cb) does not seem to report its control block correctly.
